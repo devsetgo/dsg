@@ -18,7 +18,6 @@ jobs:
         ls -l
         echo 'Docker Login'
         docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        cd app
         CAL_VER=$(TZ=America/New_York date +"%y-%m-%d")
         echo 'Docker Build'
         docker build . -t mikeryan56/dsg:$CAL_VER
