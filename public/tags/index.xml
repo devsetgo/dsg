@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on DevSetGo</title>
+    <link>https://devsetgo.com/tags/</link>
+    <description>Recent content in Tags on DevSetGo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en_US</language>
+    <lastBuildDate>Mon, 22 Apr 2019 12:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://devsetgo.com/tags/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>flask</title>
+      <link>https://devsetgo.com/tags/flask/</link>
+      <pubDate>Mon, 22 Apr 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://devsetgo.com/tags/flask/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>python</title>
+      <link>https://devsetgo.com/tags/python/</link>
+      <pubDate>Mon, 22 Apr 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://devsetgo.com/tags/python/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>spring cloud config</title>
+      <link>https://devsetgo.com/tags/spring-cloud-config/</link>
+      <pubDate>Mon, 22 Apr 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://devsetgo.com/tags/spring-cloud-config/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>spring framework</title>
+      <link>https://devsetgo.com/tags/spring-framework/</link>
+      <pubDate>Mon, 22 Apr 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://devsetgo.com/tags/spring-framework/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>twelve factor</title>
+      <link>https://devsetgo.com/tags/twelve-factor/</link>
+      <pubDate>Mon, 22 Apr 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://devsetgo.com/tags/twelve-factor/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Asyncio</title>
+      <link>https://devsetgo.com/tags/asyncio/</link>
+      <pubDate>Sat, 20 Apr 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://devsetgo.com/tags/asyncio/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>FastAPI</title>
+      <link>https://devsetgo.com/tags/fastapi/</link>
+      <pubDate>Sat, 20 Apr 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://devsetgo.com/tags/fastapi/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Starlette</title>
+      <link>https://devsetgo.com/tags/starlette/</link>
+      <pubDate>Sat, 20 Apr 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://devsetgo.com/tags/starlette/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>async</title>
+      <link>https://devsetgo.com/tags/async/</link>
+      <pubDate>Sat, 02 Feb 2019 18:26:39 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/tags/async/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>example</title>
+      <link>https://devsetgo.com/tags/example/</link>
+      <pubDate>Sat, 02 Feb 2019 18:26:39 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/tags/example/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>rest</title>
+      <link>https://devsetgo.com/tags/rest/</link>
+      <pubDate>Sat, 02 Feb 2019 18:26:39 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/tags/rest/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>cookiecutter</title>
+      <link>https://devsetgo.com/tags/cookiecutter/</link>
+      <pubDate>Tue, 01 Jan 2019 21:54:49 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/tags/cookiecutter/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>javascript</title>
+      <link>https://devsetgo.com/tags/javascript/</link>
+      <pubDate>Tue, 01 Jan 2019 21:54:49 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/tags/javascript/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>BPMN</title>
+      <link>https://devsetgo.com/tags/bpmn/</link>
+      <pubDate>Wed, 26 Dec 2018 23:16:49 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/tags/bpmn/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Camunda</title>
+      <link>https://devsetgo.com/tags/camunda/</link>
+      <pubDate>Wed, 26 Dec 2018 23:16:49 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/tags/camunda/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>GO</title>
+      <link>https://devsetgo.com/tags/go/</link>
+      <pubDate>Wed, 26 Dec 2018 23:16:49 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/tags/go/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>JAVA</title>
+      <link>https://devsetgo.com/tags/java/</link>
+      <pubDate>Wed, 26 Dec 2018 23:16:49 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/tags/java/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Random</title>
+      <link>https://devsetgo.com/tags/random/</link>
+      <pubDate>Wed, 26 Dec 2018 22:39:11 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/tags/random/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>rest on DevSetGo</title>
+    <link>https://devsetgo.com/tags/rest/</link>
+    <description>Recent content in rest on DevSetGo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en_US</language>
+    <lastBuildDate>Sat, 02 Feb 2019 18:26:39 -0500</lastBuildDate>
+    
+	<atom:link href="https://devsetgo.com/tags/rest/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Python Async</title>
+      <link>https://devsetgo.com/posts/2019-2-2-python-async/</link>
+      <pubDate>Sat, 02 Feb 2019 18:26:39 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/posts/2019-2-2-python-async/</guid>
+      <description>Even though I am still working through how to make async calls, I made an example and came up with a simple idea on how to start using async while I am learning it. I built a simple example of fetching a list of tasks and then asynchronous calls to fetch the list of URLs being passed. Here is the example on Github. No promises that any of that code is the right way to do async or frankly will even work.</description>
+    </item>
+    
+  </channel>
+</rss>
