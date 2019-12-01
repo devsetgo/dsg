@@ -1,6 +1,6 @@
-# www
-Hugo site for DevSetGo.com and other static sites.
+# DevSetGo Static Site
+Hugo site for DevSetGo.com
 
-Feel free to fork the project, but the content is mine. Using Calver of YY.MM.DD
+Feel free to fork the project, but the content is mine. Using Calver of YY-MM-DD
 
 
