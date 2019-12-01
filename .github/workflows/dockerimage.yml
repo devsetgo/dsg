@@ -21,6 +21,6 @@ jobs:
         CAL_VER=$(TZ=America/New_York date +"%y-%m-%d")
         echo 'Docker Build'
         docker build . -t mikeryan56/dsg:$CAL_VER
-        docker push mikeryan56/starlette-dashboard:$CAL_VER
-        docker build . -t mikeryan56/starlette-dashboard:latest
-        docker push mikeryan56/starlette-dashboard:latest
+        docker push mikeryan56/dsg:$CAL_VER
+        docker build . -t mikeryan56/dsg:latest
+        docker push mikeryan56/dsg:latest
