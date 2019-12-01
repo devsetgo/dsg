@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>GO on DevSetGo</title>
+    <link>https://devsetgo.com/tags/go/</link>
+    <description>Recent content in GO on DevSetGo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en_US</language>
+    <lastBuildDate>Wed, 26 Dec 2018 23:16:49 -0500</lastBuildDate>
+    
+	<atom:link href="https://devsetgo.com/tags/go/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Current Work</title>
+      <link>https://devsetgo.com/posts/2018-12-26-current-work/</link>
+      <pubDate>Wed, 26 Dec 2018 23:16:49 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/posts/2018-12-26-current-work/</guid>
+      <description>Some interesting stuff I&#39;ve been reading about or looking into.
+ Flask Blueprints - I&#39;ve been reading about flask blueprints and building a basic template to utilize. Need to add in a User management with Flask-Login and my template should be done. Kubernettes - This is the competitor to Docker Swarm. I will be using it at work. Still runs the docker enginer, but is supposed to be a better cluster management platform.</description>
+    </item>
+    
+    <item>
+      <title>And We Are Back...</title>
+      <link>https://devsetgo.com/posts/2018-12-26-and-we-are-back/</link>
+      <pubDate>Wed, 26 Dec 2018 22:39:11 -0500</pubDate>
+      
+      <guid>https://devsetgo.com/posts/2018-12-26-and-we-are-back/</guid>
+      <description>So I broke my last site (or two). I had been using Wordpress and decided I wanted something light weight. So I started playing with Ghost and eventually had it running on my Docker instance. Initially I had it setup to learn and test, while also using it as my blog. Then I ran into a lot of issues&amp;hellip; way more than you should run into when learning/building a blog.</description>
+    </item>
+    
+  </channel>
+</rss>

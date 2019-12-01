@@ -1,0 +1,42 @@
+version: '2'
+networks:
+  web:
+    external: true
+services:
+  devsetgo:
+    build: ./
+    # image: nginx:stable-alpine
+    image: mikeryan56/dsg:19.8.16
+    # image: mikeryan56/dsg:latest
+    container_name: "devsetgo"
+    # environment:
+      # - VIRTUAL_HOST=devsetgo.com
+      # - LETSENCRYPT_HOST=devsetgo.com
+      # - LETSENCRYPT_EMAIL=mikeryan56@gmail.com
+    # ports:
+    # - "49999:80"
+    # volumes:
+    #   - "./public:/usr/share/nginx/html"
+    restart: always
+    ports:
+    - "80"
+    # volumes:
+    # - .:/code
+
+    # if using jwilder/nginx-proxy
+    # environment:
+    # - VIRTUAL_HOST=srtdash.devsetgo.com
+    # - LETSENCRYPT_HOST=srtdash.devsetgo.com
+    
+    #if using traefik
+    labels:
+    # - traefik.backend=dsg
+    # - traefik.frontend.rule=Host:devsetgo.com
+    # - traefik.docker.network=web
+    # - traefik.port=80
+    - "traefik.enable=true"
+    - "traefik.http.routers.dsg.rule=Host(`devsetgo.com`)"
+    - "traefik.http.routers.dsg.entrypoints=websecure"
+    - "traefik.http.routers.dsg.tls.certresolver=mytlschallenge"
+    networks:
+      - web

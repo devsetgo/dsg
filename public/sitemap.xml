@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://devsetgo.com/projects/starlette-dashboard/</loc>
+    <lastmod>2019-11-30T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/projects/test-api/</loc>
+    <lastmod>2019-11-30T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/projects/cookiecutter-flask-sbadmin/</loc>
+    <lastmod>2019-08-16T00:00:00-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/projects/learning-camunda/</loc>
+    <lastmod>2019-08-16T00:00:00-03:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/projects/flask-sufee-admin/</loc>
+    <lastmod>2019-08-16T00:00:00-02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/projects/pynote/</loc>
+    <lastmod>2019-08-16T00:00:00-01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/flask/</loc>
+    <lastmod>2019-04-22T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/posts/</loc>
+    <lastmod>2019-04-22T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/python/</loc>
+    <lastmod>2019-04-22T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/spring-cloud-config/</loc>
+    <lastmod>2019-04-22T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/spring-framework/</loc>
+    <lastmod>2019-04-22T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/</loc>
+    <lastmod>2019-04-22T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/twelve-factor/</loc>
+    <lastmod>2019-04-22T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/posts/2019-4-22-spring-cloud-config/</loc>
+    <lastmod>2019-04-22T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/asyncio/</loc>
+    <lastmod>2019-04-20T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/fastapi/</loc>
+    <lastmod>2019-04-20T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/posts/2019-4-20-python-fastapi/</loc>
+    <lastmod>2019-04-20T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/starlette/</loc>
+    <lastmod>2019-04-20T12:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/async/</loc>
+    <lastmod>2019-02-02T18:26:39-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/example/</loc>
+    <lastmod>2019-02-02T18:26:39-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/posts/2019-2-2-python-async/</loc>
+    <lastmod>2019-02-02T18:26:39-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/rest/</loc>
+    <lastmod>2019-02-02T18:26:39-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/cookiecutter/</loc>
+    <lastmod>2019-01-01T21:54:49-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/posts/2019-1-1-cookiecutter-flask-sbadmin/</loc>
+    <lastmod>2019-01-01T21:54:49-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/javascript/</loc>
+    <lastmod>2019-01-01T21:54:49-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/bpmn/</loc>
+    <lastmod>2018-12-26T23:16:49-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/camunda/</loc>
+    <lastmod>2018-12-26T23:16:49-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/posts/2018-12-26-current-work/</loc>
+    <lastmod>2018-12-26T23:16:49-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/go/</loc>
+    <lastmod>2018-12-26T23:16:49-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/java/</loc>
+    <lastmod>2018-12-26T23:16:49-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/posts/2018-12-26-and-we-are-back/</loc>
+    <lastmod>2018-12-26T22:39:11-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/tags/random/</loc>
+    <lastmod>2018-12-26T22:39:11-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/</loc>
+    <lastmod>2018-12-26T17:57:50-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/projects/</loc>
+    <lastmod>2018-12-26T17:57:50-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/about/</loc>
+    <lastmod>2018-12-26T17:05:37-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/categories/</loc>
+  </url>
+  
+  <url>
+    <loc>https://devsetgo.com/sections/</loc>
+  </url>
+  
+</urlset>
