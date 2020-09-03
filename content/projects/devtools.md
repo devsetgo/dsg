@@ -16,6 +16,6 @@ This is a site I plan to add capabilities to help me or anyone else with simple 
 [Github Repo](https://github.com/devsetgo/devtools)
 
 - PyPi checker: drop in your libraries and it will check for a new version
-    - Built it because it sucks to check one library at a time
-    - Thought it would be fun to track what I or anyone else is using
-    - Dashboard is for fun and learning
+- Built it because it sucks to check one library at a time
+- Thought it would be fun to track what I or anyone else is using
+- Dashboard is for fun and learning
