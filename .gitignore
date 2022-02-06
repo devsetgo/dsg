@@ -1,3 +1,4 @@
+.env
 _venv/
 _scratch_pad/
 # Byte-compiled / optimized / DLL files
