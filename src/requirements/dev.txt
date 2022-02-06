@@ -1,0 +1,19 @@
+-r prd.txt
+async-asgi-testclient==1.4.9 # from 1.4.6
+autoflake==1.4
+autopep8==1.6.0 # from 1.5.6
+bandit==1.7.2 # from 1.7.0
+black==22.1.0 # from 20.8b1
+coverage==6.3.1 # from 5.5
+coverage-badge==1.1.0 # from 1.0.1
+flake8==4.0.1 # from 3.9.1
+mkdocs==1.2.3 # from 1.1.2
+mkdocs-material==8.1.9 # from 7.1.1
+mypy==0.931 # from 0.812
+pre-commit==2.17.0 # from 2.12.1
+pylint==2.12.2 # from 2.7.4
+pytest==7.0.0 # from 6.2.3
+pytest-asyncio==0.17.2 # from 0.14.0
+pytest-cov==3.0.0 # from 2.11.1
+requests==2.27.1 # from 2.25.1
+requests-mock==1.9.3 # from 1.8.0
