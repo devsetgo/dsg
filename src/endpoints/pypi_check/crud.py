@@ -71,6 +71,7 @@ async def get_request_group_id(request_group_id: str):
     logger.info(f"returning results for {request_group_id}")
     return result
 
+
 import collections
 
 from loguru import logger

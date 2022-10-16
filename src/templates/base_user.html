@@ -76,14 +76,11 @@
         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
             <!-- <span class="dropdown-item dropdown-header">15 Notifications</span> -->
             <div class="dropdown-divider"></div>
-            <form class="form-inline" action="/auth/login", method="POST">
-                    <button class="dropdown-item btn btn-block btn-outline-primary" type="submit">
-                        <span class="fab fa-github"> Login with Github</span>
-                    </button>
-                    <!-- <a class="btn btn-app" data-toggle="Login with Github" type="submit">
-                        <span class="fab fa-github"> Login with Github</span>
-                      </a> -->
-            </form>
+            <a href="/users/login">
+                <button class="dropdown-item btn btn-block btn-outline-primary">
+                    <span class="fas fa-sign-in-alt"> Login</span>
+                </button>
+            </a>
     </li>
     {% endif %}
 </ul>

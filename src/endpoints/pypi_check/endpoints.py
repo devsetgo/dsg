@@ -14,6 +14,7 @@ from resources import templates
 
 base: str = "pypi"
 
+
 async def index(request):
 
     # library table
@@ -42,6 +43,7 @@ async def index(request):
     logger.info(f"page accessed: /{template}")
     logger.debug(dict(request.headers))
     return templates.TemplateResponse(template, context)
+
 
 @csrf_protect
 async def pypi_index(request):
