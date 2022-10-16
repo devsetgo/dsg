@@ -13,6 +13,7 @@ from dsg_lib.logging_config import config_log
 import resources
 from settings import config_settings
 from com_lib import exceptions
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 
 # from com_lib import logging_config
 from endpoints.health import endpoints as health_pages
@@ -52,8 +53,9 @@ routes = [
 
 
 middleware = [
-    Middleware(SessionMiddleware, secret_key=config_settings.secret_key),
+    Middleware(SessionMiddleware, secret_key=config_settings.secret_key, same_site=config_settings.same_site,https_only=config_settings.https_on,max_age=config_settings.max_age),
     Middleware(CSRFProtectMiddleware, csrf_secret=config_settings.csrf_secret),
+    # Middleware(HTTPSRedirectMiddleware)
 ]
 
 exception_handlers: Dict[Any, Any] = {

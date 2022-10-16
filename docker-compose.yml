@@ -6,7 +6,7 @@ services:
   devsetgo:
     build: ./
     # image: nginx:stable-alpine
-    image: mikeryan56/dsg:19.8.16
+    image: mikeryan56/dsg:22.10.16
     # image: mikeryan56/dsg:latest
     container_name: "devsetgo"
     # environment:

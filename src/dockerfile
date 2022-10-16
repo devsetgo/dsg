@@ -1,4 +1,4 @@
-FROM python:3.8-slim-buster
+FROM python:3.10-slim-buster
 RUN apt-get update && apt-get -y install gcc
 MAINTAINER Mike Ryan "mikeryan56@gmail.com"
 EXPOSE 5000
@@ -6,16 +6,12 @@ COPY . /src
 WORKDIR /src
 # Evironment Variables
 ENV USE_ENV='docker'
-# Application information
-ENV APP_VERSION='1.0.0'
-# Add Demo Data
-ENV DEMO_DATA_CREATE=False
-# how many loops of requests
-ENV DEMO_DATA_LOOPS=0
-#This should be false for production
+# Application information - Calendar Versioning
+ENV APP_VERSION='22.10.16'
 ENV DEBUG=False
 #prd for production or 'dev' for development
-ENV RELEASE_ENV='dev'
+ENV RELEASE_ENV='prd'
+ENV WORKERS=2
 ENV SQLALCHEMY_DATABASE_URI='sqlite:///sqlite_db/api.db'
 # postgresql://user:pass@localhost:5432/my_db
 # Loguru settings
@@ -23,8 +19,12 @@ ENV LOGURU_RETENTION='10 days'
 ENV LOGURU_ROTATION='100 MB'
 # Values NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL
 ENV LOGURU_LOGGING_LEVEL='INFO'
+# Lax, Strict, None
+ENV SAME_SITE="Strict"
+#Bool True/False
+ENV HTTPS_ONLY=True
 #install requirements
 RUN pip3 install --upgrade pip setuptools wheel
 RUN pip3 install -r requirements.txt
-# CMD ["python3", "main.py"]
+# CMD ["uvicorn", "main:app","--port","5000"]
 CMD ["gunicorn",  "-c", "gunicorn_cfg.py", "main:app"]
