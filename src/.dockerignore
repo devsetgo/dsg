@@ -13,6 +13,7 @@ coverage.xml
 coverage.svg
 api.db
 tests/
+docker_token.txt
 __pycache__
 .pytest_cache
 sqlite_db/api.db
