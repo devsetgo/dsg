@@ -13,6 +13,7 @@ from dsg_lib.logging_config import config_log
 import resources
 from settings import config_settings
 from com_lib import exceptions
+
 # from com_lib import logging_config
 from endpoints.health import endpoints as health_pages
 from endpoints.main import endpoints as main_pages
@@ -45,7 +46,7 @@ routes = [
         endpoint=pypi_pages.pypi_result,
         methods=["GET", "POST"],
     ),
-    # Mount("/pypi/process",pypi_pages.pypi_process_stream),
+    Route("/users/login", endpoint=main_pages.login, methods=["GET", "POST"]),
     Mount("/static", app=StaticFiles(directory="static"), name="static"),
 ]
 
@@ -75,4 +76,6 @@ app = Starlette(
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=5000, log_level="info", debug=config_settings.debug)
+    uvicorn.run(
+        app, host="0.0.0.0", port=5000, log_level="info", debug=config_settings.debug
+    )

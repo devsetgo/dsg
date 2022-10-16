@@ -1,0 +1,33 @@
+{% extends "base_user_login.html" %}
+{% block page_title %}Login{% endblock %}
+{% block page_stylesheet %}
+<!-- overlayScrollbars -->
+<link rel="stylesheet" href="{{ url_for('static' , path='plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static' , path='plugins/toastr/toastr.min.css') }}">
+{% endblock %}
+{% block page_breadcrumb %}Login{% endblock %}
+{% block page_head_title %}Login {% endblock %}
+{% block body %}
+
+
+  <div class="login-box">
+    <div class="login-logo">
+      <a href="/"><b>DevSet</b>Go</a>
+    </div>
+    <!-- /.login-logo -->
+    <div class="card">
+      <div class="card-body login-card-body text-center">
+        <img src="{{ url_for('static' , path='image/robot.png') }}" width="200" height="211" title="Future Functionality">
+        <p>Future Functionality</p>
+        <p>Back to <a href="/">main page</a></p>
+      </div>
+      
+      <!-- /.login-card-body -->
+    </div>
+  </div>
+  <!-- /.login-box -->
+  {% endblock %}
+  {% block page_scripts %}
+  <!-- page scripts-->
+
+  {% endblock %}
