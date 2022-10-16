@@ -23,6 +23,10 @@ ENV LOGURU_LOGGING_LEVEL='INFO'
 ENV SAME_SITE="Strict"
 #Bool True/False
 ENV HTTPS_ONLY=True
+#Github
+ENV GITHUB_ID="devsetgo"
+ENV GITHUB_TOKEN="<enter you key>"
+ENV GITHUB_REPO_LIMIT=100
 #install requirements
 RUN pip3 install --upgrade pip setuptools wheel
 RUN pip3 install -r requirements.txt
