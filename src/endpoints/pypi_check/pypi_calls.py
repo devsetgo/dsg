@@ -23,6 +23,7 @@ async def loop_calls_adv(itemList: list, request_group_id: str):
             "has_bracket": i["has_bracket"],
             "bracket_content": i["bracket_content"],
             "request_group_id": request_group_id,
+            "vulnerbilities": resp['vulnerabilities']
         }
 
         logger.warning(pip_info)
@@ -42,8 +43,8 @@ async def call_pypi_adv(url):
         result = {"newVersion": "not found"}
     else:
         resp = r.json()
-        # logger.debug(resp)
-        result = {"newVersion": resp["info"]["version"]}
+        logger.warning(resp['vulnerabilities'])
+        result = {"newVersion": resp["info"]["version"],"vulnerabilities": resp['vulnerabilities']}
     return result
 
 
@@ -145,16 +146,6 @@ async def main(raw_data: str, request):
     cleaned_data: list = clean_item(req_list)
     # call pypi
     fulllist: dict = await loop_calls_adv(cleaned_data, str(request_group_id))
-
-    # bob = []
-    # for f in tqdm(
-    #     asyncio.as_completed(fulllist),
-    #     total=len(fulllist),
-    #     desc="Async Calls",
-    #     unit=" request",
-    # ):
-    #     bob.append(await f)
-    # store returned results (bulk)
 
     values = {
         "id": str(uuid.uuid4()),

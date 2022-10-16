@@ -24,22 +24,12 @@
               <div class="row">
                 <div class="col-12">
                   {% for d in data.json_data_out %}
-                    {{d.library}}{% if d.has_bracket==true %}[{{d.bracket_content}}]{%endif%}=={{d.newVersion}}{% if d.newVersion!=d.currentVersion %} # from {{d.currentVersion}}{%endif%}<br>
+                    {{d.library}}{% if d.has_bracket==true %}[{{d.bracket_content}}]{%endif%}=={{d.newVersion}} # {% if d.newVersion!=d.currentVersion %} From {{d.currentVersion}} | {%endif%} {% if d.vulnerbilities|length > 0 %} Vulnerbilities: <a href="https://pypi.org/pypi/{{d.library}}/{{d.newVersion}}/json">https://pypi.org/pypi/{{d.library}}/{{d.newVersion}}/json</a>{%else%} Vulnerbilities: None{%endif%}<br>
                   {% endfor %}
                 </div>
 
               </div>
             </div>
-            <!-- <div class="card-footer">
-              <div class="text-right">
-                <a href="#" class="btn btn-sm bg-teal">
-                  <i class="fas fa-comments"></i>
-                </a>
-                <a href="#" class="btn btn-sm btn-primary">
-                  <i class="fas fa-user"></i> View Profile
-                </a>
-              </div>
-            </div> -->
           </div>
         </div>
         <div class="col-12 col-sm-6 col-md-4 align-items-stretch">
@@ -91,10 +81,7 @@
 <!-- DataTables -->
 <script src="{{ url_for('static' , path='plugins/datatables/jquery.dataTables.js') }}"></script>
 <script src="{{ url_for('static' , path='plugins/datatables-bs4/js/dataTables.bootstrap4.js') }}"></script>
-<!-- AdminLTE App -->
 
-<!-- AdminLTE for demo purposes -->
-<script src="{{ url_for('static' , path='dist/js/demo.js') }}"></script>
 <!-- page script -->
 <script>
   $(function () {
