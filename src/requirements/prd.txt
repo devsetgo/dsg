@@ -11,3 +11,4 @@ uvicorn==0.18.3 # from 0.17.4
 devsetgo-lib==0.8.0 # from 0.7.1
 pydantic==1.10.2 # from 1.9.0
 python-dotenv==0.21.0 # from 0.19.2
+httpx-auth==0.15.0
