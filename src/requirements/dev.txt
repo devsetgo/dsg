@@ -1,19 +1,19 @@
 -r prd.txt
-async-asgi-testclient==1.4.11 # from 1.4.9
-autoflake==1.7.0 # from 1.4
-autopep8==1.7.0 # from 1.6.0
-bandit==1.7.4 # from 1.7.2
-black==22.10.0 # from 22.1.0
-coverage==6.5.0 # from 6.3.1
+async-asgi-testclient==1.4.11
+autoflake==1.7.6 # from 1.7.0
+autopep8==1.7.0
+bandit==1.7.4
+black==22.10.0
+coverage==6.5.0
 coverage-badge==1.1.0
-flake8==5.0.4 # from 4.0.1
-mkdocs==1.4.0 # from 1.2.3
-mkdocs-material==8.5.6 # from 8.1.9
-mypy==0.982 # from 0.931
-pre-commit==2.20.0 # from 2.17.0
-pylint==2.15.3 # from 2.12.2
-pytest==7.1.3 # from 7.0.0
-pytest-asyncio==0.19.0 # from 0.17.2
-pytest-cov==4.0.0 # from 3.0.0
-requests==2.28.1 # from 2.27.1
-requests-mock==1.10.0 # from 1.9.3
+flake8==5.0.4
+mkdocs==1.4.1 # from 1.4.0
+mkdocs-material==8.5.6
+mypy==0.982
+pre-commit==2.20.0
+pylint==2.15.4 # from 2.15.3
+pytest==7.1.3
+pytest-asyncio==0.19.0
+pytest-cov==4.0.0
+requests==2.28.1
+requests-mock==1.10.0
