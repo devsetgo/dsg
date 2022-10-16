@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     # GitHub
     github_id: str = "octocat"
     github_repo_limit: int = 20
-    github_token:str="REVOKED_GITHUB_TOKEN"
+    github_token:str="<enter key>"
 
     class Config:
         env_file = ".env"
