@@ -63,7 +63,10 @@ class Settings(BaseSettings):
     admin_user_name: str = None
     admin_user_key: str = None
     admin_user_email: str = None
-    githud_id:str='devsetgo'
+    # GitHub
+    github_id: str = "octocat"
+    github_repo_limit: int = 20
+    github_token:str=None
 
     class Config:
         env_file = ".env"
