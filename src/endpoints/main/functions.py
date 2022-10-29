@@ -13,24 +13,24 @@ from settings import config_settings
 
 client = httpx.AsyncClient()
 
-api_key=Basic(config_settings.github_id,config_settings.github_token)
+api_key = Basic(config_settings.github_id, config_settings.github_token)
+
 
 async def get_rate_limit():
-    url= "https://api.github.com/rate_limit"
-    r = await client.get(url,auth=api_key)
+    url = "https://api.github.com/rate_limit"
+    r = await client.get(url, auth=api_key)
     data = r.json()
     logger.info(f"Rate Limit Data from Call: {data}")
-
 
 
 async def call_github_repos() -> list:
     # Gets the most recent repos
     url = f"https://api.github.com/users/{config_settings.github_id}/repos?sort=pushed&per_page={config_settings.github_repo_limit}&type=public"
-    r = await client.get(url,auth=api_key)
+    r = await client.get(url, auth=api_key)
     logger.info(f"Fetching Repos for {config_settings.github_id}")
     data = r.json()
     logger.info(data)
-    
+
     await get_rate_limit()
 
     if "message" in data:
@@ -54,12 +54,12 @@ async def call_github_user() -> list:
     # Gets the most recent repos
     url = f"https://api.github.com/users/{config_settings.github_id}"
 
-    r = await client.get(url,auth=api_key)
+    r = await client.get(url, auth=api_key)
     logger.info(f"Fetching Repos for {config_settings.github_id}")
     data = r.json()
 
     await get_rate_limit()
-    
+
     if "message" in data:
         return {
             "message": "Github rate limit exceeded, try again later and I am surprised that. I am not paying for a higher rate limit. :-)"

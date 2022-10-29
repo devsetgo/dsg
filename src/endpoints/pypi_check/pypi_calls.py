@@ -23,7 +23,7 @@ async def loop_calls_adv(itemList: list, request_group_id: str):
             "has_bracket": i["has_bracket"],
             "bracket_content": i["bracket_content"],
             "request_group_id": request_group_id,
-            "vulnerbilities": resp['vulnerabilities']
+            "vulnerbilities": resp["vulnerabilities"],
         }
 
         logger.warning(pip_info)
@@ -43,8 +43,11 @@ async def call_pypi_adv(url):
         result = {"newVersion": "not found"}
     else:
         resp = r.json()
-        logger.warning(resp['vulnerabilities'])
-        result = {"newVersion": resp["info"]["version"],"vulnerabilities": resp['vulnerabilities']}
+        logger.warning(resp["vulnerabilities"])
+        result = {
+            "newVersion": resp["info"]["version"],
+            "vulnerabilities": resp["vulnerabilities"],
+        }
     return result
 
 

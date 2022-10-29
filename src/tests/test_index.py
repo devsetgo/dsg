@@ -51,3 +51,13 @@ async def test_about():
         url = f"/about"
         response = await client.get(url)
         assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_login():
+
+    async with Async_TestClient(app) as client:
+
+        url = f"/users/login"
+        response = await client.get(url)
+        assert response.status_code == 200

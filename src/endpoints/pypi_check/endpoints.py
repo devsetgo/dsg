@@ -11,34 +11,32 @@ from endpoints.pypi_check import pypi_calls  # import main, process_raw
 from endpoints.pypi_check.crud import get_request_group_id
 from endpoints.pypi_check.crud import store_in_data
 from resources import templates
+from endpoints.pypi_check import library_data
+
+
 
 base: str = "pypi"
 
 
-async def index(request):
+async def pypi_data(request):
 
     # library table
-    lib_data = await lib_crud.get_data()
-    # lib_data_month = await lib_crud.process_by_month(lib_data)
-    # lib_sum = await lib_crud.sum_lib(lib_data_month)
-    # library_data_count = await lib_crud.process_by_lib(lib_data)
-    # lib_data_sum = await lib_crud.sum_lib_count(library_data_count)
-
+    lib_data = await library_data.get_data()
+    
     # requirements table
-    req_data = await lib_crud.requests_data()
+    req_data = await library_data.requests_data()
+
+    latest_results = await library_data.latest_results()
 
     data: dict = {
-        # "lib_data_month": lib_data_month,
-        # "lib_sum": lib_sum,
-        # "library_data_count": library_data_count,
-        # "lib_data_sum": lib_data_sum,
         "req_data": req_data,
         "lib_data": lib_data,
+        "latest_results":latest_results,
     }
 
     logger.debug(data)
 
-    template: str = "dashboard.html"
+    template: str = "pypi/dashboard.html"
     context = {"request": request, "data": data}
     logger.info(f"page accessed: /{template}")
     logger.debug(dict(request.headers))
@@ -103,3 +101,4 @@ async def pypi_result(request):
     context = {"request": request, "data": data}
     logger.info(f"page accessed: /pypi/{request_group_id}")
     return templates.TemplateResponse(template, context)
+
