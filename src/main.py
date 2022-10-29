@@ -41,7 +41,8 @@ routes = [
     Route("/index", endpoint=main_pages.index, methods=["GET"]),
     Route("/about", endpoint=main_pages.about_page, methods=["GET"]),
     Route("/health", endpoint=health_pages.health_status, methods=["GET"]),
-    Route("/pypi", endpoint=pypi_pages.pypi_index, methods=["GET", "POST"]),
+    Route("/pypi/check", endpoint=pypi_pages.pypi_index, methods=["GET", "POST"]),
+    Route("/pypi/dashboard", endpoint=pypi_pages.pypi_data, methods=["GET"]),
     Route(
         "/pypi/results/{page}",
         endpoint=pypi_pages.pypi_result,
@@ -53,7 +54,13 @@ routes = [
 
 
 middleware = [
-    Middleware(SessionMiddleware, secret_key=config_settings.secret_key, same_site=config_settings.same_site,https_only=config_settings.https_on,max_age=config_settings.max_age),
+    Middleware(
+        SessionMiddleware,
+        secret_key=config_settings.secret_key,
+        same_site=config_settings.same_site,
+        https_only=config_settings.https_on,
+        max_age=config_settings.max_age,
+    ),
     Middleware(CSRFProtectMiddleware, csrf_secret=config_settings.csrf_secret),
     # Middleware(HTTPSRedirectMiddleware)
 ]

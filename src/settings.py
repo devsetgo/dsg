@@ -22,16 +22,16 @@ class Settings(BaseSettings):
     release_env: str = "prd"
     workers: int = 1
     max_timeout: int = 7200
-    max_age:int=7200
+    max_age: int = 7200
     https_on: bool = False
     # Lax, Strict, None
-    same_site:str="Strict"
+    same_site: str = "Strict"
     prometheus_on: bool = True
     sentry_key: HttpUrl = None
     database_type: str = "sqlite"
     db_name: str = "sqlite_db/api.db"
     sqlalchemy_database_uri: str = "sqlite:///sqlite_db/api.db"
-    
+
     csrf_secret = secrets.token_hex(128)
     secret_key = secrets.token_hex(128)
     invalid_character_list: list = [
@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     # GitHub
     github_id: str = "octocat"
     github_repo_limit: int = 20
-    github_token:str="<enter key>"
+    github_token: str = "<enter key>"
 
     class Config:
         env_file = ".env"
@@ -83,4 +83,3 @@ def get_settings():
 
 
 config_settings = get_settings()
-
