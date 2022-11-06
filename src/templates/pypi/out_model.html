@@ -1,0 +1,29 @@
+<div class="modal fade" id="modal-{{lr.request_group_id}}">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Results of Update {{lr.request_group_id}}</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {% for d in lr.json_data_out %}
+        {{d.library}}{% if d.has_bracket==true %}[{{d.bracket_content}}]{%endif%}=={{d.newVersion}} # {% if
+        d.newVersion!=d.currentVersion %} From {{d.currentVersion}} | {%endif%} {% if d.vulnerbilities|length > 0 %}
+        Vulnerbilities: <a
+          href="https://pypi.org/pypi/{{d.library}}/{{d.newVersion}}/json">https://pypi.org/pypi/{{d.library}}/{{d.newVersion}}/json</a>{%else%}
+        Vulnerbilities: None{%endif%}<br>
+        {% endfor %}
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <form action="/pypi/results/{{lr.request_group_id}}">
+          <button type="submit" class="btn btn-info" >See Results</button>
+        </form>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
