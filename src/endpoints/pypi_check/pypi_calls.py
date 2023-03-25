@@ -59,10 +59,8 @@ def pattern_between_two_char(text_string: str) -> list:
 
 
 def clean_item(items: list):
-
     results: list = []
     for i in items:
-
         comment = i.startswith("#")
         recur_file = i.startswith("-")
         empty_line = False
@@ -75,7 +73,6 @@ def clean_item(items: list):
             and recur_file is False  # noqa
             and empty_line is False  # noqa
         ):
-
             logger.debug(i)
             has_bracket = None
             bracket_content = None
@@ -126,7 +123,6 @@ def clean_item(items: list):
 
 
 async def process_raw(raw_data: str):
-
     req_list = list(raw_data.split("\r\n"))
     logger.debug(raw_data)
 
@@ -158,7 +154,7 @@ async def main(raw_data: str, request):
         "json_data_out": fulllist,
         "host_ip": request.client.host,
         "header_data": dict(request.headers),
-        "dated_created": datetime.now(),
+        "date_created": datetime.now(),
     }
     await store_in_data(values)
     # store individual

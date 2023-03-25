@@ -11,13 +11,18 @@ from main import app
 
 @pytest.mark.asyncio
 async def test_pypi():
-
     async with Async_TestClient(app) as client:
-
-        # async def test_home(self):
-
-        url = f"/pypi"
+        url = f"/pypi/check"
         response = await client.get(url)
+        assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_pypi_post():
+    async with Async_TestClient(app) as client:
+        url = f"/pypi/check"
+        data = ["httpx"]
+        response = await client.post(url, data=data)
         assert response.status_code == 200
 
 
@@ -28,3 +33,11 @@ async def test_pypi_error():
     url = f"/pypi/{uid}"
     response = await client.get(url)
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_pypi_dashboard():
+    async with Async_TestClient(app) as client:
+        url = f"/pypi/dashboard"
+        response = await client.get(url)
+        assert response.status_code == 200

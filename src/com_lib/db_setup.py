@@ -18,7 +18,6 @@ database = databases.Database(config_settings.sqlalchemy_database_uri)
 
 
 def create_db():
-
     metadata.create_all(engine)
     logger.info("Creating tables")
 
@@ -41,7 +40,7 @@ libraries = sqlalchemy.Table(
     sqlalchemy.Column("library", sqlalchemy.String, index=True),
     sqlalchemy.Column("currentVersion", sqlalchemy.String, index=True),
     sqlalchemy.Column("newVersion", sqlalchemy.String, index=True),
-    sqlalchemy.Column("dated_created", sqlalchemy.DateTime, index=True),
+    sqlalchemy.Column("date_created", sqlalchemy.DateTime, index=True),
 )
 
 requirements = sqlalchemy.Table(
@@ -54,5 +53,5 @@ requirements = sqlalchemy.Table(
     sqlalchemy.Column("json_data_out", sqlalchemy.JSON),
     sqlalchemy.Column("host_ip", sqlalchemy.String, index=True),
     sqlalchemy.Column("header_data", sqlalchemy.JSON),
-    sqlalchemy.Column("dated_created", sqlalchemy.DateTime, index=True),
+    sqlalchemy.Column("date_created", sqlalchemy.DateTime, index=True),
 )

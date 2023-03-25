@@ -168,7 +168,7 @@
     <!-- /.container-fluid -->
   </div>
   <!-- /.content -->
-  
+
   <!-- /.content-wrapper -->
 
 
@@ -198,8 +198,8 @@
                 {% include "pypi/out_model.html" %}
                 <!-- /.modal -->
               </td>
-              <td>{{lr.dated_created}}</td>
-              
+              <td>{{lr.date_created}}</td>
+
             </tr>
             {%endfor%}
           </tbody>
@@ -208,7 +208,7 @@
               <th>Link</th>
               <th>Output</th>
               <th>Date</th>
-              
+
             </tr>
           </tfoot>
         </table>
@@ -396,7 +396,7 @@
 <script>
   $(function () {
     $("#example1").DataTable({
-      
+
       "paging": true,
       "lengthChange": false,
       "searching": false,

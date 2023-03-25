@@ -10,7 +10,6 @@ client = TestClient(app)
 
 class Test(unittest.TestCase):
     def test_health_pages(self):
-
         url = f"/health"
         client = TestClient(app)
         response = client.get(url)

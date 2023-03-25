@@ -3,8 +3,11 @@ from loguru import logger
 from starlette.responses import RedirectResponse
 
 from endpoints.main import crud as lib_crud
-from resources import templates, my_stuff, cool_stuff
-from endpoints.main.functions import call_github_repos, call_github_user
+from endpoints.main.functions import call_github_repos
+from endpoints.main.functions import call_github_user
+from resources import cool_stuff
+from resources import my_stuff
+from resources import templates
 
 
 async def homepage(request):
@@ -23,7 +26,6 @@ async def about_page(request):
 
 
 async def index(request):
-
     data: dict = {"my_stuff": my_stuff, "cool_stuff": cool_stuff}
 
     template: str = "index2.html"
@@ -34,7 +36,6 @@ async def index(request):
 
 
 async def login(request):
-
     template: str = "users/login.html"
     context = {"request": request, "data": None}
     logger.info(f"page accessed: /{template}")

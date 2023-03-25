@@ -7,22 +7,19 @@ from starlette.responses import RedirectResponse
 from starlette_wtf import csrf_protect
 
 from endpoints.pypi_check import forms
+from endpoints.pypi_check import library_data
 from endpoints.pypi_check import pypi_calls  # import main, process_raw
 from endpoints.pypi_check.crud import get_request_group_id
 from endpoints.pypi_check.crud import store_in_data
 from resources import templates
-from endpoints.pypi_check import library_data
-
-
 
 base: str = "pypi"
 
 
 async def pypi_data(request):
-
     # library table
     lib_data = await library_data.get_data()
-    
+
     # requirements table
     req_data = await library_data.requests_data()
 
@@ -31,7 +28,7 @@ async def pypi_data(request):
     data: dict = {
         "req_data": req_data,
         "lib_data": lib_data,
-        "latest_results":latest_results,
+        "latest_results": latest_results,
     }
 
     logger.debug(data)
@@ -45,12 +42,11 @@ async def pypi_data(request):
 
 @csrf_protect
 async def pypi_index(request):
-
     form = await forms.RequirementsForm.from_formdata(request)
     form_data = await request.form()
     if await form.validate_on_submit():
         logger.debug(form_data)
-        logger.info(form_data["requirements"])
+        logger.info(f'requirements: {form_data["requirements"]}')
         requirements_str = form_data["requirements"]
         raw_data: str = requirements_str
         # create UUID for request
@@ -74,7 +70,7 @@ async def pypi_index(request):
             "json_data_out": fulllist,
             "host_ip": request.client.host,
             "header_data": dict(request.headers),
-            "dated_created": datetime.now(),
+            "date_created": datetime.now(),
         }
         await store_in_data(values)
         # request_group_id = await main(raw_data=text_in, host_ip=host_ip)
@@ -92,13 +88,11 @@ async def pypi_index(request):
 
 
 async def pypi_result(request):
-
     request_group_id = request.path_params["page"]
 
     data = await get_request_group_id(request_group_id=request_group_id)
-
+    logger.debug(dict(data))
     template = f"/{base}/result.html"
     context = {"request": request, "data": data}
     logger.info(f"page accessed: /pypi/{request_group_id}")
     return templates.TemplateResponse(template, context)
-

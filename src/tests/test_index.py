@@ -14,9 +14,7 @@ from main import app
 # class Test(unittest.TestCase):
 @pytest.mark.asyncio
 async def test_home():
-
     async with Async_TestClient(app) as client:
-
         url = f"/"
         response = await client.get(url)
         assert response.status_code == 200
@@ -24,9 +22,7 @@ async def test_home():
 
 @pytest.mark.asyncio
 async def test_index():
-
     async with Async_TestClient(app) as client:
-
         url = f"/index"
         response = await client.get(url)
         assert response.status_code == 200
@@ -34,9 +30,7 @@ async def test_index():
 
 @pytest.mark.asyncio
 async def test_index_error():
-
     async with Async_TestClient(app) as client:
-
         uid = uuid.uuid1()
         url = f"/{uid}"
         response = await client.get(url)
@@ -45,9 +39,7 @@ async def test_index_error():
 
 @pytest.mark.asyncio
 async def test_about():
-
     async with Async_TestClient(app) as client:
-
         url = f"/about"
         response = await client.get(url)
         assert response.status_code == 200
@@ -55,9 +47,7 @@ async def test_about():
 
 @pytest.mark.asyncio
 async def test_login():
-
     async with Async_TestClient(app) as client:
-
         url = f"/users/login"
         response = await client.get(url)
         assert response.status_code == 200
