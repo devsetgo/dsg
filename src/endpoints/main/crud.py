@@ -9,7 +9,6 @@ from com_lib.db_setup import requirements
 
 
 async def get_data():
-
     query = libraries.select()
     data = await crud_ops.fetch_all_db(query=query)
 
@@ -30,10 +29,8 @@ async def get_data():
 
 
 async def lib_new_versions(data: dict):
-
     ver = []
     for d in data:
-
         lib_ver = f'{d["library"]}={d["newVersion"]}'
         if lib_ver not in ver:
             ver.append(lib_ver)
@@ -48,7 +45,7 @@ async def process_by_month(data: dict) -> dict:
     """
     result: dict = {}
     for d in data:
-        date_item = d["dated_created"]
+        date_item = d["date_created"]
         ym = date_item.strftime("%Y-%m")
         if ym not in result:
             result[ym] = 1
@@ -60,7 +57,6 @@ async def process_by_month(data: dict) -> dict:
 
 
 async def sum_lib(data: dict):
-
     result: int = sum(data.values())
     logger.debug(result)
     return result
@@ -79,14 +75,12 @@ async def process_by_lib(data: dict) -> dict:
 
 
 async def sum_lib_count(data: dict):
-
     result: int = sum(data.values())
     logger.debug(result)
     return result
 
 
 async def requests_data():
-
     query = requirements.select()
     data = await crud_ops.fetch_all_db(query=query)
 

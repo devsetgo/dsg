@@ -10,7 +10,7 @@
 # "library" String
 # "currentVersion" String
 # "newVersion" String
-# "dated_created" DateTime
+# "date_created" DateTime
 
 
 # "requirements",
@@ -20,7 +20,7 @@
 # "json_data_in" JSON
 # "json_data_out" JSON
 # "host_ip" String
-# "dated_created" DateTime
+# "date_created" DateTime
 
 import random
 import time
@@ -37,7 +37,6 @@ from endpoints.pypi_check.crud import store_in_data
 
 
 def random_ip_gen():
-
     ip = ".".join(map(str, (random.randint(0, 255) for _ in range(4))))
     return ip
 
@@ -177,7 +176,6 @@ async def make_a_lot_of_calls():
 
         process_str: str = ""
         for _ in range(iter_number):
-
             r_int: int = random.randint(0, max_num)
             new_item = requirements_list[r_int]
             process_str += f"{new_item}\r\n"
@@ -207,7 +205,7 @@ async def make_a_lot_of_calls():
             "json_data_out": fulllist,
             "host_ip": random_ip_gen(),
             "header_data": random_header(),
-            "dated_created": datetime.today() - timedelta(days=negative_days),
+            "date_created": datetime.today() - timedelta(days=negative_days),
         }
         await store_in_data(values)
 

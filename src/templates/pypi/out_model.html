@@ -8,7 +8,7 @@
         </button>
       </div>
       <div class="modal-body">
-        {% for d in lr.json_data_out %}
+        {% for d in lr.json_data_out|sort(attribute='library') %}
         {{d.library}}{% if d.has_bracket==true %}[{{d.bracket_content}}]{%endif%}=={{d.newVersion}} # {% if
         d.newVersion!=d.currentVersion %} From {{d.currentVersion}} | {%endif%} {% if d.vulnerbilities|length > 0 %}
         Vulnerbilities: <a
@@ -19,7 +19,7 @@
       <div class="modal-footer justify-content-between">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <form action="/pypi/results/{{lr.request_group_id}}">
-          <button type="submit" class="btn btn-info" >See Results</button>
+          <button type="submit" class="btn btn-info">See Results</button>
         </form>
       </div>
     </div>

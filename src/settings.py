@@ -10,7 +10,8 @@ environment variables.
 import secrets
 from functools import lru_cache
 
-from pydantic import BaseSettings, HttpUrl
+from pydantic import BaseSettings
+from pydantic import HttpUrl
 
 # from core.demo import create_demo_data
 

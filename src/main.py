@@ -2,23 +2,24 @@
 from typing import Any
 from typing import Dict
 
+from dsg_lib.logging_config import config_log
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.routing import Mount
 from starlette.routing import Route
 from starlette.staticfiles import StaticFiles
 from starlette_wtf import CSRFProtectMiddleware
-from dsg_lib.logging_config import config_log
+
 import resources
-from settings import config_settings
 from com_lib import exceptions
-from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 
 # from com_lib import logging_config
 from endpoints.health import endpoints as health_pages
 from endpoints.main import endpoints as main_pages
 from endpoints.pypi_check import endpoints as pypi_pages
+from settings import config_settings
 
 config_log(
     logging_directory="log",

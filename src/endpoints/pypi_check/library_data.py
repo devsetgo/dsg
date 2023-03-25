@@ -9,15 +9,18 @@ from com_lib.db_setup import requirements
 
 
 async def get_data():
-
     query = libraries.select()
-    data = await crud_ops.fetch_all_db(query=query)
+    try:
+        data = await crud_ops.fetch_all_db(query=query)
+        lib_data_month = await process_by_month(data)
+        lib_sum = await sum_lib(lib_data_month)
+        library_data_count = await process_by_lib(data)
+        lib_data_sum = await sum_lib_count(library_data_count)
+        lib_new_ver = await lib_new_versions(data)
 
-    lib_data_month = await process_by_month(data)
-    lib_sum = await sum_lib(lib_data_month)
-    library_data_count = await process_by_lib(data)
-    lib_data_sum = await sum_lib_count(library_data_count)
-    lib_new_ver = await lib_new_versions(data)
+    except Exception as e:
+        logger.critical(f"DB Failure: {e}")
+        return {"error": f"DB Failure: {e}"}
 
     result = {
         "lib_data_month": lib_data_month,
@@ -30,15 +33,13 @@ async def get_data():
 
 
 async def lib_new_versions(data: dict):
-
     ver = []
     for d in data:
-
         lib_ver = f'{d["library"]}={d["newVersion"]}'
         if lib_ver not in ver:
             ver.append(lib_ver)
     result = len(ver)
-
+    logger.debug(f"lib_new_versions: {result}")
     return result
 
 
@@ -48,21 +49,20 @@ async def process_by_month(data: dict) -> dict:
     """
     result: dict = {}
     for d in data:
-        date_item = d["dated_created"]
+        date_item = d["date_created"]
         ym = date_item.strftime("%Y-%m")
         if ym not in result:
             result[ym] = 1
         else:
             result[ym] += 1
 
-    logger.debug(result)
+    logger.debug(f"process_by_month: {result}")
     return result
 
 
 async def sum_lib(data: dict):
-
     result: int = sum(data.values())
-    logger.debug(result)
+    logger.debug(f"sum_lib: {result}")
     return result
 
 
@@ -74,19 +74,17 @@ async def process_by_lib(data: dict) -> dict:
     for d in data:
         library_list.append(d["library"])
     result: dict = dict(collections.Counter(library_list).most_common(25))
-    logger.debug(f"by library: {result}")
+    logger.debug(f"process_by_lib: {result}")
     return result
 
 
 async def sum_lib_count(data: dict):
-
     result: int = sum(data.values())
-    logger.debug(result)
+    logger.debug(f"sum_lib_count: {result}")
     return result
 
 
 async def requests_data():
-
     query = requirements.select()
     data = await crud_ops.fetch_all_db(query=query)
 
@@ -101,7 +99,10 @@ async def requests_data():
 
 
 async def latest_results():
-    query = requirements.select().limit(100).order_by(requirements.c.dated_created.desc())
-    data = await crud_ops.fetch_all_db(query=query)
+    data = []
+    # query = (
+    #     requirements.select().limit(100).order_by(requirements.c.date_created.desc())
+    # )
+    # data = await crud_ops.fetch_all_db(query=query)
     logger.debug(data)
     return data
