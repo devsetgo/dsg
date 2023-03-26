@@ -21,7 +21,7 @@ async def store_in_data(store_values: dict):
     await crud_ops.execute_one_db(query=query, values=store_values)
     rgi = store_values["request_group_id"]
     logger.info(f"Created {rgi}")
-    
+
     # return request_group_id
 
 
