@@ -85,16 +85,37 @@ async def sum_lib_count(data: dict):
 
 
 async def requests_data():
+    """
+    This function retrieves data from the requirements table in a database and calculates the number of 
+    unique IPs in the host_ip field. It returns a dictionary containing this information.
+    
+    :return: A dictionary with keys "unique" and "fulfilled", representing the total number of unique IPs 
+    and total number of fulfilled requirements, respectively.
+    """
+    
+    # Define a SQL query to select all rows from the requirements table in a database.
     query = requirements.select()
+    
+    # Fetch all rows from the requirements table using fetch_all_db() function and store it in variable data.
+    # The result returned is a list of dictionaries.
     data = await crud_ops.fetch_all_db(query=query)
 
-    ips = []
+    # Create an empty list to hold unique IP addresses.
+    unique_ips = []
+    
+    # Loop through each row of data, check its host_ip field for uniqueness,
+    # and add it to the unique_ips list if it's not found.
     for d in data:
-        if d["host_ip"] not in ips:
-            ips.append(d["host_ip"])
+        if "host_ip" in d and d["host_ip"] not in unique_ips:
+            unique_ips.append(d["host_ip"])
 
-    result = {"unique": len(ips), "fulfulled": len(data)}
+    # Finally, calculate the length of the unique_ips list and data list,
+    # then return them as values in a dictionary.
+    result = {"unique": len(unique_ips), "fulfilled": len(data)}
+    
+    # Log the resulting dictionary into the debug logs.
     logger.debug(result)
+    
     return result
 
 
