@@ -46,8 +46,8 @@ async def pypi_index(request):
     form_data = await request.form()
 
     if await form.validate_on_submit():
-        logger.debug(form_data)
-        logger.info(f'requirements: {form_data["requirements"]}')
+        # logger.debug(str(form_data))
+        logger.debug(f'requirements: {form_data["requirements"]}')
         requirements_str = form_data["requirements"]
 
         raw_data: str = requirements_str
@@ -93,7 +93,7 @@ async def pypi_result(request):
     request_group_id = request.path_params["page"]
 
     data = await get_request_group_id(request_group_id=request_group_id)
-    logger.debug(dict(data))
+    logger.debug(data)
     template = f"/{base}/result.html"
     context = {"request": request, "data": data}
     logger.info(f"page accessed: /pypi/{request_group_id}")
