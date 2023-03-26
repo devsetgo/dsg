@@ -40,7 +40,8 @@
 				"wholroyd.jinja",
 				"Gruntfuggly.todo-tree",
 				"ecmel.vscode-html-css",
-				"dbaeumer.vscode-eslint"
+				"dbaeumer.vscode-eslint",
+				"genieai.chatgpt-vscode"
 			]
 		}
 	},
