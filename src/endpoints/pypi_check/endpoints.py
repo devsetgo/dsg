@@ -44,10 +44,12 @@ async def pypi_data(request):
 async def pypi_index(request):
     form = await forms.RequirementsForm.from_formdata(request)
     form_data = await request.form()
+
     if await form.validate_on_submit():
         logger.debug(form_data)
         logger.info(f'requirements: {form_data["requirements"]}')
         requirements_str = form_data["requirements"]
+
         raw_data: str = requirements_str
         # create UUID for request
         request_group_id = uuid.uuid4()

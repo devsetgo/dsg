@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import uuid
 
 import pytest
@@ -21,7 +22,7 @@ async def test_pypi():
 async def test_pypi_post():
     async with Async_TestClient(app) as client:
         url = f"/pypi/check"
-        data = ["httpx"]
+        data = {"requirements": "flask"}
         response = await client.post(url, data=data)
         assert response.status_code == 200
 

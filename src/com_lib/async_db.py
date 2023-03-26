@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Illustrates use of the sqlalchemy.ext.asyncio.AsyncSession object
 for asynchronous ORM use.
 

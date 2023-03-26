@@ -14,29 +14,25 @@ from starlette_wtf import CSRFProtectMiddleware
 
 import resources
 from com_lib import exceptions
-
-# from com_lib import logging_config
 from endpoints.health import endpoints as health_pages
 from endpoints.main import endpoints as main_pages
 from endpoints.pypi_check import endpoints as pypi_pages
 from settings import config_settings
 
+
 config_log(
     logging_directory="log",
-    # or None and defaults to logging
     log_name="log.log",
-    # or None and defaults to "log.log"
     logging_level=config_settings.loguru_logging_level,
-    # or "info" or "debug" or "warning" or "error" or "critical" or None and defaults to "info"
     log_rotation=config_settings.loguru_rotation,
-    # or None and default is 10 MB
     log_retention=config_settings.loguru_retention,
-    # or None and defaults to "14 Days"
     log_backtrace=False,
-    # or None and defaults to False
 )
+
+# Initialize the app
 resources.init_app()
 
+# Define the various routes for our application
 routes = [
     Route("/", endpoint=main_pages.homepage, methods=["GET"]),
     Route("/index", endpoint=main_pages.index, methods=["GET"]),
@@ -45,15 +41,13 @@ routes = [
     Route("/pypi/check", endpoint=pypi_pages.pypi_index, methods=["GET", "POST"]),
     Route("/pypi/dashboard", endpoint=pypi_pages.pypi_data, methods=["GET"]),
     Route(
-        "/pypi/results/{page}",
-        endpoint=pypi_pages.pypi_result,
-        methods=["GET", "POST"],
+        "/pypi/results/{page}", endpoint=pypi_pages.pypi_result, methods=["GET", "POST"]
     ),
     Route("/users/login", endpoint=main_pages.login, methods=["GET", "POST"]),
     Mount("/static", app=StaticFiles(directory="static"), name="static"),
 ]
 
-
+# Add middleware to the app
 middleware = [
     Middleware(
         SessionMiddleware,
@@ -63,16 +57,16 @@ middleware = [
         max_age=config_settings.max_age,
     ),
     Middleware(CSRFProtectMiddleware, csrf_secret=config_settings.csrf_secret),
-    # Middleware(HTTPSRedirectMiddleware)
 ]
 
+# Define Exception Handlers
 exception_handlers: Dict[Any, Any] = {
     403: exceptions.not_allowed,
     404: exceptions.not_found,
     500: exceptions.server_error,
 }
 
-
+# Setup the main Starlette application
 app = Starlette(
     debug=config_settings.debug,
     routes=routes,
@@ -82,7 +76,7 @@ app = Starlette(
     on_shutdown=[resources.shutdown],
 )
 
-
+# Start the application using uvicorn server
 if __name__ == "__main__":
     import uvicorn
 
