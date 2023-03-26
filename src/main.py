@@ -19,7 +19,6 @@ from endpoints.main import endpoints as main_pages
 from endpoints.pypi_check import endpoints as pypi_pages
 from settings import config_settings
 
-
 config_log(
     logging_directory="log",
     log_name="log.log",
