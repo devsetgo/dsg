@@ -19,7 +19,7 @@ base: str = "pypi"
 async def pypi_data(request):
     # library table
     lib_data = await library_data.get_data()
-
+    print(lib_data)
     # requirements table
     req_data = await library_data.requests_data()
 
