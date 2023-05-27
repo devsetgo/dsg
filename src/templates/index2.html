@@ -20,16 +20,16 @@
     <!-- /.col -->
   </div>
   <div class="row">
-    <div class="card col-12">
+    <div class="card">
       <div class="card-header">
         <h3 class="card-title">
-          <i class="fas fa-code-branch"> </i> My Tools and Libraries
+          <i class="fas fa-fan"> </i> Things I am a fan of...
         </h3>
       </div>
       <!-- /.card-header -->
       <div class="card-body">
         <div class="row d-flex align-items-stretch">
-          {% for d in data.my_stuff %}
+          {% for d in data.cool_stuff %}
           <div class="col-12 col-sm-6 col-md-4 align-items-stretch">
             <div class="card bg-light">
               <div class="card-header text-muted border-bottom-0">
@@ -58,16 +58,16 @@
 
   </div>
   <div class="row">
-    <div class="card">
+    <div class="card col-12">
       <div class="card-header">
         <h3 class="card-title">
-          <i class="fas fa-fan"> </i> Things I am a fan of...
+          <i class="fas fa-code-branch"> </i> My Tools and Libraries
         </h3>
       </div>
       <!-- /.card-header -->
       <div class="card-body">
         <div class="row d-flex align-items-stretch">
-          {% for d in data.cool_stuff %}
+          {% for d in data.my_stuff %}
           <div class="col-12 col-sm-6 col-md-4 align-items-stretch">
             <div class="card bg-light">
               <div class="card-header text-muted border-bottom-0">

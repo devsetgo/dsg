@@ -6,7 +6,7 @@ from endpoints.main import crud as lib_crud
 from endpoints.main.functions import call_github_repos
 from endpoints.main.functions import call_github_user
 from resources import cool_stuff
-from resources import my_stuff
+# from resources import my_stuff
 from resources import templates
 
 
@@ -26,6 +26,8 @@ async def about_page(request):
 
 
 async def index(request):
+
+    my_stuff = await call_github_repos()
     data: dict = {"my_stuff": my_stuff, "cool_stuff": cool_stuff}
 
     template: str = "index2.html"
