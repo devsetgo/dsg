@@ -7,6 +7,13 @@
   href="{{ url_for('static' , path='plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
 <link rel="stylesheet"
   href="{{ url_for('static' , path='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+
+  <style>
+    .scrollable-section {
+      max-height: 200px; /* Adjust the maximum height as needed */
+      overflow-y: auto;
+    }
+  </style>
 {% endblock %}
 {% block page_breadcrumb %} PyPi Data{% endblock %}
 {% block page_head_title %}PyPi Data{% endblock %}
