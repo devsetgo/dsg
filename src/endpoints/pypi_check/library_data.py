@@ -47,12 +47,27 @@ async def get_data():
         logger.critical(f"Lib New Version Failure: {e}")
         return {"error": f"Lib New Version Failure: {e}"}
 
+    try:
+        unique =  await requests_data()
+    except Exception as e:
+        logger.critical(f"data requests_data error: {e}")
+        return {"error": f"data requests_data error: {e}"}
+    
+    try:
+        latest =  await latest_results()
+    except Exception as e:
+        logger.critical(f"data requests_data error: {e}")
+        return {"error": f"data requests_data error: {e}"}
+    
+
     result = {
         "lib_data_month": lib_data_month,
         "lib_sum": lib_sum,
         "library_data_count": library_data_count,
         "lib_data_sum": lib_data_sum,
         "lib_new_ver": lib_new_ver,
+        "unique": unique,
+        "latest": latest,
     }
     logger.debug(f"pypi dashboard get_data result: {result}")
     return result
@@ -85,7 +100,7 @@ async def process_by_month(data: list) -> dict:
         result['1900-01'] = 0
     # iterate over each item in the input data
     for d in data:
-        print(d)
+        # print(d)
         # extract the date_created field from the current item
         date_item = d["date_created"]
         
@@ -113,7 +128,7 @@ async def sum_lib(data: dict):
     - result (int): An integer representing the total count of all libraries
 
     """
-    print(data)
+    # print(data)
     # Calculate the total count of all libraries
     result: int = sum(data.values())
 
@@ -122,7 +137,6 @@ async def sum_lib(data: dict):
 
     # Return the calculated result
     return result
-
 
 
 async def process_by_lib(data: dict) -> dict:
@@ -156,7 +170,6 @@ async def process_by_lib(data: dict) -> dict:
 
     # Return the calculated result
     return result
-
 
 
 async def sum_lib_count(data: dict):
@@ -196,6 +209,7 @@ async def requests_data():
     # Fetch all rows from the requirements table using fetch_all_db() function and store it in variable data.
     # The result returned is a list of dictionaries.
     data = await crud_ops.fetch_all_db(query=query)
+    
 
     # Create an empty list to hold unique IP addresses.
     unique_ips = []
@@ -203,13 +217,14 @@ async def requests_data():
     # Loop through each row of data, check its host_ip field for uniqueness,
     # and add it to the unique_ips list if it's not found.
     for d in data:
-        if "host_ip" in d and d["host_ip"] not in unique_ips:
+        if d["host_ip"] not in unique_ips:
             unique_ips.append(d["host_ip"])
-
+    
+    fulfilled = len(data)
     # Finally, calculate the length of the unique_ips list and data list,
     # then return them as values in a dictionary.
-    result = {"unique": len(unique_ips), "fulfilled": len(data)}
-    
+    result = {"unique": len(unique_ips), "fulfilled": fulfilled}
+
     # Log the resulting dictionary into the debug logs.
     logger.debug(result)
     
@@ -232,8 +247,8 @@ async def latest_results():
     data = []
     
     # Commented out code for selecting and ordering columns from the 'requirements' table in the database.
-    #query = requirements.select().limit(100).order_by(requirements.c.date_created.desc())
-    #data = await crud_ops.fetch_all_db(query=query)
+    query = requirements.select().limit(100).order_by(requirements.c.date_created.desc())
+    data = await crud_ops.fetch_all_db(query=query)
 
     # Log the value of the 'data' variable using a debug log level.
     logger.debug(data)

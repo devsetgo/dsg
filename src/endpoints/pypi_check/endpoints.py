@@ -19,7 +19,7 @@ base: str = "pypi"
 async def pypi_data(request):
     # library table
     lib_data = await library_data.get_data()
-    print(lib_data)
+
     # requirements table
     req_data = await library_data.requests_data()
 
@@ -70,6 +70,7 @@ async def pypi_index(request):
             "text_in": raw_data,
             "json_data_in": req_list,
             "json_data_out": fulllist,
+            "lib_out_count": len(fulllist),
             "host_ip": request.client.host,
             "header_data": dict(request.headers),
             "date_created": datetime.now(),
