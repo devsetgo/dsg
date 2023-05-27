@@ -10,7 +10,7 @@ from com_lib.db_setup import requirements
 
 async def get_data():
     query = libraries.select()
-    
+
     try:
         data = await crud_ops.fetch_all_db(query=query)
     except Exception as e:
@@ -48,17 +48,16 @@ async def get_data():
         return {"error": f"Lib New Version Failure: {e}"}
 
     try:
-        unique =  await requests_data()
+        unique = await requests_data()
     except Exception as e:
         logger.critical(f"data requests_data error: {e}")
         return {"error": f"data requests_data error: {e}"}
-    
+
     try:
-        latest =  await latest_results()
+        latest = await latest_results()
     except Exception as e:
         logger.critical(f"data requests_data error: {e}")
         return {"error": f"data requests_data error: {e}"}
-    
 
     result = {
         "lib_data_month": lib_data_month,
@@ -88,32 +87,36 @@ async def process_by_month(data: list) -> dict:
     """
     This function takes in a dictionary of data where each item contains a 'date_created' field,
     counts the number of items by month, and returns a dictionary of the form {'YYYY-MM': count}.
-    
+
     :param data: A list of dictionaries where each dictionary contains a 'date_created' field.
     :return: A dictionary of the form {'YYYY-MM': count} where 'count' is the number of items created
              in that month.
     """
-    
+
     # initialize a dictionary to store the results
     result: dict = {}
     if len(data) == 0:
-        result['1900-01'] = 0
+        result["1900-01"] = 0
     # iterate over each item in the input data
     for d in data:
         # print(d)
         # extract the date_created field from the current item
         date_item = d["date_created"]
-        
+
         # convert the date to a string of the form 'YYYY-MM'
         ym = date_item.strftime("%Y-%m")
         # update the count for this month in the result dictionary
         if ym not in result:
-            result[ym] = 1       # add new key-value pair if the month is not present in the result dictionary 
+            result[
+                ym
+            ] = 1  # add new key-value pair if the month is not present in the result dictionary
         else:
-            result[ym] += 1      # increment value counter of existing key in the result dictionary 
-    
+            result[
+                ym
+            ] += 1  # increment value counter of existing key in the result dictionary
+
     # print out the result and return it
-    logger.debug(f"process_by_month: {result}")     # log the result to debug
+    logger.debug(f"process_by_month: {result}")  # log the result to debug
     return result
 
 
@@ -141,15 +144,15 @@ async def sum_lib(data: dict):
 
 async def process_by_lib(data: dict) -> dict:
     """
-    A function that processes a dictionary object containing information about libraries and returns a new dictionary 
+    A function that processes a dictionary object containing information about libraries and returns a new dictionary
     with the count of each library and how often it was checked along with the number of versions of the library.
 
     Args:
     - data (dict): A dictionary object containing information about libraries
 
     Returns:
-    - result (dict): A dictionary object containing the library name, count, number of versions and check frequency 
-      of the most common 25 libraries 
+    - result (dict): A dictionary object containing the library name, count, number of versions and check frequency
+      of the most common 25 libraries
 
     """
 
@@ -160,7 +163,7 @@ async def process_by_lib(data: dict) -> dict:
     for d in data:
         library_list.append(d["library"])
 
-    # Use collections.Counter() method to count the occurrence of each library in the library_list, 
+    # Use collections.Counter() method to count the occurrence of each library in the library_list,
     # take the 25 most common elements, and create a new dictionary with the count, number of versions,
     # and check frequency of the most common 25 libraries.
     result: dict = dict(collections.Counter(library_list).most_common(25))
@@ -183,7 +186,7 @@ async def sum_lib_count(data: dict):
     - result (int): An integer representing the total count of all libraries
 
     """
-    
+
     # Calculate the total count of all libraries
     result: int = sum(data.values())
 
@@ -196,30 +199,29 @@ async def sum_lib_count(data: dict):
 
 async def requests_data():
     """
-    This function retrieves data from the requirements table in a database and calculates the number of 
+    This function retrieves data from the requirements table in a database and calculates the number of
     unique IPs in the host_ip field. It returns a dictionary containing this information.
-    
-    :return: A dictionary with keys "unique" and "fulfilled", representing the total number of unique IPs 
+
+    :return: A dictionary with keys "unique" and "fulfilled", representing the total number of unique IPs
     and total number of fulfilled requirements, respectively.
     """
-    
+
     # Define a SQL query to select all rows from the requirements table in a database.
     query = requirements.select()
-    
+
     # Fetch all rows from the requirements table using fetch_all_db() function and store it in variable data.
     # The result returned is a list of dictionaries.
     data = await crud_ops.fetch_all_db(query=query)
-    
 
     # Create an empty list to hold unique IP addresses.
     unique_ips = []
-    
+
     # Loop through each row of data, check its host_ip field for uniqueness,
     # and add it to the unique_ips list if it's not found.
     for d in data:
         if d["host_ip"] not in unique_ips:
             unique_ips.append(d["host_ip"])
-    
+
     fulfilled = len(data)
     # Finally, calculate the length of the unique_ips list and data list,
     # then return them as values in a dictionary.
@@ -227,7 +229,7 @@ async def requests_data():
 
     # Log the resulting dictionary into the debug logs.
     logger.debug(result)
-    
+
     return result
 
 
@@ -245,9 +247,11 @@ async def latest_results():
 
     # Create an empty list called data.
     data = []
-    
+
     # Commented out code for selecting and ordering columns from the 'requirements' table in the database.
-    query = requirements.select().limit(100).order_by(requirements.c.date_created.desc())
+    query = (
+        requirements.select().limit(100).order_by(requirements.c.date_created.desc())
+    )
     data = await crud_ops.fetch_all_db(query=query)
 
     # Log the value of the 'data' variable using a debug log level.

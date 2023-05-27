@@ -7,6 +7,7 @@ from wtforms.validators import ValidationError
 # Define the maximum number of rows allowed
 max_rows = 500  # Adjust the value as needed
 
+
 class RequirementsForm(StarletteForm):
     """Requirements Upload"""
 
@@ -20,9 +21,8 @@ class RequirementsForm(StarletteForm):
 
     def validate_requirements(self, field):
         # Count the number of lines in the textarea
-        num_lines = field.data.count('\n') + 1
+        num_lines = field.data.count("\n") + 1
 
         # Validate the number of rows
         if num_lines > max_rows:
             raise ValidationError(f"Maximum number of {max_rows} rows exceeded.")
-        
