@@ -37,7 +37,7 @@
           <!-- small box -->
           <div class="small-box bg-success">
             <div class="inner">
-              <h3>{{ data.req_data.fulfulled }}</h3>
+              <h3>{{ data.req_data.fulfilled }}</h3>
 
               <p>Pypi Checks Made</p>
             </div>
@@ -193,7 +193,7 @@
             <tr>
               <td><a href="/pypi/results/{{lr.request_group_id}}">Link</a></td>
               <td><button type="button" class="btn btn-default" data-toggle="modal" data-target="#modal-{{lr.request_group_id}}">
-                  Launch Default Modal
+                  Preview Requirements <span title="{{lr.lib_out_count}} Libraries Checked" class="badge bg-primary">{{lr.lib_out_count}}</span>
                 </button>
                 {% include "pypi/out_model.html" %}
                 <!-- /.modal -->

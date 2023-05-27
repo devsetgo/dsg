@@ -35,7 +35,7 @@
               <div class="row">
                 <div class="col-12" id="text-to-copy">
                   {% for d in data.json_data_out|sort(attribute='library') %}
-                  <br>{{d.library}}{% if d.has_bracket==true %}[{{d.bracket_content}}]{%endif%}=={{d.newVersion}} # {% if d.newVersion!=d.currentVersion %} <strong>From {{d.currentVersion}}</strong> | {%endif%} {% if d.vulnerbilities|length> 0 %} Vulnerabilities: <a href="https://pypi.org/pypi/{{d.library}}/{{d.newVersion}}/json">https://pypi.org/pypi/{{d.library}}/{{d.newVersion}}/json</a>{%else%} Vulnerbilities: None{%endif%}
+                  <br>{{d.library}}{% if d.has_bracket==true %}[{{d.bracket_content}}]{%endif%}=={{d.newVersion}} # {% if d.newVersion!=d.currentVersion %} <strong>From {{d.currentVersion}}</strong> | {%endif%} {% if d.vulnerbilities|length> 0 %} Vulnerabilities: <a href="https://pypi.org/pypi/{{d.library}}/{{d.newVersion}}/json">https://pypi.org/pypi/{{d.library}}/{{d.newVersion}}/json</a>{%else%} Vulnerabilities: None{%endif%}
                   {% endfor %}
                 </div>
               </div>

@@ -13,7 +13,7 @@ from com_lib.db_setup import requirements
 
 
 def get_date():
-    return datetime.now()
+    return datetime.utcnow()
 
 
 async def store_in_data(store_values: dict):
@@ -148,9 +148,11 @@ async def requests_data():
 
     ips = []
     for d in data:
+        print(d)
         if d["host_ip"] not in ips:
             ips.append(d["host_ip"])
 
     result = {"unique": len(ips), "fulfulled": len(data)}
     logger.debug(result)
+    # print(ips)
     return result

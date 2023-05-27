@@ -1,15 +1,14 @@
-aiosqlite==0.18.0 #  From 0.17.0 |   Vulnerbilities: None
-databases[postgresql]==0.7.0 #  From 0.6.1 |   Vulnerbilities: None
-devsetgo-lib==0.9.0 #  From 0.8.0 |   Vulnerbilities: None
-gunicorn==20.1.0 #   Vulnerbilities: None
-httpx==0.23.3 #  From 0.23.0 |   Vulnerbilities: None
-httpx-auth==0.15.0 #   Vulnerbilities: None
-loguru==0.6.0 #   Vulnerbilities: None
-pydantic==1.10.7 #  From 1.10.2 |   Vulnerbilities: None
-python-dotenv==1.0.0 #  From 0.21.0 |   Vulnerbilities: None
-sqlalchemy==2.0.7 #  From 1.4.42 |   Vulnerbilities: None
-starlette-wtf==0.4.3 #   Vulnerbilities: None
-starlette[full]==0.26.1 #  From 0.21.0 |   Vulnerbilities: None
-tqdm==4.65.0 #  From 4.64.1 |   Vulnerbilities: None
-uvicorn==0.21.1 #  From 0.19.0 |   Vulnerbilities: None
-
+aiosqlite==0.19.0 # From 0.18.0 | Vulnerbilities: None
+databases[postgresql]==0.7.0 # Vulnerbilities: None
+devsetgo-lib==0.10.1 # From 0.9.0 | Vulnerbilities: None
+gunicorn==20.1.0 # Vulnerbilities: None
+httpx==0.24.1 # From 0.23.3 | Vulnerbilities: None
+httpx-auth==0.17.0 # From 0.15.0 | Vulnerbilities: None
+loguru==0.7.0 # From 0.6.0 | Vulnerbilities: None
+pydantic==1.10.8 # From 1.10.7 | Vulnerbilities: None
+python-dotenv==1.0.0 # Vulnerbilities: None
+sqlalchemy==1.4.42 # From 1.4.42 | Vulnerbilities: None
+starlette[full]==0.27.0 # From 0.26.1 | Vulnerbilities: None
+starlette-wtf==0.4.3 # Vulnerbilities: None
+tqdm==4.65.0 # Vulnerbilities: None
+uvicorn==0.22.0 # From 0.21.1 | Vulnerbilities: None

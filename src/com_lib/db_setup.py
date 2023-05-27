@@ -51,6 +51,7 @@ requirements = sqlalchemy.Table(
     sqlalchemy.Column("text_in", sqlalchemy.String),
     sqlalchemy.Column("json_data_in", sqlalchemy.JSON),
     sqlalchemy.Column("json_data_out", sqlalchemy.JSON),
+    sqlalchemy.Column("lib_out_count", sqlalchemy.Integer),
     sqlalchemy.Column("host_ip", sqlalchemy.String, index=True),
     sqlalchemy.Column("header_data", sqlalchemy.JSON),
     sqlalchemy.Column("date_created", sqlalchemy.DateTime, index=True),
