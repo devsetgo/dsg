@@ -11,6 +11,7 @@ from starlette.routing import Mount
 from starlette.routing import Route
 from starlette.staticfiles import StaticFiles
 from starlette_wtf import CSRFProtectMiddleware
+import contextlib
 
 import resources
 from com_lib import exceptions
@@ -20,12 +21,12 @@ from endpoints.pypi_check import endpoints as pypi_pages
 from settings import config_settings
 
 config_log(
-    logging_directory="log",
-    log_name="log.log",
+    # logging_directory="log",
+    # log_name="log.log",
     logging_level=config_settings.loguru_logging_level,
     log_rotation=config_settings.loguru_rotation,
     log_retention=config_settings.loguru_retention,
-    log_backtrace=False,
+    # log_backtrace=False,
 )
 
 # Initialize the app
@@ -65,14 +66,30 @@ exception_handlers: Dict[Any, Any] = {
     500: exceptions.server_error,
 }
 
+
+# This is a context manager that can be used to manage the lifespan of an application.
+# It takes in an `app` argument, which is the application instance that needs to be managed.
+@contextlib.asynccontextmanager
+async def lifespan(app):
+    # Before starting the application, any necessary resources can be initialized or started up.
+    await resources.startup()
+
+    # The `yield` keyword is used to indicate the start of the application's lifespan.
+    # Any code that comes after this will be executed when the context manager is exited.
+    yield
+
+    # After the application has finished running, any necessary resources can be cleaned up or shut down.
+    await resources.shutdown()
+
+
 # Setup the main Starlette application
 app = Starlette(
     debug=config_settings.debug,
     routes=routes,
     middleware=middleware,
     exception_handlers=exception_handlers,
-    on_startup=[resources.startup],
-    on_shutdown=[resources.shutdown],
+    # on_startup=[resources.startup],
+    # on_shutdown=[resources.shutdown],
 )
 
 # Start the application using uvicorn server

@@ -1,13 +1,12 @@
 FROM python:3.10-slim-buster
 RUN apt-get update && apt-get -y install gcc
-MAINTAINER Mike Ryan "mikeryan56@gmail.com"
 EXPOSE 5000
 COPY . /src
 WORKDIR /src
 # Evironment Variables
 ENV USE_ENV='docker'
 # Application information - Calendar Versioning
-ENV APP_VERSION='22.10.16'
+ENV APP_VERSION='23.5.28'
 ENV DEBUG=False
 #prd for production or 'dev' for development
 ENV RELEASE_ENV='prd'
@@ -30,5 +29,5 @@ ENV GITHUB_REPO_LIMIT=100
 #install requirements
 RUN pip3 install --upgrade pip setuptools wheel
 RUN pip3 install -r requirements.txt
-# CMD ["uvicorn", "main:app","--port","5000"]
-CMD ["gunicorn",  "-c", "gunicorn_cfg.py", "main:app"]
+CMD ["uvicorn", "main:app","--port","5000"]
+# CMD ["gunicorn",  "-c", "gunicorn_cfg.py", "main:app"]
