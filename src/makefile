@@ -16,8 +16,9 @@ DEV_REQUIREMENTS_PATH = requirements/dev.txt
 .PHONY: autoflake clean flake8-report format help install install-dev isort migrate run-clean run-dev run-prd spring-clean test venv-create
 
 run-clean:
-	./_scripts/rm_db_log.sh $(CURDIR)/$(SQLITE_PATH) $(CURDIR)/$(LOG_PATH)
-	uvicorn $(SERVICE_PATH).main:app --reload --port 5000
+# ./_scripts/rm_db_log.sh $(CURDIR)/$(SQLITE_PATH) $(CURDIR)/$(LOG_PATH)
+	./scripts/run_delete_db.sh
+	uvicorn main:app --reload --port 5000
 
 autoflake:
 	autoflake --in-place --remove-all-unused-imports -r $(SERVICE_PATH)
@@ -66,7 +67,7 @@ migrate:
 	$(PYTHON) alembic upgrade head
 
 run-dev:
-	uvicorn $(SERVICE_PATH).main:app --reload --port 5000
+	uvicorn main:app --reload --port 5000
 
 
 
