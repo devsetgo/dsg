@@ -69,9 +69,6 @@ migrate:
 run-dev:
 	uvicorn main:app --reload --port 5000
 
-
-
-
 run-prd:
 	gunicorn $(SERVICE_PATH).main:app -w 4 -k uvicorn.workers.UvicornWorker
 
