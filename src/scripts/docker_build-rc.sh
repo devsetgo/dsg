@@ -11,7 +11,7 @@ docker build -t mikeryan56/$IMAGE_NAME:$IMAGE_VERSION-rc .
 # echo "Running Docker Image"
 # docker run mikeryan56/test-api:$CAL_VER-python38
 echo "Push"
-# docker push mikeryan56/$IMAGE_NAME:$IMAGE_VERSION-rc
+docker push mikeryan56/$IMAGE_NAME:$IMAGE_VERSION-rc
 # docker push mikeryan56/$IMAGE_NAME:latest
 # echo 'Docker Build with PyPy'
 # docker build -t mikeryan56/test-api:$CAL_VER -f ./docker/dockerfile_pypy .
