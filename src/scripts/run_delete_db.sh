@@ -2,17 +2,17 @@
 set -e
 set -x
 #delete db
-if [[ -f ~/dsg/src/sqlite_db/api.db ]]
+if [[ -f /workspace/src/sqlite_db/api.db ]]
 then
     echo "deleting api.db"
-    rm ~/dsg/src/sqlite_db/api.db
+    rm /workspace/src/sqlite_db/api.db
 fi
 
 #delete logs
-if [[ -f ~/dsg/src/log/app_log.log ]]
+if [[ -f /workspace/src/log/log.log ]]
 then
     echo "deleting api.db"
-    rm ~/dsg/src/log/app_log.log
+    rm /workspace/src/log/log.log
 fi
 
 # run dev

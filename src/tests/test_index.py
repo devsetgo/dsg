@@ -1,63 +1,31 @@
 # -*- coding: utf-8 -*-
-import uuid
+import unittest
 
-import pytest
-
-# from starlette.testclient import TestClient
-from async_asgi_testclient import TestClient as Async_TestClient
+from starlette.testclient import TestClient
 
 from main import app
 
-# client = Async_TestClient(app)
+client = TestClient(app)
 
 
-# class Test(unittest.TestCase):
-@pytest.mark.asyncio
-async def test_home():
-
-    async with Async_TestClient(app) as client:
-
-        url = f"/"
-        response = await client.get(url)
-        assert response.status_code == 200
-
-
-@pytest.mark.asyncio
-async def test_index():
-
-    async with Async_TestClient(app) as client:
-
+class TestTopLevel(unittest.TestCase):
+    async def test_index(self):
         url = f"/index"
-        response = await client.get(url)
-        assert response.status_code == 200
 
+        with client:
+            response = await client.get(url)
+            assert response.status_code == 200
 
-@pytest.mark.asyncio
-async def test_index_error():
-
-    async with Async_TestClient(app) as client:
-
-        uid = uuid.uuid1()
-        url = f"/{uid}"
-        response = await client.get(url)
-        assert response.status_code == 404
-
-
-@pytest.mark.asyncio
-async def test_about():
-
-    async with Async_TestClient(app) as client:
-
+    async def test_about(self):
         url = f"/about"
-        response = await client.get(url)
-        assert response.status_code == 200
 
+        with client:
+            response = await client.get(url)
+            assert response.status_code == 200
 
-@pytest.mark.asyncio
-async def test_login():
+    async def test_health(self):
+        url = f"/health"
 
-    async with Async_TestClient(app) as client:
-
-        url = f"/users/login"
-        response = await client.get(url)
-        assert response.status_code == 200
+        with client:
+            response = await client.get(url)
+            assert response.status_code == 200

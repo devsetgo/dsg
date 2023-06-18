@@ -15,7 +15,7 @@ pre-commit run -a
 # python3 -m pytest -v -s # verbose
 python3 -m pytest
 # modify path for
-sed -i "s/<source>\/home\/mike\/devtools\/src<\/source>/<source>\/github\/workspace\/src<\/source>/g" ~/devtools/src/coverage.xml
+sed -i "s/<source>\/workspace\/src<\/source>/<source>\/github\/workspace\/src<\/source>/g" /workspace/src/coverage.xml
 # create coverage-badge
 coverage-badge -o ../coverage.svg -f
 

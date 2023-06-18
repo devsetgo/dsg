@@ -7,6 +7,13 @@
   href="{{ url_for('static' , path='plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
 <link rel="stylesheet"
   href="{{ url_for('static' , path='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+
+  <style>
+    .scrollable-section {
+      max-height: 200px; /* Adjust the maximum height as needed */
+      overflow-y: auto;
+    }
+  </style>
 {% endblock %}
 {% block page_breadcrumb %} PyPi Data{% endblock %}
 {% block page_head_title %}PyPi Data{% endblock %}
@@ -37,7 +44,7 @@
           <!-- small box -->
           <div class="small-box bg-success">
             <div class="inner">
-              <h3>{{ data.req_data.fulfulled }}</h3>
+              <h3>{{ data.req_data.fulfilled }}</h3>
 
               <p>Pypi Checks Made</p>
             </div>
@@ -168,7 +175,7 @@
     <!-- /.container-fluid -->
   </div>
   <!-- /.content -->
-  
+
   <!-- /.content-wrapper -->
 
 
@@ -193,13 +200,13 @@
             <tr>
               <td><a href="/pypi/results/{{lr.request_group_id}}">Link</a></td>
               <td><button type="button" class="btn btn-default" data-toggle="modal" data-target="#modal-{{lr.request_group_id}}">
-                  Launch Default Modal
+                  Preview Requirements <span title="{{lr.lib_out_count}} Libraries Checked" class="badge bg-primary">{{lr.lib_out_count}}</span>
                 </button>
                 {% include "pypi/out_model.html" %}
                 <!-- /.modal -->
               </td>
-              <td>{{lr.dated_created}}</td>
-              
+              <td>{{lr.date_created}}</td>
+
             </tr>
             {%endfor%}
           </tbody>
@@ -208,7 +215,7 @@
               <th>Link</th>
               <th>Output</th>
               <th>Date</th>
-              
+
             </tr>
           </tfoot>
         </table>
@@ -396,7 +403,7 @@
 <script>
   $(function () {
     $("#example1").DataTable({
-      
+
       "paging": true,
       "lengthChange": false,
       "searching": false,
