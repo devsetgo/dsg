@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     # Lax, Strict, None
     same_site: str = "Strict"
     prometheus_on: bool = True
-    sentry_key: HttpUrl = None
+    # sentry_key: HttpUrl = None
     database_type: str = "sqlite"
     db_name: str = "sqlite_db/api.db"
     sqlalchemy_database_uri: str = "sqlite:///sqlite_db/api.db"
@@ -62,7 +62,7 @@ class Settings(BaseSettings):
     loguru_logging_level: str = "INFO"
     release_env: str = "prd"
     debug: bool = False
-    sendgrid_key: str = "insert-key"
+    # sendgrid_key: str = "insert-key"
     login_timeout: int = 120
     admin_create: bool = False
     admin_user_name: str = None
