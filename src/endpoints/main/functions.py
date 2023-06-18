@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-from dataclasses import dataclass
 import random
-from unittest import result
 import uuid
+from dataclasses import dataclass
 from datetime import datetime
 from datetime import timedelta
+from unittest import result
 
-from loguru import logger
 import httpx
-from httpx_auth import HeaderApiKey, Basic
+from httpx_auth import Basic
+from httpx_auth import HeaderApiKey
+from loguru import logger
+
 from settings import config_settings
 
 client = httpx.AsyncClient()

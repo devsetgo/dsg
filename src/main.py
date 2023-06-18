@@ -2,40 +2,37 @@
 from typing import Any
 from typing import Dict
 
+from dsg_lib.logging_config import config_log
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.routing import Mount
 from starlette.routing import Route
 from starlette.staticfiles import StaticFiles
 from starlette_wtf import CSRFProtectMiddleware
-from dsg_lib.logging_config import config_log
-import resources
-from settings import config_settings
-from com_lib import exceptions
-from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
+import contextlib
 
-# from com_lib import logging_config
+import resources
+from com_lib import exceptions
 from endpoints.health import endpoints as health_pages
 from endpoints.main import endpoints as main_pages
 from endpoints.pypi_check import endpoints as pypi_pages
+from settings import config_settings
 
 config_log(
-    logging_directory="log",
-    # or None and defaults to logging
-    log_name="log.log",
-    # or None and defaults to "log.log"
+    # logging_directory="log",
+    # log_name="log.log",
     logging_level=config_settings.loguru_logging_level,
-    # or "info" or "debug" or "warning" or "error" or "critical" or None and defaults to "info"
     log_rotation=config_settings.loguru_rotation,
-    # or None and default is 10 MB
     log_retention=config_settings.loguru_retention,
-    # or None and defaults to "14 Days"
-    log_backtrace=False,
-    # or None and defaults to False
+    # log_backtrace=False,
 )
+
+# Initialize the app
 resources.init_app()
 
+# Define the various routes for our application
 routes = [
     Route("/", endpoint=main_pages.homepage, methods=["GET"]),
     Route("/index", endpoint=main_pages.index, methods=["GET"]),
@@ -44,15 +41,13 @@ routes = [
     Route("/pypi/check", endpoint=pypi_pages.pypi_index, methods=["GET", "POST"]),
     Route("/pypi/dashboard", endpoint=pypi_pages.pypi_data, methods=["GET"]),
     Route(
-        "/pypi/results/{page}",
-        endpoint=pypi_pages.pypi_result,
-        methods=["GET", "POST"],
+        "/pypi/results/{page}", endpoint=pypi_pages.pypi_result, methods=["GET", "POST"]
     ),
     Route("/users/login", endpoint=main_pages.login, methods=["GET", "POST"]),
     Mount("/static", app=StaticFiles(directory="static"), name="static"),
 ]
 
-
+# Add middleware to the app
 middleware = [
     Middleware(
         SessionMiddleware,
@@ -62,9 +57,9 @@ middleware = [
         max_age=config_settings.max_age,
     ),
     Middleware(CSRFProtectMiddleware, csrf_secret=config_settings.csrf_secret),
-    # Middleware(HTTPSRedirectMiddleware)
 ]
 
+# Define Exception Handlers
 exception_handlers: Dict[Any, Any] = {
     403: exceptions.not_allowed,
     404: exceptions.not_found,
@@ -72,16 +67,32 @@ exception_handlers: Dict[Any, Any] = {
 }
 
 
+# This is a context manager that can be used to manage the lifespan of an application.
+# It takes in an `app` argument, which is the application instance that needs to be managed.
+@contextlib.asynccontextmanager
+async def lifespan(app):
+    # Before starting the application, any necessary resources can be initialized or started up.
+    await resources.startup()
+
+    # The `yield` keyword is used to indicate the start of the application's lifespan.
+    # Any code that comes after this will be executed when the context manager is exited.
+    yield
+
+    # After the application has finished running, any necessary resources can be cleaned up or shut down.
+    await resources.shutdown()
+
+
+# Setup the main Starlette application
 app = Starlette(
     debug=config_settings.debug,
     routes=routes,
     middleware=middleware,
     exception_handlers=exception_handlers,
-    on_startup=[resources.startup],
-    on_shutdown=[resources.shutdown],
+    # on_startup=[resources.startup],
+    # on_shutdown=[resources.shutdown],
 )
 
-
+# Start the application using uvicorn server
 if __name__ == "__main__":
     import uvicorn
 
