@@ -7,7 +7,7 @@ httpx-auth==0.17.0 # Vulnerabilities: None
 loguru==0.7.0 # Vulnerabilities: None
 pydantic==1.10.9 # From 1.10.8 | Vulnerabilities: None
 python-dotenv==1.0.0 # Vulnerabilities: None
-sqlalchemy==2.0.16 # From 1.4.42 | Vulnerabilities: None
+sqlalchemy==1.4.42 # From 1.4.42 | Vulnerabilities: None
 starlette[full]==0.28.0 # From 0.27.0 | Vulnerabilities: None
 starlette-wtf==0.4.3 # Vulnerabilities: None
 tqdm==4.65.0 # Vulnerabilities: None
