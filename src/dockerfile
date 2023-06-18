@@ -1,4 +1,4 @@
-FROM python:3.10-slim-buster
+FROM python:3.11
 RUN apt-get update && apt-get -y install gcc
 EXPOSE 5000
 COPY . /src
@@ -29,5 +29,5 @@ ENV GITHUB_REPO_LIMIT=100
 #install requirements
 RUN pip3 install --upgrade pip setuptools wheel
 RUN pip3 install -r requirements.txt
-CMD ["uvicorn", "main:app","--port","5000"]
-# CMD ["gunicorn",  "-c", "gunicorn_cfg.py", "main:app"]
+# CMD ["uvicorn", "main:app","--port","5000"]
+CMD ["gunicorn",  "-c", "gunicorn_cfg.py", "main:app"]
