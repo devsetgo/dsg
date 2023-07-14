@@ -71,7 +71,7 @@ async def pypi_index(request):
     View function for the PyPI check page.
 
     This view function receives a POST request with form data containing a list of package requirements.
-    It validates the form data and processes it by calling the `process_raw` and `clean_item` functions from the 
+    It validates the form data and processes it by calling the `process_raw` and `clean_item` functions from the
     `pypi_calls` module. It then calls the `loop_calls_adv` function to get information about each package from PyPI.
     Finally, it stores the incoming and outgoing data in the database and redirects the user to the results page.
 
@@ -79,7 +79,7 @@ async def pypi_index(request):
         request: An instance of the `Request` class representing the incoming HTTP request.
 
     Returns:
-        A `RedirectResponse` object that redirects the user to the results page if the form is valid, or a 
+        A `RedirectResponse` object that redirects the user to the results page if the form is valid, or a
         `TemplateResponse` object that renders the PyPI check page with the form if the form is invalid.
     """
     # Create an instance of the RequirementsForm class from the incoming form data
@@ -141,7 +141,7 @@ async def pypi_result(request):
     View function for the PyPI results page.
 
     This view function receives a GET request with a UUID parameter representing the ID of the request group.
-    It retrieves the data associated with the request group from the database using the `get_request_group_id` 
+    It retrieves the data associated with the request group from the database using the `get_request_group_id`
     function, and renders the results page with the retrieved data.
 
     Args:
@@ -160,4 +160,3 @@ async def pypi_result(request):
     context = {"request": request, "data": data}
     logger.info(f"page accessed: /pypi/{request_group_id}")
     return templates.TemplateResponse(template, context)
-

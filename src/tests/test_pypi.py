@@ -12,7 +12,6 @@ class TestPyPiData(unittest.TestCase):
         with client:
             response = await client.get(url)
             self.assertEqual(response.status_code, 200)
-            .....
 
             # Check if the returned template is correct
             self.assertIn(b"pypi/dashboard.html", await response.content.read())
@@ -22,4 +21,3 @@ class TestPyPiData(unittest.TestCase):
             self.assertIn("req_data", data)
             self.assertIn("lib_data", data)
             self.assertIn("latest_results", data)
-

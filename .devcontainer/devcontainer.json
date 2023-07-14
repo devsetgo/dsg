@@ -65,7 +65,8 @@
         "supperchong.pretty-json",
         "ms-azuretools.vscode-docker",
         "ms-kubernetes-tools.vscode-kubernetes-tools",
-        "ms-vsliveshare.vsliveshare"
+        "ms-vsliveshare.vsliveshare",
+        "ms-python.black-formatter"
       ]
     }
   },
