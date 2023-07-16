@@ -27,8 +27,8 @@
             <div class="card-header">
               <h3 class="card-title">New Requirements</h3>
               <div class="card-tools">
-                <button type="button" class="btn btn-tool" onclick="copyText()"><i class="fas fa-copy"
-                    title="Copy New Requirements"></i></button>
+                <button type="button" class="btn btn-info btn-sm"  title="Copy New Requirements" class="btn btn-tool" onclick="copyText()"><i class="fas fa-copy"></i></button>
+                <button type="button" class="btn btn-info btn-sm" data-card-widget="collapse" title="Collapse"><i class="fas fa-minus"></i></button>
               </div>
             </div>
             <div class="card-body pt-0">
@@ -47,16 +47,14 @@
             <div class="card-header">
               <h3 class="card-title">Original Requirements</h3>
               <div class="card-tools">
-                <!-- <button type="button" class="btn btn-tool" data-card-widget="collapse">
-            <i class="fas fa-copy"></i>
-            </button> -->
+                <button type="button" class="btn btn-secondary btn-sm" data-card-widget="collapse" title="Collapse"><i class="fas fa-minus"></i></button>
               </div>
             </div>
             <div class="card-body pt-0">
               <div class="row">
                 <div class="col-12">
                   {% for d in data.json_data_in %}
-                  {{d}}<br>
+                  <br>{{d}}
                   {% endfor %}
                 </div>
               </div>
