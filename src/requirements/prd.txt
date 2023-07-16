@@ -5,7 +5,7 @@ gunicorn==20.1.0 # Vulnerabilities: None
 httpx==0.24.1 # Vulnerabilities: None
 httpx-auth==0.17.0 # Vulnerabilities: None
 loguru==0.7.0 # Vulnerabilities: None
-pydantic==2.0.2 # From 1.10.9 | Vulnerabilities: None
+pydantic==1.10.11 # From 1.10.9 | Vulnerabilities: None
 python-dotenv==1.0.0 # Vulnerabilities: None
 sqlalchemy<1.5,>=1.4.42 # From 1.4.42 | Vulnerabilities: None
 starlette-wtf==0.4.3 # Vulnerabilities: None
