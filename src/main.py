@@ -1,101 +1,201 @@
 # -*- coding: utf-8 -*-
-from typing import Any
-from typing import Dict
+from datetime import datetime
+from typing import List
 
 from dsg_lib.logging_config import config_log
-from starlette.applications import Starlette
-from starlette.middleware import Middleware
-from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.routing import Mount
-from starlette.routing import Route
-from starlette.staticfiles import StaticFiles
-from starlette_wtf import CSRFProtectMiddleware
-import contextlib
+from fastapi import FastAPI, HTTPException, Query, status
+from fastapi.responses import RedirectResponse
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+# from sqlalchemy.future import select
+from sqlalchemy import Column, Select, String
 
-import resources
-from com_lib import exceptions
-from endpoints.health import endpoints as health_pages
-from endpoints.main import endpoints as main_pages
-from endpoints.pypi_check import endpoints as pypi_pages
-from settings import config_settings
+from src.endpoints import health_check, tools
+# from .database_ops import DatabaseOperations
+# from .database_connector import AsyncDatabase
+# from .base_schema import SchemaBase
+from .toolkit import AsyncDatabase, DatabaseOperations, SchemaBase
 
 config_log(
-    # logging_directory="log",
-    # log_name="log.log",
-    logging_level=config_settings.loguru_logging_level,
-    log_rotation=config_settings.loguru_rotation,
-    log_retention=config_settings.loguru_retention,
-    # log_backtrace=False,
+    logging_directory="logs",
+    log_name="log.log",
+    logging_level="INFO",
+    log_rotation="100 MB",
+    log_retention="1 days",
+    log_backtrace=True,
+    log_format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
+    log_serializer=False,
+    
 )
 
-# Initialize the app
-resources.init_app()
+class User(SchemaBase, AsyncDatabase.Base):
+    __tablename__ = "users"
 
-# Define the various routes for our application
-routes = [
-    Route("/", endpoint=main_pages.homepage, methods=["GET"]),
-    Route("/index", endpoint=main_pages.index, methods=["GET"]),
-    Route("/about", endpoint=main_pages.about_page, methods=["GET"]),
-    Route("/health", endpoint=health_pages.health_status, methods=["GET"]),
-    Route("/pypi/check", endpoint=pypi_pages.pypi_index, methods=["GET", "POST"]),
-    Route("/pypi/dashboard", endpoint=pypi_pages.pypi_data, methods=["GET"]),
-    Route(
-        "/pypi/results/{page}", endpoint=pypi_pages.pypi_result, methods=["GET", "POST"]
-    ),
-    Route("/users/login", endpoint=main_pages.login, methods=["GET", "POST"]),
-    Mount("/static", app=StaticFiles(directory="static"), name="static"),
-]
+    name_first = Column(String, unique=False, index=True)
+    name_last = Column(String, unique=False, index=True)
+    email = Column(String, unique=True, index=True, nullable=True)
 
-# Add middleware to the app
-middleware = [
-    Middleware(
-        SessionMiddleware,
-        secret_key=config_settings.secret_key,
-        same_site=config_settings.same_site,
-        https_only=config_settings.https_on,
-        max_age=config_settings.max_age,
-    ),
-    Middleware(CSRFProtectMiddleware, csrf_secret=config_settings.csrf_secret),
-]
 
-# Define Exception Handlers
-exception_handlers: Dict[Any, Any] = {
-    403: exceptions.not_allowed,
-    404: exceptions.not_found,
-    500: exceptions.server_error,
+class UserBase(BaseModel):
+    name_first: str = Field(
+        ...,
+        # alias="firstName",
+        description="the users first or given name",
+        examples=["Bob"],
+    )
+    name_last: str = Field(
+        ...,
+        # alias="lastName",
+        description="the users last or surname name",
+        examples=["Fruit"],
+    )
+    email: EmailStr
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserResponse(UserBase):
+    _id: str
+    date_created: datetime
+    date_updated: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserList(BaseModel):
+    users: List[UserBase]
+
+
+app = FastAPI()
+
+
+@app.on_event("startup")
+async def startup_event():
+    await AsyncDatabase.create_tables()
+
+
+# Endpoint routers
+router_responses: dict = {
+    302: {"description": "The item was moved"},
+    400: {"description": "Bad request"},
+    401: {"description": "Unauthorized"},
+    403: {"description": "Insufficient privileges"},
+    404: {"description": "Not found"},
+    418: {
+        "I_am-a_teapot": "The server refuses the attempt to \
+                brew coffee with a teapot."
+    },
+    429: {"description": "Rate limit exceeded"},
 }
 
 
-# This is a context manager that can be used to manage the lifespan of an application.
-# It takes in an `app` argument, which is the application instance that needs to be managed.
-@contextlib.asynccontextmanager
-async def lifespan(app):
-    # Before starting the application, any necessary resources can be initialized or started up.
-    await resources.startup()
-
-    # The `yield` keyword is used to indicate the start of the application's lifespan.
-    # Any code that comes after this will be executed when the context manager is exited.
-    yield
-
-    # After the application has finished running, any necessary resources can be cleaned up or shut down.
-    await resources.shutdown()
+@app.get("/")
+async def root():
+    return RedirectResponse("/docs", status_code=307)
 
 
-# Setup the main Starlette application
-app = Starlette(
-    debug=config_settings.debug,
-    routes=routes,
-    middleware=middleware,
-    exception_handlers=exception_handlers,
-    # on_startup=[resources.startup],
-    # on_shutdown=[resources.shutdown],
+@app.get("/users/count")
+async def count_users():
+    count = await DatabaseOperations.count_query(Select(User))
+    return {"count": count}
+
+
+@app.get("/users")
+async def read_users(
+    limit: int = Query(None, alias="limit", ge=1, le=1000), 
+    offset: int = Query(None, alias="offset")
+):
+    if limit is None:
+        limit = 500
+
+    if offset is None:
+        offset = 0
+
+    query_count = Select(User)
+    total_count = await DatabaseOperations.count_query(query=query_count)
+    query = Select(User)
+    users = await DatabaseOperations.fetch_query(
+        query=query, limit=limit, offset=offset
+    )
+    return {
+        "query_data": {"total_count": total_count, "count": len(users)},
+        "users": users,
+    }
+
+
+@app.post("/users/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def create_user(user: UserBase):
+    db_user = User(
+        name_first=user.name_first, name_last=user.name_last, email=user.email
+    )
+    created_user = await DatabaseOperations.execute_one(db_user)
+    return created_user
+
+
+@app.post(
+    "/users/bulk/",
+    response_model=List[UserResponse],
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_users(user_list: UserList):
+    db_users = [
+        User(name_first=user.name_first, name_last=user.name_last, email=user.email)
+        for user in user_list.users
+    ]
+    created_users = await DatabaseOperations.execute_many(db_users)
+    return created_users
+
+import random
+import string
+
+@app.get(
+    "/users/bulk/auto",
+    response_model=List[UserResponse],
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_users_auto(qty:int = Query(100,le=1000,ge=1)):
+    
+    created_users:list=[]
+    for i in range(qty):
+        # Generate a random first name, last name
+        name_first = ''.join(random.choices(string.ascii_lowercase, k=5))
+        name_last = ''.join(random.choices(string.ascii_lowercase, k=5))
+        
+        # Generate a random email
+        random_email_part = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+        email = f'user{random_email_part}@yahoo.com'
+        
+        db_user = User(
+            name_first=name_first, 
+            name_last=name_last, 
+            email=email
+        )
+        created_user = await DatabaseOperations.execute_one(db_user)
+        created_users.append(created_user)
+    
+    return created_users
+
+
+
+@app.get("/users/{user_id}", response_model=UserResponse)
+async def read_user(user_id: str):
+    users = await DatabaseOperations.fetch_query(Select(User).where(User._id == user_id))
+    if not users:
+        raise HTTPException(status_code=404, detail="User not found")
+    return users[0]
+
+
+# Tools router
+app.include_router(
+    tools.router,
+    prefix="/api/v1/tools",
+    tags=["tools"],
+    responses=router_responses,
 )
 
-# Start the application using uvicorn server
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(
-        app, host="0.0.0.0", port=5000, log_level="info", debug=config_settings.debug
-    )
+# Health router
+app.include_router(
+    health_check.router,
+    prefix="/api/health",
+    tags=["System Health"],
+    responses=router_responses,
+)
