@@ -31,8 +31,11 @@ class AsyncDatabase:
     # Initialize engine
     DATABASE_URL = settings.database_uri()
     metadata = MetaData()
-    engine = create_async_engine(DATABASE_URL, echo=False,)
-    
+    engine = create_async_engine(
+        DATABASE_URL,
+        echo=False,
+    )
+
     # Define base model to produce tables
     Base = declarative_base(metadata=metadata)
 

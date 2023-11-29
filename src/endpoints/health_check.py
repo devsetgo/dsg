@@ -1,45 +1,25 @@
-# # -*- coding: utf-8 -*-
-# import json
-# import logging
-# import time
-
-# from email_validator import EmailNotValidError, validate_email
-# from fastapi import APIRouter, File, HTTPException, UploadFile, status
-# from fastapi.responses import ORJSONResponse
-# from loguru import logger
-# from pydantic import BaseModel, Field
-# from sqlalchemy import inspect, text
-# from xmltodict import parse as xml_parse
-# from xmltodict import unparse as xml_unparse
-
-# from src.settings import settings
-
-# from .database_connector import AsyncDatabase
-
-# router = APIRouter()
-
-
-# # app route /api/status
-# @router.get("/status")
-# async def get_health():
-#     return {"status": "up"}
-
 # -*- coding: utf-8 -*-
 import datetime
 
 from cpuinfo import get_cpu_info
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse, JSONResponse
 from loguru import logger
 
-# from core.process_checks import get_processes
 from src.settings import settings
 
-# from .database_connector  import AsyncDatabase
-from src.toolkit import AsyncDatabase
-
-# from starlette_exporter import handle_metrics
-
+from src.toolkit.database_connector import AsyncDatabase
+from src.toolkit.http_codes import (
+    common_codes,
+    GET_CODES,
+    PATCH_CODES,
+    PUT_CODES,
+    POST_CODES,
+    DELETE_CODES,
+    generate_code_dict,
+    HTTPCode,
+    ALL_HTTP_CODES,
+)
 
 router = APIRouter()
 
@@ -49,7 +29,15 @@ router = APIRouter()
 # router.add_route("/metrics", handle_metrics)
 
 
-@router.get("/status", tags=["system-health"], response_class=JSONResponse)
+simple_get_codes = generate_code_dict([200, 400, 405, 500, 503])
+
+
+@router.get(
+    "/status",
+    status_code=status.HTTP_200_OK,
+    response_class=ORJSONResponse,
+    responses=simple_get_codes,
+)
 async def health_main() -> dict:
     """
     GET status, uptime, and current datetime
@@ -57,12 +45,12 @@ async def health_main() -> dict:
     Returns:
         dict -- [status: UP, uptime: seconds current_datetime: datetime.now]
     """
-    status ={"status": "UP"}
+    status = {"status": "UP"}
     logger.info(status)
     return status
 
 
-@router.get("/system-info", tags=["system-health"])
+@router.get("/system-info", response_class=ORJSONResponse, responses=GET_CODES)
 async def health_status() -> dict:
     """
     GET Request for CPU and process data
@@ -85,12 +73,14 @@ async def health_status() -> dict:
     except Exception as e:
         logger.error(f"Error: {e}")
 
-@router.get("/db-connections")
+
+@router.get("/db-connections", response_class=ORJSONResponse, responses=GET_CODES)
 async def get_db_connections():
     # Get the connection pool's status
     pool_status = AsyncDatabase.engine.pool.status()
-    
+
     return pool_status
+
 
 # @router.get("/processes", tags=["system-health"])
 # async def health_processes() -> dict:
