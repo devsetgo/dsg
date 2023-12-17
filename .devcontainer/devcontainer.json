@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/postgres
 {
-	"name": "DevSetGo Website",
+	"name": "DevSetGo Main Site",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
@@ -24,7 +24,7 @@
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "pip3 install --upgrade pip setuptools wheel && pip3 install -r requirements.txt", //--use-deprecated=legacy-resolver",
-	"postStartCommand": "pip install -r requirements.txt", // Add this line to install requirements.txt after container start
+	"postStartCommand": "pip install -r requirements/dev.txt", // Add this line to install requirements.txt after container start
 	// Configure tool-specific properties.
 	"customizations": {
 		// Configure properties specific to VS Code.
@@ -41,6 +41,7 @@
 			"extensions": [
 				"GitHub.copilot",
 				"GitHub.copilot-chat",
+				"stkb.rewrap",
 				"ms-vscode.cpptools-extension-pack",
 				"ms-vscode.cpptools",
 				"aaron-bond.better-comments",

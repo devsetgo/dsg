@@ -5,14 +5,13 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
-
     volumes:
       - ../..:/workspaces:cached
-
     command: sleep infinity
-    network_mode: service:db
+    networks:
+      - app-network
 
-  db:
+  postgresdb:
     image: postgres:latest
     restart: unless-stopped
     volumes:
@@ -21,6 +20,10 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -31,7 +34,13 @@ services:
     ports:
       - "5050:80"
     depends_on:
-      - db
+      - postgresdb
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   postgres-data:
