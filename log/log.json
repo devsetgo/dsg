@@ -1,0 +1,595 @@
+2023-12-17 20:14:43.498200 | INFO     |                 logging:callHandlers:1762 - Started server process [24912]
+2023-12-17 20:14:43.499109 | INFO     |                 logging:callHandlers:1762 - Started server process [24912]
+2023-12-17 20:14:43.499700 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:14:43.500261 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:14:43.501342 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:14:43.501850 | INFO     |                 src.resources:startup:38 - starting up services
+2023-12-17 20:14:43.502279 | INFO     |                 src.resources:startup:40 - checking database for tables
+2023-12-17 20:14:43.502683 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['users', 'interesting_things', 'categories']
+2023-12-17 20:14:43.503073 | INFO     |                 src.resources:startup:43 - database already created
+2023-12-17 20:14:43.503844 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:14:43.505086 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:15:07.981757 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:15:07.982704 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:15:08.083804 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:15:08.084769 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:15:08.085443 | INFO     |                 src.main:lifespan:40 - shutting down
+2023-12-17 20:15:08.086018 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:15:08.086722 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:15:08.087329 | INFO     |                 logging:callHandlers:1762 - Finished server process [24912]
+2023-12-17 20:15:08.087863 | INFO     |                 logging:callHandlers:1762 - Finished server process [24912]
+2023-12-17 20:15:08.837058 | INFO     |                 logging:callHandlers:1762 - Started server process [25059]
+2023-12-17 20:15:08.837927 | INFO     |                 logging:callHandlers:1762 - Started server process [25059]
+2023-12-17 20:15:08.838507 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:15:08.839021 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:15:08.839735 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:15:08.840240 | INFO     |                 src.resources:startup:38 - starting up services
+2023-12-17 20:15:08.840660 | INFO     |                 src.resources:startup:40 - checking database for tables
+2023-12-17 20:15:08.841070 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['users', 'interesting_things', 'categories']
+2023-12-17 20:15:08.841746 | INFO     |                 src.resources:startup:44 - database already created
+2023-12-17 20:15:08.842768 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:15:08.843840 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:15:13.156373 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:15:13.157068 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:15:13.258092 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:15:13.259070 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:15:13.259836 | INFO     |                 src.main:lifespan:40 - shutting down
+2023-12-17 20:15:13.260436 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:15:13.261062 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:15:13.261634 | INFO     |                 logging:callHandlers:1762 - Finished server process [25059]
+2023-12-17 20:15:13.262330 | INFO     |                 logging:callHandlers:1762 - Finished server process [25059]
+2023-12-17 20:15:13.933587 | INFO     |                 logging:callHandlers:1762 - Started server process [25120]
+2023-12-17 20:15:13.934311 | INFO     |                 logging:callHandlers:1762 - Started server process [25120]
+2023-12-17 20:15:13.934833 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:15:13.935540 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:15:13.936463 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:15:13.936948 | INFO     |                 src.resources:startup:38 - starting up services
+2023-12-17 20:15:13.937368 | INFO     |                 src.resources:startup:40 - checking database for tables
+2023-12-17 20:15:13.937780 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['users', 'interesting_things', 'categories']
+2023-12-17 20:15:13.966039 | ERROR    |                 logging:callHandlers:1762 - Traceback (most recent call last):
+  File "/home/vscode/.local/lib/python3.12/site-packages/starlette/routing.py", line 677, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/local/lib/python3.12/contextlib.py", line 204, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dsg/src/main.py", line 35, in lifespan
+    await startup()
+  File "/workspaces/dsg/src/resources.py", line 42, in startup
+    print(create_tables)
+          ^^^^^^^^^^^^^
+NameError: name 'create_tables' is not defined
+
+2023-12-17 20:15:13.967247 | ERROR    |                 logging:callHandlers:1762 - Traceback (most recent call last):
+  File "/home/vscode/.local/lib/python3.12/site-packages/starlette/routing.py", line 677, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/local/lib/python3.12/contextlib.py", line 204, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dsg/src/main.py", line 35, in lifespan
+    await startup()
+  File "/workspaces/dsg/src/resources.py", line 42, in startup
+    print(create_tables)
+          ^^^^^^^^^^^^^
+NameError: name 'create_tables' is not defined
+
+2023-12-17 20:15:13.967908 | ERROR    |                 logging:callHandlers:1762 - Application startup failed. Exiting.
+2023-12-17 20:15:13.968667 | ERROR    |                 logging:callHandlers:1762 - Application startup failed. Exiting.
+2023-12-17 20:15:22.092645 | INFO     |                 logging:callHandlers:1762 - Started server process [25202]
+2023-12-17 20:15:22.093548 | INFO     |                 logging:callHandlers:1762 - Started server process [25202]
+2023-12-17 20:15:22.094111 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:15:22.094759 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:15:22.095567 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:15:22.096029 | INFO     |                 src.resources:startup:38 - starting up services
+2023-12-17 20:15:22.096455 | INFO     |                 src.resources:startup:40 - checking database for tables
+2023-12-17 20:15:22.096882 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['users', 'interesting_things', 'categories']
+2023-12-17 20:15:22.097341 | INFO     |                 src.resources:startup:44 - database already created
+2023-12-17 20:15:22.097833 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:15:22.098324 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:19:18.470390 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:19:18.471469 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:19:18.572473 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:19:18.573368 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:19:18.574004 | INFO     |                 src.main:lifespan:40 - shutting down
+2023-12-17 20:19:18.574582 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:19:18.575219 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:19:18.575730 | INFO     |                 logging:callHandlers:1762 - Finished server process [25202]
+2023-12-17 20:19:18.576243 | INFO     |                 logging:callHandlers:1762 - Finished server process [25202]
+2023-12-17 20:19:19.217736 | INFO     |                 logging:callHandlers:1762 - Started server process [25956]
+2023-12-17 20:19:19.218815 | INFO     |                 logging:callHandlers:1762 - Started server process [25956]
+2023-12-17 20:19:19.219455 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:19:19.219984 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:19:19.220814 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:19:19.221300 | INFO     |                 src.resources:startup:38 - starting up services
+2023-12-17 20:19:19.221764 | INFO     |                 src.resources:startup:40 - checking database for tables
+2023-12-17 20:19:19.222193 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['users', 'interesting_things', 'categories']
+2023-12-17 20:19:19.222865 | INFO     |                 src.resources:startup:44 - database already created
+2023-12-17 20:19:19.223645 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:19:19.224143 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:19:29.552651 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:19:29.553355 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:19:29.654455 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:19:29.655599 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:19:29.656314 | INFO     |                 src.main:lifespan:39 - shutting down
+2023-12-17 20:19:29.656946 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:19:29.657702 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:19:29.658280 | INFO     |                 logging:callHandlers:1762 - Finished server process [25956]
+2023-12-17 20:19:29.659237 | INFO     |                 logging:callHandlers:1762 - Finished server process [25956]
+2023-12-17 20:19:30.391939 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 206, 304, 307, 410, 502]
+2023-12-17 20:19:30.392160 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 201, 202, 205, 307, 409, 413, 415]
+2023-12-17 20:19:30.392297 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:19:30.392391 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:19:30.392482 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 205, 409]
+2023-12-17 20:19:30.392633 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [400, 405, 500]
+2023-12-17 20:19:30.395317 | INFO     |                 logging:callHandlers:1762 - Started server process [26049]
+2023-12-17 20:19:30.396377 | INFO     |                 logging:callHandlers:1762 - Started server process [26049]
+2023-12-17 20:19:30.396984 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:19:30.397656 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:19:30.398412 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:19:30.398851 | INFO     |                 src.resources:startup:38 - starting up services
+2023-12-17 20:19:30.399256 | INFO     |                 src.resources:startup:40 - checking database for tables
+2023-12-17 20:19:30.399653 | DEBUG    |                 dsg_lib.database_operations:get_table_names:367 - Starting get_table_names operation
+2023-12-17 20:19:30.400045 | DEBUG    |                 dsg_lib.database_operations:get_table_names:371 - Retrieving table names
+2023-12-17 20:19:30.400450 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['users', 'interesting_things', 'categories']
+2023-12-17 20:19:30.401042 | INFO     |                 src.resources:startup:44 - database already created
+2023-12-17 20:19:30.401645 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:19:30.402260 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:19:43.745996 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:19:43.746875 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:19:43.847894 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:19:43.848836 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:19:43.849474 | INFO     |                 src.main:lifespan:39 - shutting down
+2023-12-17 20:19:43.850007 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:19:43.850637 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:19:43.851143 | INFO     |                 logging:callHandlers:1762 - Finished server process [26049]
+2023-12-17 20:19:43.851720 | INFO     |                 logging:callHandlers:1762 - Finished server process [26049]
+2023-12-17 20:19:50.554300 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 206, 304, 307, 410, 502]
+2023-12-17 20:19:50.554588 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 201, 202, 205, 307, 409, 413, 415]
+2023-12-17 20:19:50.554735 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:19:50.554851 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:19:50.554958 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 205, 409]
+2023-12-17 20:19:50.555113 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [400, 405, 500]
+2023-12-17 20:19:50.557874 | INFO     |                 logging:callHandlers:1762 - Started server process [26225]
+2023-12-17 20:19:50.558799 | INFO     |                 logging:callHandlers:1762 - Started server process [26225]
+2023-12-17 20:19:50.559371 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:19:50.559979 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:19:50.561054 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:19:50.561965 | INFO     |                 src.resources:startup:39 - starting up services
+2023-12-17 20:19:50.562446 | INFO     |                 src.resources:startup:41 - checking database for tables
+2023-12-17 20:19:50.562867 | DEBUG    |                 dsg_lib.database_operations:get_table_names:367 - Starting get_table_names operation
+2023-12-17 20:19:50.563285 | DEBUG    |                 dsg_lib.database_operations:get_table_names:371 - Retrieving table names
+2023-12-17 20:19:50.563685 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['users', 'interesting_things', 'categories']
+2023-12-17 20:19:50.564115 | INFO     |                 src.resources:startup:45 - database already created
+2023-12-17 20:19:50.564826 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:19:50.565399 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:20:24.670364 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:20:24.671371 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:20:24.771392 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:20:24.772212 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:20:24.773047 | INFO     |                 src.main:lifespan:39 - shutting down
+2023-12-17 20:20:24.773786 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:20:24.774478 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:20:24.775040 | INFO     |                 logging:callHandlers:1762 - Finished server process [26225]
+2023-12-17 20:20:24.775835 | INFO     |                 logging:callHandlers:1762 - Finished server process [26225]
+2023-12-17 20:20:25.449357 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 206, 304, 307, 410, 502]
+2023-12-17 20:20:25.449600 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 201, 202, 205, 307, 409, 413, 415]
+2023-12-17 20:20:25.449744 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:20:25.449848 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:20:25.449946 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 205, 409]
+2023-12-17 20:20:25.450092 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [400, 405, 500]
+2023-12-17 20:20:25.452368 | INFO     |                 logging:callHandlers:1762 - Started server process [26383]
+2023-12-17 20:20:25.453158 | INFO     |                 logging:callHandlers:1762 - Started server process [26383]
+2023-12-17 20:20:25.453828 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:20:25.454544 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:20:25.456185 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:20:25.457109 | INFO     |                 src.resources:startup:39 - starting up services
+2023-12-17 20:20:25.457642 | INFO     |                 src.resources:startup:41 - checking database for tables
+2023-12-17 20:20:25.458363 | DEBUG    |                 dsg_lib.database_operations:get_table_names:367 - Starting get_table_names operation
+2023-12-17 20:20:25.458885 | DEBUG    |                 dsg_lib.database_operations:get_table_names:371 - Retrieving table names
+2023-12-17 20:20:25.459318 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['users', 'interesting_things', 'categories']
+2023-12-17 20:20:25.459972 | INFO     |                 src.resources:startup:45 - database already created
+2023-12-17 20:20:25.460584 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:20:25.461257 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:20:31.278828 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:20:31.279715 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:20:31.380665 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:20:31.381370 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:20:31.381909 | INFO     |                 src.main:lifespan:39 - shutting down
+2023-12-17 20:20:31.382414 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:20:31.382890 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:20:31.383381 | INFO     |                 logging:callHandlers:1762 - Finished server process [26383]
+2023-12-17 20:20:31.383865 | INFO     |                 logging:callHandlers:1762 - Finished server process [26383]
+2023-12-17 20:20:32.039797 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 206, 304, 307, 410, 502]
+2023-12-17 20:20:32.040065 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 201, 202, 205, 307, 409, 413, 415]
+2023-12-17 20:20:32.040232 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:20:32.040340 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:20:32.040498 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 205, 409]
+2023-12-17 20:20:32.040690 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [400, 405, 500]
+2023-12-17 20:20:32.043018 | INFO     |                 logging:callHandlers:1762 - Started server process [26449]
+2023-12-17 20:20:32.044657 | INFO     |                 logging:callHandlers:1762 - Started server process [26449]
+2023-12-17 20:20:32.045307 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:20:32.046311 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:20:32.047209 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:20:32.048327 | INFO     |                 src.resources:startup:39 - starting up services
+2023-12-17 20:20:32.048835 | INFO     |                 src.resources:startup:41 - checking database for tables
+2023-12-17 20:20:32.049272 | DEBUG    |                 dsg_lib.database_operations:get_table_names:367 - Starting get_table_names operation
+2023-12-17 20:20:32.049714 | DEBUG    |                 dsg_lib.database_operations:get_table_names:371 - Retrieving table names
+2023-12-17 20:20:32.050142 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['interesting_things', 'categories']
+2023-12-17 20:20:32.050819 | INFO     |                 src.resources:startup:45 - database already created
+2023-12-17 20:20:32.051433 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:20:32.052112 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:20:40.376466 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:20:40.377392 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:20:40.478377 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:20:40.479258 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:20:40.479939 | INFO     |                 src.main:lifespan:39 - shutting down
+2023-12-17 20:20:40.480481 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:20:40.481264 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:20:40.481773 | INFO     |                 logging:callHandlers:1762 - Finished server process [26449]
+2023-12-17 20:20:40.482348 | INFO     |                 logging:callHandlers:1762 - Finished server process [26449]
+2023-12-17 20:20:41.155806 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 206, 304, 307, 410, 502]
+2023-12-17 20:20:41.156066 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 201, 202, 205, 307, 409, 413, 415]
+2023-12-17 20:20:41.156206 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:20:41.156307 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:20:41.156405 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 205, 409]
+2023-12-17 20:20:41.156559 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [400, 405, 500]
+2023-12-17 20:20:41.159008 | INFO     |                 logging:callHandlers:1762 - Started server process [26524]
+2023-12-17 20:20:41.159940 | INFO     |                 logging:callHandlers:1762 - Started server process [26524]
+2023-12-17 20:20:41.160510 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:20:41.161187 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:20:41.161997 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:20:41.162480 | INFO     |                 src.resources:startup:39 - starting up services
+2023-12-17 20:20:41.162912 | INFO     |                 src.resources:startup:41 - checking database for tables
+2023-12-17 20:20:41.163303 | DEBUG    |                 dsg_lib.database_operations:get_table_names:367 - Starting get_table_names operation
+2023-12-17 20:20:41.163701 | DEBUG    |                 dsg_lib.database_operations:get_table_names:371 - Retrieving table names
+2023-12-17 20:20:41.164093 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['categories']
+2023-12-17 20:20:41.164677 | INFO     |                 src.resources:startup:45 - database already created
+2023-12-17 20:20:41.165207 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:20:41.165801 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:20:45.178042 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:20:45.178727 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 20:20:45.279710 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:20:45.280685 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 20:20:45.281285 | INFO     |                 src.main:lifespan:39 - shutting down
+2023-12-17 20:20:45.281812 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:20:45.282484 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 20:20:45.283046 | INFO     |                 logging:callHandlers:1762 - Finished server process [26524]
+2023-12-17 20:20:45.283584 | INFO     |                 logging:callHandlers:1762 - Finished server process [26524]
+2023-12-17 20:20:46.001832 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 206, 304, 307, 410, 502]
+2023-12-17 20:20:46.002059 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 201, 202, 205, 307, 409, 413, 415]
+2023-12-17 20:20:46.002198 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:20:46.002306 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:20:46.002417 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 205, 409]
+2023-12-17 20:20:46.002576 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [400, 405, 500]
+2023-12-17 20:20:46.004957 | INFO     |                 logging:callHandlers:1762 - Started server process [26571]
+2023-12-17 20:20:46.005597 | INFO     |                 logging:callHandlers:1762 - Started server process [26571]
+2023-12-17 20:20:46.006375 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:20:46.007191 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:20:46.007952 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:20:46.008436 | INFO     |                 src.resources:startup:39 - starting up services
+2023-12-17 20:20:46.008884 | INFO     |                 src.resources:startup:41 - checking database for tables
+2023-12-17 20:20:46.009299 | DEBUG    |                 dsg_lib.database_operations:get_table_names:367 - Starting get_table_names operation
+2023-12-17 20:20:46.009741 | DEBUG    |                 dsg_lib.database_operations:get_table_names:371 - Retrieving table names
+2023-12-17 20:20:46.010186 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: []
+2023-12-17 20:20:46.010644 | INFO     |                 src.resources:startup:47 - creating database tables
+2023-12-17 20:20:46.011065 | DEBUG    |                 dsg_lib.async_database:create_tables:80 - Creating tables
+2023-12-17 20:20:46.012529 | DEBUG    |                 logging:callHandlers:1762 - executing <function connect.<locals>.connector at 0x7f6901523ba0>
+2023-12-17 20:20:46.013107 | DEBUG    |                 logging:callHandlers:1762 - executing <function connect.<locals>.connector at 0x7f6901523ba0>
+2023-12-17 20:20:46.013799 | DEBUG    |                 logging:callHandlers:1762 - operation <function connect.<locals>.connector at 0x7f6901523ba0> completed
+2023-12-17 20:20:46.014250 | DEBUG    |                 logging:callHandlers:1762 - operation <function connect.<locals>.connector at 0x7f6901523ba0> completed
+2023-12-17 20:20:46.015468 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f69014c7880>, 'regexp', 2, <function SQLiteDialect_pysqlite.on_connect.<locals>.regexp at 0x7f6901809760>, deterministic=True)
+2023-12-17 20:20:46.015924 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f69014c7880>, 'regexp', 2, <function SQLiteDialect_pysqlite.on_connect.<locals>.regexp at 0x7f6901809760>, deterministic=True)
+2023-12-17 20:20:46.016391 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f69014c7880>, 'regexp', 2, <function SQLiteDialect_pysqlite.on_connect.<locals>.regexp at 0x7f6901809760>, deterministic=True) completed
+2023-12-17 20:20:46.016979 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f69014c7880>, 'regexp', 2, <function SQLiteDialect_pysqlite.on_connect.<locals>.regexp at 0x7f6901809760>, deterministic=True) completed
+2023-12-17 20:20:46.017942 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f69014c7880>, 'floor', 1, <built-in function floor>, deterministic=True)
+2023-12-17 20:20:46.018406 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f69014c7880>, 'floor', 1, <built-in function floor>, deterministic=True)
+2023-12-17 20:20:46.018850 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f69014c7880>, 'floor', 1, <built-in function floor>, deterministic=True) completed
+2023-12-17 20:20:46.019257 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f69014c7880>, 'floor', 1, <built-in function floor>, deterministic=True) completed
+2023-12-17 20:20:46.020024 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x7f69014c7880>)
+2023-12-17 20:20:46.020457 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x7f69014c7880>)
+2023-12-17 20:20:46.020965 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x7f69014c7880>) completed
+2023-12-17 20:20:46.021365 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x7f69014c7880>) completed
+2023-12-17 20:20:46.022128 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x7f6901511b40>, 'PRAGMA read_uncommitted', [])
+2023-12-17 20:20:46.022647 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x7f6901511b40>, 'PRAGMA read_uncommitted', [])
+2023-12-17 20:20:46.023316 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x7f6901511b40>, 'PRAGMA read_uncommitted', []) completed
+2023-12-17 20:20:46.023753 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x7f6901511b40>, 'PRAGMA read_uncommitted', []) completed
+2023-12-17 20:20:46.024694 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x7f6901511b40>)
+2023-12-17 20:20:46.025242 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x7f6901511b40>)
+2023-12-17 20:20:46.025754 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x7f6901511b40>) completed
+2023-12-17 20:20:46.026178 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x7f6901511b40>) completed
+2023-12-17 20:20:46.027099 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x7f6901511b40>)
+2023-12-17 20:20:46.027643 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x7f6901511b40>)
+2023-12-17 20:20:46.028131 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x7f6901511b40>) completed
+2023-12-17 20:20:46.028562 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x7f6901511b40>) completed
+2023-12-17 20:20:46.029451 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f69014c7880>)
+2023-12-17 20:20:46.029908 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f69014c7880>)
+2023-12-17 20:20:46.030365 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f69014c7880>) completed
+2023-12-17 20:20:46.030785 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f69014c7880>) completed
+2023-12-17 20:20:46.032330 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method commit of sqlite3.Connection object at 0x7f69014c7880>)
+2023-12-17 20:20:46.032814 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method commit of sqlite3.Connection object at 0x7f69014c7880>)
+2023-12-17 20:20:46.033289 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method commit of sqlite3.Connection object at 0x7f69014c7880>) completed
+2023-12-17 20:20:46.033704 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method commit of sqlite3.Connection object at 0x7f69014c7880>) completed
+2023-12-17 20:20:46.034698 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f69014c7880>)
+2023-12-17 20:20:46.035154 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f69014c7880>)
+2023-12-17 20:20:46.035602 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f69014c7880>) completed
+2023-12-17 20:20:46.036000 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f69014c7880>) completed
+2023-12-17 20:20:46.036780 | INFO     |                 dsg_lib.async_database:create_tables:86 - Tables created successfully
+2023-12-17 20:20:46.037260 | INFO     |                 src.resources:startup:49 - database tables created
+2023-12-17 20:20:46.037725 | DEBUG    |                 dsg_lib.database_operations:get_table_names:367 - Starting get_table_names operation
+2023-12-17 20:20:46.038151 | DEBUG    |                 dsg_lib.database_operations:get_table_names:371 - Retrieving table names
+2023-12-17 20:20:46.038564 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: []
+2023-12-17 20:20:46.038993 | INFO     |                 src.resources:startup:51 - tables [] have been created
+2023-12-17 20:20:46.050145 | ERROR    |                 logging:callHandlers:1762 - Traceback (most recent call last):
+  File "/home/vscode/.local/lib/python3.12/site-packages/starlette/routing.py", line 677, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/local/lib/python3.12/contextlib.py", line 204, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dsg/src/main.py", line 34, in lifespan
+    await startup()
+  File "/workspaces/dsg/src/resources.py", line 52, in startup
+    await add_system_data()
+  File "/workspaces/dsg/src/resources.py", line 71, in add_system_data
+    await add_user()
+  File "/workspaces/dsg/src/resources.py", line 77, in add_user
+    user = await db_ops.read_query(Select(User).where(User.user_name == 'Mike'))
+                                   ^^^^^^^^^^^^
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/selectable.py", line 5137, in __init__
+    coercions.expect(
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 413, in expect
+    resolved = impl._literal_coercion(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 651, in _literal_coercion
+    self._raise_for_expected(element, argname)
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 1139, in _raise_for_expected
+    return super()._raise_for_expected(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 710, in _raise_for_expected
+    super()._raise_for_expected(
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 535, in _raise_for_expected
+    raise exc.ArgumentError(msg, code=code) from err
+sqlalchemy.exc.ArgumentError: Column expression, FROM clause, or other columns clause element expected, got <class 'src.database_tables.User'>.
+
+2023-12-17 20:20:46.050933 | ERROR    |                 logging:callHandlers:1762 - Traceback (most recent call last):
+  File "/home/vscode/.local/lib/python3.12/site-packages/starlette/routing.py", line 677, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/local/lib/python3.12/contextlib.py", line 204, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dsg/src/main.py", line 34, in lifespan
+    await startup()
+  File "/workspaces/dsg/src/resources.py", line 52, in startup
+    await add_system_data()
+  File "/workspaces/dsg/src/resources.py", line 71, in add_system_data
+    await add_user()
+  File "/workspaces/dsg/src/resources.py", line 77, in add_user
+    user = await db_ops.read_query(Select(User).where(User.user_name == 'Mike'))
+                                   ^^^^^^^^^^^^
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/selectable.py", line 5137, in __init__
+    coercions.expect(
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 413, in expect
+    resolved = impl._literal_coercion(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 651, in _literal_coercion
+    self._raise_for_expected(element, argname)
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 1139, in _raise_for_expected
+    return super()._raise_for_expected(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 710, in _raise_for_expected
+    super()._raise_for_expected(
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 535, in _raise_for_expected
+    raise exc.ArgumentError(msg, code=code) from err
+sqlalchemy.exc.ArgumentError: Column expression, FROM clause, or other columns clause element expected, got <class 'src.database_tables.User'>.
+
+2023-12-17 20:20:46.051823 | ERROR    |                 logging:callHandlers:1762 - Application startup failed. Exiting.
+2023-12-17 20:20:46.052362 | ERROR    |                 logging:callHandlers:1762 - Application startup failed. Exiting.
+2023-12-17 20:21:25.737275 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 206, 304, 307, 410, 502]
+2023-12-17 20:21:25.737703 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 201, 202, 205, 307, 409, 413, 415]
+2023-12-17 20:21:25.737931 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:21:25.738053 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:21:25.738158 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 205, 409]
+2023-12-17 20:21:25.738436 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [400, 405, 500]
+2023-12-17 20:21:25.742513 | INFO     |                 logging:callHandlers:1762 - Started server process [26802]
+2023-12-17 20:21:25.743551 | INFO     |                 logging:callHandlers:1762 - Started server process [26802]
+2023-12-17 20:21:25.744184 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:21:25.745010 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:21:25.745712 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:21:25.746381 | INFO     |                 src.resources:startup:39 - starting up services
+2023-12-17 20:21:25.746833 | INFO     |                 src.resources:startup:41 - checking database for tables
+2023-12-17 20:21:25.747235 | DEBUG    |                 dsg_lib.database_operations:get_table_names:367 - Starting get_table_names operation
+2023-12-17 20:21:25.747656 | DEBUG    |                 dsg_lib.database_operations:get_table_names:371 - Retrieving table names
+2023-12-17 20:21:25.748066 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: []
+2023-12-17 20:21:25.748779 | INFO     |                 src.resources:startup:48 - creating database tables
+2023-12-17 20:21:25.749250 | DEBUG    |                 dsg_lib.async_database:create_tables:80 - Creating tables
+2023-12-17 20:21:25.750473 | DEBUG    |                 logging:callHandlers:1762 - executing <function connect.<locals>.connector at 0x7f4015d97ba0>
+2023-12-17 20:21:25.750986 | DEBUG    |                 logging:callHandlers:1762 - executing <function connect.<locals>.connector at 0x7f4015d97ba0>
+2023-12-17 20:21:25.751774 | DEBUG    |                 logging:callHandlers:1762 - operation <function connect.<locals>.connector at 0x7f4015d97ba0> completed
+2023-12-17 20:21:25.752243 | DEBUG    |                 logging:callHandlers:1762 - operation <function connect.<locals>.connector at 0x7f4015d97ba0> completed
+2023-12-17 20:21:25.753549 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f401608f790>, 'regexp', 2, <function SQLiteDialect_pysqlite.on_connect.<locals>.regexp at 0x7f401607d760>, deterministic=True)
+2023-12-17 20:21:25.754033 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f401608f790>, 'regexp', 2, <function SQLiteDialect_pysqlite.on_connect.<locals>.regexp at 0x7f401607d760>, deterministic=True)
+2023-12-17 20:21:25.754499 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f401608f790>, 'regexp', 2, <function SQLiteDialect_pysqlite.on_connect.<locals>.regexp at 0x7f401607d760>, deterministic=True) completed
+2023-12-17 20:21:25.754923 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f401608f790>, 'regexp', 2, <function SQLiteDialect_pysqlite.on_connect.<locals>.regexp at 0x7f401607d760>, deterministic=True) completed
+2023-12-17 20:21:25.755597 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f401608f790>, 'floor', 1, <built-in function floor>, deterministic=True)
+2023-12-17 20:21:25.756158 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f401608f790>, 'floor', 1, <built-in function floor>, deterministic=True)
+2023-12-17 20:21:25.756770 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f401608f790>, 'floor', 1, <built-in function floor>, deterministic=True) completed
+2023-12-17 20:21:25.757207 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method create_function of sqlite3.Connection object at 0x7f401608f790>, 'floor', 1, <built-in function floor>, deterministic=True) completed
+2023-12-17 20:21:25.758292 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x7f401608f790>)
+2023-12-17 20:21:25.758887 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x7f401608f790>)
+2023-12-17 20:21:25.759419 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x7f401608f790>) completed
+2023-12-17 20:21:25.759916 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x7f401608f790>) completed
+2023-12-17 20:21:25.760823 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x7f4015d85b40>, 'PRAGMA read_uncommitted', [])
+2023-12-17 20:21:25.761310 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x7f4015d85b40>, 'PRAGMA read_uncommitted', [])
+2023-12-17 20:21:25.762139 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x7f4015d85b40>, 'PRAGMA read_uncommitted', []) completed
+2023-12-17 20:21:25.762605 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x7f4015d85b40>, 'PRAGMA read_uncommitted', []) completed
+2023-12-17 20:21:25.763367 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x7f4015d85b40>)
+2023-12-17 20:21:25.763844 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x7f4015d85b40>)
+2023-12-17 20:21:25.764311 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x7f4015d85b40>) completed
+2023-12-17 20:21:25.764734 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x7f4015d85b40>) completed
+2023-12-17 20:21:25.765727 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x7f4015d85b40>)
+2023-12-17 20:21:25.766169 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x7f4015d85b40>)
+2023-12-17 20:21:25.766609 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x7f4015d85b40>) completed
+2023-12-17 20:21:25.767023 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x7f4015d85b40>) completed
+2023-12-17 20:21:25.767911 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f401608f790>)
+2023-12-17 20:21:25.768822 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f401608f790>)
+2023-12-17 20:21:25.769302 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f401608f790>) completed
+2023-12-17 20:21:25.769720 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f401608f790>) completed
+2023-12-17 20:21:25.771091 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method commit of sqlite3.Connection object at 0x7f401608f790>)
+2023-12-17 20:21:25.771550 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method commit of sqlite3.Connection object at 0x7f401608f790>)
+2023-12-17 20:21:25.772059 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method commit of sqlite3.Connection object at 0x7f401608f790>) completed
+2023-12-17 20:21:25.772489 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method commit of sqlite3.Connection object at 0x7f401608f790>) completed
+2023-12-17 20:21:25.773505 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f401608f790>)
+2023-12-17 20:21:25.774003 | DEBUG    |                 logging:callHandlers:1762 - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f401608f790>)
+2023-12-17 20:21:25.774475 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f401608f790>) completed
+2023-12-17 20:21:25.774903 | DEBUG    |                 logging:callHandlers:1762 - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x7f401608f790>) completed
+2023-12-17 20:21:25.775633 | INFO     |                 dsg_lib.async_database:create_tables:86 - Tables created successfully
+2023-12-17 20:21:25.776148 | INFO     |                 src.resources:startup:50 - database tables created
+2023-12-17 20:21:25.776604 | DEBUG    |                 dsg_lib.database_operations:get_table_names:367 - Starting get_table_names operation
+2023-12-17 20:21:25.777014 | DEBUG    |                 dsg_lib.database_operations:get_table_names:371 - Retrieving table names
+2023-12-17 20:21:25.777420 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: []
+2023-12-17 20:21:25.777872 | INFO     |                 src.resources:startup:52 - tables [] have been created
+2023-12-17 20:21:25.787180 | ERROR    |                 logging:callHandlers:1762 - Traceback (most recent call last):
+  File "/home/vscode/.local/lib/python3.12/site-packages/starlette/routing.py", line 677, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/local/lib/python3.12/contextlib.py", line 204, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dsg/src/main.py", line 34, in lifespan
+    await startup()
+  File "/workspaces/dsg/src/resources.py", line 53, in startup
+    await add_system_data()
+  File "/workspaces/dsg/src/resources.py", line 72, in add_system_data
+    await add_user()
+  File "/workspaces/dsg/src/resources.py", line 78, in add_user
+    user = await db_ops.read_query(Select(User).where(User.user_name == 'Mike'))
+                                   ^^^^^^^^^^^^
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/selectable.py", line 5137, in __init__
+    coercions.expect(
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 413, in expect
+    resolved = impl._literal_coercion(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 651, in _literal_coercion
+    self._raise_for_expected(element, argname)
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 1139, in _raise_for_expected
+    return super()._raise_for_expected(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 710, in _raise_for_expected
+    super()._raise_for_expected(
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 535, in _raise_for_expected
+    raise exc.ArgumentError(msg, code=code) from err
+sqlalchemy.exc.ArgumentError: Column expression, FROM clause, or other columns clause element expected, got <class 'src.database_tables.User'>.
+
+2023-12-17 20:21:25.787846 | ERROR    |                 logging:callHandlers:1762 - Traceback (most recent call last):
+  File "/home/vscode/.local/lib/python3.12/site-packages/starlette/routing.py", line 677, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/local/lib/python3.12/contextlib.py", line 204, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dsg/src/main.py", line 34, in lifespan
+    await startup()
+  File "/workspaces/dsg/src/resources.py", line 53, in startup
+    await add_system_data()
+  File "/workspaces/dsg/src/resources.py", line 72, in add_system_data
+    await add_user()
+  File "/workspaces/dsg/src/resources.py", line 78, in add_user
+    user = await db_ops.read_query(Select(User).where(User.user_name == 'Mike'))
+                                   ^^^^^^^^^^^^
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/selectable.py", line 5137, in __init__
+    coercions.expect(
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 413, in expect
+    resolved = impl._literal_coercion(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 651, in _literal_coercion
+    self._raise_for_expected(element, argname)
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 1139, in _raise_for_expected
+    return super()._raise_for_expected(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 710, in _raise_for_expected
+    super()._raise_for_expected(
+  File "/home/vscode/.local/lib/python3.12/site-packages/sqlalchemy/sql/coercions.py", line 535, in _raise_for_expected
+    raise exc.ArgumentError(msg, code=code) from err
+sqlalchemy.exc.ArgumentError: Column expression, FROM clause, or other columns clause element expected, got <class 'src.database_tables.User'>.
+
+2023-12-17 20:21:25.788567 | ERROR    |                 logging:callHandlers:1762 - Application startup failed. Exiting.
+2023-12-17 20:21:25.789293 | ERROR    |                 logging:callHandlers:1762 - Application startup failed. Exiting.
+2023-12-17 20:21:57.111510 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 206, 304, 307, 410, 502]
+2023-12-17 20:21:57.111745 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 201, 202, 205, 307, 409, 413, 415]
+2023-12-17 20:21:57.111888 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:21:57.111988 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 20:21:57.112086 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 205, 409]
+2023-12-17 20:21:57.112231 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [400, 405, 500]
+2023-12-17 20:21:57.114533 | INFO     |                 logging:callHandlers:1762 - Started server process [26948]
+2023-12-17 20:21:57.115895 | INFO     |                 logging:callHandlers:1762 - Started server process [26948]
+2023-12-17 20:21:57.116543 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:21:57.117243 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 20:21:57.117975 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 20:21:57.118512 | INFO     |                 src.resources:startup:39 - starting up services
+2023-12-17 20:21:57.119013 | INFO     |                 src.resources:startup:41 - checking database for tables
+2023-12-17 20:21:57.119488 | DEBUG    |                 dsg_lib.database_operations:get_table_names:367 - Starting get_table_names operation
+2023-12-17 20:21:57.119963 | DEBUG    |                 dsg_lib.database_operations:get_table_names:371 - Retrieving table names
+2023-12-17 20:21:57.120405 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['users', 'interesting_things', 'categories']
+2023-12-17 20:21:57.120852 | INFO     |                 src.resources:startup:45 - database already created
+2023-12-17 20:21:57.121426 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 20:21:57.122041 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 21:16:46.211683 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 21:16:46.215107 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 21:16:46.317172 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 21:16:46.318316 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 21:16:46.319419 | INFO     |                 src.main:lifespan:39 - shutting down
+2023-12-17 21:16:46.320487 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 21:16:46.321189 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 21:16:46.321831 | INFO     |                 logging:callHandlers:1762 - Finished server process [26948]
+2023-12-17 21:16:46.322537 | INFO     |                 logging:callHandlers:1762 - Finished server process [26948]
+2023-12-17 21:25:47.050235 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 206, 304, 307, 410, 502]
+2023-12-17 21:25:47.050497 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 201, 202, 205, 307, 409, 413, 415]
+2023-12-17 21:25:47.050648 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 21:25:47.050753 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 21:25:47.050854 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 205, 409]
+2023-12-17 21:25:47.051011 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [400, 405, 500]
+2023-12-17 21:25:47.053522 | INFO     |                 logging:callHandlers:1762 - Started server process [38493]
+2023-12-17 21:25:47.054527 | INFO     |                 logging:callHandlers:1762 - Started server process [38493]
+2023-12-17 21:25:47.055105 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 21:25:47.055889 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 21:25:47.056659 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 21:25:47.057332 | INFO     |                 src.resources:startup:39 - starting up services
+2023-12-17 21:25:47.057812 | INFO     |                 src.resources:startup:41 - checking database for tables
+2023-12-17 21:25:47.058223 | DEBUG    |                 dsg_lib.database_operations:get_table_names:367 - Starting get_table_names operation
+2023-12-17 21:25:47.058632 | DEBUG    |                 dsg_lib.database_operations:get_table_names:371 - Retrieving table names
+2023-12-17 21:25:47.059047 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['users', 'interesting_things', 'categories']
+2023-12-17 21:25:47.059859 | INFO     |                 src.resources:startup:45 - database already created
+2023-12-17 21:25:47.060456 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 21:25:47.061084 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 21:26:05.523382 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 21:26:05.524344 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 21:26:05.625337 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 21:26:05.626207 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 21:26:05.626834 | INFO     |                 src.main:lifespan:39 - shutting down
+2023-12-17 21:26:05.627379 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 21:26:05.628047 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 21:26:05.628554 | INFO     |                 logging:callHandlers:1762 - Finished server process [38493]
+2023-12-17 21:26:05.629129 | INFO     |                 logging:callHandlers:1762 - Finished server process [38493]
+2023-12-17 21:26:06.307167 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 206, 304, 307, 410, 502]
+2023-12-17 21:26:06.307436 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 201, 202, 205, 307, 409, 413, 415]
+2023-12-17 21:26:06.307574 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 21:26:06.307718 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 206, 409, 412, 413]
+2023-12-17 21:26:06.307807 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [200, 400, 401, 403, 404, 408, 429, 500, 503, 202, 204, 205, 409]
+2023-12-17 21:26:06.307935 | DEBUG    |                 dsg_lib.http_codes:generate_code_dict:88 - returning HTTP codes: [400, 405, 500]
+2023-12-17 21:26:06.310325 | INFO     |                 logging:callHandlers:1762 - Started server process [38616]
+2023-12-17 21:26:06.311151 | INFO     |                 logging:callHandlers:1762 - Started server process [38616]
+2023-12-17 21:26:06.311731 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 21:26:06.312424 | INFO     |                 logging:callHandlers:1762 - Waiting for application startup.
+2023-12-17 21:26:06.313272 | INFO     |                 src.main:lifespan:33 - starting up
+2023-12-17 21:26:06.313921 | INFO     |                 src.resources:startup:39 - starting up services
+2023-12-17 21:26:06.314436 | INFO     |                 src.resources:startup:41 - checking database for tables
+2023-12-17 21:26:06.314855 | DEBUG    |                 dsg_lib.database_operations:get_table_names:367 - Starting get_table_names operation
+2023-12-17 21:26:06.315274 | DEBUG    |                 dsg_lib.database_operations:get_table_names:371 - Retrieving table names
+2023-12-17 21:26:06.315778 | INFO     |                 dsg_lib.database_operations:get_table_names:378 - Table names retrieved successfully: ['users', 'interesting_things', 'categories']
+2023-12-17 21:26:06.317121 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 21:26:06.319463 | INFO     |                 logging:callHandlers:1762 - Application startup complete.
+2023-12-17 21:26:23.777778 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 21:26:23.778821 | INFO     |                 logging:callHandlers:1762 - Shutting down
+2023-12-17 21:26:23.880185 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 21:26:23.881913 | INFO     |                 logging:callHandlers:1762 - Waiting for application shutdown.
+2023-12-17 21:26:23.882883 | INFO     |                 src.main:lifespan:39 - shutting down
+2023-12-17 21:26:23.883675 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 21:26:23.884476 | INFO     |                 logging:callHandlers:1762 - Application shutdown complete.
+2023-12-17 21:26:23.885020 | INFO     |                 logging:callHandlers:1762 - Finished server process [38616]
+2023-12-17 21:26:23.885537 | INFO     |                 logging:callHandlers:1762 - Finished server process [38616]
