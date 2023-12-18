@@ -44,13 +44,13 @@ async def startup():
     # if len(tables) > 0:
     #     logger.info("database already created")
     # else:
-    #     print('creating tables')
-    #     logger.info("creating database tables")
-    #     await async_db.create_tables()
-    #     logger.info("database tables created")
-    #     tables = await db_ops.get_table_names()
-    #     logger.info(f'tables {tables} have been created')
-    #     await add_system_data()
+    print('creating tables')
+    logger.info("creating database tables")
+    await async_db.create_tables()
+    logger.info("database tables created")
+    tables = await db_ops.get_table_names()
+    logger.info(f'tables {tables} have been created')
+    await add_system_data()
 
 
 async def shutdown():
@@ -64,7 +64,7 @@ def init_app():
 
 
 # from datebase_tables import User, InterestingThings, Categories
-from .database_tables import User #, InterestingThings, Categories
+from .database_tables import User, InterestingThings, Categories
 
 async def add_system_data():
     await add_user()
@@ -98,30 +98,35 @@ async def add_user():
 
 
 async def add_categories():
-    pass
-    # cat_number = await db_ops.count_query(Categories)
 
-    # if cat_number > 0:
-    #     logger.info(f"system categories already added")
-    #     return
-    
-    # cat:list = ['technology','news','sites','programming','other']
-    
-    # for c in cat:
-    #     logger.info(f"adding system category {c}")
-    #     category = Categories(
-    #         name=c,
-    #         description=f"{c} related items",
-    #         is_system=True,
-    #         is_active=True,
-    #     )
-    #     try:
-    #         await db_ops.create_one(category)
-    #     except Exception as e:
-    #         logger.error(e)
+    cat_number = await db_ops.count_query(Categories)
 
-    # data = await db_ops.read_query(Select(Categories))
-    # logger.info(len(data))
+    if cat_number > 0:
+        logger.info(f"system categories already added")
+        return
+    
+    cat:list = ['technology','news','sites','programming','woodworking','other']
+    
+    user = await db_ops.get_one_record(Select(User).where(User.user_name == 'Mike'))
+
+    for c in cat:
+        logger.info(f"adding system category {c}")
+        category = Categories(
+            name=c.title(),
+            description=f"{str(c).title()} related items",
+            is_system=True,
+            is_active=True,
+            user_id=user.pkid,
+        )
+        try:
+            await db_ops.create_one(category)
+        except Exception as e:
+            logger.error(e)
+    data = await db_ops.read_query(Select(Categories))
+    
+    for d in data:
+        print(d.name)
+
 
 async def add_interesting_things():
     pass
