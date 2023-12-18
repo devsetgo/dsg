@@ -123,66 +123,67 @@ async def add_categories():
 
 
 async def add_interesting_things():
-
     my_stuff = [
         {
             "name": "Test API",
             "description": "An example API built with FastAPI",
             "url": "https://test-api.devsetgo.com/",
-            "category":'programming',
+            "category": "programming",
         },
         {
             "name": "Starlette Dashboard",
             "description": "A Starlette based version of the AdminLTE template.",
             "url": "https://stardash.devsetgo.com/",
-            "category":'programming',
+            "category": "programming",
         },
         {
             "name": "DevSetGo Library",
             "description": "A helper library I use for my Python projects",
             "url": "https://devsetgo.github.io/devsetgo_lib/",
-            "category":'programming',
+            "category": "programming",
         },
         {
             "name": "Pypi Checker",
             "description": "Get the latest version of python libraries",
             "url": "/pypi",
-            "category":'programming',
+            "category": "programming",
         },
         {
             "name": "FastAPI",
             "description": "An async Python framework for building great APIs",
-            "category":'programming',
+            "category": "programming",
             "url": "https://fastapi.tiangolo.com/",
         },
         {
             "name": "Starlette",
             "description": "An async Python framework for building sites and is what FastAPI is built on top of.",
-            "category":'programming',
+            "category": "programming",
             "url": "https://fastapi.tiangolo.com/",
         },
         {
             "name": "Portainer",
             "description": "How to manage containers for Docker or Kubernetes",
             "url": "https://www.portainer.io/",
-            "category":'technology',
+            "category": "technology",
         },
         {
             "name": "Digital Ocean",
             "description": "Great hosting option for servers, apps, and K8s. Plus great documentation and tutorials. (referral link) ",
             "url": "https://m.do.co/c/9a3b3c4fbc90",
-            "category":'technology',
+            "category": "technology",
         },
         {
             "name": "Kubernetes",
             "description": "Run containers at scale.",
             "url": "https://m.do.co/c/9a3b3c4fbc90",
-            "category":'programming',
+            "category": "programming",
         },
     ]
     # check to see if the items are already in the database
     for item in my_stuff:
-        data = await db_ops.read_query(Select(InterestingThings).where(InterestingThings.name == item['name']))
+        data = await db_ops.read_query(
+            Select(InterestingThings).where(InterestingThings.name == item["name"])
+        )
         if len(data) > 0:
             logger.info(f"system item {item['name']} already added")
             return
@@ -190,16 +191,18 @@ async def add_interesting_things():
     # add my stuff to the database in the InterestingThings table
     # when looping through the list of items, we need to get the user_id and category_id
     # to add to the database
-    user = await db_ops.get_one_record(Select(User).where(User.user_name == 'Mike'))
-    
+    user = await db_ops.get_one_record(Select(User).where(User.user_name == "Mike"))
+
     for item in my_stuff:
-        category = await db_ops.get_one_record(Select(Categories).where(Categories.name == str(item['category']).title()))
+        category = await db_ops.get_one_record(
+            Select(Categories).where(Categories.name == str(item["category"]).title())
+        )
         print(category.name)
         logger.info(f"adding system item {item['name']}")
         thing = InterestingThings(
-            name=item['name'],
-            description=item['description'],
-            url=item['url'],
+            name=item["name"],
+            description=item["description"],
+            url=item["url"],
             user_id=user.pkid,
             category=category.name,
         )

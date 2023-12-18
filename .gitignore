@@ -1,3 +1,6 @@
+# local development
+note.json
+new_note.json
 __archive/
 .env
 _venv/
