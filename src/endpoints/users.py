@@ -1,49 +1,14 @@
 # -*- coding: utf-8 -*-
 
 
-from fastapi import APIRouter
-from fastapi.responses import ORJSONResponse, JSONResponse
-from loguru import logger
-
-from src.settings import settings
-
-from src.toolkit.database_connector import AsyncDatabase
-from src.toolkit.http_codes import (
-    common_codes,
-    GET_CODES,
-    PATCH_CODES,
-    PUT_CODES,
-    POST_CODES,
-    DELETE_CODES,
-    generate_code_dict,
-)
-
 from datetime import datetime
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Query, status
-from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from sqlalchemy import Delete, Insert, Select, Update
 
-# from sqlalchemy.future import select
-from sqlalchemy import Column, Select, String
-
-from src.endpoints import health_check, tools
-
-# from .database_ops import DatabaseOperations
-# from .database_connector import AsyncDatabase
-# from .base_schema import SchemaBase
-from src.toolkit.database_connector import AsyncDatabase
-from src.toolkit.database_ops import DatabaseOperations
-from src.toolkit.base_schema import SchemaBase
-
-
-class User(SchemaBase, AsyncDatabase.Base):
-    __tablename__ = "users"
-
-    name_first = Column(String, unique=False, index=True)
-    name_last = Column(String, unique=False, index=True)
-    email = Column(String, unique=True, index=True, nullable=True)
+from .resources import db_ops
 
 
 class UserBase(BaseModel):

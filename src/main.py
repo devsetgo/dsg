@@ -1,17 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import logging
-import secrets
 from contextlib import asynccontextmanager
 
+from dsg_lib import logging_config
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from loguru import logger
-from sqlalchemy import Column, Delete, ForeignKey, Integer, Select, String, Update
-from sqlalchemy.orm import relationship
-from tqdm import tqdm
-from .resources import startup, shutdown
-from dsg_lib import logging_config
+
+from .resources import startup
 
 logging_config.config_log(
     logging_directory="log",
