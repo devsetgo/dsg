@@ -19,25 +19,25 @@ from pydantic_settings import (
 from pydantic_settings import SettingsConfigDict
 
 
-class DatabaseDriverEnum(str, Enum):
-    # Enum class to hold database driver values. It inherits both str and Enum classes.
+# class DatabaseDriverEnum(str, Enum):
+#     # Enum class to hold database driver values. It inherits both str and Enum classes.
 
-    postgres = "postgresql+asyncpg"
-    sqlite = "sqlite+aiosqlite"
-    memory = "sqlite+aiosqlite:///:memory:?cache=shared"
-    mysql = "mysql+aiomysql"
-    oracle = "oracle+cx_oracle"
+#     postgres = "postgresql+asyncpg"
+#     sqlite = "sqlite+aiosqlite"
+#     memory = "sqlite+aiosqlite:///:memory:?cache=shared"
+#     mysql = "mysql+aiomysql"
+#     oracle = "oracle+cx_oracle"
 
-    model_config = ConfigDict(
-        use_enum_values=True
-    )  # Configuration dictionary to use enum values
+#     model_config = ConfigDict(
+#         use_enum_values=True
+#     )  # Configuration dictionary to use enum values
 
 
 class Settings(BaseSettings):
     # Class that describes the settings schema
 
     # Define fields with default values
-    database_driver: DatabaseDriverEnum  # Use the DatabaseDriverEnum Enum for DB_TYPE
+    # database_driver: DatabaseDriverEnum  # Use the DatabaseDriverEnum Enum for DB_TYPE
     db_user: str = None
     db_password: str = None
     db_host: str = None
@@ -48,42 +48,44 @@ class Settings(BaseSettings):
         datetime.utcnow()
     )  # Set the current date and time when the application is run
 
-    def database_uri(self) -> str:
-        # Method to generate the appropriate database URI based on the selected driver
-        if self.database_driver == DatabaseDriverEnum.memory:
-            return str(self.database_driver)
-        elif self.database_driver == DatabaseDriverEnum.sqlite:
-            # For SQLite, only the database name is required.
-            return f"{self.database_driver}:///{self.db_name}.db"
-        else:
-            return f"{self.database_driver}://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
+    openai_key: str = None
 
-    def dict(self):
-        # Method to convert the settings object into a dictionary
-        original_dict = super().dict()
-        original_dict.update(
-            {"database_uri": self.database_uri()}
-        )  # Add the database_uri to the dictionary
-        return original_dict
+    # def database_uri(self) -> str:
+    #     # Method to generate the appropriate database URI based on the selected driver
+    #     if self.database_driver == DatabaseDriverEnum.memory:
+    #         return str(self.database_driver)
+    #     elif self.database_driver == DatabaseDriverEnum.sqlite:
+    #         # For SQLite, only the database name is required.
+    #         return f"{self.database_driver}:///{self.db_name}.db"
+    #     else:
+    #         return f"{self.database_driver}://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
-    @field_validator("database_driver", mode="before")
-    @classmethod
-    def parse_database_driver(cls, value):
-        """
-        Validator method to convert the input string to the corresponding enum member value.
+    # def dict(self):
+    #     # Method to convert the settings object into a dictionary
+    #     original_dict = super().dict()
+    #     original_dict.update(
+    #         {"database_uri": self.database_uri()}
+    #     )  # Add the database_uri to the dictionary
+    #     return original_dict
 
-        Args:
-            value (str): The input string to be converted.
+    # @field_validator("database_driver", mode="before")
+    # @classmethod
+    # def parse_database_driver(cls, value):
+    #     """
+    #     Validator method to convert the input string to the corresponding enum member value.
 
-        Returns:
-            The corresponding enum member value if the input string is valid, otherwise returns the input value.
-        """
-        if isinstance(value, str):
-            try:
-                return DatabaseDriverEnum[value]
-            except KeyError:
-                pass
-        return value
+    #     Args:
+    #         value (str): The input string to be converted.
+
+    #     Returns:
+    #         The corresponding enum member value if the input string is valid, otherwise returns the input value.
+    #     """
+    #     if isinstance(value, str):
+    #         try:
+    #             return DatabaseDriverEnum[value]
+    #         except KeyError:
+    #             pass
+    #     return value
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", use_enum_values=True
