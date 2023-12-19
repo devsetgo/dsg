@@ -1,0 +1,36 @@
+<!-- Main Sidebar Container -->
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+  <!-- Brand Logo -->
+  <a href="/" class="brand-link">
+    <i class="fas fa-play fa-lg"> <span class="brand-text font-weight-light">DevSetGo</span></i>
+  </a>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    {% include "base_nav_items.html" %}
+    {% include "base_nav_loggedin.html" %}
+    {% include "base_nav_admin.html" %}
+    <nav class="mt-2">
+      <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="true">
+          <li class="nav-item has-treeview  menu-closed ">
+              <a href="#" class="nav-link">
+                  <i class="nav-icon fas fa-tachometer-alt"></i>
+                  <p>
+                      Developer
+                      <i class="right fas fa-angle-left"></i>
+                  </p>
+              </a>
+              <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                      <a href="/docs" class="nav-link active", target="_blank">
+                          <i class="far fa-circle nav-icon"></i>
+                          <p>OpenAPI</p>
+                      </a>
+                  </li>
+              </ul>
+      </ul>
+  </nav>
+    <!-- Sidebar user panel (optional) -->
+  <!-- /.sidebar -->
+</aside>
+
