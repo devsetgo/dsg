@@ -2,8 +2,9 @@ import openai
 from dsg_lib import base_schema
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, JSON
 from sqlalchemy.orm import relationship
+from .functions.ai import get_tags, get_summary
 
-from .resources import async_db
+from .db_init import async_db
 
 
 class User(base_schema.SchemaBase, async_db.Base):
@@ -72,6 +73,7 @@ class Categories(base_schema.SchemaBase, async_db.Base):
     )  # Relationship to the User class
 
 
+
 class Notes(base_schema.SchemaBase, async_db.Base):
     __tablename__ = "notes"  # Name of the table in the database
     __tableargs__ = {"comment": "Notes that the user writes"}
@@ -80,7 +82,7 @@ class Notes(base_schema.SchemaBase, async_db.Base):
     mood = Column(String(50), unique=False, index=True)  # mood of note
     note = Column(String(500), unique=False, index=True)  # note
     tags = Column(JSON)  # tags from OpenAI
-
+    summary = Column(String(500), unique=False, index=True)  # summary from OpenAI
     # Define the parent relationship to the User class
     user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
     user = relationship(
@@ -95,17 +97,40 @@ class Notes(base_schema.SchemaBase, async_db.Base):
     def character_count(self):
         return len(self.note)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
-        # Call OpenAI to get tags
-        openai.api_key = "your-api-key"
-        response = openai.Completion.create(
-            engine="text-davinci-002",
-            prompt=f"Please analyze the following text and provide 1 to 3 one-word psychological keyword tags that best capture its essence: {self.note}",
-            temperature=0.5,
-            max_tokens=3,
-        )
 
-        # Store the tags as a JSON object
-        self.tags = response.choices[0].text.strip().split()
+class Requirements(base_schema.SchemaBase, async_db.Base):
+    __tablename__ = "requirements"  # Name of the table in the database
+    __tableargs__ = {"comment": "Requirements that the user writes"}
+
+    # Define the columns of the table
+    text_in = Column(String(5000), unique=False, index=True)  # text_in
+    json_data_in = Column(JSON)  # json_data_in
+    json_data_out = Column(JSON)  # json_data_out
+    lib_out_count = Column(Integer)  # lib_out_count
+    host_ip = Column(String(50), unique=False, index=True)  # host_ip
+    header_data = Column(JSON)  # header_data
+    private = Column(Boolean, default=False)  # If the note is private
+    # Define the parent relationship to the User class
+    # user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
+    # user = relationship(
+    #     "User", back_populates="Requirements"
+    # )  # Relationship to the User class
+
+
+class Libraries(base_schema.SchemaBase, async_db.Base):
+    __tablename__ = "libraries"  # Name of the table in the database
+    __tableargs__ = {"comment": "Libraries that the user writes"}
+
+    # Define the columns of the table
+    library = Column(String(200), unique=False, index=True)  # library
+    description = Column(String(5000), unique=False, index=True)  # description
+    currentVersion = Column(String(50), unique=False, index=True)  # currentVersion
+    newVersion = Column(String(50), unique=False, index=True)  # newVersion
+    vulnerabilities = Column(JSON)  # vulnerabilities
+    # Define the parent relationship to the User class
+    # user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
+    # user = relationship(
+    #     "User", back_populates="Libraries"
+    # )  # Relationship to the User clas
+
