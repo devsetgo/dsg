@@ -3,135 +3,98 @@
 
 from datetime import datetime
 from typing import List
-
+from loguru import logger
 from fastapi import APIRouter, HTTPException, Query, status
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, ValidationError, validator
 from sqlalchemy import Delete, Insert, Select, Update
-
-from .resources import db_ops
-
-
-class UserBase(BaseModel):
-    name_first: str = Field(
-        ...,
-        # alias="firstName",
-        description="the users first or given name",
-        examples=["Bob"],
-    )
-    name_last: str = Field(
-        ...,
-        # alias="lastName",
-        description="the users last or surname name",
-        examples=["Fruit"],
-    )
-    email: EmailStr
-
-    model_config = ConfigDict(from_attributes=True)
+import re
+from ..functions.hash_function import hash_password, verify_password, check_needs_rehash
 
 
-class UserResponse(UserBase):
-    _id: str
-    date_created: datetime
-    date_updated: datetime
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class UserList(BaseModel):
-    users: List[UserBase]
+from ..resources import db_ops
+from ..db_tables import User
 
 
 router = APIRouter()
 
 
-@router.get("/users/count")
-async def count_users():
-    count = await DatabaseOperations.count_query(Select(User))
-    return {"count": count}
+class UserBase(BaseModel):
+    first_name: str
+    last_name: str
+    user_name: str
+    email: str
+    password: str
+    password2: str
+
+    @validator("password1")
+    def password_complexity(cls, password1):
+        if len(password1) < 8:
+            raise ValidationError("Password must be at least 8 characters long")
+        if not re.search("[A-Z]", password1):
+            raise ValidationError("Password must contain at least one uppercase letter")
+        if not re.search("[a-z]", password1):
+            raise ValidationError("Password must contain at least one lowercase letter")
+        if not re.search("[0-9]", password1):
+            raise ValidationError("Password must contain at least one number")
+        if not re.search("[^A-Za-z0-9]", password1):
+            raise ValidationError(
+                "Password must contain at least one special character"
+            )
+        return password1
+
+    @validator("password2")
+    def passwords_match(cls, password2, values, **kwargs):
+        if "password1" in values and password2 != values["password1"]:
+            raise ValidationError("passwords do not match")
+        return password2
 
 
-@router.get("/users")
-async def read_users(
-    limit: int = Query(None, alias="limit", ge=1, le=1000),
-    offset: int = Query(None, alias="offset"),
-):
-    if limit is None:
-        limit = 500
-
-    if offset is None:
-        offset = 0
-
-    query_count = Select(User)
-    total_count = await DatabaseOperations.count_query(query=query_count)
-    query = Select(User)
-    users = await DatabaseOperations.fetch_query(
-        query=query, limit=limit, offset=offset
-    )
-    return {
-        "query_data": {"total_count": total_count, "count": len(users)},
-        "users": users,
-    }
-
-
+# create user endpoint
 @router.post(
-    "/users/", response_model=UserResponse, status_code=status.HTTP_201_CREATED
+    "/users/create", response_model=UserBase, status_code=status.HTTP_201_CREATED
 )
 async def create_user(user: UserBase):
-    db_user = User(
-        name_first=user.name_first, name_last=user.name_last, email=user.email
+    # The incoming data is validated by the UserBase model
+    # If the data does not meet the validation requirements, a ValidationError will be raised
+    user_data = UserBase(**user.dict())
+
+    user = User(
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
+        user_name=user_data.user_name,
+        email=user_data.email,
+        password=user_data.password1,  # Use the validated password
     )
-    created_user = await DatabaseOperations.execute_one(db_user)
-    return created_user
+    logger.info(f"created_users: {user.user_name}")
+    await db_ops.create_one(user)
+    return user_data
 
 
-@router.post(
-    "/users/bulk/",
-    response_model=List[UserResponse],
-    status_code=status.HTTP_201_CREATED,
-)
-async def create_users(user_list: UserList):
-    db_users = [
-        User(name_first=user.name_first, name_last=user.name_last, email=user.email)
-        for user in user_list.users
-    ]
-    created_users = await DatabaseOperations.execute_many(db_users)
-    return created_users
-
-
-import random
-import string
-
-
-@router.get(
-    "/users/bulk/auto",
-    response_model=List[UserResponse],
-    status_code=status.HTTP_201_CREATED,
-)
-async def create_users_auto(qty: int = Query(100, le=1000, ge=1)):
-    created_users: list = []
-    for i in range(qty):
-        # Generate a random first name, last name
-        name_first = "".join(random.choices(string.ascii_lowercase, k=5))
-        name_last = "".join(random.choices(string.ascii_lowercase, k=5))
-
-        # Generate a random email
-        random_email_part = "".join(
-            random.choices(string.ascii_lowercase + string.digits, k=10)
-        )
-        email = f"user{random_email_part}@yahoo.com"
-
-        db_user = User(name_first=name_first, name_last=name_last, email=email)
-        created_user = await DatabaseOperations.execute_one(db_user)
-        created_users.append(created_user)
-
-    return created_users
-
-
-@router.get("/users/{user_id}", response_model=UserResponse)
-async def read_user(user_id: str):
-    users = await DatabaseOperations.fetch_query(
-        Select(User).where(User._id == user_id)
-    )
-    if not users:
+# login user endpoint
+@router.post("/login", response_model=UserBase, status_code=status.HTTP_201_CREATED)
+async def login_user(user, password):
+    user = await db_ops.get_one(Select(User).where(User.user_name == user))
+    if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return users[0]
+    if not verify_password(user.password, password):
+        raise HTTPException(status_code=400, detail="Incorrect password")
+    return user
+
+
+# log out user endpoint
+
+# update user endpoint
+
+# update password endpoint
+
+# deactivate user endpoint
+
+# delete user endpoint
+
+# get user endpoint
+
+# get users endpoint
+
+# user metrics endpoint
+
+# users metricts endpoint

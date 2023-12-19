@@ -1,29 +1,18 @@
 # -*- coding: utf-8 -*-
-# import settings
-from dsg_lib import async_database, database_config, database_operations
+from .db_init import async_db
+from dsg_lib import database_operations
 from loguru import logger
 from sqlalchemy import Select
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from .db_tables import Categories, InterestingThings, User
+from .settings import settings
 
 # templates and static files
-# templates = Jinja2Templates(directory="templates")
-# statics = StaticFiles(directory="static")
+templates = Jinja2Templates(directory="templates")
+statics = StaticFiles(directory="static")
 
-
-config = {
-    # "database_uri": "postgresql+asyncpg://postgres:postgres@postgresdb/postgres",
-    "database_uri": "sqlite+aiosqlite:///:memory:?cache=shared",
-    "echo": False,
-    "future": True,
-    # "pool_pre_ping": True,
-    # "pool_size": 10,
-    # "max_overflow": 10,
-    "pool_recycle": 3600,
-    # "pool_timeout": 30,
-}
-logger.info("setting up database")
-db_config = database_config.DBConfig(config)
 logger.info("setting up database operations")
-async_db = async_database.AsyncDatabase(db_config)
 db_ops = database_operations.DatabaseOperations(async_db)
 logger.info("database setup complete")
 
@@ -31,6 +20,7 @@ logger.info("database setup complete")
 async def startup():
     print("startup")
     logger.info("starting up services")
+    
     # Create a DBConfig instance
     logger.info("checking database for tables")
     tables = await db_ops.get_table_names()
@@ -55,9 +45,6 @@ async def shutdown():
 
 def init_app():
     logger.info("Initiating database")
-
-
-from .db_tables import Categories, InterestingThings, User
 
 
 async def add_system_data():

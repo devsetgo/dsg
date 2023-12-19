@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# from .settings import settings
+from src.settings import settings
 
 from openai import AsyncOpenAI
 
@@ -55,7 +55,7 @@ async def get_summary(content: str) -> dict:
     response_content = chat_completion.choices[0].message.content
 
     # Split the content into a list of keywords
-    keywords = response_content.split(', ')
+    keywords = response_content.split(", ")
 
     # Store the keywords in a dictionary
     response_dict = {"tags": keywords}
@@ -64,41 +64,46 @@ async def get_summary(content: str) -> dict:
 
 import json
 
+
 def open_json():
-    with open('/workspaces/dsg/note.json') as read_file:
-            # load file into data variable
-            result = json.load(read_file)
+    with open("/workspaces/dsg/note.json") as read_file:
+        # load file into data variable
+        result = json.load(read_file)
 
     return result
 
+
 def save_json(data):
-    with open('/workspaces/dsg/new_note.json', 'w') as outfile:
+    with open("/workspaces/dsg/new_note.json", "w") as outfile:
         json.dump(data, outfile)
 
 
 async def run():
-
     big_list = open_json()
     # pick 5 random notes from the list
     print(len(big_list))
     import random
+
     content_list = random.sample(big_list, 5)
     # print(content_list)
     new_data = []
     for content in content_list:
-        print(content['created_date'])
-        summary = await get_summary(content=content['my_note'])
+        print(content["created_date"])
+        summary = await get_summary(content=content["my_note"])
         print(summary)
-        tags = await get_tags(content=content['my_note'])
+        tags = await get_tags(content=content["my_note"])
         print(tags)
-        new_data.append({
-            'created_date': content['created_date'],
-            'my_note': content['my_note'],
-            'summary': summary,
-            'tags': tags
-        })
-    
+        new_data.append(
+            {
+                "created_date": content["created_date"],
+                "my_note": content["my_note"],
+                "summary": summary,
+                "tags": tags,
+            }
+        )
+
     save_json(new_data)
+
 
 if __name__ == "__main__":
     import asyncio
