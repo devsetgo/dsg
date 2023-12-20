@@ -72,3 +72,10 @@ async def about_page(request: Request):
     # Return a `TemplateResponse` object containing the rendered HTML template and the retrieved data.
     return templates.TemplateResponse(template, context)
 
+# login to site
+@router.get("/login")
+async def login(request: Request):
+
+    cool_stuff = await db_ops.read_query(Select(InterestingThings))
+    context = {"request": request,"data":{"my_stuff": {}, "cool_stuff": cool_stuff}}
+    return templates.TemplateResponse("users/login.html", context=context)

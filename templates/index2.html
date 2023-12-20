@@ -57,44 +57,7 @@
     <!-- /.card -->
 
   </div>
-  <div class="row">
-    <div class="card col-12">
-      <div class="card-header">
-        <h3 class="card-title">
-          <i class="fas fa-code-branch"> </i> My Tools and Libraries
-        </h3>
-      </div>
-      <!-- /.card-header -->
-      <div class="card-body">
-        <div class="row d-flex align-items-stretch">
-          {% for d in data.my_stuff %}
-          <div class="col-12 col-sm-6 col-md-4 align-items-stretch">
-            <div class="card bg-light">
-              <div class="card-header text-muted border-bottom-0">
-                Project: {{d.name|upper}}
-              </div>
-              <div class="card-body pt-0">
-                <div class="row">
-                  <div class="col-12">
-                    <ul>
-                      <li>Site: <a href="{{d.html_url}}">Link</a></li>
-                      <li>Description:{{d.description}} </li>
-                      <li>Tags: {% for t in d.tags %} {{t}}, {% endfor %}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- /.card-body -->
-          {% endfor %}
-        </div>
-      </div>
-      <!-- /.card-body -->
-    </div>
-    <!-- /.card -->
 
-  </div>
 </section>
 <!-- /.content-wrapper -->
 </div>

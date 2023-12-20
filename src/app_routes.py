@@ -15,6 +15,7 @@ def create_routes(app: FastAPI):
         tags=["html-pages"],
     )
 
+
     # This should always be the last route added
     config_health = {
         "enable_status_endpoint": True,
