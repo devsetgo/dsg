@@ -8,7 +8,7 @@ _scratch_pad/
 logs/*
 log/*
 log.json
-
+log.log
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
