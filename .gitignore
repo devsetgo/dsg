@@ -5,13 +5,16 @@ __archive/
 .env
 _venv/
 _scratch_pad/
+logs/*
+log/*
+log.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 .vscode/
-logs/*
-log/*
+
 # C extensions
 *.so
 
