@@ -1,10 +1,10 @@
 import openai
 from dsg_lib import base_schema
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, JSON
+from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from .functions.ai import get_tags, get_summary
 
 from .db_init import async_db
+from .functions.ai import get_summary, get_tags
 
 
 class User(base_schema.SchemaBase, async_db.Base):
@@ -73,7 +73,6 @@ class Categories(base_schema.SchemaBase, async_db.Base):
     )  # Relationship to the User class
 
 
-
 class Notes(base_schema.SchemaBase, async_db.Base):
     __tablename__ = "notes"  # Name of the table in the database
     __tableargs__ = {"comment": "Notes that the user writes"}
@@ -96,7 +95,6 @@ class Notes(base_schema.SchemaBase, async_db.Base):
     @property
     def character_count(self):
         return len(self.note)
-
 
 
 class Requirements(base_schema.SchemaBase, async_db.Base):
@@ -133,4 +131,3 @@ class Libraries(base_schema.SchemaBase, async_db.Base):
     # user = relationship(
     #     "User", back_populates="Libraries"
     # )  # Relationship to the User clas
-

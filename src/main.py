@@ -6,15 +6,15 @@ from dsg_lib import logging_config
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from loguru import logger
+
+from .app_middleware import add_middleware
 from .app_routes import create_routes
 from .resources import startup
-from .app_middleware import add_middleware
-
 
 logging_config.config_log(
     logging_directory="log",
-    log_name="log.json",
-    logging_level="DEBUG",
+    log_name="log.log",
+    logging_level="INFO",
     log_rotation="100 MB",
     log_retention="30 days",
     log_backtrace=False,
@@ -53,6 +53,7 @@ app = FastAPI(
 
 add_middleware(app)
 create_routes(app)
+
 
 @app.get("/")
 async def root():

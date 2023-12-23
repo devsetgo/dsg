@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
 
+import re
 from datetime import datetime
 from typing import List
+
+from fastapi import APIRouter, HTTPException, Query, status, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from loguru import logger
-from fastapi import APIRouter, HTTPException, Query, status
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, ValidationError, validator
+from pydantic import field_validator, BaseModel, ConfigDict, EmailStr, Field, ValidationError, validator
 from sqlalchemy import Delete, Insert, Select, Update
-import re
-from ..functions.hash_function import hash_password, verify_password, check_needs_rehash
 
-
-from ..resources import db_ops
 from ..db_tables import User
-
+from ..functions.hash_function import check_needs_rehash, hash_password, verify_password
+from ..resources import db_ops, templates
 
 router = APIRouter()
 
@@ -26,7 +26,8 @@ class UserBase(BaseModel):
     password: str
     password2: str
 
-    @validator("password1")
+    @field_validator("password1", check_fields=False)
+    @classmethod
     def password_complexity(cls, password1):
         if len(password1) < 8:
             raise ValidationError("Password must be at least 8 characters long")
@@ -42,7 +43,8 @@ class UserBase(BaseModel):
             )
         return password1
 
-    @validator("password2")
+
+    @field_validator("password2", check_fields=False)
     def passwords_match(cls, password2, values, **kwargs):
         if "password1" in values and password2 != values["password1"]:
             raise ValidationError("passwords do not match")
@@ -70,15 +72,35 @@ async def create_user(user: UserBase):
     return user_data
 
 
+# router login page
+@router.get("/login", response_class=HTMLResponse)
+async def login(request: Request):
+    return templates.TemplateResponse("users/login.html", {"request": request})
+
 # login user endpoint
-@router.post("/login", response_model=UserBase, status_code=status.HTTP_201_CREATED)
-async def login_user(user, password):
-    user = await db_ops.get_one(Select(User).where(User.user_name == user))
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    if not verify_password(user.password, password):
-        raise HTTPException(status_code=400, detail="Incorrect password")
-    return user
+@router.post("/login", status_code=status.HTTP_201_CREATED)
+async def login_user(request:Request):
+    login_attempt = request.session.get("login_attempt", 0)
+    
+    form = await request.form()
+    data = dict(form)
+    user_name = form['username']
+    password = form['password']
+    user = await db_ops.get_one_record(Select(User).where(User.user_name == user_name))
+    toast_messages:list=[{"message":"User name not found or password is incorrect",'color':'alert'}]
+
+    if user is None or 'error' in user:
+        request.session["login_attempt"] = login_attempt + 1
+        print(toast_messages)
+        context = {"request": request, "toast_messages": toast_messages}
+        return templates.TemplateResponse("toast-messages.html", context=context)
+    if not verify_password(hash=user.password, password=password):
+        request.session["login_attempt"] = login_attempt + 1
+        context = {"request": request, "toast_messages": toast_messages}
+        return templates.TemplateResponse("toast-messages.html", context=context)
+    
+    request.session["user_identifier"] = "abc123"
+    return RedirectResponse(url="/", status_code=303)
 
 
 # log out user endpoint

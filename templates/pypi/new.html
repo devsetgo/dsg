@@ -18,25 +18,19 @@
             <h3 class="card-title">Pypi Update</h3>
           </div>
           <!-- /.card-header -->
-
           <!-- form start -->
-
           <div class="row">
-
             <div class="col-5">
               <form action="/pypi/check" method="post" enctype="multipart/form-data">
-                {{ form.csrf_token }}
-                <br>
+                <!-- CSRF token -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">        
+                      
                 <div class="input-group mb-5">
-                  {{ form.requirements(placeholder='Paste Requirements.txt here',rows='10',cols='80') }}
-
+                  <textarea name="requirements" placeholder="Paste Requirements.txt here" rows="10" cols="80"></textarea>
                 </div>
+              
                 <div class="input-group mb-5">
-                  <br>
-                  <button type="submit" class="btn btn-primary btn-block" title="Create Bot in deactivated mode">Check
-                    For Updates</button>
-                  <br>
-
+                  <button type="submit" class="btn btn-primary btn-block" title="Create Bot in deactivated mode">Check For Updates</button>
                 </div>
               </form>
             </div>
@@ -76,13 +70,5 @@
 {% endblock %}
 {% block page_scripts %}
 <!-- page scripts-->
-<script src="{{ url_for('static' , path='plugins/toastr/toastr.min.js') }}"></script>
-
-{% for field, errors in form.errors.items() %}
-<script type=text/javascript>
-  toastr.error("{{', '.join(errors)}}", "{{form[field].id }}")
-</script>
-{% endfor %}
-
 
 {% endblock %}

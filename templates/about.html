@@ -20,7 +20,6 @@
           <h5 class="widget-user-desc">{{data.data_user.bio}}</h5>
           <h5 class="widget-user-desc">Below are recently updated projects on my <a
               href="{{data.data_user.html_url}}">Gitub Account</a>.</h5>
-
         </div>
         <!-- <div class="widget-user-image">
           <img class="img-circle elevation-2"
@@ -30,7 +29,7 @@
           <div class="row">
             <div class="col-sm-3 border-right">
               <div class="description-block">
-                <h5 class="description-header">{{data.data_user.public_repos}}</h5>
+                <h5 class="description-header"><a href="https://github.com/{{repo_name}}" target="_blank"> {{data.data_user.public_repos}}</a></h5>
                 <span class="description-text">Repos</span>
               </div>
               <!-- /.description-block -->
@@ -38,7 +37,7 @@
             <!-- /.col -->
             <div class="col-sm-3 border-right">
               <div class="description-block">
-                <h5 class="description-header">{{data.data_user.public_gists}}</h5>
+                <h5 class="description-header"><a href="https://gist.github.com/{{repo_name}}" target="_blank">{{data.data_user.public_gists}}</a></h5>
                 <span class="description-text">Gists</span>
               </div>
               <!-- /.description-block -->
@@ -87,7 +86,7 @@
                 <div class="col-12">
                   <ul>
                     <li>GitHub: <a href="{{d.html_url}}">{{d.name}}</a></li>
-                    <li>Open Issues: <a href="{{d.open_issues}}"> {{d.open_issues_count}}</a></li>
+                    <li>Pull Requests: {{d.open_issues_count}}</li>
                     <li>Watcher:{{d.watchers}}</li>
                     <li>Default Branch: {{d.default_branch}}</li>
                     <li>Git Url: {{d.git_url}}</li>
@@ -99,16 +98,6 @@
                 </div>
               </div>
             </div>
-            <!-- <div class="card-footer">
-              <div class="text-right">
-                <a href="#" class="btn btn-sm bg-teal">
-                  <i class="fas fa-comments"></i>
-                </a>
-                <a href="#" class="btn btn-sm btn-primary">
-                  <i class="fas fa-user"></i> View Profile
-                </a>
-              </div>
-            </div> -->
           </div>
         </div>
         <!-- /.card-body -->

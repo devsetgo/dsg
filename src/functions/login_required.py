@@ -3,8 +3,7 @@ from typing import Callable
 
 from loguru import logger
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
-from starlette.responses import Response
+from starlette.responses import RedirectResponse, Response
 
 
 def require_login(endpoint: Callable) -> Callable:
