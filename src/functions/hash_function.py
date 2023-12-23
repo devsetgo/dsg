@@ -2,7 +2,6 @@
 from argon2 import PasswordHasher, exceptions
 from loguru import logger
 
-
 ph = PasswordHasher(
     time_cost=3,
     memory_cost=65536,

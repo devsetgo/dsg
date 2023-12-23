@@ -1,12 +1,32 @@
 # -*- coding: utf-8 -*-
-from .db_init import async_db
+import secrets
+
 from dsg_lib import database_operations
-from loguru import logger
-from sqlalchemy import Select
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi_csrf_protect import CsrfProtect
+from fastapi_csrf_protect.exceptions import CsrfProtectError
+from loguru import logger
+from pydantic import BaseModel
+from sqlalchemy import Select
+
+from .db_init import async_db
 from .db_tables import Categories, InterestingThings, User
 from .settings import settings
+
+
+class CsrfSettings(BaseModel):
+    secret_key: str = secrets.token_hex(128)
+    cookie_samesite: str = "none"
+    cookie_secure: bool = True
+    token_location: str = "body"
+    token_key: str = "csrf-token"
+
+
+@CsrfProtect.load_config
+def get_csrf_config():
+    return CsrfSettings()
+
 
 # templates and static files
 templates = Jinja2Templates(directory="templates")
@@ -20,7 +40,7 @@ logger.info("database setup complete")
 async def startup():
     print("startup")
     logger.info("starting up services")
-    
+
     # Create a DBConfig instance
     logger.info("checking database for tables")
     tables = await db_ops.get_table_names()

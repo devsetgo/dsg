@@ -3,7 +3,6 @@
 """
 This module provides classes and functions for managing database settings in an application.
 """
-from functools import lru_cache
 import secrets  # For generating secure random numbers
 from datetime import datetime  # A Python library used for working with dates and times
 from enum import (
@@ -11,29 +10,45 @@ from enum import (
 )
 from functools import lru_cache  # For caching the results of expensive function calls
 
-from pydantic import ConfigDict  # Importing required components from Pydantic library
-from pydantic import field_validator
-from pydantic_settings import (
-    BaseSettings,  # Pydantic-settings is a Pydantic extension for dealing with settings management
+from pydantic import (  # For validating data
+    ConfigDict,
+    Field,
+    field_validator,
+    validator,
 )
-from pydantic_settings import SettingsConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class SameSiteEnum(str, Enum):
+    Lax = "Lax"
+    Strict = "Strict"
+    None_ = "None"
 
 
 class Settings(BaseSettings):
     # Class that describes the settings schema
-    csrf_secret:str = secrets.token_hex(128)  # Generate a random secret key
-    secret_key: str = secrets.token_hex(128)  # Generate a random secret key
-    date_run: datetime = datetime.utcnow()  # Set the current date and time when the application is run
-    
+    csrf_secret: str = secrets.token_hex(128)  # Generate a random secret key
+    date_run: datetime = (
+        datetime.utcnow()
+    )  # Set the current date and time when the application is run
     # application settings
     release_env: str = "prd"
-    max_timeout: int = 7200
-    max_age: int = 7200
-    https_on: bool = False
-    same_site: str = "Strict"  # Lax, Strict, None
-
+    # logging settings
+    logging_directory: str = "log"
+    log_name: str = "log.log"
+    logging_level: str = "INFO"
+    log_rotation: str = "100 MB"
+    log_retention: str = "30 days"
+    log_backtrace: bool = False
+    log_serializer: bool = False
+    log_diagnose: bool = False
+    # session management
+    session_secret_key: str = secrets.token_hex(128)  # Generate a random secret key
+    same_site: SameSiteEnum = Field("Lax", description="Options: Lax, Strict, None")
+    https_only: bool = False
+    max_age: int = 3600
     # service accounts
-    openai_key: str = None # OpenAI API Key
+    openai_key: str = None  # OpenAI API Key
     # GitHub
     github_id: str = "octocat"
     github_repo_limit: int = 20

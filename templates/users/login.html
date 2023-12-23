@@ -1,33 +1,64 @@
-{% extends "base_user_login.html" %}
-{% block page_title %}Login{% endblock %}
+{% extends "base_user_login.html" %} {% block page_title %}Login{% endblock %}
 {% block page_stylesheet %}
 <!-- overlayScrollbars -->
-<link rel="stylesheet" href="{{ url_for('static' , path='plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
-<link rel="stylesheet" href="{{ url_for('static' , path='plugins/toastr/toastr.min.css') }}">
-{% endblock %}
-{% block page_breadcrumb %}Login{% endblock %}
-{% block page_head_title %}Login {% endblock %}
-{% block body %}
+<link rel="stylesheet"
+  href="{{ url_for('static' , path='plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static' , path='plugins/toastr/toastr.min.css') }}" />
+<script src="https://unpkg.com/htmx.org@1.9.10"
+  integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 
+{% endblock %} {% block page_breadcrumb %}Login{% endblock %} {% block
+page_head_title %}Login {% endblock %} {% block body %}
 
-  <div class="login-box">
-    <div class="login-logo">
-      <a href="/"><b>DevSet</b>Go</a>
+<div class="login-box">
+  <div class="card card-outline card-primary">
+    <div class="card-header text-center">
+      <a href="/" class="h1"><b>DevSet</b>GO</a>
     </div>
-    <!-- /.login-logo -->
-    <div class="card">
-      <div class="card-body login-card-body text-center">
-        <img src="{{ url_for('static' , path='image/robot.png') }}" width="200" height="211" title="Future Functionality">
-        <p>Future Functionality</p>
-        <p>Back to <a href="/">main page</a></p>
-      </div>
-
-      <!-- /.login-card-body -->
+    <div class="card-body">
+      <p class="login-box-msg">Sign in to start your session</p>
+      <form hx-post="/users/login" hx-swap="outerHTML" hx-trigger="submit" hx-indicator="#loadingIndicator" hx-target="#toast-messages">
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="user_name" name="username" />
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fa-solid fa-user"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="password" class="form-control" placeholder="Password" name="password" />
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-8">
+            <div class="icheck-primary">
+              <input type="checkbox" id="remember" name="remember" />
+              <label for="remember"> Remember Me </label>
+            </div>
+          </div>
+          <div class="col-4">
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+          </div>
+        </div>
+      </form>
+      
+      <p class="mb-1">
+        <a href="users/forgot-password.html">I forgot my password</a>
+      </p>
+      <p class="mb-0">
+        <a href="users/register.html" class="text-center">Register a new membership</a>
+      </p>
     </div>
   </div>
-  <!-- /.login-box -->
-  {% endblock %}
-  {% block page_scripts %}
-  <!-- page scripts-->
+</div>
 
-  {% endblock %}
+<!-- /.login-box -->
+{% endblock %} {% block page_scripts %}
+<!-- page scripts-->
+{% include "toast-messages.html" %}
+{% endblock %}
