@@ -5030,16 +5030,36 @@ top = [
 ]
 
 from dsg_lib.file_functions import save_csv
+from tqdm import tqdm
+import httpx
 
 build_list = []
 for j in top:
+    if len(build_list) > 1000:
+        break
     short_list = [j["project"]]
     build_list.append(short_list)
 
+# http://localhost:5000/devtools/check-one?package=httpx
+# make an api call to get the data for each package using httpx
+# The output should be package name == version
+
+output_list:list = []
+
+for i in tqdm(build_list):
+    url = "http://localhost:5000/devtools/check-one?package=" + i[0]
+    response = httpx.get(url)
+    data = response.json()
+    # print(data)
+    # get info name and version
+    name = data["package_name"]
+    version = data["latest_version"]
+    output_list.append([f'{name}=={version}'])
+
 save_csv(
     file_name="your-file-name.csv",
-    data=build_list,
-    root_folder="/workspace/data",
+    data=output_list,
+    root_folder="/workspaces/dsg",
     delimiter=",",
     quotechar='"',
 )

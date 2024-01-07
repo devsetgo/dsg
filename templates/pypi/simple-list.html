@@ -17,36 +17,36 @@
 <!-- Main content -->
 
 <section class="content">
-<a href="/pypi/list">All</a><br>
-
-{{request_group_id}}
+<p>{{count_data}}</p>
 <p>{{db_data}}</p>
-<p>
-<ul>
-  {% for item in db_data %}
-  <li>
-    Request Group ID: {{ item.request_group_id }}<br>
-    New Version: {{ item.new_version }}<br>
-    Vulnerabilities:<br>
-    {% for vuln in item.vulnerability %}
-      ID: {{ vuln.id }}<br>
-      Details: {{ vuln.details }}<br>
-      Fixed In: {{ vuln.fixed_in }}<br>
-      Link: <a href="{{ vuln.link }}">{{ vuln.link }}</a><br>
-      Source: {{ vuln.source }}<br>
-      Summary: {{ vuln.summary }}<br>
-      Withdrawn: {{ vuln.withdrawn }}<br>
-    {% endfor %}
-    Date Created: {{ item.date_created }}<br>
-    Current Version: {{ item.current_version }}<br>
-    Library ID: {{ item.library_id }}<br>
-    New Version Vulnerability: {{ item.new_version_vulnerability }}<br>
-    PKID: {{ item.pkid }}<br>
-    Date Updated: {{ item.date_updated }}
-  </li>
-  {% endfor %}
-</ul>
-</p>
+<table>
+  <thead>
+      <tr>
+          <th>Request Group ID</th>
+          <th>Text In</th>
+          <th>JSON Data In</th>
+          <th>JSON Data Out</th>
+          <th>Lib Out Count</th>
+          <th>Host IP</th>
+          <th>Header Data</th>
+          <th>User Agent</th>
+      </tr>
+  </thead>
+  <tbody>
+      {% for item in db_data %}
+          <tr>
+              <td>{{ item.request_group_id }}</td>
+              <td>{{ item.text_in }}</td>
+              <td>{{ item.json_data_in }}</td>
+              <td>{{ item.json_data_out }}</td>
+              <td>{{ item.lib_out_count }}</td>
+              <td>{{ item.host_ip }}</td>
+              <td>{{ item.header_data }}</td>
+              <td>{{ item.user_agent }}</td>
+          </tr>
+      {% endfor %}
+  </tbody>
+</table>
 </section>
 <!-- /.content -->
 </div>

@@ -54,7 +54,6 @@ class Settings(BaseSettings):
     github_repo_limit: int = 20
     github_token: str = "<enter key>"
 
-
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

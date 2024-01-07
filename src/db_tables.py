@@ -65,7 +65,7 @@ class Categories(base_schema.SchemaBase, async_db.Base):
     name = Column(String(50), unique=False, index=True)  # name of item
     description = Column(String(500), unique=False, index=True)  # description of item
     is_system = Column(Boolean, default=True)  # If the category is a system default
-    is_active = Column(Boolean, default=True)  # If the category is active
+    is_active = Column(Boolean, default=True)  # If the c   ategory is active
     # Define the parent relationship to the User class
     user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
     user = relationship(
@@ -97,37 +97,42 @@ class Notes(base_schema.SchemaBase, async_db.Base):
         return len(self.note)
 
 
-class Requirements(base_schema.SchemaBase, async_db.Base):
-    __tablename__ = "requirements"  # Name of the table in the database
-    __tableargs__ = {"comment": "Requirements that the user writes"}
-
-    # Define the columns of the table
-    text_in = Column(String(5000), unique=False, index=True)  # text_in
-    json_data_in = Column(JSON)  # json_data_in
-    json_data_out = Column(JSON)  # json_data_out
-    lib_out_count = Column(Integer)  # lib_out_count
-    host_ip = Column(String(50), unique=False, index=True)  # host_ip
-    header_data = Column(JSON)  # header_data
-    private = Column(Boolean, default=False)  # If the note is private
-    # Define the parent relationship to the User class
-    # user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
-    # user = relationship(
-    #     "User", back_populates="Requirements"
-    # )  # Relationship to the User class
+class LibraryName(async_db.Base):
+    __tablename__ = "library_names"
+    __tableargs__ = {"comment": "Stores unique library names"}
+    pkid = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
 
 
-class Libraries(base_schema.SchemaBase, async_db.Base):
-    __tablename__ = "libraries"  # Name of the table in the database
-    __tableargs__ = {"comment": "Libraries that the user writes"}
+class Library(base_schema.SchemaBase, async_db.Base):
+    __tablename__ = "libraries"
+    __tableargs__ = {
+        "comment": "Stores library data including current and new versions"
+    }
+    request_group_id = Column(String, index=True)
+    library_id = Column(Integer, ForeignKey("library_names.pkid"))
+    library = relationship("LibraryName")
+    current_version = Column(String, index=True)
+    new_version = Column(String, index=True)
+    new_version_vulnerability = Column(Boolean, default=False, index=True)
+    vulnerability = Column(JSON)
 
-    # Define the columns of the table
-    library = Column(String(200), unique=False, index=True)  # library
-    description = Column(String(5000), unique=False, index=True)  # description
-    currentVersion = Column(String(50), unique=False, index=True)  # currentVersion
-    newVersion = Column(String(50), unique=False, index=True)  # newVersion
-    vulnerabilities = Column(JSON)  # vulnerabilities
-    # Define the parent relationship to the User class
-    # user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
-    # user = relationship(
-    #     "User", back_populates="Libraries"
-    # )  # Relationship to the User clas
+
+class Requirement(base_schema.SchemaBase, async_db.Base):
+    __tablename__ = "requirements"
+    __tableargs__ = {
+        "comment": "Stores requirement data including input text and JSON data"
+    }
+    request_group_id = Column(String, unique=True, index=True)
+    text_in = Column(String)
+    json_data_in = Column(JSON)
+    json_data_out = Column(JSON)
+    lib_out_count = Column(Integer)
+    lib_in_count = Column(Integer)
+    host_ip = Column(String, index=True)
+    header_data = Column(JSON)
+    user_agent = Column(String)
+
+
+# storing for review later
+# date_created = Column(DateTime(timezone=True), server_default=func.now())
