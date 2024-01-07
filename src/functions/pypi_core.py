@@ -66,7 +66,7 @@ async def check_packages(packages: list, request_group_id: str, request):
     # Create a new Requirement record
     requirement = Requirement(
         request_group_id=request_group_id,
-        text_in='\n'.join(packages),
+        text_in="\n".join(packages),
         json_data_in=cleaned_packages,
         json_data_out=results,
         lib_out_count=len(results),
