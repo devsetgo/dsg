@@ -91,7 +91,9 @@ async def add_user():
     )
     try:
         await db_ops.create_one(user)
-        user = await db_ops.get_one_record(Select(User).where(User.user_name == "Mike"))
+        user = await db_ops.read_one_record(
+            Select(User).where(User.user_name == "Mike")
+        )
         # print the full_name property
         logger.info(user.full_name)
         print(user.full_name)
@@ -108,7 +110,7 @@ async def add_categories():
 
     cat: list = ["technology", "news", "sites", "programming", "woodworking", "other"]
 
-    user = await db_ops.get_one_record(Select(User).where(User.user_name == "Mike"))
+    user = await db_ops.read_one_record(Select(User).where(User.user_name == "Mike"))
 
     for c in cat:
         logger.info(f"adding system category {c}")
@@ -198,10 +200,10 @@ async def add_interesting_things():
     # add my stuff to the database in the InterestingThings table
     # when looping through the list of items, we need to get the user_id and category_id
     # to add to the database
-    user = await db_ops.get_one_record(Select(User).where(User.user_name == "Mike"))
+    user = await db_ops.read_one_record(Select(User).where(User.user_name == "Mike"))
 
     for item in my_stuff:
-        category = await db_ops.get_one_record(
+        category = await db_ops.read_one_record(
             Select(Categories).where(Categories.name == str(item["category"]).title())
         )
         print(category.name)

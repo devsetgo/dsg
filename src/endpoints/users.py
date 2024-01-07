@@ -8,7 +8,15 @@ from typing import List
 from fastapi import APIRouter, HTTPException, Query, status, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from loguru import logger
-from pydantic import field_validator, BaseModel, ConfigDict, EmailStr, Field, ValidationError, validator
+from pydantic import (
+    field_validator,
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    ValidationError,
+    validator,
+)
 from sqlalchemy import Delete, Insert, Select, Update
 
 from ..db_tables import User
@@ -43,7 +51,6 @@ class UserBase(BaseModel):
             )
         return password1
 
-
     @field_validator("password2", check_fields=False)
     def passwords_match(cls, password2, values, **kwargs):
         if "password1" in values and password2 != values["password1"]:
@@ -77,19 +84,22 @@ async def create_user(user: UserBase):
 async def login(request: Request):
     return templates.TemplateResponse("users/login.html", {"request": request})
 
+
 # login user endpoint
 @router.post("/login", status_code=status.HTTP_201_CREATED)
-async def login_user(request:Request):
+async def login_user(request: Request):
     login_attempt = request.session.get("login_attempt", 0)
-    
+
     form = await request.form()
     data = dict(form)
-    user_name = form['username']
-    password = form['password']
+    user_name = form["username"]
+    password = form["password"]
     user = await db_ops.get_one_record(Select(User).where(User.user_name == user_name))
-    toast_messages:list=[{"message":"User name not found or password is incorrect",'color':'alert'}]
+    toast_messages: list = [
+        {"message": "User name not found or password is incorrect", "color": "alert"}
+    ]
 
-    if user is None or 'error' in user:
+    if user is None or "error" in user:
         request.session["login_attempt"] = login_attempt + 1
         print(toast_messages)
         context = {"request": request, "toast_messages": toast_messages}
@@ -98,7 +108,7 @@ async def login_user(request:Request):
         request.session["login_attempt"] = login_attempt + 1
         context = {"request": request, "toast_messages": toast_messages}
         return templates.TemplateResponse("toast-messages.html", context=context)
-    
+
     request.session["user_identifier"] = "abc123"
     return RedirectResponse(url="/", status_code=303)
 

@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_csrf_protect.exceptions import CsrfProtectError
 
-from .endpoints import pages, pypi, users
+from .endpoints import pages, pypi, users, devtools
 
 
 def create_routes(app: FastAPI):
@@ -34,6 +34,11 @@ def create_routes(app: FastAPI):
         tags=["html-pages"],
     )
 
+    app.include_router(
+        devtools.router,
+        prefix="/devtools",
+        tags=["devtools"],
+    )
 
     # This should always be the last route added to keep it at the bottom of the OpenAPI docs
     config_health = {
