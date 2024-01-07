@@ -2,6 +2,11 @@
 {% block page_title %}| Pypi Check{% endblock %}
 {% block page_stylesheet %}
 <!-- page stylesheets-->
+<style>
+  #requirements {
+      width: 100%; /* or any other value that suits your needs */
+  }
+  </style>
 {% endblock %}
 {% block page_breadcrumb %} Pypi Check{% endblock %}
 {% block page_head_title %}Pypi Check{% endblock %}
@@ -20,12 +25,14 @@
           <!-- /.card-header -->
           <!-- form start -->
           <div class="row">
-            <div class="col-5">
+            <div class="col-6">
               <form action="/pypi/check?request_group_id={{request_group_id}}" method="post" enctype="multipart/form-data">                      
                 <div class="input-group mb-5">
                   <textarea id="requirements" name="requirements" placeholder="Paste Requirements.txt here" rows="10" cols="80">
-fastapi
-                  </textarea>
+fastapi==0.107.0 # From none | Vulnerabilities: None
+loguru==0.7.0 #   Vulnerabilities: None
+mkdocs==1.5.3 #   Vulnerabilities: https://pypi.org/pypi/mkdocs/1.5.3/json
+</textarea>
                   <small id="requirementsHelp" class="form-text text-muted">Note: This textarea is limited to 200 rows.</small>
 
                   <script>
