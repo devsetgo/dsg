@@ -30,8 +30,10 @@ async def root():
 
 @router.get("/index")
 async def index(request: Request):
-    context = {"request": request}
-    return templates.TemplateResponse("dashboard.html", context=context)
+    context = {}
+    return templates.TemplateResponse(
+        request=request, name="dashboard.html", context=context
+    )
 
 
 @router.get("/check")
@@ -39,11 +41,12 @@ async def get_check_form(request: Request, csrf_protect: CsrfProtect = Depends()
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
 
     context = {
-        "request": request,
         "csrf_token": csrf_token,
         "request_group_id": str(uuid.uuid4()),
     }  # Use the generated CSRF token
-    response = templates.TemplateResponse("pypi/new.html", context=context)
+    response = templates.TemplateResponse(
+        request=request, name="pypi/new.html", context=context
+    )
     csrf_protect.set_csrf_cookie(
         signed_token, response
     )  # Set the signed CSRF token in the cookie
@@ -94,14 +97,12 @@ async def get_response(
         for item in db_data
     ]
 
-    response = templates.TemplateResponse(
-        "pypi/result.html",
-        {
-            "request": request,
-            "data": db_data_dict,
-            "request_group_id": request_group_id,
-        },
-    )
+    context = {
+        "data": db_data_dict,
+        "request_group_id": request_group_id,
+    }
+
+    response = templates.TemplateResponse(request, "pypi/result.html", context=context)
     csrf_protect.unset_csrf_cookie(response)  # prevent token reuse
     return response
 
@@ -117,16 +118,12 @@ async def get_all(request: Request):
         for item in db_data
     ]
 
-    response = templates.TemplateResponse(
-        "pypi/simple-list.html",
-        {
-            "request": request,
-            "db_data": db_data_dict,
-            "count_data": count_data,
-        },
-    )
+    context = {
+        "db_data": db_data_dict,
+        "count_data": count_data,
+    }
 
-    return response
+    return templates.TemplateResponse(request, "pypi/simple-list.html", context=context)
 
 
 # from fastapi import FastAPI
