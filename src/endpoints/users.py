@@ -76,7 +76,9 @@ async def create_user(user: UserBase):
 # router login page
 @router.get("/login", response_class=HTMLResponse)
 async def login(request: Request):
-    return templates.TemplateResponse("users/login.html", {"request": request})
+    return templates.TemplateResponse(
+        request=request, name="users/login.html", context={}
+    )
 
 
 # login user endpoint
@@ -96,12 +98,16 @@ async def login_user(request: Request):
     if user is None or "error" in user:
         request.session["login_attempt"] = login_attempt + 1
         print(toast_messages)
-        context = {"request": request, "toast_messages": toast_messages}
-        return templates.TemplateResponse("toast-messages.html", context=context)
+        context = {"toast_messages": toast_messages}
+        return templates.TemplateResponse(
+            request, "toast-messages.html", context=context
+        )
     if not verify_password(hash=user.password, password=password):
         request.session["login_attempt"] = login_attempt + 1
-        context = {"request": request, "toast_messages": toast_messages}
-        return templates.TemplateResponse("toast-messages.html", context=context)
+        context = {"toast_messages": toast_messages}
+        return templates.TemplateResponse(
+            request, "toast-messages.html", context=context
+        )
 
     request.session["user_identifier"] = "abc123"
     return RedirectResponse(url="/", status_code=303)

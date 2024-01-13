@@ -29,8 +29,10 @@ async def root():
 @router.get("/index")
 async def index(request: Request):
     cool_stuff = await db_ops.read_query(Select(InterestingThings))
-    context = {"request": request, "data": {"my_stuff": {}, "cool_stuff": cool_stuff}}
-    return templates.TemplateResponse("index2.html", context=context)
+    context = {"data": {"my_stuff": {}, "cool_stuff": cool_stuff}}
+    return templates.TemplateResponse(
+        request=request, name="index2.html", context=context
+    )
 
 
 @router.get("/about")
@@ -63,20 +65,20 @@ async def about_page(request: Request):
     template: str = "about.html"
 
     # Define the context variables to pass to the template.
-    context = {"request": request, "data": data}
+    context = {"data": data}
 
     # Log some information about the request.
     logger.info(f"page accessed: /{template}")
     logger.debug(dict(request.headers))
 
     # Return a `TemplateResponse` object containing the rendered HTML template and the retrieved data.
-    return templates.TemplateResponse(template, context)
+    return templates.TemplateResponse(request=request, name=template, context=context)
 
 
 # login to site
 @router.get("/login")
 async def login(request: Request):
-    context = {
-        "request": request,
-    }
-    return templates.TemplateResponse("users/login.html", context=context)
+    context = {}
+    return templates.TemplateResponse(
+        request=request, name="users/login.html", context=context
+    )
