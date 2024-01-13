@@ -23,8 +23,6 @@ exclude_lines = [
     "pragma: no cover"
 ]
 
-[tool.pytest.ini_options]
-python_paths = "/workspaces/dsg/src"
 
 [tool.pytest]
 norecursedirs = ["/tests"]
