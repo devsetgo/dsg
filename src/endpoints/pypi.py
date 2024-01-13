@@ -1,23 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import uuid
-import re
-from datetime import datetime
-from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
-from fastapi_csrf_protect.exceptions import CsrfProtectError
-
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, ValidationError, validator
-from sqlalchemy import Delete, Insert, Select, Update
+from sqlalchemy import Select
 
-from ..db_tables import InterestingThings, User, Library, LibraryName, Requirement
-from ..functions.hash_function import check_needs_rehash, hash_password, verify_password
-from ..resources import db_ops, statics, templates
+from ..db_tables import Requirement
 from ..functions.pypi_core import check_packages
+from ..resources import db_ops, templates
 
 router = APIRouter()
 

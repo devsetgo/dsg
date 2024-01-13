@@ -5,14 +5,12 @@ from dsg_lib import database_operations
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi_csrf_protect import CsrfProtect
-from fastapi_csrf_protect.exceptions import CsrfProtectError
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import Select
 
 from .db_init import async_db
 from .db_tables import Categories, InterestingThings, User
-from .settings import settings
 
 
 class CsrfSettings(BaseModel):
@@ -45,9 +43,7 @@ async def startup():
     logger.info("checking database for tables")
     tables = await db_ops.get_table_names()
     print(tables)
-    # if len(tables) > 0:
-    #     logger.info("database already created")
-    # else:
+    # if len(tables) > 0: logger.info("database already created") else:
     print("creating tables")
     logger.info("creating database tables")
     await async_db.create_tables()
@@ -77,10 +73,10 @@ async def add_user():
     # add a default user 'Mike' as a system admin
     user = await db_ops.read_query(Select(User).where(User.user_name == "Mike"))
     if len(user) > 0:
-        logger.info(f"system user already added")
+        logger.info("system user already added")
         return
 
-    logger.info(f"adding system user")
+    logger.info("adding system user")
     user = User(
         first_name="Mike",
         last_name="Ryan",
@@ -105,7 +101,7 @@ async def add_categories():
     cat_number = await db_ops.count_query(Categories)
 
     if cat_number > 0:
-        logger.info(f"system categories already added")
+        logger.info("system categories already added")
         return
 
     cat: list = ["technology", "news", "sites", "programming", "woodworking", "other"]
@@ -165,7 +161,8 @@ async def add_interesting_things():
         },
         {
             "name": "Starlette",
-            "description": "An async Python framework for building sites and is what FastAPI is built on top of.",
+            "description": "An async Python framework for building sites and is what\
+                 FastAPI is built on top of.",
             "category": "programming",
             "url": "https://fastapi.tiangolo.com/",
         },
@@ -177,7 +174,8 @@ async def add_interesting_things():
         },
         {
             "name": "Digital Ocean",
-            "description": "Great hosting option for servers, apps, and K8s. Plus great documentation and tutorials. (referral link) ",
+            "description": "Great hosting option for servers, apps, and K8s. Plus great\
+                 documentation and tutorials. (referral link) ",
             "url": "https://m.do.co/c/9a3b3c4fbc90",
             "category": "technology",
         },
@@ -197,9 +195,9 @@ async def add_interesting_things():
             logger.info(f"system item {item['name']} already added")
             return
 
-    # add my stuff to the database in the InterestingThings table
-    # when looping through the list of items, we need to get the user_id and category_id
-    # to add to the database
+    # add my stuff to the database in the InterestingThings table when looping
+    # through the list of items, we need to get the user_id and category_id to
+    # add to the database
     user = await db_ops.read_one_record(Select(User).where(User.user_name == "Mike"))
 
     for item in my_stuff:

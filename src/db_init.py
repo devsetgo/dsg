@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from dsg_lib import async_database, database_config
 from loguru import logger
 
