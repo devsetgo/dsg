@@ -1,0 +1,42 @@
+[tool.flake8]
+max-line-length = 88
+ignore = "E302"
+exclude = ".git,__pycache__,docs,build,tests,_venv,htmlcov,scripts,.pytest_cache,.vscode,"
+
+[tool.isort]
+force_single_line = false
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+
+[tool.coverage.run]
+source = ["/"]
+omit = ["setup.py", "_venv/*","tests/*","example/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__",
+    "def main",
+    "pragma: no cover"
+]
+
+[tool.pytest.ini_options]
+python_paths = "/workspaces/dsg/src"
+
+[tool.pytest]
+norecursedirs = ["/tests"]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = [
+    "--cov=./ --cov-report html",
+    "--cov-report xml",
+    "-ra",
+    "--tb=short",
+    "-p pytester"
+]
+
+[metadata]
+description-file = "README.md"
