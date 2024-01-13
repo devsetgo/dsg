@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """
-This module provides classes and functions for managing database settings in an application.
+This module provides classes and functions for managing database settings in an
+application.
 """
+
 import secrets  # For generating secure random numbers
 from datetime import datetime  # A Python library used for working with dates and times
 from enum import (
@@ -63,60 +65,47 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings():
-    # Function to get an instance of the Settings class. The results are cached to improve performance.
+    # Function to get an instance of the Settings class. The results are cached
+    # to improve performance.
     return Settings()
 
 
 settings = get_settings()  # Get the settings
 
 
-# class DatabaseDriverEnum(str, Enum):
-#     # Enum class to hold database driver values. It inherits both str and Enum classes.
+# class DatabaseDriverEnum(str, Enum): # Enum class to hold database driver
+#     values. It inherits both str and Enum classes.
 
-#     postgres = "postgresql+asyncpg"
-#     sqlite = "sqlite+aiosqlite"
-#     memory = "sqlite+aiosqlite:///:memory:?cache=shared"
-#     mysql = "mysql+aiomysql"
+#     postgres = "postgresql+asyncpg" sqlite = "sqlite+aiosqlite" memory =
+#     "sqlite+aiosqlite:///:memory:?cache=shared" mysql = "mysql+aiomysql"
 #     oracle = "oracle+cx_oracle"
 
-#     model_config = ConfigDict(
-#         use_enum_values=True
-#     )  # Configuration dictionary to use enum values
+#     model_config = ConfigDict( use_enum_values=True )  # Configuration
+#         dictionary to use enum values
 
 
-# db_user: str = None
-# db_password: str = None
-# db_host: str = None
-# db_port: int = 5432
-# db_name: str = None
+# db_user: str = None db_password: str = None db_host: str = None db_port: int =
+# 5432 db_name: str = None
 
 
-# def database_uri(self) -> str:
-#     # Method to generate the appropriate database URI based on the selected driver
-#     if self.database_driver == DatabaseDriverEnum.memory:
-#         return str(self.database_driver)
-#     elif self.database_driver == DatabaseDriverEnum.sqlite:
-#         # For SQLite, only the database name is required.
-#         return f"{self.database_driver}:///{self.db_name}.db"
-#     else:
-#         return f"{self.database_driver}://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
+# def database_uri(self) -> str: # Method to generate the appropriate database
+#     URI based on the selected driver if self.database_driver ==
+#     DatabaseDriverEnum.memory: return str(self.database_driver) elif
+#         self.database_driver == DatabaseDriverEnum.sqlite: # For SQLite, only
+#     the database name is required. return
+#         f"{self.database_driver}:///{self.db_name}.db" else: return
+#         f"{self.database_driver}://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
-# def dict(self):
-#     # Method to convert the settings object into a dictionary
-#     original_dict = super().dict()
-#     original_dict.update(
-#         {"database_uri": self.database_uri()}
-#     )  # Add the database_uri to the dictionary
-#     return original_dict
+# def dict(self): # Method to convert the settings object into a dictionary
+#     original_dict = super().dict() original_dict.update( {"database_uri":
+#     self.database_uri()} )  # Add the database_uri to the dictionary return
+#     original_dict
 
-# @field_validator("database_driver", mode="before")
-# @classmethod
-# def parse_database_driver(cls, value):
-#     """
-#     Validator method to convert the input string to the corresponding enum member value.
+# @field_validator("database_driver", mode="before") @classmethod def
+# parse_database_driver(cls, value): """ Validator method to convert the input
+# string to the corresponding enum member value.
 
-#     Args:
-#         value (str): The input string to be converted.
+#     Args: value (str): The input string to be converted.
 
 #     Returns:
 #         The corresponding enum member value if the input string is valid, otherwise returns the input value.
@@ -127,5 +116,5 @@ settings = get_settings()  # Get the settings
 #         except KeyError:
 #             pass
 #     return value
-# Define fields with default values
-# database_driver: DatabaseDriverEnum  # Use the DatabaseDriverEnum Enum for DB_TYPE
+# Define fields with default values database_driver: DatabaseDriverEnum  # Use
+# the DatabaseDriverEnum Enum for DB_TYPE

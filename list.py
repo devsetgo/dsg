@@ -5044,7 +5044,7 @@ for j in top:
 # make an api call to get the data for each package using httpx
 # The output should be package name == version
 
-output_list:list = []
+output_list: list = []
 
 for i in tqdm(build_list):
     url = "http://localhost:5000/devtools/check-one?package=" + i[0]
@@ -5054,7 +5054,7 @@ for i in tqdm(build_list):
     # get info name and version
     name = data["package_name"]
     version = data["latest_version"]
-    output_list.append([f'{name}=={version}'])
+    output_list.append([f"{name}=={version}"])
 
 save_csv(
     file_name="your-file-name.csv",

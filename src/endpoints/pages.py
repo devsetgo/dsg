@@ -1,19 +1,13 @@
 # -*- coding: utf-8 -*-
 
 
-import re
-from datetime import datetime
-from typing import List
-
-from fastapi import APIRouter, HTTPException, Query, Request, status
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi import APIRouter, Request
+from fastapi.responses import RedirectResponse
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, ValidationError, validator
-from sqlalchemy import Delete, Insert, Select, Update
+from sqlalchemy import Select
 
-from ..db_tables import InterestingThings, User
-from ..functions.hash_function import check_needs_rehash, hash_password, verify_password
-from ..resources import db_ops, statics, templates
+from ..db_tables import InterestingThings
+from ..resources import db_ops, templates
 from ..settings import settings
 
 router = APIRouter()

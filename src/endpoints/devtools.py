@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, Body
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
-
+from fastapi import APIRouter, Body, HTTPException
+from fastapi.responses import JSONResponse
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, ValidationError, validator
 
 from src.functions.pypi_core import check_packages  # , check_package
 

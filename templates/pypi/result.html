@@ -35,10 +35,10 @@
                 <div class="col-12" id="text-to-copy" style="white-space: nowrap;">
                   {% for item in data %}
                     {% for d in item.json_data_out|sort(attribute='package_name') %}
-                      {{d.package_name}}{% if d.has_bracket %}[{{d.bracket_content}}]{%endif%}=={{d.latest_version}} # 
-                      {% if d.latest_version!=d.current_version %} <strong>From {{d.current_version}}</strong> | {%endif%} 
-                      {% if d.vulnerabilities|length > 0 %} 
-                        Vulnerabilities: 
+                      {{d.package_name}}{% if d.has_bracket %}[{{d.bracket_content}}]{%endif%}=={{d.latest_version}} #
+                      {% if d.latest_version!=d.current_version %} <strong>From {{d.current_version}}</strong> | {%endif%}
+                      {% if d.vulnerabilities|length > 0 %}
+                        Vulnerabilities:
                         {% for v in d.vulnerabilities %}
                           <a href="{{v.link}}">{{v.link}}</a>
                         {% endfor %}
@@ -101,10 +101,10 @@
 <script>
   function copyText() {
     var textToCopy = document.getElementById("text-to-copy").innerText;
-  
+
     // Remove extra empty lines and spaces at the beginning of each line
     textToCopy = textToCopy.replace(/^\s*[\r\n]/gm, '').replace(/^\s+/gm, '');
-  
+
     navigator.clipboard.writeText(textToCopy)
       .then(() => {
         var alertBox = alert("Text copied to clipboard!");

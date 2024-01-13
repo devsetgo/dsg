@@ -1,0 +1,36 @@
+./list.py:5032:1: E402 module level import not at top of file
+./list.py:5033:1: E402 module level import not at top of file
+./list.py:5034:1: E402 module level import not at top of file
+./src/app_middleware.py:58:89: E501 line too long (183 > 88 characters)
+./src/app_routes.py:43:89: E501 line too long (93 > 88 characters)
+./src/endpoints/devtools.py:27:1: F811 redefinition of unused 'check_pypi_packages' from line 15
+./src/endpoints/pages.py:5:1: E303 too many blank lines (3)
+./src/endpoints/pages.py:40:89: E501 line too long (109 > 88 characters)
+./src/endpoints/pages.py:41:89: E501 line too long (102 > 88 characters)
+./src/endpoints/pages.py:47:89: E501 line too long (97 > 88 characters)
+./src/endpoints/pages.py:52:89: E501 line too long (95 > 88 characters)
+./src/endpoints/pages.py:73:89: E501 line too long (102 > 88 characters)
+./src/endpoints/pypi.py:70:5: F841 local variable 'pypi_response' is assigned to but never used
+./src/endpoints/pypi.py:74:89: E501 line too long (108 > 88 characters)
+./src/endpoints/pypi.py:75:89: E501 line too long (108 > 88 characters)
+./src/endpoints/pypi.py:78:89: E501 line too long (153 > 88 characters)
+./src/endpoints/users.py:61:89: E501 line too long (93 > 88 characters)
+./src/endpoints/users.py:88:5: F841 local variable 'data' is assigned to but never used
+./src/functions/ai.py:14:5: F841 local variable 'prompt' is assigned to but never used
+./src/functions/ai.py:14:89: E501 line too long (153 > 88 characters)
+./src/functions/ai.py:22:89: E501 line too long (157 > 88 characters)
+./src/functions/ai.py:40:5: F841 local variable 'prompt' is assigned to but never used
+./src/functions/ai.py:40:89: E501 line too long (151 > 88 characters)
+./src/functions/ai.py:48:89: E501 line too long (155 > 88 characters)
+./src/functions/ai.py:61:5: F841 local variable 'response_dict' is assigned to but never used
+./src/functions/ai.py:65:1: E402 module level import not at top of file
+./src/settings.py:4:89: E501 line too long (92 > 88 characters)
+./src/settings.py:9:89: E501 line too long (105 > 88 characters)
+./src/settings.py:13:1: F401 'pydantic.ConfigDict' imported but unused
+./src/settings.py:13:1: F401 'pydantic.field_validator' imported but unused
+./src/settings.py:13:1: F401 'pydantic.validator' imported but unused
+./src/settings.py:66:89: E501 line too long (103 > 88 characters)
+./src/settings.py:74:89: E501 line too long (89 > 88 characters)
+./src/settings.py:102:89: E501 line too long (123 > 88 characters)
+./src/settings.py:116:89: E501 line too long (90 > 88 characters)
+./src/settings.py:122:89: E501 line too long (110 > 88 characters)

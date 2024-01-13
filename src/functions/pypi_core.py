@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import httpx
-from tqdm import tqdm
-from tqdm.asyncio import tqdm as async_tqdm
-from loguru import logger
 import re
-import asyncio
 
+import httpx
+from loguru import logger
+from sqlalchemy import Select
+from tqdm.asyncio import tqdm as async_tqdm
 
-from ..db_tables import LibraryName, Library, Requirement
-from sqlalchemy import Delete, Insert, Select, Update
-from ..resources import db_ops, statics, templates
-from ..settings import settings
+from ..db_tables import Library, LibraryName, Requirement
+from ..resources import db_ops
 
 
 async def fetch_package_data(client, package):
@@ -44,7 +41,8 @@ async def fetch_package_data(client, package):
 
 async def check_packages(packages: list, request_group_id: str, request):
     logger.debug(
-        f"Starting check_packages with packages: {packages} and request_group_id: {request_group_id}"
+        f"Starting check_packages with packages: {packages} and request_group_id:\
+             {request_group_id}"
     )
     cleaned_packages = clean_packages(packages)
     async with httpx.AsyncClient() as client:
@@ -79,7 +77,8 @@ async def check_packages(packages: list, request_group_id: str, request):
     await db_ops.create_one(requirement)
 
     logger.debug(
-        f"Finished check_packages with packages: {packages} and request_group_id: {request_group_id}"
+        f"Finished check_packages with packages: {packages} and request_group_id:\
+             {request_group_id}"
     )
     return [result for result in results if result is not None]
 
@@ -102,7 +101,8 @@ def clean_packages(packages):
         has_bracket = False
         bracket_content = None
 
-        # Check if package contains []. If so, set has_bracket to True and get string inside [].
+        # Check if package contains []. If so, set has_bracket to True
+        #  and get string inside [].
         if "[" in package:
             has_bracket = True
             bracket_content = re.search(r"\[(.*?)\]", package).group(1)
@@ -111,7 +111,7 @@ def clean_packages(packages):
         new_package = re.sub(r"(==|>=|<=|>|<)", " ", package)
 
         # Remove unnecessary text
-        cleaned_up_package = re.sub("[\(\[].*?[\)\]]", "", new_package)
+        cleaned_up_package = re.sub(r"[\(\[].*?[\)\]]", "", new_package)
 
         # Split library name from version and get values
         pipItem = cleaned_up_package.split()
@@ -134,7 +134,8 @@ def clean_packages(packages):
 
 async def store_package_data(package_data: dict, request_group_id: str):
     logger.debug(
-        f"Starting store_package_data with package_data: {package_data} and request_group_id: {request_group_id}"
+        f"Starting store_package_data with package_data: {package_data} and\
+             request_group_id: {request_group_id}"
     )
     # Check if the library name already exists in the database
     library_name_results = await db_ops.read_query(
@@ -170,7 +171,8 @@ async def store_package_data(package_data: dict, request_group_id: str):
     except Exception as e:
         logger.error(f"Failed to store package data: {package_data}. Error: {e}")
     logger.debug(
-        f"Finished store_package_data with package_data: {package_data} and request_group_id: {request_group_id}"
+        f"Finished store_package_data with package_data: {package_data} and\
+             request_group_id: {request_group_id}"
     )
 
 

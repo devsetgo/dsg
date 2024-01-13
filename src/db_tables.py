@@ -1,10 +1,9 @@
-import openai
+# -*- coding: utf-8 -*-
 from dsg_lib import base_schema
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from .db_init import async_db
-from .functions.ai import get_summary, get_tags
 
 
 class User(base_schema.SchemaBase, async_db.Base):

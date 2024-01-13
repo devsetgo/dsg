@@ -61,10 +61,34 @@ prd:
 
 test:
 	pre-commit run -a
-	pytest
-	sed -i 's|<source>/workspaces/DevSetGo_Toolkit</source>|<source>/github/workspace/DevSetGo_Toolkit</source>|' /workspaces/DevSetGo_Toolkit/coverage.xml
+	PYTHONPATH=. pytest
+	sed -i 's|<source>/workspaces/dsg</source>|<source>/github/workspace/dsg</source>|' /workspaces/dsg/coverage.xml
 	coverage-badge -o coverage.svg -f
 
-
-
-
+# - workspace
+# 	- DSG
+# 		- src
+# 			- __init__.py
+# 			- main.py
+# 			- models
+# 				- __init__.py
+# 				- user.py
+# 			- routes
+# 				- __init__.py
+# 				- user.py
+# 			- services
+# 				- __init__.py
+# 				- user.py
+# 			- utils
+# 				- __init__.py
+# 				- database.py
+# 				- hashing.py
+# 				- oauth2.py
+# 				- send_mail.py
+# 				- token.py
+# 				- utils.py
+# 		- tests
+# 			- __init__.py
+# 			- test_*.py
+# 		makefile
+# 		- pytest
