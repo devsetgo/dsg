@@ -55,6 +55,12 @@ class Settings(BaseSettings):
     github_id: str = "octocat"
     github_repo_limit: int = 20
     github_token: str = "<enter key>"
+    
+    # add an admin user
+    create_admin_user: bool = False
+    admin_user: str = None
+    admin_password: str = None
+
 
     model_config = SettingsConfigDict(
         env_file=".env",

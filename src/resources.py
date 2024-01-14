@@ -8,10 +8,10 @@ from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import Select
-
+from .settings import settings
 from .db_init import async_db
 from .db_tables import Categories, InterestingThings, User
-
+from .functions.hash_function import hash_password
 
 class CsrfSettings(BaseModel):
     secret_key: str = secrets.token_hex(128)
@@ -52,7 +52,7 @@ async def startup():
     logger.info(f"tables {tables} have been created")
     await add_system_data()
 
-
+            
 async def shutdown():
     logger.info("shutting down services")
 
@@ -64,9 +64,34 @@ def init_app():
 
 
 async def add_system_data():
+    await add_admin()
     await add_user()
     await add_categories()
     await add_interesting_things()
+
+
+async def add_admin():
+    if settings.create_admin_user is True:
+        logger.warning("creating admin user")
+        hashed_password = hash_password(settings.admin_password)
+        user = User(
+            first_name="Admin",
+            last_name="User",
+            user_name=settings.admin_user,
+            password=hashed_password,
+            is_active=True,
+            is_admin=True,
+        )
+        try:
+            await db_ops.create_one(user)
+            user = await db_ops.read_one_record(
+                Select(User).where(User.user_name == settings.admin_user)
+            )
+            # print the full_name property
+            logger.warning(f"Admin created: {user.full_name}")
+            print(user.full_name)
+        except Exception as e:
+            logger.error(e)
 
 
 async def add_user():
@@ -77,11 +102,12 @@ async def add_user():
         return
 
     logger.info("adding system user")
+    hashed_password = hash_password("password")
     user = User(
         first_name="Mike",
         last_name="Ryan",
         user_name="Mike",
-        password="password",
+        password=hashed_password,
         is_active=True,
         is_admin=True,
     )
