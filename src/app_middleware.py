@@ -1,15 +1,21 @@
 # -*- coding: utf-8 -*-
 import time
 
+from debug_toolbar.middleware import DebugToolbarMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from .settings import settings
+from .settings import Settings, settings
 
 
 def add_middleware(app):
+    app.add_middleware(
+        DebugToolbarMiddleware,
+        # panels=["debug_toolbar.panels.sqlalchemy.SQLAlchemyPanel"], # appears incompatible
+        settings=[Settings()],
+    )
     # app.add_middleware(HTTPSRedirectMiddleware)
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     app.add_middleware(
@@ -19,11 +25,9 @@ def add_middleware(app):
         https_only=settings.https_only,
         max_age=settings.max_age,
     )
-    app.add_middleware(AccessLoggerMiddleware, user_identifier="id")
-
-
-# needs for middleware to be added
-# csrf protection
+    app.add_middleware(
+        AccessLoggerMiddleware, user_identifier=settings.sesson_user_identifier
+    )
 
 
 class AccessLoggerMiddleware(BaseHTTPMiddleware):
@@ -36,8 +40,6 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
         self.user_identifier = user_identifier
 
     async def dispatch(self, request, call_next):
-        start_time = time.time()
-
         try:
             response = await call_next(request)
             status_code = response.status_code
@@ -45,6 +47,7 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
             logger.exception(f"An error occurred while processing the request: {e}")
             raise
 
+        start_time = time.time()
         process_time = time.time() - start_time
         method = request.method
         url = request.url
@@ -52,10 +55,23 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
         referer = request.headers.get("referer", "No referer")
         user_id = request.session.get(self.user_identifier, "unknown guest")
         headers = dict(request.headers.items())
+        sensitive_headers = ["Authorization"]
+        for header in sensitive_headers:
+            if header in headers:
+                headers[header] = "[REDACTED]"
 
         if url.path != "/favicon.ico":
             logger.info(
-                f"Method: {method}, URL: {url}, Client: {client}, Referer: {referer}, User ID: {user_id}, Headers: {headers}, Status Code: {status_code}, Process Time: {process_time}"
+                {
+                    "method": method,
+                    "url": str(url),
+                    "client": client,
+                    "referer": referer,
+                    "user_id": user_id,
+                    "headers": headers,
+                    "status_code": status_code,
+                    "process_time": process_time,
+                }
             )
 
         return response
