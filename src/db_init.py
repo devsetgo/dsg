@@ -4,7 +4,7 @@ from loguru import logger
 
 config = {
     "database_uri": "sqlite+aiosqlite:///:memory:?cache=shared",
-    "echo": False,
+    "echo": True,
     "future": True,
     "pool_recycle": 3600,
 }
