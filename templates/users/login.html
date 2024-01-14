@@ -3,9 +3,6 @@
 <!-- overlayScrollbars -->
 <link rel="stylesheet"
   href="{{ url_for('static' , path='plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}" />
-<link rel="stylesheet" href="{{ url_for('static' , path='plugins/toastr/toastr.min.css') }}" />
-<script src="https://unpkg.com/htmx.org@1.9.10"
-  integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 
 {% endblock %} {% block page_breadcrumb %}Login{% endblock %} {% block
 page_head_title %}Login {% endblock %} {% block body %}
@@ -17,7 +14,14 @@ page_head_title %}Login {% endblock %} {% block body %}
     </div>
     <div class="card-body">
       <p class="login-box-msg">Sign in to start your session</p>
-      <form hx-post="/users/login" hx-swap="outerHTML" hx-trigger="submit" hx-indicator="#loadingIndicator" hx-target="#toast-messages">
+      <!-- Add this div to display error messages -->
+      <div id="error-messages"></div>
+      <span class="htmx-indicator">
+        <img class="htmx-indicator" src="{{ url_for('static', path='image/loading_1.gif') }}" alt="Loading..."
+          height="20" width="300">
+      </span>
+      <form hx-post="/users/login" hx-trigger="submit" hx-indicator=".htmx-indicator">
+        <!-- rest of the form -->
         <div class="input-group mb-3">
           <input type="text" class="form-control" placeholder="user_name" name="username" />
           <div class="input-group-append">
@@ -36,10 +40,10 @@ page_head_title %}Login {% endblock %} {% block body %}
         </div>
         <div class="row">
           <div class="col-8">
-            <div class="icheck-primary">
+            <!-- <div class="icheck-primary">
               <input type="checkbox" id="remember" name="remember" />
               <label for="remember"> Remember Me </label>
-            </div>
+            </div> -->
           </div>
           <div class="col-4">
             <button type="submit" class="btn btn-primary btn-block">Sign In</button>
@@ -47,12 +51,12 @@ page_head_title %}Login {% endblock %} {% block body %}
         </div>
       </form>
 
-      <p class="mb-1">
+      <!-- <p class="mb-1">
         <a href="users/forgot-password.html">I forgot my password</a>
       </p>
       <p class="mb-0">
         <a href="users/register.html" class="text-center">Register a new membership</a>
-      </p>
+      </p> -->
     </div>
   </div>
 </div>
@@ -60,5 +64,5 @@ page_head_title %}Login {% endblock %} {% block body %}
 <!-- /.login-box -->
 {% endblock %} {% block page_scripts %}
 <!-- page scripts-->
-{% include "toast-messages.html" %}
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 {% endblock %}

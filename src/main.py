@@ -3,13 +3,13 @@
 from contextlib import asynccontextmanager
 
 from dsg_lib import logging_config
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status, HTTPException
 from fastapi.responses import RedirectResponse
 from loguru import logger
 
 from .app_middleware import add_middleware
 from .app_routes import create_routes
-from .resources import startup
+from .resources import startup, templates
 
 logging_config.config_log(
     logging_directory="log",
@@ -57,13 +57,10 @@ create_routes(app)
 
 
 @app.get("/")
-async def root():
-    """
-    Root endpoint of API
-    Returns:
-        Redrects to openapi document
-    """
-    # redirect to openapi docs
-    logger.info("Redirecting to OpenAPI docs")
-    response = RedirectResponse(url="/pages/")
-    return response
+async def root(request: Request):
+    # get user_identifier from session
+    user_identifier = request.session.get("user_identifier", None)
+    if user_identifier is None:
+        return RedirectResponse(url="/users/login")
+    else:
+        return RedirectResponse(url="/pages/index")

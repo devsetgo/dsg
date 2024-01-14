@@ -1,6 +1,6 @@
 <!-- Right navbar links -->
 <ul class="navbar-nav ml-auto">
-    {% if request.session.username %}
+    {% if request.session.user_identifier %}
     <!-- Notifications Dropdown Menu -->
     <li class="nav-item dropdown">
         <a class="nav-link" data-toggle="dropdown" href="#">
@@ -53,7 +53,7 @@
                 Other User Function
             </a>
             <div class="dropdown-divider"></div>
-            <form action="/user/logout" method="POST">
+            <form action="/users/logout" method="GET">
                 <button class="dropdown-item btn btn-block btn-outline-primary" type="submit">Logout</button>
             </form>
             <!-- <a href="/auth/logout" class="dropdown-item">

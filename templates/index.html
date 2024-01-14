@@ -1,5 +1,5 @@
-{% if request.session.username %}
-{% include "index3.html" %}
+{% if request.session.user_identifier %}
+{% include "/pages/index2.html" %}
 {% else %}
-{% include "/user/login.html" %}
+{% include "/users/login.html" %}
 {% endif %}
