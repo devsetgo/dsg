@@ -6,7 +6,7 @@ from src.settings import settings
 
 client = AsyncOpenAI(
     # This is the default and can be omitted
-    api_key=settings.openai_key,
+    api_key=settings.openai_key.get_secret_value(),
 )
 
 

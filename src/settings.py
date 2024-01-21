@@ -4,19 +4,37 @@
 This module provides classes and functions for managing database settings in an
 application.
 """
-
 import secrets  # For generating secure random numbers
 from datetime import datetime  # A Python library used for working with dates and times
 from enum import (
     Enum,  # For creating enumerations, which are a set of symbolic names bound to unique constant values
 )
 from functools import lru_cache  # For caching the results of expensive function calls
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
+from loguru import logger  # For logging
 from pydantic import (  # For validating data
+    BaseModel,
     ConfigDict,
     Field,
+    SecretStr,
+    ValidationError,
+    ValidationInfo,
     field_validator,
-    validator,
+    model_validator,
+    root_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -27,14 +45,42 @@ class SameSiteEnum(str, Enum):
     None_ = "None"
 
 
+class DatabaseDriverEnum(str, Enum):
+    postgres = "postgresql+asyncpg"
+    sqlite = "sqlite+aiosqlite"
+    memory = "sqlite+aiosqlite:///:memory:?cache=shared"
+    mysql = "mysql+aiomysql"
+    oracle = "oracle+cx_oracle"
+
+    model_config = ConfigDict(use_enum_values=True)
+
+
 class Settings(BaseSettings):
     # Class that describes the settings schema
-    csrf_secret: str = secrets.token_hex(128)  # Generate a random secret key
-    date_run: datetime = (
-        datetime.utcnow()
-    )  # Set the current date and time when the application is run
+    # database_configuration: DatabaseSettings = DatabaseSettings()
+    db_driver: DatabaseDriverEnum = Field("memory", description="DB_DRIVER")
+    db_username: SecretStr = Field(..., description="DB_USERNAME")
+    db_password: SecretStr = Field(..., description="DB_PASSWORD")
+    db_host: str = Field(..., description="DB_HOST")
+    db_port: int = Field(..., description="DB_PORT")
+    db_name: SecretStr = Field(
+        ..., description="For sqlite it should be folder path 'folder/filename"
+    )
+    echo: bool = Field(True, description="Enable echo")
+    future: bool = Field(True, description="Enable future")
+    pool_pre_ping: bool = Field(False, description="Enable pool_pre_ping")
+    pool_size: Optional[int] = Field(None, description="Set pool_size")
+    max_overflow: Optional[int] = Field(None, description="Set max_overflow")
+    pool_recycle: int = Field(3600, description="Set pool_recycle")
+    pool_timeout: Optional[int] = Field(None, description="Set pool_timeout")
+
+    # Generate a random secret key
+    csrf_secret: str = secrets.token_hex(32)
+    # Set the current date and time when the application is run
+    date_run: datetime = datetime.utcnow()
     # application settings
     release_env: str = "prd"
+    debug_mode: bool = False
     # logging settings
     logging_directory: str = "log"
     log_name: str = "log.log"
@@ -45,26 +91,41 @@ class Settings(BaseSettings):
     log_serializer: bool = False
     log_diagnose: bool = False
     # session management
-    session_secret_key: str = secrets.token_hex(128)  # Generate a random secret key
+    session_secret_key: str = secrets.token_hex(32)  # Generate a random secret key
     same_site: SameSiteEnum = Field("Lax", description="Options: Lax, Strict, None")
     https_only: bool = False
     max_age: int = 3600
+    sesson_user_identifier: str = "user_identifier"
     # service accounts
-    openai_key: str = None  # OpenAI API Key
+    openai_key: SecretStr = None  # OpenAI API Key
     # GitHub
     github_id: str = "octocat"
-    github_repo_limit: int = 20
-    github_token: str = "<enter key>"
-    
+    github_repo_limit: int = 50
+    github_token: SecretStr = "<enter key>"
+
     # add an admin user
     create_admin_user: bool = False
-    admin_user: str = None
-    admin_password: str = None
+    admin_user: SecretStr = None
+    admin_password: SecretStr = None
+    # create psuedo data
+    create_demo_user: bool = False
+    create_base_categories: bool = False
+    create_demo_data: bool = False
 
+    @root_validator(pre=True)
+    def parse_database_driver(cls, values):
+        db_driver = values.get("db_driver")
+        if isinstance(db_driver, str):
+            try:
+                values["db_driver"] = DatabaseDriverEnum[db_driver].value
+            except KeyError:
+                pass
+        return values
 
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
+        # extra="allow",
         # use_enum_values=True
     )  # Set up the configuration dictionary for the settings
 
@@ -73,10 +134,23 @@ class Settings(BaseSettings):
 def get_settings():
     # Function to get an instance of the Settings class. The results are cached
     # to improve performance.
+    logger.debug(f"Settings: {Settings().dict()}")
     return Settings()
 
 
 settings = get_settings()  # Get the settings
+
+
+# config = {
+#     "database_uri": "sqlite+aiosqlite:///:memory:?cache=shared",
+#     "echo": True,
+#     "future": True,
+#     "pool_pre_ping": False,
+#     "pool_size":None,
+#     "max_overflow": None,
+#     "pool_recycle": 3600,
+#     "pool_timeout": None,
+# }
 
 
 # class DatabaseDriverEnum(str, Enum): # Enum class to hold database driver

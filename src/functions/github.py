@@ -24,7 +24,7 @@ from ..settings import settings
 
 client = httpx.AsyncClient()
 
-api_key = Basic(settings.github_id, settings.github_token)
+api_key = Basic(settings.github_id, settings.github_token.get_secret_value())
 
 
 # async def get_rate_limit(): url = "https://api.github.com/rate_limit" r =

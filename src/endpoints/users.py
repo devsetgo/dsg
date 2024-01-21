@@ -1,22 +1,18 @@
 # -*- coding: utf-8 -*-
 import re
 
-from fastapi import APIRouter, Request, status, HTTPException,Response
+from fastapi import APIRouter, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
-from loguru import logger
-from pydantic import (
-    BaseModel,
-    ValidationError,
-    field_validator,
-)
-from sqlalchemy import Select
 from fastapi_csrf_protect import CsrfProtect
+from loguru import logger
+from pydantic import BaseModel, ValidationError, field_validator
+from sqlalchemy import Select
+
 from ..db_tables import User
 from ..functions.hash_function import verify_password
 from ..resources import db_ops, templates
 
 router = APIRouter()
-
 
 
 # router login page
@@ -25,8 +21,10 @@ async def login(request: Request):
     user_identifier = request.session.get("user_identifier", None)
     print(user_identifier)
     if user_identifier is not None:
-        return RedirectResponse(url="/pages/index", status_code=status.HTTP_303_SEE_OTHER)
-    
+        return RedirectResponse(
+            url="/pages/index", status_code=status.HTTP_303_SEE_OTHER
+        )
+
     request.session["error"] = None
     return templates.TemplateResponse(
         request=request, name="users/login.html", context={}
@@ -38,29 +36,30 @@ async def login(request: Request):
 async def login_user(request: Request):
     login_attempt = request.session.get("login_attempt", 0)
 
-    
     form = await request.form()
-    user_name = form['username']
-    password = form['password']
-    print(user_name,password)
+    user_name = form["username"]
+    password = form["password"]
+    print(user_name, password)
     user = await db_ops.read_one_record(Select(User).where(User.user_name == user_name))
     logger.debug(user.__dict__)
     # result = verify_password(hash=user.password, password=password)
-    
+
     if user is None or not verify_password(hash=user.password, password=password):
         login_attempt += 1
         request.session["login_attempt"] = login_attempt
         logger.error(f"Failed login attempt {login_attempt} for user {user_name}")
         request.session["error"] = "User name not found or password is incorrect"
         return templates.TemplateResponse(
-            "users/error_message.html", {"request": request, "error": request.session["error"]}
+            "users/error_message.html",
+            {"request": request, "error": request.session["error"]},
         )
     else:
         logger.info(f"Successful login attempt for user {user_name}")
         request.session["user_identifier"] = user.pkid
-        request.session['login_attempt'] = 0
+        request.session["login_attempt"] = 0
         response = Response(headers={"HX-Redirect": "/"}, status_code=200)
         return response
+
 
 # log out user endpoint
 @router.get("/logout")
@@ -68,6 +67,7 @@ async def logout(request: Request):
     request.session["user_identifier"] = None
     request.session["login_attempt"] = 0
     return RedirectResponse(url="/users/login", status_code=status.HTTP_303_SEE_OTHER)
+
 
 # update user endpoint
 

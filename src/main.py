@@ -3,13 +3,14 @@
 from contextlib import asynccontextmanager
 
 from dsg_lib import logging_config
-from fastapi import FastAPI, Request, status, HTTPException
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from loguru import logger
 
 from .app_middleware import add_middleware
 from .app_routes import create_routes
 from .resources import startup, templates
+from .settings import settings
 
 logging_config.config_log(
     logging_directory="log",
@@ -22,7 +23,7 @@ logging_config.config_log(
     log_serializer=False,
     log_diagnose=False,
     app_name=None,
-    append_app_name=False,
+    append_app_name=True,
 )
 
 
@@ -46,11 +47,13 @@ app = FastAPI(
     docs_url="/docs",  # The URL where the API documentation will be served
     redoc_url="/redoc",  # The URL where the ReDoc documentation will be served
     openapi_url="/openapi.json",  # The URL where the OpenAPI schema will be served
-    debug=True,  # Enable debug mode
+    debug=settings.debug_mode,  # Enable debug mode
     middleware=[],  # A list of middleware to include in the application
     routes=[],  # A list of routes to include in the application
     lifespan=lifespan,
 )
+if settings.debug_mode:
+    logger.warning("Debug mode is enabled and should not be used in production.")
 
 add_middleware(app)
 create_routes(app)

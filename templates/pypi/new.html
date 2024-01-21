@@ -25,13 +25,21 @@
           <!-- /.card-header -->
           <!-- form start -->
           <div class="row">
-            <div class="col-6">
+            <div class="col-12">
               <form action="/pypi/check?request_group_id={{request_group_id}}" method="post" enctype="multipart/form-data" hx-indicator=".htmx-indicator">
                 <div class="input-group mb-5">
-                  <textarea id="requirements" name="requirements" placeholder="Paste Requirements.txt here" rows="10" cols="80">
+                  <textarea id="requirements" name="requirements" placeholder="Paste Requirements.txt here" rows="20" style="width: 100%; height: 100%;">
 fastapi==0.107.0 # From none | Vulnerabilities: None
 loguru==0.7.0 #   Vulnerabilities: None
 mkdocs==1.5.3 #   Vulnerabilities: https://pypi.org/pypi/mkdocs/1.5.3/json
+requests==2.31.0
+botocore==1.34.11
+charset-normalizer==3.3.2
+idna==3.6
+certifi==2023.11.17
+setuptools==69.0.3
+s3transfer==0.10.0
+python-dateutil==2.8.2
 </textarea>
                   <small id="requirementsHelp" class="form-text text-muted">Note: This textarea is limited to 200 rows.</small>
 
@@ -53,7 +61,7 @@ mkdocs==1.5.3 #   Vulnerabilities: https://pypi.org/pypi/mkdocs/1.5.3/json
                 </div>
               </form>
             </div>
-            <div class="col-5">
+            <div class="col-6">
               <p></p>
               <!-- <div class="progress">
                 <div class="progress-bar" role="progressbar" aria-valuenow="50"
