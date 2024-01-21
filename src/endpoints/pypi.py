@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import uuid
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
-from sqlalchemy import Select
+from sqlalchemy import Select, and_, func
+from sqlalchemy.orm import joinedload
 
-from ..db_tables import Requirement
+from ..db_tables import Library, LibraryName, Requirement
 from ..functions.pypi_core import check_packages
 from ..resources import db_ops, templates
 
@@ -28,11 +30,106 @@ async def root():
     return RedirectResponse(url="/pypi/index")
 
 
+async def most_common_library():
+    # Calculate the date one year ago from now
+    one_year_ago = datetime.now() - timedelta(days=365)
+
+    # Query the Library table for entries from the last year
+    last_year = await db_ops.read_query(
+        query=Select(Library).where(and_(Library.date_created >= one_year_ago)),
+        limit=10000,
+    )
+    print(last_year)
+    # count the number of times each library id appears in last_year and return the top 10
+
+
 @router.get("/index")
 async def index(request: Request):
-    context = {}
+    total_libraries = await db_ops.count_query(query=Select(LibraryName))
+    # most_common_libraries = [
+    #     {"name": library[0], "count": library[1]}
+    #     for library in await db_ops.read_query(
+    #         query=Select(
+    #             LibraryName.name, func.count(Library.library_id).label("count")
+    #         )
+    #         .select_from(Library)
+    #         .join(LibraryName, Library.library_id == LibraryName.pkid)
+    #         .group_by(LibraryName.name)
+    #         .order_by(func.count(Library.library_id).desc())
+    #         .limit(10)
+    #     )
+    # ]
+    most_common_libraries = await most_common_library()
+
+    libraries_with_most_vulnerabilities = [
+        library.to_dict()
+        for library in await db_ops.read_query(
+            query=Select(Library)
+            .where(Library.new_version_vulnerability == True)
+            .options(joinedload(Library.library))
+            .group_by(Library.library_id)
+            .order_by(func.count(Library.library_id).desc())
+            .limit(10)
+        )
+    ]
+
+    libraries_per_request_group = await db_ops.count_query(
+        query=Select(Library.request_group_id)
+        .group_by(Library.request_group_id)
+        .order_by(func.count(Library.request_group_id).desc())
+        .limit(10)
+    )
+    libraries_with_new_versions = await db_ops.count_query(
+        query=Select(Library).where(Library.current_version != Library.new_version)
+    )
+    total_requirements = await db_ops.count_query(query=Select(Requirement))
+    requirements_by_host_ip = await db_ops.count_query(
+        query=Select(Requirement.host_ip)
+        .group_by(Requirement.host_ip)
+        .order_by(func.count(Requirement.host_ip).desc())
+        .limit(10)
+    )
+    most_common_user_agents = await db_ops.count_query(
+        query=Select(Requirement.user_agent)
+        .group_by(Requirement.user_agent)
+        .order_by(func.count(Requirement.user_agent).desc())
+        .limit(10)
+    )
+    average_number_of_libraries_per_requirement = await db_ops.count_query(
+        query=Select(
+            func.avg((Requirement.lib_in_count + Requirement.lib_out_count) / 2)
+        )
+    )
+    total_number_of_vulnerabilities = await db_ops.count_query(
+        query=Select(Library).where(Library.vulnerability != None)
+    )
+    last_one_hundred_requests = [
+        requirement.to_dict()
+        for requirement in await db_ops.read_query(
+            query=Select(Requirement).order_by(Requirement.date_created.desc()).limit(1)
+        )
+    ]
+    print(most_common_libraries)
+    library_name = [
+        library.to_dict()
+        for library in await db_ops.read_query(query=Select(LibraryName).limit(100))
+    ]
+    context = {
+        "total_libraries": total_libraries,
+        "libraries_per_request_group": libraries_per_request_group,
+        "libraries_with_new_versions": libraries_with_new_versions,
+        "total_requirements": total_requirements,
+        "requirements_by_host_ip": requirements_by_host_ip,
+        "most_common_user_agents": most_common_user_agents,
+        "average_number_of_libraries_per_requirement": average_number_of_libraries_per_requirement,
+        "total_number_of_vulnerabilities": total_number_of_vulnerabilities,
+        # "most_common_libraries": most_common_libraries,
+        "libraries_with_most_vulnerabilities": libraries_with_most_vulnerabilities,
+        "last_one_hundred_requests": last_one_hundred_requests,
+        "library_name": library_name,
+    }
     return templates.TemplateResponse(
-        request=request, name="dashboard.html", context=context
+        request=request, name="/pypi/dashboard.html", context=context
     )
 
 
@@ -74,14 +171,6 @@ async def post_check_form(
         packages=data, request_group_id=request_group_id, request=request
     )
 
-    # db_data = await db_ops.read_query(Select(Library).where(Library.request_group_id == request_group_id))
-    # db_data_dict = [{k: v for k, v in item.__dict__.items() if not k.startswith('_')} for item in db_data]
-
-    # response = templates.TemplateResponse(
-    #     "pypi/simple.html", {"request": request, "data": data,"pypi_response":pypi_response,"db_data":db_data_dict,"request_group_id":request_group_id}
-    # )
-    # csrf_protect.unset_csrf_cookie(response)  # prevent token reuse
-    # return response
     return RedirectResponse(url=f"/pypi/check/{request_group_id}", status_code=303)
 
 

@@ -10,15 +10,25 @@
       <div class="modal-body">
         <div class="modal-footer justify-content-between">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          <form action="/pypi/results/{{ lr.request_group_id }}">
+          <form action="/pypi/check/{{ lr.request_group_id }}">
             <button type="submit" class="btn btn-info">See Results</button>
           </form>
         </div>
         <div class="scrollable-section">
-          {% for d in lr.json_data_out|sort(attribute='library') %}
-            {{ d.library }}{% if d.has_bracket == true %}[{{ d.bracket_content }}]{% endif %}=={{ d.newVersion }} # {% if d.newVersion != d.currentVersion %}From {{ d.currentVersion }} | {% endif %} {% if d.vulnerbilities|length > 0 %}
-            Vulnerabilities: <a href="https://pypi.org/pypi/{{ d.library }}/{{ d.newVersion }}/json">https://pypi.org/pypi/{{ d.library }}/{{ d.newVersion }}/json</a>{% else %}
-            Vulnerabilities: None{% endif %}<br>
+          {% for item in last_one_hundred_requests %}
+            {% for d in item.json_data_out|sort(attribute='package_name') %}
+              {{d.package_name}}{% if d.has_bracket %}[{{d.bracket_content}}]{%endif%}=={{d.latest_version}} #
+              {% if d.latest_version!=d.current_version %} <strong>From {{d.current_version}}</strong> | {%endif%}
+              {% if d.vulnerabilities|length > 0 %}
+                Vulnerabilities:
+                {% for v in d.vulnerabilities %}
+                  <a href="{{v.link}}">{{v.link}}</a>
+                {% endfor %}
+              {% else %}
+                Vulnerabilities: None
+              {% endif %}
+              <br>
+            {% endfor %}
           {% endfor %}
         </div>
       </div>

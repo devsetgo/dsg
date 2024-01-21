@@ -49,6 +49,7 @@ class InterestingThings(base_schema.SchemaBase, async_db.Base):
     description = Column(String, unique=False, index=True)  # description of item
     url = Column(String, unique=False, index=True)  # url of item
     category = Column(String, unique=False, index=True)  # category of item
+    public = Column(Boolean, default=False)  # If the item is public
     # Define the parent relationship to the User class
     user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
     user = relationship(
@@ -102,6 +103,9 @@ class LibraryName(async_db.Base):
     pkid = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
 
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 class Library(base_schema.SchemaBase, async_db.Base):
     __tablename__ = "libraries"
@@ -115,6 +119,11 @@ class Library(base_schema.SchemaBase, async_db.Base):
     new_version = Column(String, index=True)
     new_version_vulnerability = Column(Boolean, default=False, index=True)
     vulnerability = Column(JSON)
+
+    def to_dict(self):
+        data = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        data["library_name"] = self.library.name
+        return data
 
 
 class Requirement(base_schema.SchemaBase, async_db.Base):
@@ -131,6 +140,9 @@ class Requirement(base_schema.SchemaBase, async_db.Base):
     host_ip = Column(String, index=True)
     header_data = Column(JSON)
     user_agent = Column(String)
+
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 # storing for review later
