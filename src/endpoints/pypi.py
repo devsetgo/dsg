@@ -99,19 +99,6 @@ async def index(request: Request):
     #         func.avg((Requirement.lib_in_count + Requirement.lib_out_count) / 2)
     #     )
     # )
-    average_number_of_libraries_per_request_group = await db_ops.read_query(
-        query=Select(
-            Library.request_group_id, func.count(Library.library_id).label("count")
-        ).group_by(Library.request_group_id)
-    )
-    print(type(average_number_of_libraries_per_request_group))
-    # Calculate the average
-    if len(average_number_of_libraries_per_request_group) == 0:
-        average_number_of_libraries_per_requirement = 0
-    else:
-        average_number_of_libraries_per_requirement = sum(
-            [int(group[1]) for group in average_number_of_libraries_per_request_group]
-        ) / len(average_number_of_libraries_per_request_group)
 
     total_number_of_vulnerabilities = await db_ops.count_query(
         query=Select(Library).where(Library.vulnerability != None)
@@ -134,7 +121,7 @@ async def index(request: Request):
         "total_requirements": total_requirements,
         "requirements_by_host_ip": requirements_by_host_ip,
         "most_common_user_agents": most_common_user_agents,
-        "average_number_of_libraries_per_requirement": average_number_of_libraries_per_requirement,
+        "average_number_of_libraries_per_requirement": await average_number_of_libraries_per_requirement(),
         "total_number_of_vulnerabilities": total_number_of_vulnerabilities,
         # "most_common_libraries": most_common_libraries,
         "libraries_with_most_vulnerabilities": libraries_with_most_vulnerabilities,
@@ -145,6 +132,49 @@ async def index(request: Request):
         request=request, name="/pypi/dashboard.html", context=context
     )
 
+
+async def average_number_of_libraries_per_requirement():
+    # Log the start of the function
+    logger.info("Starting average_number_of_libraries_per_requirement")
+
+    # Query the Library table for entries
+    # This query will fetch the first 100,000 entries from the Library table
+    logger.debug("Querying the Library table")
+    lx = await db_ops.read_query(
+        query=Select(Library)
+        .limit(100000)
+    )
+
+    # Convert each Library object to a dictionary
+    # This is done to make it easier to access the properties of each Library object
+    logger.debug("Converting Library objects to dictionaries")
+    libraries = [obj.__dict__ for obj in lx]
+
+    # Group by request_group_id and count the number of libraries in each group
+    # This is done by creating a dictionary where the keys are the request_group_ids and the values are the counts of libraries
+    logger.debug("Grouping libraries by request_group_id")
+    libraries_per_request_group = {}
+    for library in libraries:
+        request_group_id = library['request_group_id']
+        if request_group_id in libraries_per_request_group:
+            libraries_per_request_group[request_group_id] += 1
+        else:
+            libraries_per_request_group[request_group_id] = 1
+
+    # Calculate the average number of libraries per request group
+    # This is done by dividing the total number of libraries by the number of request groups
+    # If there are no request groups, the average is set to 0
+    logger.debug("Calculating the average number of libraries per request group")
+    if len(libraries_per_request_group) == 0:
+        average_number_of_libraries_per_request_group = 0
+    else:
+        average_number_of_libraries_per_request_group = round(sum(libraries_per_request_group.values()) / len(libraries_per_request_group), 1)
+
+    # Log the calculated average
+    logger.info(f"The average number of library requests per request group is {average_number_of_libraries_per_request_group}")
+
+    # Return the calculated average
+    return average_number_of_libraries_per_request_group
 
 @router.get("/check")
 async def get_check_form(request: Request, csrf_protect: CsrfProtect = Depends()):
