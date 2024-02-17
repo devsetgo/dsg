@@ -22,7 +22,7 @@
               {% if d.vulnerabilities|length > 0 %}
                 Vulnerabilities:
                 {% for v in d.vulnerabilities %}
-                  <a href="{{v.link}}">{{v.link}}</a>
+                  <a href="{{v.link}}" target="_blank">{{v.link}}</a>
                 {% endfor %}
               {% else %}
                 Vulnerabilities: None

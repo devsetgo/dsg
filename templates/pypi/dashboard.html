@@ -125,7 +125,7 @@
           <ul>
             {% for library in libraries_with_most_vulnerabilities %}
             <li>
-              <a href="https://pypi.org/project/{{ library.library_id }}/">{{ library.library_name }}</a>
+              <a href="https://pypi.org/project/{{ library.library_name }}/" target="_blank">{{ library.library_name }}</a>
             </li>
             {% endfor %}
           </ul>
@@ -185,7 +185,7 @@
     </div>
   </div>
   <!-- /.card -->
-
+  {{libraries_with_most_vulnerabilities}}
 </section>
 {% endblock %}
 
