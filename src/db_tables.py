@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from dsg_lib import base_schema
+from dsg_lib.async_database_functions import base_schema
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 

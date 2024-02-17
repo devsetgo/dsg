@@ -39,7 +39,6 @@ async def most_common_library():
         query=Select(Library).where(and_(Library.date_created >= one_year_ago)),
         limit=10000,
     )
-    print(last_year)
     # count the number of times each library id appears in last_year and return the top 10
 
 
@@ -95,11 +94,25 @@ async def index(request: Request):
         .order_by(func.count(Requirement.user_agent).desc())
         .limit(10)
     )
-    average_number_of_libraries_per_requirement = await db_ops.count_query(
+    # average_number_of_libraries_per_requirement = await db_ops.count_query(
+    #     query=Select(
+    #         func.avg((Requirement.lib_in_count + Requirement.lib_out_count) / 2)
+    #     )
+    # )
+    average_number_of_libraries_per_request_group = await db_ops.read_query(
         query=Select(
-            func.avg((Requirement.lib_in_count + Requirement.lib_out_count) / 2)
-        )
+            Library.request_group_id, func.count(Library.library_id).label("count")
+        ).group_by(Library.request_group_id)
     )
+    print(type(average_number_of_libraries_per_request_group))
+    # Calculate the average
+    if len(average_number_of_libraries_per_request_group) == 0:
+        average_number_of_libraries_per_requirement = 0
+    else:
+        average_number_of_libraries_per_requirement = sum(
+            [int(group[1]) for group in average_number_of_libraries_per_request_group]
+        ) / len(average_number_of_libraries_per_request_group)
+
     total_number_of_vulnerabilities = await db_ops.count_query(
         query=Select(Library).where(Library.vulnerability != None)
     )
@@ -109,7 +122,7 @@ async def index(request: Request):
             query=Select(Requirement).order_by(Requirement.date_created.desc()).limit(1)
         )
     ]
-    print(most_common_libraries)
+
     library_name = [
         library.to_dict()
         for library in await db_ops.read_query(query=Select(LibraryName).limit(100))

@@ -19,13 +19,13 @@ This module uses the `loguru` library for logging and the `pydantic` library for
 """
 import secrets
 
-from dsg_lib import database_operations
+from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from pydantic import BaseModel
-from sqlalchemy import Select
+from sqlalchemy import Select, func
 
 from .db_init import async_db
 from .db_tables import Categories, InterestingThings, User
@@ -240,9 +240,11 @@ async def add_categories():
     # If there's an error while adding a category, it logs the error.
     # After all categories have been added, it logs the name of each category.
 
-    cat_number = await db_ops.count_query(Categories)
+    # cat_number = await db_ops.count_query(Categories)
+    # Query the User table and count the number of categories for each user
+    cat_number = await db_ops.count_query(query=Select(func.count(Categories.pkid)))
 
-    if cat_number > 0:
+    if cat_number == 0:
         logger.info("system categories already added")
         return
 
