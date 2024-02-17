@@ -2,7 +2,7 @@
 
 from contextlib import asynccontextmanager
 
-from dsg_lib import logging_config
+from dsg_lib.common_functions import logging_config
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from loguru import logger

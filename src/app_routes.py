@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from dsg_lib import system_health_endpoints
+from dsg_lib.fastapi_functions import system_health_endpoints
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles

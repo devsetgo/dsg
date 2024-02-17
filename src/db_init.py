@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from dsg_lib import async_database, database_config
+from dsg_lib.async_database_functions import async_database, database_config
 from loguru import logger
 
 from .settings import settings
@@ -16,7 +16,9 @@ else:
     db_password = settings.db_password.get_secret_value()
     db_name = settings.db_name.get_secret_value()
     # postgresql://username:password@localhost:5432/mydatabase
-    db_uri: str = f"{settings.db_driver.value}://{db_username}:{db_password}@{settings.db_host}:{settings.db_port}/{db_name}"
+    db_uri: str = (
+        f"{settings.db_driver.value}://{db_username}:{db_password}@{settings.db_host}:{settings.db_port}/{db_name}"
+    )
 
 logger.debug(db_uri)
 
