@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 
-from debug_toolbar.middleware import DebugToolbarMiddleware
+# from debug_toolbar.middleware import DebugToolbarMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -11,11 +11,11 @@ from .settings import Settings, settings
 
 
 def add_middleware(app):
-    app.add_middleware(
-        DebugToolbarMiddleware,
-        # panels=["debug_toolbar.panels.sqlalchemy.SQLAlchemyPanel"], # appears incompatible
-        settings=[Settings()],
-    )
+    # app.add_middleware(
+    #     DebugToolbarMiddleware,
+    #     # panels=["debug_toolbar.panels.sqlalchemy.SQLAlchemyPanel"], # appears incompatible
+    #     settings=[Settings()],
+    # )
     # app.add_middleware(HTTPSRedirectMiddleware)
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     app.add_middleware(
