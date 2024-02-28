@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import datetime, timedelta
+from collections import Counter
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
@@ -29,17 +30,6 @@ async def root():
     logger.info("Redirecting to OpenAPI docs")
     return RedirectResponse(url="/pypi/index")
 
-
-async def most_common_library():
-    # Calculate the date one year ago from now
-    one_year_ago = datetime.now() - timedelta(days=365)
-
-    # Query the Library table for entries from the last year
-    last_year = await db_ops.read_query(
-        query=Select(Library).where(and_(Library.date_created >= one_year_ago)),
-        limit=10000,
-    )
-    # count the number of times each library id appears in last_year and return the top 10
 
 
 @router.get("/index")
@@ -123,7 +113,7 @@ async def index(request: Request):
         "most_common_user_agents": most_common_user_agents,
         "average_number_of_libraries_per_requirement": await average_number_of_libraries_per_requirement(),
         "total_number_of_vulnerabilities": total_number_of_vulnerabilities,
-        # "most_common_libraries": most_common_libraries,
+        "most_common_libraries": most_common_libraries,
         "libraries_with_most_vulnerabilities": libraries_with_most_vulnerabilities,
         "last_one_hundred_requests": last_one_hundred_requests,
         "library_name": library_name,
@@ -132,6 +122,36 @@ async def index(request: Request):
         request=request, name="/pypi/dashboard.html", context=context
     )
 
+
+
+
+async def most_common_library():
+    # Calculate the date one year ago from the current date and time
+    # This is done by subtracting 365 days from the current date and time
+    one_year_ago = datetime.now() - timedelta(days=365)
+
+    # Query the Library table for entries from the last year
+    # The query selects all entries from the Library table where the date_created is greater than or equal to one_year_ago
+    # The joinedload option is used to load the related LibraryName object at the same time as the Library object
+    # This is done to avoid a separate database query when accessing the library attribute of the Library object
+    # The query is limited to the first 10000 entries
+    last_year = await db_ops.read_query(
+        query=Select(Library).options(joinedload(Library.library)).where(and_(Library.date_created >= one_year_ago)),
+        limit=10000,
+    )
+
+    # Create a Counter object from the library names in last_year
+    # The Counter object counts the number of times each library name appears in last_year
+    # This is done by iterating over each Library object in last_year and getting its library name
+    library_counter = Counter(library.library.name for library in last_year)
+
+    # Get the 10 most common library names
+    # The most_common method of the Counter object returns a list of the n most common elements and their counts
+    # In this case, it returns the 10 most common library names and their counts
+    most_common_libraries = library_counter.most_common(10)
+
+    # Return the list of the 10 most common library names and their counts
+    return most_common_libraries
 
 async def average_number_of_libraries_per_requirement():
     # Log the start of the function
@@ -175,6 +195,7 @@ async def average_number_of_libraries_per_requirement():
 
     # Return the calculated average
     return average_number_of_libraries_per_request_group
+
 
 @router.get("/check")
 async def get_check_form(request: Request, csrf_protect: CsrfProtect = Depends()):
@@ -256,11 +277,3 @@ async def get_all(request: Request):
     }
 
     return templates.TemplateResponse(request, "pypi/simple-list.html", context=context)
-
-
-# from fastapi import FastAPI
-
-# app = FastAPI()
-# @app.exception_handler(CsrfProtectError)
-# def csrf_protect_exception_handler(request: Request, exc: CsrfProtectError):
-#     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
