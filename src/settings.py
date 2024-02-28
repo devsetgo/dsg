@@ -52,7 +52,7 @@ class DatabaseDriverEnum(str, Enum):
     mysql = "mysql+aiomysql"
     oracle = "oracle+cx_oracle"
 
-    model_config = ConfigDict(use_enum_values=True)
+    model_config = ConfigDict(use_enum_values=True,extra='allow')
 
 
 class Settings(BaseSettings):
@@ -125,7 +125,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        # extra="allow",
+        extra="allow",
         # use_enum_values=True
     )  # Set up the configuration dictionary for the settings
 
