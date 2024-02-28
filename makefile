@@ -54,10 +54,19 @@ install-dev:
 	$(PIP) install -r $(DEV_REQUIREMENTS_PATH)
 
 dev:
-	${DEV_SERVER} --port ${PORT} --reload
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
 
 prd:
-	${PROD_SERVER} --port ${PORT} --workers ${WORKERS}
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
+
+gdev:
+	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
+grdev:
+	granian --interface rsgi ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
+gprd:
+	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
 
 test:
 	pre-commit run -a
