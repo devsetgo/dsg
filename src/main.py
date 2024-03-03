@@ -63,7 +63,7 @@ create_routes(app)
 async def root(request: Request):
     # get user_identifier from session
     user_identifier = request.session.get("user_identifier", None)
-    if user_identifier is None:
-        return RedirectResponse(url="/users/login")
-    else:
-        return RedirectResponse(url="/pages/index")
+    # if user_identifier is None:
+    #     return RedirectResponse(url="/users/login")
+    # else:
+    return RedirectResponse(url="/pages/index")
