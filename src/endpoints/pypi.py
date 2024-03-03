@@ -14,6 +14,7 @@ from sqlalchemy.orm import joinedload
 from ..db_tables import Library, LibraryName, Requirement
 from ..functions.pypi_core import check_packages
 from ..resources import db_ops, templates
+from ..functions.pypi_extra import get_demo_list
 
 router = APIRouter()
 
@@ -50,17 +51,6 @@ async def index(request: Request):
     # ]
     most_common_libraries = await most_common_library()
 
-    libraries_with_most_vulnerabilities = [
-        library.to_dict()
-        for library in await db_ops.read_query(
-            query=Select(Library)
-            .where(Library.new_version_vulnerability == True)
-            .options(joinedload(Library.library))
-            .group_by(Library.library_id)
-            .order_by(func.count(Library.library_id).desc())
-            .limit(10)
-        )
-    ]
 
     libraries_per_request_group = await db_ops.count_query(
         query=Select(Library.request_group_id)
@@ -84,15 +74,24 @@ async def index(request: Request):
         .order_by(func.count(Requirement.user_agent).desc())
         .limit(10)
     )
-    # average_number_of_libraries_per_requirement = await db_ops.count_query(
-    #     query=Select(
-    #         func.avg((Requirement.lib_in_count + Requirement.lib_out_count) / 2)
-    #     )
+    
+    libraries_with_most_vulnerabilities = [
+        library.to_dict()
+        for library in await db_ops.read_query(
+            query=Select(Library)
+            .where(Library.new_version_vulnerability == True)
+            .options(joinedload(Library.library))
+            .group_by(Library.library_id)
+            .order_by(func.count(Library.library_id).desc())
+            .limit(10)
+        )
+    ]
+
+    # total_number_of_vulnerabilities = await db_ops.count_query(
+    #     query=Select(func.sum(func.length(Library.vulnerability))).where(Library.vulnerability != None)
     # )
 
-    total_number_of_vulnerabilities = await db_ops.count_query(
-        query=Select(Library).where(Library.vulnerability != None)
-    )
+
     last_one_hundred_requests = [
         requirement.to_dict()
         for requirement in await db_ops.read_query(
@@ -112,7 +111,7 @@ async def index(request: Request):
         "requirements_by_host_ip": requirements_by_host_ip,
         "most_common_user_agents": most_common_user_agents,
         "average_number_of_libraries_per_requirement": await average_number_of_libraries_per_requirement(),
-        "total_number_of_vulnerabilities": total_number_of_vulnerabilities,
+        "total_number_of_vulnerabilities": await number_of_vulnerabilities(),
         "most_common_libraries": most_common_libraries,
         "libraries_with_most_vulnerabilities": libraries_with_most_vulnerabilities,
         "last_one_hundred_requests": last_one_hundred_requests,
@@ -123,33 +122,34 @@ async def index(request: Request):
     )
 
 
+async def number_of_vulnerabilities():
+    logger.info("Starting to count vulnerabilities.")
+    v_data = await db_ops.read_query(
+        query=Select(Library)
+    )
+
+    v_set = set()
+    for v in v_data:
+        if len(v.vulnerability)>1:
+            for vulnerability in v.vulnerability:
+                for alias in vulnerability['aliases']:
+                    v_set.add(alias)
+    logger.info(f"Counted {len(v_set)} unique vulnerabilities.")
+    return len(v_set)
 
 async def most_common_library():
-    # Calculate the date one year ago from the current date and time
-    # This is done by subtracting 365 days from the current date and time
+    logger.info("Starting to find most common libraries.")
     one_year_ago = datetime.now() - timedelta(days=365)
 
-    # Query the Library table for entries from the last year
-    # The query selects all entries from the Library table where the date_created is greater than or equal to one_year_ago
-    # The joinedload option is used to load the related LibraryName object at the same time as the Library object
-    # This is done to avoid a separate database query when accessing the library attribute of the Library object
-    # The query is limited to the first 10000 entries
     last_year = await db_ops.read_query(
         query=Select(Library).options(joinedload(Library.library)).where(and_(Library.date_created >= one_year_ago)),
         limit=10000,
     )
 
-    # Create a Counter object from the library names in last_year
-    # The Counter object counts the number of times each library name appears in last_year
-    # This is done by iterating over each Library object in last_year and getting its library name
     library_counter = Counter(library.library.name for library in last_year)
 
-    # Get the 10 most common library names
-    # The most_common method of the Counter object returns a list of the n most common elements and their counts
-    # In this case, it returns the 10 most common library names and their counts
     most_common_libraries = library_counter.most_common(10)
-
-    # Return the list of the 10 most common library names and their counts
+    logger.info(f"Found {len(most_common_libraries)} most common libraries.")
     return most_common_libraries
 
 async def average_number_of_libraries_per_requirement():
@@ -198,40 +198,25 @@ async def average_number_of_libraries_per_requirement():
 
 @router.get("/check")
 async def get_check_form(request: Request, csrf_protect: CsrfProtect = Depends()):
+    logger.info("Generating CSRF tokens.")
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
 
     context = {
         "csrf_token": csrf_token,
         "request_group_id": str(uuid.uuid4()),
-        "demo_list": get_demo_list(),
+        "demo_list": get_demo_list(max_range=100),
     }  # Use the generated CSRF token
+    logger.info("Creating template response.")
     response = templates.TemplateResponse(
         request=request, name="pypi/new.html", context=context
     )
+    logger.info("Setting CSRF cookie.")
     csrf_protect.set_csrf_cookie(
         signed_token, response
     )  # Set the signed CSRF token in the cookie
+    logger.info("Returning response.")
     return response
 
-def get_demo_list():
-    import random
-    # open csv file located at src/endpoints/demo.csv
-    with open("src/endpoints/demo.csv", "r") as file:
-        # read the file
-        data = file.read()
-        # split the data into a list
-        data = data.split("\n")
-        # remove empty strings from the list
-        data = [x for x in data if x != ""]
-        # get a random list of x items from the list
-        data_sample = random.randint(1, 50)
-        # create a weight list that gives higher probability to the more popular libraries
-        weights = [x for x in range(len(data), 0, -1)]
-        data = random.choices(data, weights=weights, k=data_sample)
-        # join the list into a string with each item on a new line
-        data = '\n'.join(data)
-        # return the formatted data
-        return data
 
 @router.post("/check", response_class=RedirectResponse)
 async def post_check_form(

@@ -98,6 +98,12 @@ async def login_user(request: Request):
 
         # Set the user identifier in the session
         request.session["user_identifier"] = user.pkid
+        
+        if user.is_admin:
+            print(user.is_admin)
+            request.session["is_admin"] = True
+        request.session["user_identifier"] = user.pkid
+
 
         # Create the response object
         response = Response(headers={"HX-Redirect": "/"}, status_code=200)

@@ -8,29 +8,22 @@
   <!-- Sidebar -->
   <div class="sidebar">
     {% include "base_nav_items.html" %}
+    {% if request.session.user_identifier is not none %}
+
     {% include "base_nav_loggedin.html" %}
     {% include "base_nav_admin.html" %}
-    <nav class="mt-2">
-      <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="true">
-          <li class="nav-item has-treeview  menu-closed ">
-              <a href="#" class="nav-link">
-                  <i class="nav-icon fas fa-tachometer-alt"></i>
-                  <p>
-                      Developer
-                      <i class="right fas fa-angle-left"></i>
-                  </p>
-              </a>
-              <ul class="nav nav-treeview">
-                  <li class="nav-item">
-                      <a href="/docs" class="nav-link active", target="_blank">
-                          <i class="far fa-circle nav-icon"></i>
-                          <p>OpenAPI</p>
-                      </a>
-                  </li>
-              </ul>
-      </ul>
-  </nav>
-    <!-- Sidebar user panel (optional) -->
-  <!-- /.sidebar -->
-</aside>
+    {% include "base_nav_developer.html" %}
+    <ul>
+      <li class="nav-item">
+        <form action="/user/logout" method="POST">
+          <p> &nbsp;</p>
+          <button class="btn btn-block btn-outline-warning" type="submit"><i class="fas fa-sign-out-alt nav-icon"></i>
+            Logout</button>
+        </form>
+      </li>
+    </ul>
+    {% endif %}
 
+    <!-- Sidebar user panel (optional) -->
+    <!-- /.sidebar -->
+</aside>
