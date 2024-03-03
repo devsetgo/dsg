@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from dsg_lib.async_database_functions import base_schema
-from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 
 from .db_init import async_db
@@ -20,11 +20,16 @@ class User(base_schema.SchemaBase, async_db.Base):
     password = Column(String, unique=False, index=True)  # Password of the user
     is_active = Column(Boolean, default=True)  # If the user is active
     is_admin = Column(Boolean, default=False)  # If the user is an admin
+    site_access = Column(Boolean, default=False)  # If the user has access to the site
+    date_last_login = Column(DateTime, unique=False, index=True)  # Last login date
+    failed_login_attempts = Column(Integer, default=0)  # Failed login attempts
+    is_locked = Column(Boolean, default=False)  # If the user account is locked
 
     # combine first and last name into a full name
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+
 
     # Define the child relationship to the InterestingThings class
     InterestingThings = relationship(
