@@ -124,7 +124,6 @@ async def index(request: Request):
 
 
 
-
 async def most_common_library():
     # Calculate the date one year ago from the current date and time
     # This is done by subtracting 365 days from the current date and time
@@ -204,6 +203,7 @@ async def get_check_form(request: Request, csrf_protect: CsrfProtect = Depends()
     context = {
         "csrf_token": csrf_token,
         "request_group_id": str(uuid.uuid4()),
+        "demo_list": get_demo_list(),
     }  # Use the generated CSRF token
     response = templates.TemplateResponse(
         request=request, name="pypi/new.html", context=context
@@ -213,6 +213,25 @@ async def get_check_form(request: Request, csrf_protect: CsrfProtect = Depends()
     )  # Set the signed CSRF token in the cookie
     return response
 
+def get_demo_list():
+    import random
+    # open csv file located at src/endpoints/demo.csv
+    with open("src/endpoints/demo.csv", "r") as file:
+        # read the file
+        data = file.read()
+        # split the data into a list
+        data = data.split("\n")
+        # remove empty strings from the list
+        data = [x for x in data if x != ""]
+        # get a random list of x items from the list
+        data_sample = random.randint(1, 50)
+        # create a weight list that gives higher probability to the more popular libraries
+        weights = [x for x in range(len(data), 0, -1)]
+        data = random.choices(data, weights=weights, k=data_sample)
+        # join the list into a string with each item on a new line
+        data = '\n'.join(data)
+        # return the formatted data
+        return data
 
 @router.post("/check", response_class=RedirectResponse)
 async def post_check_form(
