@@ -91,6 +91,7 @@ class Settings(BaseSettings):
     log_serializer: bool = False
     log_diagnose: bool = False
     # session management
+    max_failed_login_attempts:int = 5
     session_secret_key: str = secrets.token_hex(32)  # Generate a random secret key
     same_site: SameSiteEnum = Field("Lax", description="Options: Lax, Strict, None")
     https_only: bool = False
