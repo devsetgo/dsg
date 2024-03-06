@@ -30,7 +30,6 @@ class User(base_schema.SchemaBase, async_db.Base):
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
-
     # Define the child relationship to the InterestingThings class
     InterestingThings = relationship(
         "InterestingThings", back_populates="user"
@@ -84,11 +83,12 @@ class Notes(base_schema.SchemaBase, async_db.Base):
 
     # Define the columns of the table
     mood = Column(String(50), unique=False, index=True)  # mood of note
-    note = Column(String(500), unique=False, index=True)  # note
+    note = Column(String(), unique=False, index=True)  # note
     tags = Column(JSON)  # tags from OpenAI
     summary = Column(String(500), unique=False, index=True)  # summary from OpenAI
     # Define the parent relationship to the User class
     user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
+
     user = relationship(
         "User", back_populates="Notes"
     )  # Relationship to the User class
