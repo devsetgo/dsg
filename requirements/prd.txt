@@ -1,12 +1,14 @@
-argon2-cffi==23.1.0 #   Vulnerabilities: None
-async-lru==2.0.4 #   Vulnerabilities: None
-devsetgo-lib[all]==0.11.2 #  From 0.11.1 |   Vulnerabilities: None
-fastapi[all]==0.110.0 #  From 0.109.2 |   Vulnerabilities: None
-fastapi-csrf-protect==0.3.3 #   Vulnerabilities: None
-fastapi-debug-toolbar==0.6.2 #   Vulnerabilities: None
-httpx-auth==0.21.0 #  From 0.20.0 |   Vulnerabilities: None
-openai==1.12.0 #   Vulnerabilities: None
-pydantic[email]==2.6.3 #  From 2.6.1 |   Vulnerabilities: None
-PyJWT[crypto]==2.8.0 #   Vulnerabilities: None
-tqdm==4.66.2 #   Vulnerabilities: None
-unsync==1.4.0 #   Vulnerabilities: None
+argon2-cffi==23.1.0 # Vulnerabilities: None
+async-lru==2.0.4 # Vulnerabilities: None
+devsetgo-lib[all]==0.11.2 # Vulnerabilities: None
+fastapi[all]==0.110.0 # Vulnerabilities: None
+fastapi-csrf-protect==0.3.3 # Vulnerabilities: None
+fastapi-debug-toolbar==0.6.2 # Vulnerabilities: None
+httpx-auth==0.22.0 # From 0.21.0 | Vulnerabilities: None
+openai==1.13.3 # From 1.12.0 | Vulnerabilities: None
+pydantic[email]==2.6.3 # Vulnerabilities: None
+PyJWT[crypto]==2.8.0 # Vulnerabilities: None
+silly==1.1.0 # Vulnerabilities: None
+tqdm==4.66.2 # Vulnerabilities: None
+unsync==1.4.0 # Vulnerabilities: None
+
