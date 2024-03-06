@@ -14,7 +14,7 @@ from sqlalchemy.orm import joinedload
 from ..db_tables import Library, LibraryName, Requirement
 from ..functions.pypi_core import check_packages
 from ..resources import db_ops, templates
-from ..functions.pypi_extra import get_demo_list
+from ..functions.demo_functions import get_pypi_demo_list
 
 router = APIRouter()
 
@@ -32,25 +32,11 @@ async def root():
     return RedirectResponse(url="/pypi/index")
 
 
-
 @router.get("/index")
 async def index(request: Request):
     total_libraries = await db_ops.count_query(query=Select(LibraryName))
-    # most_common_libraries = [
-    #     {"name": library[0], "count": library[1]}
-    #     for library in await db_ops.read_query(
-    #         query=Select(
-    #             LibraryName.name, func.count(Library.library_id).label("count")
-    #         )
-    #         .select_from(Library)
-    #         .join(LibraryName, Library.library_id == LibraryName.pkid)
-    #         .group_by(LibraryName.name)
-    #         .order_by(func.count(Library.library_id).desc())
-    #         .limit(10)
-    #     )
-    # ]
-    most_common_libraries = await most_common_library()
 
+    most_common_libraries = await most_common_library()
 
     libraries_per_request_group = await db_ops.count_query(
         query=Select(Library.request_group_id)
@@ -74,7 +60,7 @@ async def index(request: Request):
         .order_by(func.count(Requirement.user_agent).desc())
         .limit(10)
     )
-    
+
     libraries_with_most_vulnerabilities = [
         library.to_dict()
         for library in await db_ops.read_query(
@@ -86,11 +72,6 @@ async def index(request: Request):
             .limit(10)
         )
     ]
-
-    # total_number_of_vulnerabilities = await db_ops.count_query(
-    #     query=Select(func.sum(func.length(Library.vulnerability))).where(Library.vulnerability != None)
-    # )
-
 
     last_one_hundred_requests = [
         requirement.to_dict()
@@ -124,25 +105,26 @@ async def index(request: Request):
 
 async def number_of_vulnerabilities():
     logger.info("Starting to count vulnerabilities.")
-    v_data = await db_ops.read_query(
-        query=Select(Library)
-    )
+    v_data = await db_ops.read_query(query=Select(Library))
 
     v_set = set()
     for v in v_data:
-        if len(v.vulnerability)>1:
+        if len(v.vulnerability) > 1:
             for vulnerability in v.vulnerability:
-                for alias in vulnerability['aliases']:
+                for alias in vulnerability["aliases"]:
                     v_set.add(alias)
     logger.info(f"Counted {len(v_set)} unique vulnerabilities.")
     return len(v_set)
+
 
 async def most_common_library():
     logger.info("Starting to find most common libraries.")
     one_year_ago = datetime.now() - timedelta(days=365)
 
     last_year = await db_ops.read_query(
-        query=Select(Library).options(joinedload(Library.library)).where(and_(Library.date_created >= one_year_ago)),
+        query=Select(Library)
+        .options(joinedload(Library.library))
+        .where(and_(Library.date_created >= one_year_ago)),
         limit=10000,
     )
 
@@ -152,6 +134,7 @@ async def most_common_library():
     logger.info(f"Found {len(most_common_libraries)} most common libraries.")
     return most_common_libraries
 
+
 async def average_number_of_libraries_per_requirement():
     # Log the start of the function
     logger.info("Starting average_number_of_libraries_per_requirement")
@@ -159,10 +142,7 @@ async def average_number_of_libraries_per_requirement():
     # Query the Library table for entries
     # This query will fetch the first 100,000 entries from the Library table
     logger.debug("Querying the Library table")
-    lx = await db_ops.read_query(
-        query=Select(Library)
-        .limit(100000)
-    )
+    lx = await db_ops.read_query(query=Select(Library).limit(100000))
 
     # Convert each Library object to a dictionary
     # This is done to make it easier to access the properties of each Library object
@@ -174,7 +154,7 @@ async def average_number_of_libraries_per_requirement():
     logger.debug("Grouping libraries by request_group_id")
     libraries_per_request_group = {}
     for library in libraries:
-        request_group_id = library['request_group_id']
+        request_group_id = library["request_group_id"]
         if request_group_id in libraries_per_request_group:
             libraries_per_request_group[request_group_id] += 1
         else:
@@ -187,10 +167,16 @@ async def average_number_of_libraries_per_requirement():
     if len(libraries_per_request_group) == 0:
         average_number_of_libraries_per_request_group = 0
     else:
-        average_number_of_libraries_per_request_group = round(sum(libraries_per_request_group.values()) / len(libraries_per_request_group), 1)
+        average_number_of_libraries_per_request_group = round(
+            sum(libraries_per_request_group.values())
+            / len(libraries_per_request_group),
+            1,
+        )
 
     # Log the calculated average
-    logger.info(f"The average number of library requests per request group is {average_number_of_libraries_per_request_group}")
+    logger.info(
+        f"The average number of library requests per request group is {average_number_of_libraries_per_request_group}"
+    )
 
     # Return the calculated average
     return average_number_of_libraries_per_request_group
@@ -204,7 +190,7 @@ async def get_check_form(request: Request, csrf_protect: CsrfProtect = Depends()
     context = {
         "csrf_token": csrf_token,
         "request_group_id": str(uuid.uuid4()),
-        "demo_list": get_demo_list(max_range=100),
+        "demo_list": get_pypi_demo_list(max_range=100),
     }  # Use the generated CSRF token
     logger.info("Creating template response.")
     response = templates.TemplateResponse(

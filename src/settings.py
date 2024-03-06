@@ -52,7 +52,7 @@ class DatabaseDriverEnum(str, Enum):
     mysql = "mysql+aiomysql"
     oracle = "oracle+cx_oracle"
 
-    model_config = ConfigDict(use_enum_values=True,extra='allow')
+    model_config = ConfigDict(use_enum_values=True, extra="allow")
 
 
 class Settings(BaseSettings):
@@ -91,7 +91,7 @@ class Settings(BaseSettings):
     log_serializer: bool = False
     log_diagnose: bool = False
     # session management
-    max_failed_login_attempts:int = 5
+    max_failed_login_attempts: int = 5
     session_secret_key: str = secrets.token_hex(32)  # Generate a random secret key
     same_site: SameSiteEnum = Field("Lax", description="Options: Lax, Strict, None")
     https_only: bool = False
