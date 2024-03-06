@@ -88,14 +88,14 @@ async def create_note(request: Request, csrf_protect: CsrfProtect = Depends()):
     note = form["note"]
 
     # Get the tags and summary from OpenAI
-    analysis = await ai.get_analysis(content=note)
+    # analysis = await ai.get_analysis(content=note)
 
     # Create the note
     note = Notes(
         mood=mood,
         note=note,
-        tags=analysis["tags"],
-        summary=analysis["summary"],
+        # tags=analysis["tags"],
+        # summary=analysis["summary"],
         user_id=user_identifier,
     )
     data = await db_ops.create_one(note)
