@@ -9,7 +9,6 @@
   <div class="sidebar">
     {% include "base_nav_items.html" %}
     {% if request.session.user_identifier is not none %}
-
     {% include "base_nav_loggedin.html" %}
     {% include "base_nav_admin.html" %}
     {% include "base_nav_developer.html" %}

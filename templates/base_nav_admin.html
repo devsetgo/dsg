@@ -1,9 +1,9 @@
-{% if request.session.is_admin == true %}
+{% if request.session.is_admin is true %}
 <nav class="mt-2">
     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="true">
         <li class="nav-item has-treeview  menu-closed ">
             <a href="#" class="nav-link">
-                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <i class="nav-icon fa-solid fa-lock-open"></i>
                 <p>
                     Admin
                     <i class="right fas fa-angle-left"></i>
