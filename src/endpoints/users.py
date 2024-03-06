@@ -59,14 +59,27 @@ async def login_user(request: Request):
     user = await db_ops.read_one_record(Select(User).where(User.user_name == user_name))
 
     logger.debug(f"User: {user}")
-    print(user.date_last_login, user.failed_login_attempts,user.password, user.user_name, user.pkid)
+    print(
+        user.date_last_login,
+        user.failed_login_attempts,
+        user.password,
+        user.user_name,
+        user.pkid,
+    )
     # Check if the user exists and if they have made too many failed login attempts
-    if user is not None and user.failed_login_attempts >= settings.max_failed_login_attempts:
+    if (
+        user is not None
+        and user.failed_login_attempts >= settings.max_failed_login_attempts
+    ):
         # Log the account lock
-        logger.warning(f"Account for user: {user_name} is locked due to too many failed login attempts")
+        logger.warning(
+            f"Account for user: {user_name} is locked due to too many failed login attempts"
+        )
 
         # Set the error message and return it in the response
-        request.session["error"] = "Account is locked due to too many failed login attempts"
+        request.session["error"] = (
+            "Account is locked due to too many failed login attempts"
+        )
         return templates.TemplateResponse(
             "users/error_message.html",
             {"request": request, "error": request.session["error"]},
@@ -78,7 +91,9 @@ async def login_user(request: Request):
         if user is not None:
             login_attempt = user.failed_login_attempts + 1
             await db_ops.update_one(
-                table=User, new_values={"failed_login_attempts": login_attempt}, record_id=user.pkid
+                table=User,
+                new_values={"failed_login_attempts": login_attempt},
+                record_id=user.pkid,
             )
 
         # Log the failed login attempt
@@ -98,19 +113,23 @@ async def login_user(request: Request):
 
         # Set the user identifier in the session
         request.session["user_identifier"] = user.pkid
-        
-        if user.is_admin:
+        print(f"Admin: {type(user.is_admin)}")
+        if user.is_admin == True:
             print(user.is_admin)
             request.session["is_admin"] = True
         request.session["user_identifier"] = user.pkid
-
 
         # Create the response object
         response = Response(headers={"HX-Redirect": "/"}, status_code=200)
 
         # Update the last login date and reset the failed login attempts in the database
         login_update = await db_ops.update_one(
-            table=User, new_values={"date_last_login": datetime.utcnow(),"failed_login_attempts": 0},record_id=user.pkid
+            table=User,
+            new_values={
+                "date_last_login": datetime.utcnow(),
+                "failed_login_attempts": 0,
+            },
+            record_id=user.pkid,
         )
         logger.debug(f"Login update: {login_update}")
         # Return the response

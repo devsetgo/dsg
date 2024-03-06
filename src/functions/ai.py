@@ -10,6 +10,12 @@ client = AsyncOpenAI(
 )
 
 
+async def get_analysis(content: str) -> dict:
+    tags = await get_tags(content=content["note"])
+    summary = await get_summary(content=content["note"])
+    return {"tags": tags, "summary": summary}
+
+
 async def get_tags(content: str) -> dict:
     prompt = f"Please analyze the following text and provide no more than 3 one-word psychological keyword tags that best capture its essence: {content}"
 
@@ -45,7 +51,7 @@ async def get_summary(content: str) -> dict:
         messages=[
             {
                 "role": "system",
-                "content": "You are a helpful assistant that will provide a very short description (less than 10 words) in the format of 'feeling blank'.",
+                "content": "You are a helpful assistant that will provide a very short description (less than 10 words) in the format of 'feeling blank' and without naming a person in the summary.",
             },
             {"role": "user", "content": content},
         ],
@@ -53,12 +59,6 @@ async def get_summary(content: str) -> dict:
 
     # Extract the content from the response
     response_content = chat_completion.choices[0].message.content
-
-    # Split the content into a list of keywords
-    keywords = response_content.split(", ")
-
-    # Store the keywords in a dictionary
-    response_dict = {"tags": keywords}
     return response_content
 
 
