@@ -1,51 +1,14 @@
-# create new API endpoint for notes
-# the user id (user.pkid) is in the session [user_identifier]
-# the endpoints should include the following for a user:
-# 1. create a main page for the users notes
-# 2. create a new note
-# 3. get all notes for a user
-# 4. get a single note for a user
-# 5. update a single note for a user
-# 6. delete a single note for a user
-# 7. get all notes by mood and/or tags, date range, etc. for a user
-# 8. get metrics for notes (word count, character count, etc.) for a user
-# 9. get metrics for date range of notes (word count, character count, etc.) for a user
-# 10. get admin only metrics for notes (word count, character count, etc.)
-
-# class Notes(base_schema.SchemaBase, async_db.Base):
-#     __tablename__ = "notes"  # Name of the table in the database
-#     __tableargs__ = {"comment": "Notes that the user writes"}
-
-#     # Define the columns of the table
-#     mood = Column(String(50), unique=False, index=True)  # mood of note
-#     note = Column(String(5000), unique=False, index=True)  # note
-#     tags = Column(JSON)  # tags from OpenAI
-#     summary = Column(String(500), unique=False, index=True)  # summary from OpenAI
-#     # Define the parent relationship to the User class
-#     user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
-#     user = relationship(
-#         "User", back_populates="Notes"
-#     )  # Relationship to the User class
-
-#     @property
-#     def word_count(self):
-#         return len(self.note.split())
-
-#     @property
-#     def character_count(self):
-#         return len(self.note)
-
 # -*- coding: utf-8 -*-
 
 import uuid
 from collections import Counter
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Form
 from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
-from sqlalchemy import Select, and_, func
+from sqlalchemy import Select, and_, func,or_
 from sqlalchemy.orm import joinedload
 
 from ..db_tables import Notes, User
@@ -95,6 +58,60 @@ async def read_notes(
         request=request, name="/notes/dashboard.html", context=context
     )
 
+# search /search
+@router.get("/search")
+async def search_notes(request: Request, csrf_protect: CsrfProtect = Depends()):
+    user_identifier = request.session.get("user_identifier", None)
+    user_timezone = request.session.get("timezone", None)
+    if user_identifier is None:
+        return RedirectResponse(url="/users/login", status_code=302)
+
+    return templates.TemplateResponse(
+        request=request, name="/notes/search.html", context={"user_identifier": user_identifier}
+    )
+
+# search /search
+@router.post("/search")
+async def get_notes(request: Request, search_term: str = Form(...), csrf_protect: CsrfProtect = Depends()):
+    user_identifier = request.session.get("user_identifier", None)
+    user_timezone = request.session.get("timezone", None)
+    if user_identifier is None:
+        return RedirectResponse(url="/users/login", status_code=302)
+    # find search_term in columns: note, mood, tags, summary
+    query = (
+        Select(Notes)
+        .where(
+            (Notes.user_id == user_identifier) &
+            (
+                or_(
+                    Notes.note.contains(search_term),
+                    Notes.mood.contains(search_term),
+                    Notes.tags.contains(search_term),
+                    Notes.summary.contains(search_term)
+                )
+            )
+        )
+        .order_by(Notes.date_created.desc())
+        .limit(100)
+    )
+    notes = await db_ops.read_query(query=query)
+    notes = [note.to_dict() for note in notes]
+    # offset date_created and date_updated to user's timezone
+    for note in notes:
+        note["date_created"] = await date_functions.timezone_update(
+            user_timezone=user_timezone,
+            date_time=note["date_created"],
+            friendly_string=True,
+        )
+        note["date_updated"] = await date_functions.timezone_update(
+            user_timezone=user_timezone,
+            date_time=note["date_updated"],
+            friendly_string=True,
+        )
+
+    return templates.TemplateResponse(
+        request=request, name="/notes/search_term.html", context={"user_identifier": user_identifier, "notes": notes}
+    )
 
 # new note form
 @router.get("/new")
@@ -143,6 +160,7 @@ async def read_note(request: Request, note_id: str):
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
     note = await db_ops.read_one_record(query=query)
+
     note = note.to_dict()
 
     # offset date_created and date_updated to user's timezone
@@ -222,8 +240,6 @@ async def update_note(
 
 
 # delete/{note_id}
-
-# search /search
 
 # metrics /metrics
 # number of notes
