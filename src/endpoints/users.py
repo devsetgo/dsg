@@ -9,10 +9,10 @@ from loguru import logger
 from pydantic import BaseModel, ValidationError, field_validator
 from sqlalchemy import Select
 
-from ..settings import settings
 from ..db_tables import User
 from ..functions.hash_function import verify_password
 from ..resources import db_ops, templates
+from ..settings import settings
 
 router = APIRouter()
 
@@ -21,7 +21,6 @@ router = APIRouter()
 @router.get("/login", response_class=HTMLResponse)
 async def login(request: Request):
     user_identifier = request.session.get("user_identifier", None)
-    print(user_identifier)
     if user_identifier is not None:
         return RedirectResponse(
             url="/pages/index", status_code=status.HTTP_303_SEE_OTHER
@@ -59,13 +58,6 @@ async def login_user(request: Request):
     user = await db_ops.read_one_record(Select(User).where(User.user_name == user_name))
 
     logger.debug(f"User: {user}")
-    print(
-        user.date_last_login,
-        user.failed_login_attempts,
-        user.password,
-        user.user_name,
-        user.pkid,
-    )
     # Check if the user exists and if they have made too many failed login attempts
     if (
         user is not None
@@ -113,11 +105,11 @@ async def login_user(request: Request):
 
         # Set the user identifier in the session
         request.session["user_identifier"] = user.pkid
-        print(f"Admin: {type(user.is_admin)}")
         if user.is_admin == True:
-            print(user.is_admin)
+
             request.session["is_admin"] = True
         request.session["user_identifier"] = user.pkid
+        request.session["timezone"] = user.my_timezone
 
         # Create the response object
         response = Response(headers={"HX-Redirect": "/"}, status_code=200)

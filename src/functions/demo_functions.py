@@ -31,6 +31,7 @@ Returns:
     str: A string containing the generated paragraph.
 """
 import random
+
 from loguru import logger
 
 
