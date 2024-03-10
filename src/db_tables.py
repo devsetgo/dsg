@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-from dsg_lib.async_database_functions import base_schema
-from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String, DateTime
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm import class_mapper
 from datetime import datetime
+
+from dsg_lib.async_database_functions import base_schema
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import class_mapper, relationship
+
 from .db_init import async_db
 
 
@@ -106,12 +107,7 @@ class Notes(base_schema.SchemaBase, async_db.Base):
 
     def to_dict(self):
         data = {
-            c.key: (
-                getattr(self, c.key).strftime("%d %B %Y at %H:%M")
-                if isinstance(getattr(self, c.key), datetime)
-                else getattr(self, c.key)
-            )
-            for c in class_mapper(self.__class__).columns
+            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
         data["word_count"] = self.word_count
         data["character_count"] = self.character_count
