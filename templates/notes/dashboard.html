@@ -13,13 +13,7 @@
   href="{{ url_for('static' , path='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
 <!-- Stylesheet for DataTables Buttons Bootstrap 4 -->
 
-<style>
-  .scrollable-section {
-    max-height: 200px;
-    < !-- Sets the maximum height of the scrollable section -->overflow-y: auto;
-    < !-- Enables vertical scrolling -->
-  }
-</style>
+
 {% endblock %} <!-- Ends the block for page-specific stylesheets -->
 
 {% block page_breadcrumb %} Notes{% endblock %} <!-- Sets the breadcrumb -->
@@ -28,9 +22,13 @@
 
 {% block body %} <!-- Starts the block for the body of the page -->
 <section> <!-- Starts a section -->
-{{user_identifier}}
-<br>
-{{notes}}
+{% for note in notes %}
+  <ul>
+  {% for key, value in note.items() %}
+    <li>{{ key }}: {{ value }}</li>
+  {% endfor %}
+  </ul>
+{% endfor %}
 </section>
 {% endblock %}
 
