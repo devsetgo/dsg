@@ -19,6 +19,8 @@ class User(base_schema.SchemaBase, async_db.Base):
         String, unique=False, index=True, nullable=True
     )  # Email of the user, must be unique
     password = Column(String, unique=False, index=True)  # Password of the user
+    # timezone of the user, should default to new york
+    my_timezone = Column(String, unique=False, index=True, default="America/New_York")
     is_active = Column(Boolean, default=True)  # If the user is active
     is_admin = Column(Boolean, default=False)  # If the user is an admin
     site_access = Column(Boolean, default=False)  # If the user has access to the site
@@ -104,12 +106,15 @@ class Notes(base_schema.SchemaBase, async_db.Base):
 
     def to_dict(self):
         data = {
-            c.key: getattr(self, c.key).strftime("%d %B %Y at %H:%M") 
-            if isinstance(getattr(self, c.key), datetime) else getattr(self, c.key) 
+            c.key: (
+                getattr(self, c.key).strftime("%d %B %Y at %H:%M")
+                if isinstance(getattr(self, c.key), datetime)
+                else getattr(self, c.key)
+            )
             for c in class_mapper(self.__class__).columns
         }
-        data['word_count'] = self.word_count
-        data['character_count'] = self.character_count
+        data["word_count"] = self.word_count
+        data["character_count"] = self.character_count
         return data
 
 
