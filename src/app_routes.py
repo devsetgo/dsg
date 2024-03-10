@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_csrf_protect.exceptions import CsrfProtectError
 
-from .endpoints import devtools, pages, pypi, users, notes
+from .endpoints import devtools, notes, pages, pypi, users
 
 
 def create_routes(app: FastAPI):
