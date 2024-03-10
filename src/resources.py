@@ -17,8 +17,11 @@ Example:
 
 This module uses the `loguru` library for logging and the `pydantic` library for data validation and settings management.
 """
+import random
 import secrets
+from datetime import datetime, timedelta
 
+import silly
 from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -26,9 +29,10 @@ from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import Select, func
+from tqdm import tqdm
 
 from .db_init import async_db
-from .db_tables import Categories, InterestingThings, User
+from .db_tables import Categories, InterestingThings, Notes, User
 from .functions.hash_function import hash_password
 from .settings import settings
 
@@ -151,7 +155,8 @@ async def add_system_data():
 
     if settings.create_admin_user is True:
         logger.warning("Creating admin user")
-        await add_admin()  # Create an admin user
+        data = await add_admin()  # Create an admin user
+        await add_notes(user_id=data)  # Create notes for the admin user
 
     if settings.create_demo_user is True:
         logger.warning("Creating demo user")
@@ -193,8 +198,38 @@ async def add_admin():
             )
             # print the full_name property
             logger.warning(f"Admin created: {user.full_name}")
+            return user.pkid
         except Exception as e:
             logger.error(e)
+
+
+async def add_notes(user_id: str, qty_notes: int = 200):
+    moods = ["positive", "neutral", "negative"]
+    demo_notes = []
+
+    for _ in tqdm(range(qty_notes)):
+        mood = random.choice(moods)
+        note = silly.paragraph()
+
+        # Generate a random date within the last 3 years
+        days_in_three_years = 365 * 3
+        random_number_of_days = random.randrange(days_in_three_years)
+        date_created = datetime.now() - timedelta(days=random_number_of_days)
+
+        # Make date_updated the same as date_created or 3-15 days later
+        days_to_add = random.choice([0] + list(range(3, 16)))
+        date_updated = date_created + timedelta(days=days_to_add)
+
+        # Create the note
+        note = Notes(
+            mood=mood,
+            note=note,
+            user_id=user_id,
+            date_created=date_created,
+            date_updated=date_updated,
+        )
+        demo_notes.append(note)
+        data = await db_ops.create_one(note)
 
 
 async def add_user():
