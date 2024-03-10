@@ -81,18 +81,18 @@ def save_json(data):
 async def run():
     big_list = open_json()
     # pick 5 random notes from the list
-    print(len(big_list))
+
     import random
 
     content_list = random.sample(big_list, 5)
-    # print(content_list)
+    
     new_data = []
     for content in content_list:
-        print(content["created_date"])
+        
         summary = await get_summary(content=content["my_note"])
-        print(summary)
+
         tags = await get_tags(content=content["my_note"])
-        print(tags)
+
         new_data.append(
             {
                 "created_date": content["created_date"],

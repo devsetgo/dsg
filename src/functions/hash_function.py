@@ -1,4 +1,22 @@
 # -*- coding: utf-8 -*-
+"""
+This module provides functions for hashing passwords using the Argon2 algorithm.
+
+It includes the following functions:
+- `hash_password(password: str) -> str`: Hashes a password.
+- `verify_password(hash: str, password: str) -> bool`: Verifies a password against a hash.
+- `check_needs_rehash(hash: str) -> bool`: Checks if a hash needs to be rehashed.
+
+The module uses the `argon2` library to perform the hashing. The `PasswordHasher` object is configured with the following parameters:
+- `time_cost=3`: The time cost factor.
+- `memory_cost=65536`: The memory cost factor.
+- `parallelism=4`: The degree of parallelism.
+- `hash_len=32`: The length of the hash.
+- `salt_len=16`: The length of the salt.
+- `encoding="utf-8"`: The encoding to use.
+
+If run as a script, the module will hash a test password, verify it against the hash, and check if the hash needs to be rehashed.
+"""
 from argon2 import PasswordHasher, exceptions
 
 ph = PasswordHasher(

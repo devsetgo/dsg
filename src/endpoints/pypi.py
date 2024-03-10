@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import uuid
-from datetime import datetime, timedelta
 from collections import Counter
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
@@ -12,9 +12,9 @@ from sqlalchemy import Select, and_, func
 from sqlalchemy.orm import joinedload
 
 from ..db_tables import Library, LibraryName, Requirement
+from ..functions.demo_functions import get_pypi_demo_list
 from ..functions.pypi_core import check_packages
 from ..resources import db_ops, templates
-from ..functions.demo_functions import get_pypi_demo_list
 
 router = APIRouter()
 
