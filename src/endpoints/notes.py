@@ -84,6 +84,8 @@ async def get_notes(
     start_date: str = Form(None),
     end_date: str = Form(None),
     mood: str = Form(None),
+    limit: int = 200,
+    offset: int = 0,
     csrf_protect: CsrfProtect = Depends(),
 ):
     await asyncio.sleep(.5)
@@ -113,8 +115,8 @@ async def get_notes(
     if start_date and end_date:
         query = query.where((Notes.date_created >= start_date) & (Notes.date_created <= end_date))
     # order and limit the results
-    query = query.order_by(Notes.date_created.desc()).limit(100)
-    notes = await db_ops.read_query(query=query)
+    query = query.order_by(Notes.date_created.desc())
+    notes = await db_ops.read_query(query=query, limit=limit, offset=0)
     notes = [note.to_dict() for note in notes]
     # offset date_created and date_updated to user's timezone
     for note in notes:
