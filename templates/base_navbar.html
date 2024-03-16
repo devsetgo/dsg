@@ -11,8 +11,8 @@
     <li class="nav-item d-none d-sm-inline-block">
       <a href="/pages/about" class="nav-link">About</a>
     </li>
-    <li class="nav-item d-none d-sm-inline-block">
-      <!-- SEARCH FORM -->
+    <!-- Search From Navbar -->
+    <!-- <li class="nav-item d-none d-sm-inline-block">
       <form class="form-inline ml-3">
         <div class="input-group input-group-sm">
           <input class="form-control form-control-navbar" type="search" placeholder="Search" aria-label="Search">
@@ -23,12 +23,13 @@
           </div>
         </div>
       </form>
-    </li>
+    </li> -->
     <li class="nav-item d-none d-sm-inline-block">
-      <span class="htmx-indicator">
-        <img class="htmx-indicator" src="{{ url_for('static', path='image/loading_1.gif') }}" alt="Loading..."
-          height="20" width="300">
-      </span>
+      <a class="nav-link">
+        <span class="htmx-indicator">
+          <img src="{{ url_for('static' , path='/image/loading_4.gif') }}" height="20" width="500" /><strong> Searching...</strong>
+        </span>
+      </a>
     </li>
   </ul>
   {% include "base_user.html" %}
