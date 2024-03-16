@@ -1,6 +1,6 @@
 <!-- TODO: even spacing from left panel (padding-left: 15px;) -->
 <!-- TODO: Figure out correct place for link to Note -->
-
+<!-- TODO: Add pagination based on found and limit of 200 -->
 <div class="row">
   <div class="col-md-12">
     <p>{{found}} of {{note_count}}</p>
@@ -26,6 +26,7 @@
     {% if loop.index0 % 3 == 2 or loop.last %}
     </div>
     {% endif %}
+    
     {% endfor %}
   </div>
 </div>
