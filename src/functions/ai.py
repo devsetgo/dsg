@@ -85,10 +85,10 @@ async def run():
     import random
 
     content_list = random.sample(big_list, 5)
-    
+
     new_data = []
     for content in content_list:
-        
+
         summary = await get_summary(content=content["my_note"])
 
         tags = await get_tags(content=content["my_note"])

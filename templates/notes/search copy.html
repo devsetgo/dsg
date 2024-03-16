@@ -1,0 +1,94 @@
+{% extends "base.html" %} <!-- Extends the base HTML layout -->
+
+{% block page_title %}| Notes{% endblock %} <!-- Sets the page title -->
+
+{% block page_stylesheet %} <!-- Starts the block for page-specific stylesheets -->
+<!-- DataTables -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/v/bs4-4.6.0/jq-3.7.0/dt-2.0.2/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/r-3.0.0/datatables.min.css" rel="stylesheet">
+
+{% endblock %} <!-- Ends the block for page-specific stylesheets -->
+
+{% block page_breadcrumb %} Notes{% endblock %} <!-- Sets the breadcrumb -->
+
+{% block page_head_title %}Notes{% endblock %} <!-- Sets the page head title -->
+
+{% block body %} <!-- Starts the block for the body of the page -->
+<section> <!-- Starts a section -->
+  <h3> 
+    Search Notes 
+    <span class="htmx-indicator"> 
+      <img src="/img/bars.svg"/> Searching... 
+     </span> 
+  </h3>
+  <input class="form-control" type="search" 
+         name="search_term" placeholder="Begin Typing To Search Notes..." 
+         hx-post="/notes/search" 
+         hx-trigger="input changed delay:500ms, search" 
+         hx-target="#search-results" 
+         hx-indicator=".htmx-indicator">
+  
+  <table class="table" id="notesTable">
+      <thead>
+      <tr>
+        <th>Mood</th>
+        <th>Summary</th>
+        <th>Tags</th>
+        <th>Date Created</th>
+      </tr>
+      </thead>
+      <tbody id="search-results">
+      </tbody>
+  </table>
+</section>
+{% endblock %}
+
+
+{% block page_sidebar_content %}
+<!-- blank and demo script adds page configuration example -->
+
+{% endblock %}
+{% block page_scripts %}
+<!-- Start of page scripts block -->
+
+<!-- OPTIONAL SCRIPTS -->
+
+<!-- Import Chart.js library -->
+<script src="{{ url_for('static' , path='plugins/chart.js/Chart.min.js') }}"></script>
+
+<!-- Import demo.js script (currently commented out) -->
+<!-- <script src="{{ url_for('static' , path='dist/js/demo.js') }}"></script> -->
+
+<!-- Import dashboard3.js script -->
+<script src="{{ url_for('static' , path='dist/js/pages/dashboard3.js') }}"></script>
+
+<!-- DataTables & Plugins -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/v/bs4-4.6.0/jq-3.7.0/dt-2.0.2/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/r-3.0.0/datatables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.min.js"></script>
+
+<!-- Initialize DataTable with specific options -->
+<script>
+  new DataTable('#notesTable');
+  $(document).ready(function () {
+    $('#exxample').DataTable({
+      paging: true,  // Enable paging
+      //pagingType: 'simple_numbers',
+      //responsive: true,  // Enable responsive feature
+      //lengthChange: false,  // Disable length change option
+      searching: false,  // Disable searching option
+      //ordering: true,  // Enable ordering option
+      //info: true,  // Enable info option
+      //autoWidth: false,  // Disable auto width feature
+      dom: 'Bfrtip',  // Define DataTables DOM positioning
+      //buttons: [
+      //  'copy', 'csv', 'excel', 'pdf', 'print', 'colvis'  // Define buttons
+      //]
+    })
+    //.buttons().container().appendTo('#notesTable_wrapper .col-md-6:eq(0)');  // Append buttons to DataTable
+  });
+  </script>
+
+{% endblock %}
+<!-- End of page scripts block -->

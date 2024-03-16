@@ -203,16 +203,18 @@ async def add_admin():
             logger.error(e)
 
 
-async def add_notes(user_id: str, qty_notes: int = 101):
+async def add_notes(user_id: str, qty_notes: int = 2000):
     moods = ["positive", "neutral", "negative"]
     demo_notes = []
 
     for _ in tqdm(range(qty_notes)):
         mood = random.choice(moods)
         note = silly.paragraph()
+        summary=note[:50]
+        tags = list(set([silly.adjective() for x in range(1,4)]))
 
         # Generate a random date within the last 3 years
-        days_in_three_years = 365 * 3
+        days_in_three_years = 365 * 15
         random_number_of_days = random.randrange(days_in_three_years)
         date_created = datetime.now() - timedelta(days=random_number_of_days)
 
@@ -224,13 +226,16 @@ async def add_notes(user_id: str, qty_notes: int = 101):
         note = Notes(
             mood=mood,
             note=note,
+            summary=summary,
+            tags=tags,
             user_id=user_id,
             date_created=date_created,
             date_updated=date_updated,
         )
         demo_notes.append(note)
-        data = await db_ops.create_one(note)
-
+        # data = await db_ops.create_one(note)
+    data = await db_ops.create_many(demo_notes)
+    
 
 async def add_user():
     # This function is responsible for adding a default user 'Mike' as a system admin.

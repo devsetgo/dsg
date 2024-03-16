@@ -3,13 +3,14 @@
 import uuid
 from collections import Counter
 from datetime import datetime, timedelta
-
-from fastapi import APIRouter, Depends, Request, Form
+import asyncio
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
-from sqlalchemy import Select, and_, func,or_
+from sqlalchemy import Select, and_, func, or_
 from sqlalchemy.orm import joinedload
+
 
 from ..db_tables import Notes, User
 from ..functions import ai, date_functions
@@ -58,6 +59,7 @@ async def read_notes(
         request=request, name="/notes/dashboard.html", context=context
     )
 
+
 # search /search
 @router.get("/search")
 async def search_notes(request: Request, csrf_protect: CsrfProtect = Depends()):
@@ -67,33 +69,51 @@ async def search_notes(request: Request, csrf_protect: CsrfProtect = Depends()):
         return RedirectResponse(url="/users/login", status_code=302)
 
     return templates.TemplateResponse(
-        request=request, name="/notes/search.html", context={"user_identifier": user_identifier}
+        request=request,
+        name="/notes/search.html",
+        context={"user_identifier": user_identifier},
     )
+
+
 
 # search /search
 @router.post("/search")
-async def get_notes(request: Request, search_term: str = Form(...), csrf_protect: CsrfProtect = Depends()):
+async def get_notes(
+    request: Request,
+    search_term: str = Form(None),
+    start_date: str = Form(None),
+    end_date: str = Form(None),
+    mood: str = Form(None),
+    csrf_protect: CsrfProtect = Depends(),
+):
+    await asyncio.sleep(.5)
     user_identifier = request.session.get("user_identifier", None)
     user_timezone = request.session.get("timezone", None)
     if user_identifier is None:
+        logger.info("Redirecting to login because user_identifier is None")
         return RedirectResponse(url="/users/login", status_code=302)
     # find search_term in columns: note, mood, tags, summary
     query = (
         Select(Notes)
         .where(
-            (Notes.user_id == user_identifier) &
-            (
+            (Notes.user_id == user_identifier)
+            & (
                 or_(
-                    Notes.note.contains(search_term),
-                    Notes.mood.contains(search_term),
-                    Notes.tags.contains(search_term),
-                    Notes.summary.contains(search_term)
+                    Notes.note.contains(search_term) if search_term else True,
+                    Notes.summary.contains(search_term) if search_term else True,
+                    Notes.tags.contains(search_term) if search_term else True,
                 )
             )
         )
-        .order_by(Notes.date_created.desc())
-        .limit(100)
     )
+    # filter by mood
+    if mood:
+        query = query.where(Notes.mood == mood)
+    # filter by date range
+    if start_date and end_date:
+        query = query.where((Notes.date_created >= start_date) & (Notes.date_created <= end_date))
+    # order and limit the results
+    query = query.order_by(Notes.date_created.desc()).limit(100)
     notes = await db_ops.read_query(query=query)
     notes = [note.to_dict() for note in notes]
     # offset date_created and date_updated to user's timezone
@@ -108,9 +128,13 @@ async def get_notes(request: Request, search_term: str = Form(...), csrf_protect
             date_time=note["date_updated"],
             friendly_string=True,
         )
-
+    found=len(notes)
+    note_count= await db_ops.count_query(Select(Notes).where((Notes.user_id == user_identifier)))
+    logger.info(f"Found {found} notes for user {user_identifier}")
     return templates.TemplateResponse(
-        request=request, name="/notes/search_term.html", context={"user_identifier": user_identifier, "notes": notes}
+        request=request,
+        name="/notes/search_term.html",
+        context={"user_identifier": user_identifier, "notes": notes, "found": found, "note_count": note_count},
     )
 
 # new note form
