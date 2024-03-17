@@ -22,13 +22,111 @@
 
 {% block body %} <!-- Starts the block for the body of the page -->
 <section> <!-- Starts a section -->
-{% for note in notes %}
-  <ul>
-  {% for key, value in note.items() %}
-    <li>{{ key }}: {{ value }}</li>
-  {% endfor %}
-  </ul>
-{% endfor %}
+  <div class="container-fluid"> <!-- Starts a container-fluid -->
+    <div class="row"> <!-- Starts a row -->
+      <div class="col-12">
+        <div class="card card-primary card-outline card-outline-tabs">
+          <div class="card-header p-0 border-bottom-0">
+            <ul class="nav nav-tabs" id="custom-tabs-four-tab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="custom-tabs-four-dash-tab" data-toggle="pill"
+                  href="#custom-tabs-four-dash" role="tab" aria-controls="custom-tabs-four-dash"
+                  aria-selected="true" hx-trigger="click" hx-indicator=".htmx-indicator">Dashboard</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="custom-tabs-four-notes-tab" data-toggle="pill" href="#custom-tabs-four-notes"
+                  role="tab" aria-controls="custom-tabs-four-notes" aria-selected="false" hx-get="/notes/pagination"
+                  hx-trigger="click" hx-target="#notes-data" hx-indicator=".htmx-indicator">
+                  Notes
+                </a>
+              </li>
+              <!-- <li class="nav-item">
+                <a class="nav-link" id="custom-tabs-four-notes-tab" data-toggle="pill" href="#custom-tabs-four-notes"
+                  role="tab" aria-controls="custom-tabs-four-notes" aria-selected="false">Notes</a>
+              </li> -->
+              <!-- <li class="nav-item">
+              <a class="nav-link" id="custom-tabs-four-settings-tab" data-toggle="pill"
+                href="#custom-tabs-four-settings" role="tab" aria-controls="custom-tabs-four-template"
+                aria-selected="false">Template</a>
+            </li> -->
+            </ul>
+          </div>
+          <div class="card-body">
+            <div class="tab-content" id="custom-tabs-four-tabContent">
+              <div class="tab-pane fade show active" id="custom-tabs-four-dash" role="tabpanel"
+                aria-labelledby="custom-tabs-four-dash-tab">
+                <div class="row">{{metrics}}</div>
+                <!-- Begin -->
+                <div class="row">
+                  {% for _ in range(20) %}
+                  <div class="col-md-3 col-sm-6 col-12">
+                    <div class="info-box bg-info">
+                      <span class="info-box-icon"><i class="far fa-bookmark"></i></span>
+                      <div class="info-box-content">
+                        <span class="info-box-text">Bookmarks</span>
+                        <span class="info-box-number">41,410</span>
+                        <div class="progress">
+                          <div class="progress-bar" style="width: 70%"></div>
+                        </div>
+                        <span class="progress-description">
+                          70% Increase in 30 Days
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+                <!-- End -->
+              </div>
+              <div class="tab-pane fade" id="custom-tabs-four-notes" role="tabpanel"
+                aria-labelledby="custom-tabs-four-notes-tab">
+                <!-- Begin Search Form -->
+                <form hx-get="/notes/pagination" hx-trigger="submit" hx-target="#notes-data"
+                  hx-indicator=".htmx-indicator">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <label for="search_term">Search Term</label>
+                      <input id="search_term" class="form-control" type="search" name="search_term"
+                        placeholder="Begin Typing To Search Notes...">
+                    </div>
+                    <!-- Mood input -->
+                    <div class="col-md-4">
+                      <label for="mood">Mood</label>
+                      <select id="mood" class="form-control" name="mood">
+                        <option value="">Select Mood</option>
+                        <option value="positive">Positive</option>
+                        <option value="neutral">Neutral</option>
+                        <option value="negative">Negative</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                      <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                  </div>
+                  <!-- Date range inputs -->
+                  <div class="row mt-3">
+                    <div class="col-md-3">
+                      <label for="start_date">From Date</label>
+                      <input id="start_date" class="form-control" type="date" name="start_date" placeholder="From Date">
+                    </div>
+                    <div class="col-md-3">
+                      <label for="end_date">To Date</label>
+                      <input id="end_date" class="form-control" type="date" name="end_date" placeholder="To Date">
+                    </div>
+                  </div>
+                </form>
+                <div class="row" id="notes-data"></div>
+                <!-- End Search Form -->
+                <!-- <div class="tab-pane fade" id="custom-tabs-four-settings" role="tabpanel"
+              aria-labelledby="custom-tabs-four-settings-tab">
+              template for future functionality
+            </div> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 </section>
 {% endblock %}
 
