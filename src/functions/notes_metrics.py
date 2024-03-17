@@ -26,9 +26,9 @@ async def get_metrics(user_identifier: str, user_timezone: str):
     metrics = {
         "counts":{
         "mood_counts": dict(await mood_metrics(notes)),
-        "note_count": len(notes),
+        "note_count": format(len(notes), ","),
         "note_counts": await get_note_counts(notes),
-        "tag_count": 0,},
+        "tag_count": format(2,","),},
         "note_count_by_month": dict(await get_note_count_by_month(notes)),
         "mood_by_month": {k: dict(v) for k, v in (await mood_by_month(notes)).items()},
         "tags_common": "None",
@@ -48,9 +48,9 @@ async def get_note_counts(notes: list):
         char_count += note["character_count"]
 
     data = {
-        "word_count": word_count,
-        "char_count": char_count,
-        "note_count": note_count,
+        "word_count": format(word_count, ","),
+        "char_count": format(char_count, ","),
+        "note_count": format(note_count, ","),
     }
     logger.info("Note counts calculated successfully")
     return data
@@ -71,6 +71,7 @@ async def get_note_count_by_month(notes: list):
 async def mood_metrics(notes: list):
     logger.info("Calculating mood metrics")
     mood_count = Counter([note["mood"] for note in notes])
+    mood_count = {k: format(v, ",") for k, v in mood_count.items()}
     logger.info("Mood metrics calculated successfully")
     return dict(mood_count)
 
