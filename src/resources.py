@@ -203,7 +203,7 @@ async def add_admin():
             logger.error(e)
 
 
-async def add_notes(user_id: str, qty_notes: int = 200):
+async def add_notes(user_id: str, qty_notes: int = 2500):
     moods = ["positive", "neutral", "negative"]
     demo_notes = []
 
