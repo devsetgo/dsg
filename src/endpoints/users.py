@@ -48,6 +48,7 @@ async def login_user(request: Request):
         TemplateResponse: A response object with the result of the login attempt.
     """
     import asyncio
+
     await asyncio.sleep(0.2)
     # Get the form data from the request
     form = await request.form()

@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import asyncio
 import uuid
 from collections import Counter
 from datetime import datetime, timedelta
-import asyncio
-from fastapi import APIRouter, Depends, Form, Request, Query
+
+from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from sqlalchemy import Select, and_, func, or_
 from sqlalchemy.orm import joinedload
-
 
 from ..db_tables import Notes, User
 from ..functions import ai, date_functions, notes_metrics
@@ -55,7 +55,9 @@ async def read_notes(
     #         friendly_string=True,
     #     )
 
-    metrics = await notes_metrics.get_metrics(user_identifier=user_identifier, user_timezone=user_timezone)
+    metrics = await notes_metrics.get_metrics(
+        user_identifier=user_identifier, user_timezone=user_timezone
+    )
 
     context = {"user_identifier": user_identifier, "metrics": metrics}
     return templates.TemplateResponse(
@@ -124,11 +126,17 @@ async def read_notes_pagination(
     if offset == 0:
         current_count = limit
     else:
-        current_count = limit+offset
-    
+        current_count = limit + offset
+
     total_pages = -(-note_count // limit)  # Ceiling division
-    prev_page_url = f"/notes/pagination?page={page - 1}&limit={limit}" if page > 1 else None
-    next_page_url = f"/notes/pagination?page={page + 1}&limit={limit}" if page < total_pages else None
+    prev_page_url = (
+        f"/notes/pagination?page={page - 1}&limit={limit}" if page > 1 else None
+    )
+    next_page_url = (
+        f"/notes/pagination?page={page + 1}&limit={limit}"
+        if page < total_pages
+        else None
+    )
     logger.info(f"Found {found} notes for user {user_identifier}")
     return templates.TemplateResponse(
         request=request,
@@ -145,6 +153,7 @@ async def read_notes_pagination(
             "next_page_url": next_page_url,
         },
     )
+
 
 # search /search
 @router.get("/search")
@@ -358,8 +367,6 @@ async def update_note(
 
 
 # delete/{note_id}
-
-
 
 
 # number of notes
