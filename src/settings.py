@@ -112,6 +112,7 @@ class Settings(BaseSettings):
     create_demo_user: bool = False
     create_base_categories: bool = False
     create_demo_data: bool = False
+    create_demo_notes_qty: int = 0
 
     @root_validator(pre=True)
     def parse_database_driver(cls, values):
