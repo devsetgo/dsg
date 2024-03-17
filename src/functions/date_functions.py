@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta, timezone
-from functools import lru_cache
+from datetime import datetime
 
 import pytz
 from loguru import logger
 
-from ..db_tables import Notes, User
-from ..resources import db_ops
 
 
 async def timezone_update(user_timezone: str, date_time, friendly_string=False):

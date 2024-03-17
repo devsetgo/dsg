@@ -1,21 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import asyncio
-import uuid
 from collections import Counter, defaultdict
-from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, Form, Query, Request
-from fastapi.responses import RedirectResponse
-from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
-from sqlalchemy import Select, and_, func, or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy import Select
 
-from ..db_tables import Notes, User
-from ..functions import ai, date_functions
-from ..functions.demo_functions import get_note_demo_paragraph, get_pypi_demo_list
-from ..resources import db_ops, templates
+from ..db_tables import Notes
+from ..resources import db_ops
 
 
 async def get_metrics(user_identifier: str, user_timezone: str):
@@ -24,11 +15,12 @@ async def get_metrics(user_identifier: str, user_timezone: str):
     notes = await db_ops.read_query(query=query, limit=10000, offset=0)
     notes = [note.to_dict() for note in notes]
     metrics = {
-        "counts":{
-        "mood_counts": dict(await mood_metrics(notes)),
-        "note_count": format(len(notes), ","),
-        "note_counts": await get_note_counts(notes),
-        "tag_count": format(2,","),},
+        "counts": {
+            "mood_counts": dict(await mood_metrics(notes)),
+            "note_count": format(len(notes), ","),
+            "note_counts": await get_note_counts(notes),
+            "tag_count": format(2, ","),
+        },
         "note_count_by_month": dict(await get_note_count_by_month(notes)),
         "mood_by_month": {k: dict(v) for k, v in (await mood_by_month(notes)).items()},
         "tags_common": "None",

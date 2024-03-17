@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
-import uuid
-from collections import Counter
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from fastapi import APIRouter, Depends, Form, Query, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
-from sqlalchemy import Select, and_, func, or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy import Select, and_, or_
 
-from ..db_tables import Notes, User
-from ..functions import ai, date_functions, notes_metrics
-from ..functions.demo_functions import get_note_demo_paragraph, get_pypi_demo_list
+from ..db_tables import Notes
+from ..functions import date_functions, notes_metrics
+from ..functions.demo_functions import get_note_demo_paragraph
 from ..resources import db_ops, templates
 
 router = APIRouter()
