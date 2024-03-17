@@ -214,7 +214,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         tags = list(set([silly.adjective() for x in range(1, 4)]))
 
         # Generate a random date within the last 3 years
-        days_in_three_years = 365 * 15
+        days_in_three_years = 365 * 2
         random_number_of_days = random.randrange(days_in_three_years)
         date_created = datetime.now() - timedelta(days=random_number_of_days)
 
