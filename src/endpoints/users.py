@@ -47,6 +47,8 @@ async def login_user(request: Request):
     Returns:
         TemplateResponse: A response object with the result of the login attempt.
     """
+    import asyncio
+    await asyncio.sleep(0.2)
     # Get the form data from the request
     form = await request.form()
     user_name = form["username"]
@@ -133,7 +135,7 @@ async def login_user(request: Request):
 async def logout(request: Request):
     request.session["user_identifier"] = None
     request.session["login_attempt"] = 0
-    return RedirectResponse(url="/users/login", status_code=status.HTTP_303_SEE_OTHER)
+    return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 
 # update user endpoint
@@ -151,55 +153,3 @@ async def logout(request: Request):
 # user metrics endpoint
 
 # users metricts endpoint
-
-# class UserBase(BaseModel):
-#     first_name: str
-#     last_name: str
-#     user_name: str
-#     email: str
-#     password: str
-#     password2: str
-
-#     @field_validator("password1", check_fields=False)
-#     @classmethod
-#     def password_complexity(cls, password1):
-#         if len(password1) < 8:
-#             raise ValidationError("Password must be at least 8 characters long")
-#         if not re.search("[A-Z]", password1):
-#             raise ValidationError("Password must contain at least one uppercase letter")
-#         if not re.search("[a-z]", password1):
-#             raise ValidationError("Password must contain at least one lowercase letter")
-#         if not re.search("[0-9]", password1):
-#             raise ValidationError("Password must contain at least one number")
-#         if not re.search("[^A-Za-z0-9]", password1):
-#             raise ValidationError(
-#                 "Password must contain at least one special character"
-#             )
-#         return password1
-
-#     @field_validator("password2", check_fields=False)
-#     def passwords_match(cls, password2, values, **kwargs):
-#         if "password1" in values and password2 != values["password1"]:
-#             raise ValidationError("passwords do not match")
-#         return password2
-
-
-# # create user endpoint
-# @router.post(
-#     "/users/create", response_model=UserBase, status_code=status.HTTP_201_CREATED
-# )
-# async def create_user(user: UserBase):
-#     # The incoming data is validated by the UserBase model
-#     # If the data does not meet the validation requirements, a ValidationError will be raised
-#     user_data = UserBase(**user.dict())
-
-#     user = User(
-#         first_name=user_data.first_name,
-#         last_name=user_data.last_name,
-#         user_name=user_data.user_name,
-#         email=user_data.email,
-#         password=user_data.password1,  # Use the validated password
-#     )
-#     logger.info(f"created_users: {user.user_name}")
-#     await db_ops.create_one(user)
-#     return user_data
