@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import uuid
-from collections import Counter
-from collections import defaultdict
-from datetime import datetime, timedelta
 import asyncio
-from fastapi import APIRouter, Depends, Form, Request, Query
+import uuid
+from collections import Counter, defaultdict
+from datetime import datetime, timedelta
+
+from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from sqlalchemy import Select, and_, func, or_
 from sqlalchemy.orm import joinedload
-
 
 from ..db_tables import Notes, User
 from ..functions import ai, date_functions
@@ -19,44 +18,70 @@ from ..functions.demo_functions import get_note_demo_paragraph, get_pypi_demo_li
 from ..resources import db_ops, templates
 
 
-# metrics /metrics
-async def get_metrics(user_identifier:str, user_timezone:str):
-    query = Select(Notes).where(
-        (Notes.user_id == user_identifier))
+async def get_metrics(user_identifier: str, user_timezone: str):
+    logger.info("Getting metrics for user: {}", user_identifier)
+    query = Select(Notes).where((Notes.user_id == user_identifier))
     notes = await db_ops.read_query(query=query, limit=10000, offset=0)
     notes = [note.to_dict() for note in notes]
-
-
-    #     note["date_created"] = await date_functions.timezone_update(
-    #         user_timezone=user_timezone,
-    #         date_time=note["date_created"],
-    #         friendly_string=True,
-    #     )
-    #     note["date_updated"] = await date_functions.timezone_update(
-    #         user_timezone=user_timezone,
-    #         date_time=note["date_updated"],
-    #         friendly_string=True,
-    #     )
-    metrics = {"mood_counts": await mood_metrics(notes), "note_count": len(notes), "mood_by_month": await mood_by_month(notes)}   
+    metrics = {
+        "counts":{
+        "mood_counts": dict(await mood_metrics(notes)),
+        "note_count": len(notes),
+        "note_counts": await get_note_counts(notes),
+        "tag_count": 0,},
+        "note_count_by_month": dict(await get_note_count_by_month(notes)),
+        "mood_by_month": {k: dict(v) for k, v in (await mood_by_month(notes)).items()},
+        "tags_common": "None",
+    }
+    logger.info("Metrics retrieved successfully for user: {}", user_identifier)
     return metrics
 
-async def mood_metrics(notes:list):
-    mood_count = Counter([note['mood'] for note in notes])
-    print(mood_count)
-    return mood_count
+
+async def get_note_counts(notes: list):
+    logger.info("Calculating note counts")
+    word_count = 0
+    char_count = 0
+    note_count = len(notes)
+
+    for note in notes:
+        word_count += note["word_count"]
+        char_count += note["character_count"]
+
+    data = {
+        "word_count": word_count,
+        "char_count": char_count,
+        "note_count": note_count,
+    }
+    logger.info("Note counts calculated successfully")
+    return data
 
 
+async def get_note_count_by_month(notes: list):
+    logger.info("Calculating note count by month")
+    result = defaultdict(int)
 
-async def mood_by_month(notes:list):
-    # Initialize a default dictionary to store the results
+    for note in notes:
+        month_year = note["date_created"].strftime("%Y-%m")
+        result[month_year] += 1
+
+    logger.info("Note count by month calculated successfully")
+    return dict(result)
+
+
+async def mood_metrics(notes: list):
+    logger.info("Calculating mood metrics")
+    mood_count = Counter([note["mood"] for note in notes])
+    logger.info("Mood metrics calculated successfully")
+    return dict(mood_count)
+
+
+async def mood_by_month(notes: list):
+    logger.info("Calculating mood by month")
     result = defaultdict(lambda: defaultdict(int))
 
-    # Iterate over the data
     for note in notes:
-        # Extract the month and year from the note's date
-        month_year = note['date_created'].strftime('%Y-%m')
+        month_year = note["date_created"].strftime("%Y-%m")
+        result[month_year][note["mood"]] += 1
 
-        # Increment the count for the note's mood in the corresponding month-year
-        result[month_year][note['mood']] += 1
-
-    return dict(result)
+    logger.info("Mood by month calculated successfully")
+    return {k: dict(v) for k, v in result.items()}
