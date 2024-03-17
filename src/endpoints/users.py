@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-import re
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Request, Response, status
+from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
-from pydantic import BaseModel, ValidationError, field_validator
 from sqlalchemy import Select
 
 from ..db_tables import User

@@ -3,13 +3,13 @@
 from contextlib import asynccontextmanager
 
 from dsg_lib.common_functions import logging_config
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from loguru import logger
 
 from .app_middleware import add_middleware
 from .app_routes import create_routes
-from .resources import startup, templates
+from .resources import startup
 from .settings import settings
 
 logging_config.config_log(

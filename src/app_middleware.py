@@ -7,7 +7,7 @@ from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from .settings import Settings, settings
+from .settings import settings
 
 
 def add_middleware(app):
