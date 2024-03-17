@@ -55,28 +55,20 @@
             <div class="tab-content" id="custom-tabs-four-tabContent">
               <div class="tab-pane fade show active" id="custom-tabs-four-dash" role="tabpanel"
                 aria-labelledby="custom-tabs-four-dash-tab">
-                <div class="row">{{metrics}}</div>
-                <!-- Begin -->
+                {% include 'notes/metrics.html' %}
                 <div class="row">
-                  {% for _ in range(20) %}
-                  <div class="col-md-3 col-sm-6 col-12">
-                    <div class="info-box bg-info">
-                      <span class="info-box-icon"><i class="far fa-bookmark"></i></span>
-                      <div class="info-box-content">
-                        <span class="info-box-text">Bookmarks</span>
-                        <span class="info-box-number">41,410</span>
-                        <div class="progress">
-                          <div class="progress-bar" style="width: 70%"></div>
-                        </div>
-                        <span class="progress-description">
-                          70% Increase in 30 Days
-                        </span>
+                  <div class="col-12">
+                    <div class="card">
+                      <div class="card-header">
+                        Mood Trend
+                      </div>
+                      <div class="card-body">
+                        <canvas id="moodChart"></canvas>
                       </div>
                     </div>
                   </div>
-                  {% endfor %}
                 </div>
-                <!-- End -->
+              
               </div>
               <div class="tab-pane fade" id="custom-tabs-four-notes" role="tabpanel"
                 aria-labelledby="custom-tabs-four-notes-tab">
@@ -107,9 +99,46 @@
 
 <!-- OPTIONAL SCRIPTS -->
 
-<!-- Import Chart.js library -->
-<script src="{{ url_for('static' , path='plugins/chart.js/Chart.min.js') }}"></script>
+<script>
+    const metrics = {{ metrics.mood_by_month|tojson|safe }};
+    const labels = Object.keys(metrics);
+    const data = {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Positive',
+                data: Object.values(metrics).map(mood => mood.positive || 0),
+                borderColor: 'rgb(75, 192, 192)',
+                fill: false
+            },
+            {
+                label: 'Neutral',
+                data: Object.values(metrics).map(mood => mood.neutral || 0),
+                borderColor: 'rgb(255, 205, 86)',
+                fill: false
+            },
+            {
+                label: 'Negative',
+                data: Object.values(metrics).map(mood => mood.negative || 0),
+                borderColor: 'rgb(255, 99, 132)',
+                fill: false
+            }
+        ]
+    };
 
+    const config = {
+        type: 'line',
+        data: data,
+        options: {
+            title: {
+                display: true,
+                text: 'Mood by Month'
+            }
+        }
+    };
+
+    new Chart(document.getElementById('moodChart'), config);
+</script>
 <!-- Import demo.js script (currently commented out) -->
 <!-- <script src="{{ url_for('static' , path='dist/js/demo.js') }}"></script> -->
 

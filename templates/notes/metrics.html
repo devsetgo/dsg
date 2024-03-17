@@ -1,0 +1,51 @@
+<div class="row">{{metrics}}</div>
+<div class="row" id="counts-metrics">
+    <div class="info-box bg-info">
+        <span class="info-box-icon"><i class="far fa-file-alt"></i></span>
+        <div class="info-box-content">
+            <span class="info-box-text">Note Count</span>
+            <span class="info-box-number">{{metrics.counts.note_count}}</span>
+        </div>
+    </div>
+
+    <div class="info-box bg-primary">
+        <span class="info-box-icon"><i class="far fa-file-word"></i></span>
+        <div class="info-box-content">
+            <span class="info-box-text">Word Count</span>
+            <span class="info-box-number">{{metrics.counts.note_counts.word_count}}</span>
+        </div>
+    </div>
+
+    <div class="info-box bg-secondary">
+        <span class="info-box-icon"><i class="far fa-file-alt"></i></span>
+        <div class="info-box-content">
+            <span class="info-box-text">Character Count</span>
+            <span class="info-box-number">{{metrics.counts.note_counts.char_count}}</span>
+        </div>
+    </div>
+
+    <div class="info-box bg-success">
+        <span class="info-box-icon"><i class="far fa-smile"></i></span>
+        <div class="info-box-content">
+            <span class="info-box-text">Positive Mood Count</span>
+            <span class="info-box-number">{{metrics.counts.mood_counts.positive}}</span>
+        </div>
+    </div>
+
+    <div class="info-box bg-warning">
+        <span class="info-box-icon"><i class="far fa-meh"></i></span>
+        <div class="info-box-content">
+            <span class="info-box-text">Neutral Mood Count</span>
+            <span class="info-box-number">{{metrics.counts.mood_counts.neutral}}</span>
+        </div>
+    </div>
+
+    <div class="info-box bg-danger">
+        <span class="info-box-icon"><i class="far fa-frown"></i></span>
+        <div class="info-box-content">
+            <span class="info-box-text">Negative Mood Count</span>
+            <span class="info-box-number">{{metrics.counts.mood_counts.negative}}</span>
+        </div>
+    </div>
+</div>
+<!-- End -->
