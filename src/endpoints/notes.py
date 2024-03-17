@@ -4,7 +4,7 @@ import uuid
 from collections import Counter
 from datetime import datetime, timedelta
 import asyncio
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Request, Query
 from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
@@ -13,7 +13,7 @@ from sqlalchemy.orm import joinedload
 
 
 from ..db_tables import Notes, User
-from ..functions import ai, date_functions
+from ..functions import ai, date_functions, notes_metrics
 from ..functions.demo_functions import get_note_demo_paragraph, get_pypi_demo_list
 from ..resources import db_ops, templates
 
@@ -32,16 +32,78 @@ async def read_notes(
 
     if user_identifier is None:
         return RedirectResponse(url="/users/login", status_code=302)
-    notes = await db_ops.read_query(
-        query=Select(Notes)
-        .where(Notes.user_id == user_identifier)
-        .limit(limit)
-        .offset(offset)
-    )
-    # convert list of notes to list of dictionaries using .to_dict()
-    notes = [note.to_dict() for note in notes]
-    # offset date_created and date_updated to user's timezone
+    # notes = await db_ops.read_query(
+    #     query=Select(Notes)
+    #     .where(Notes.user_id == user_identifier)
+    #     .limit(limit)
+    #     .offset(offset)
+    # )
+    # # convert list of notes to list of dictionaries using .to_dict()
+    # notes = [note.to_dict() for note in notes]
+    # # offset date_created and date_updated to user's timezone
 
+    # # offset date_created and date_updated to user's timezone
+    # for note in notes:
+    #     note["date_created"] = await date_functions.timezone_update(
+    #         user_timezone=user_timezone,
+    #         date_time=note["date_created"],
+    #         friendly_string=True,
+    #     )
+    #     note["date_updated"] = await date_functions.timezone_update(
+    #         user_timezone=user_timezone,
+    #         date_time=note["date_updated"],
+    #         friendly_string=True,
+    #     )
+
+    metrics = await notes_metrics.get_metrics(user_identifier=user_identifier, user_timezone=user_timezone)
+
+    context = {"user_identifier": user_identifier, "metrics": metrics}
+    return templates.TemplateResponse(
+        request=request, name="/notes/dashboard.html", context=context
+    )
+
+
+@router.get("/pagination")
+async def read_notes_pagination(
+    request: Request,
+    search_term: str = Query(None),
+    start_date: str = Query(None),
+    end_date: str = Query(None),
+    mood: str = Query(None),
+    page: int = Query(1),
+    limit: int = Query(20),
+    csrf_protect: CsrfProtect = Depends(),
+):
+    await asyncio.sleep(0.5)
+    user_identifier = request.session.get("user_identifier", None)
+    user_timezone = request.session.get("timezone", None)
+    if user_identifier is None:
+        logger.info("Redirecting to login because user_identifier is None")
+        return RedirectResponse(url="/users/login", status_code=302)
+    # find search_term in columns: note, mood, tags, summary
+    query = Select(Notes).where(
+        (Notes.user_id == user_identifier)
+        & (
+            or_(
+                Notes.note.contains(search_term) if search_term else True,
+                Notes.summary.contains(search_term) if search_term else True,
+                Notes.tags.contains(search_term) if search_term else True,
+            )
+        )
+    )
+    # filter by mood
+    if mood:
+        query = query.where(Notes.mood == mood)
+    # filter by date range
+    if start_date and end_date:
+        query = query.where(
+            (Notes.date_created >= start_date) & (Notes.date_created <= end_date)
+        )
+    # order and limit the results
+    query = query.order_by(Notes.date_created.desc())
+    offset = (page - 1) * limit
+    notes = await db_ops.read_query(query=query, limit=limit, offset=offset)
+    notes = [note.to_dict() for note in notes]
     # offset date_created and date_updated to user's timezone
     for note in notes:
         note["date_created"] = await date_functions.timezone_update(
@@ -54,11 +116,35 @@ async def read_notes(
             date_time=note["date_updated"],
             friendly_string=True,
         )
-    context = {"user_identifier": user_identifier, "notes": notes}
+    found = len(notes)
+    note_count = await db_ops.count_query(query=query)
+    # note_count = await db_ops.count_query(
+    #     Select(Notes).where((Notes.user_id == user_identifier))
+    # )
+    if offset == 0:
+        current_count = limit
+    else:
+        current_count = limit+offset
+    
+    total_pages = -(-note_count // limit)  # Ceiling division
+    prev_page_url = f"/notes/pagination?page={page - 1}&limit={limit}" if page > 1 else None
+    next_page_url = f"/notes/pagination?page={page + 1}&limit={limit}" if page < total_pages else None
+    logger.info(f"Found {found} notes for user {user_identifier}")
     return templates.TemplateResponse(
-        request=request, name="/notes/dashboard.html", context=context
+        request=request,
+        name="/notes/pagination.html",
+        context={
+            "user_identifier": user_identifier,
+            "notes": notes,
+            "found": found,
+            "note_count": note_count,
+            "total_pages": total_pages,
+            "current_count": current_count,
+            "current_page": page,
+            "prev_page_url": prev_page_url,
+            "next_page_url": next_page_url,
+        },
     )
-
 
 # search /search
 @router.get("/search")
@@ -75,7 +161,6 @@ async def search_notes(request: Request, csrf_protect: CsrfProtect = Depends()):
     )
 
 
-
 # search /search
 @router.post("/search")
 async def get_notes(
@@ -88,23 +173,20 @@ async def get_notes(
     offset: int = 0,
     csrf_protect: CsrfProtect = Depends(),
 ):
-    await asyncio.sleep(.5)
+    await asyncio.sleep(0.5)
     user_identifier = request.session.get("user_identifier", None)
     user_timezone = request.session.get("timezone", None)
     if user_identifier is None:
         logger.info("Redirecting to login because user_identifier is None")
         return RedirectResponse(url="/users/login", status_code=302)
     # find search_term in columns: note, mood, tags, summary
-    query = (
-        Select(Notes)
-        .where(
-            (Notes.user_id == user_identifier)
-            & (
-                or_(
-                    Notes.note.contains(search_term) if search_term else True,
-                    Notes.summary.contains(search_term) if search_term else True,
-                    Notes.tags.contains(search_term) if search_term else True,
-                )
+    query = Select(Notes).where(
+        (Notes.user_id == user_identifier)
+        & (
+            or_(
+                Notes.note.contains(search_term) if search_term else True,
+                Notes.summary.contains(search_term) if search_term else True,
+                Notes.tags.contains(search_term) if search_term else True,
             )
         )
     )
@@ -113,7 +195,9 @@ async def get_notes(
         query = query.where(Notes.mood == mood)
     # filter by date range
     if start_date and end_date:
-        query = query.where((Notes.date_created >= start_date) & (Notes.date_created <= end_date))
+        query = query.where(
+            (Notes.date_created >= start_date) & (Notes.date_created <= end_date)
+        )
     # order and limit the results
     query = query.order_by(Notes.date_created.desc())
     notes = await db_ops.read_query(query=query, limit=limit, offset=0)
@@ -130,14 +214,22 @@ async def get_notes(
             date_time=note["date_updated"],
             friendly_string=True,
         )
-    found=len(notes)
-    note_count= await db_ops.count_query(Select(Notes).where((Notes.user_id == user_identifier)))
+    found = len(notes)
+    note_count = await db_ops.count_query(
+        Select(Notes).where((Notes.user_id == user_identifier))
+    )
     logger.info(f"Found {found} notes for user {user_identifier}")
     return templates.TemplateResponse(
         request=request,
         name="/notes/search_term.html",
-        context={"user_identifier": user_identifier, "notes": notes, "found": found, "note_count": note_count},
+        context={
+            "user_identifier": user_identifier,
+            "notes": notes,
+            "found": found,
+            "note_count": note_count,
+        },
     )
+
 
 # new note form
 @router.get("/new")
@@ -267,7 +359,9 @@ async def update_note(
 
 # delete/{note_id}
 
-# metrics /metrics
+
+
+
 # number of notes
 # number of words
 # number of characters
