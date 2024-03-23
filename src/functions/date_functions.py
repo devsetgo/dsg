@@ -5,7 +5,6 @@ import pytz
 from loguru import logger
 
 
-
 async def timezone_update(user_timezone: str, date_time, friendly_string=False):
     """
     Convert a datetime object or string to a specified timezone and optionally return it as a formatted string.
