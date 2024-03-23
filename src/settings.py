@@ -10,9 +10,7 @@ from enum import (
     Enum,  # For creating enumerations, which are a set of symbolic names bound to unique constant values
 )
 from functools import lru_cache  # For caching the results of expensive function calls
-from typing import (
-    Optional,
-)
+from typing import Optional
 
 from loguru import logger  # For logging
 from pydantic import (  # For validating data
