@@ -3,8 +3,8 @@
 <!-- Begin Cards -->
 <div class="row">
     {% for note in notes %}
-    <div class="col-md-4 mb-4">
-      <div class="card" style="width: 18rem;">
+    <div class="col-md-auto mb-4 p-2">
+      <div class="card">
         <div class="card-body">
           <h5 class="card-title"><a href="/notes/{{note.pkid}}" class="card-link"><strong>{{
                 note.mood|capitalize }}</strong></a></h5>

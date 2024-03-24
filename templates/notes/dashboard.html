@@ -55,42 +55,30 @@
             <div class="tab-content" id="custom-tabs-four-tabContent">
               <div class="tab-pane fade show active" id="custom-tabs-four-dash" role="tabpanel"
                 aria-labelledby="custom-tabs-four-dash-tab">
-                {% include 'notes/metrics.html' %}
-                <div class="row">
-                  <div class="col-12">
-                    <div class="card">
-                      <div class="card-header">
-                        <h3 class="card-title">Mood Trends</h3>
-                        <div class="card-tools">
-                          <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                              class="fas fa-plus"></i>
-                          </button>
-                        </div>
-                      </div>
-                      <div class="card-body">
-                        <canvas id="moodChart"></canvas>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
+                <div class="container-fluid">
+                  {% include 'notes/metrics.html' %}
+                  {% include 'notes/data-block.html' %}
+                  {% include 'notes/charting.html' %}
+
+                </div>
               </div>
-              <div class="tab-pane fade" id="custom-tabs-four-notes" role="tabpanel"
-                aria-labelledby="custom-tabs-four-notes-tab">
-                <!-- Begin Search Form -->
-                {% include 'notes/search-form.html' %}
-                <div class="row" id="notes-data"></div>
-                <!-- End Search Form -->
-              </div>
-              <!-- <div class="tab-pane fade" id="custom-tabs-four-settings" role="tabpanel"
+                <div class="tab-pane fade" id="custom-tabs-four-notes" role="tabpanel"
+                  aria-labelledby="custom-tabs-four-notes-tab">
+                  <!-- Begin Search Form -->
+                  {% include 'notes/search-form.html' %}
+                  <div class="row" id="notes-data"></div>
+                  <!-- End Search Form -->
+                </div>
+                <!-- <div class="tab-pane fade" id="custom-tabs-four-settings" role="tabpanel"
               aria-labelledby="custom-tabs-four-settings-tab">
               template for future functionality
             </div> -->
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 </section>
 {% endblock %}
 
@@ -103,6 +91,272 @@
 <!-- Start of page scripts block -->
 
 <!-- OPTIONAL SCRIPTS -->
+<!-- Chart of Tags -->
+<script>
+  // Assign the Jinja variable to a JavaScript variable
+  const metricsTags = {{ metrics.tags_common| safe }};
+
+  function createTagChart(elementId, metrics) {
+    const labels = Object.keys(metrics);
+    const dataCounts = Object.values(metrics);
+
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Tag Count',
+          data: dataCounts,
+          backgroundColor: 'rgb(75, 192, 192)',
+        }
+      ]
+    };
+
+    const config = {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Tags'
+          }
+        },
+        interaction: {
+          intersect: true,
+        }
+      }
+    };
+
+    new Chart(document.getElementById(elementId), config);
+  }
+
+  // Create the tags chart
+  createTagChart('tagsChart', metricsTags);
+</script>
+<!-- Notes Chart Script -->
+<!-- Notes by Year -->
+<script>
+  // Data for the chart
+  const metricsYear = {{ metrics.note_count_by_year| safe}};
+
+  // Create a function to generate a chart
+  function createChart(elementId, metrics) {
+    const labels = Object.keys(metrics);
+    const noteCounts = labels.map(label => metrics[label].note_count);
+    const wordCounts = labels.map(label => metrics[label].word_count);
+
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          yAxisID: 'y1',
+          type: 'bar',
+          label: 'Note Count',
+          data: noteCounts,
+          backgroundColor: 'rgb(75, 192, 192)',
+          order: 2
+        },
+        {
+          yAxisID: 'y2',
+          type: 'line',
+          label: 'Word Count',
+          data: wordCounts,
+          borderColor: 'rgb(255, 99, 132)',
+          fill: false,
+          order: 1
+        }
+      ]
+    };
+
+    const config = {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        scales: {
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+          },
+          y2: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false, // only want the grid lines for one axis to show up
+            },
+          },
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Notes by Year'
+          }
+        },
+        interaction: {
+          intersect: true,
+        }
+      }
+    };
+
+    new Chart(document.getElementById(elementId), config);
+  }
+
+  // Create the chart
+  createChart('yearChart', metricsYear);
+</script>
+<!-- Notes by Month -->
+<script>
+  // Data for the chart
+  const metricsMonth = {{ metrics.note_count_by_month| safe}};
+
+  // Create a function to generate a chart
+  function createChart(elementId, metrics) {
+    const labels = Object.keys(metrics);
+    const noteCounts = labels.map(label => metrics[label].note_count);
+    const wordCounts = labels.map(label => metrics[label].word_count);
+
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          yAxisID: 'y1',
+          type: 'bar',
+          label: 'Note Count',
+          data: noteCounts,
+          backgroundColor: 'rgb(75, 192, 192)',
+          order: 2
+        },
+        {
+          yAxisID: 'y2',
+          type: 'line',
+          label: 'Word Count',
+          data: wordCounts,
+          borderColor: 'rgb(255, 99, 132)',
+          fill: false,
+          order: 1
+        }
+      ]
+    };
+
+    const config = {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        scales: {
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+          },
+          y2: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false, // only want the grid lines for one axis to show up
+            },
+          },
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Notes by Month'
+          }
+        },
+        interaction: {
+          intersect: true,
+        }
+      }
+    };
+
+    new Chart(document.getElementById(elementId), config);
+  }
+
+  // Create the chart
+  createChart('monthChart', metricsMonth);
+</script>
+<!-- Notes by Week -->
+<script>
+  // Data for the chart
+  const metricsWeek = {{ metrics.note_count_by_week| safe}};
+
+  // Create a function to generate a chart
+  function createChart(elementId, metrics) {
+    const labels = Object.keys(metrics);
+    const noteCounts = labels.map(label => metrics[label].note_count);
+    const wordCounts = labels.map(label => metrics[label].word_count);
+
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          yAxisID: 'y1',
+          type: 'bar',
+          label: 'Note Count',
+          data: noteCounts,
+          backgroundColor: 'rgb(75, 192, 192)',
+          order: 2
+        },
+        {
+          yAxisID: 'y2',
+          type: 'line',
+          label: 'Word Count',
+          data: wordCounts,
+          borderColor: 'rgb(255, 99, 132)',
+          fill: false,
+          order: 1
+        }
+      ]
+    };
+
+    const config = {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        scales: {
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+          },
+          y2: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false, // only want the grid lines for one axis to show up
+            },
+          },
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Notes by Week'
+          }
+        },
+        interaction: {
+          intersect: true,
+        }
+      }
+    };
+
+    new Chart(document.getElementById(elementId), config);
+  }
+
+  // Create the chart
+  createChart('weekChart', metricsWeek);
+</script>
 <!-- Mood Chart Script -->
 <script>
   const metrics = {{ metrics.mood_by_month| tojson | safe }};
@@ -155,8 +409,6 @@
 
   new Chart(document.getElementById('moodChart'), config);
 </script>
-<!-- Import demo.js script (currently commented out) -->
-<!-- <script src="{{ url_for('static' , path='dist/js/demo.js') }}"></script> -->
 
 <!-- Import dashboard3.js script -->
 <script src="{{ url_for('static' , path='dist/js/pages/dashboard3.js') }}"></script>
