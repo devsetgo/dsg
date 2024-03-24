@@ -84,7 +84,7 @@ class Settings(BaseSettings):
     same_site: SameSiteEnum = Field("Lax", description="Options: Lax, Strict, None")
     https_only: bool = False
     max_age: int = 3600
-    sesson_user_identifier: str = "user_identifier"
+    session_user_identifier: str = "user_identifier"
     # service accounts
     openai_key: SecretStr = None  # OpenAI API Key
     # GitHub
