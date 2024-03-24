@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
-
+import sys
 # from debug_toolbar.middleware import DebugToolbarMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from loguru import logger
@@ -25,9 +25,16 @@ def add_middleware(app):
         https_only=settings.https_only,
         max_age=settings.max_age,
     )
-    app.add_middleware(
-        AccessLoggerMiddleware, user_identifier=settings.sesson_user_identifier
-    )
+
+
+    # Check if the application is being run with uvicorn
+    if "uvicorn" in sys.argv[0]:
+        app.add_middleware(
+            AccessLoggerMiddleware, user_identifier=settings.session_user_identifier
+        )
+        logger.debug("AccessLoggerMiddleware added")
+    else:
+        logger.info("Surpressing AccessLoggerMiddleware as not running with uvicorn")
 
 
 class AccessLoggerMiddleware(BaseHTTPMiddleware):
@@ -40,15 +47,24 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
         self.user_identifier = user_identifier
 
     async def dispatch(self, request, call_next):
+        # Record the start time
+        start_time = time.time()
         try:
+            # Call the next middleware or endpoint in the stack
             response = await call_next(request)
+            # Get the status code from the response
             status_code = response.status_code
+            logger.debug(f"Response: {response}")
         except Exception as e:
+            # Log the exception and re-raise it
             logger.exception(f"An error occurred while processing the request: {e}")
             raise
 
-        start_time = time.time()
+        # Calculate the processing time
         process_time = time.time() - start_time
+        logger.debug(f"Processing time: {process_time}")
+
+        # Get the request details
         method = request.method
         url = request.url
         client = request.client.host
@@ -56,10 +72,13 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
         user_id = request.session.get(self.user_identifier, "unknown guest")
         headers = dict(request.headers.items())
         sensitive_headers = ["Authorization"]
+
+        # Redact sensitive headers
         for header in sensitive_headers:
             if header in headers:
                 headers[header] = "[REDACTED]"
 
+        # Log the request details, but ignore favicon.ico requests
         if url.path != "/favicon.ico":
             logger.info(
                 {
@@ -74,4 +93,5 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
                 }
             )
 
+        # Return the response
         return response
