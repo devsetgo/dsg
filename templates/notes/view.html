@@ -17,44 +17,39 @@
     <div class="container-fluid">
         <div class="row">
             <!-- left column -->
+            <!-- View Form -->
             <div class="col-12">
                 <!-- general form elements -->
                 <div class="card card-primary">
                     <div class="card-header">
-                        <h3 class="card-title">Edit Note</h3>
+                        <h3 class="card-title">View Note</h3>
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <a href="/notes/edit/{{ note.pkid }}" class="btn btn-primary float-right"><i class="fa-solid fa-pen-to-square"></i></a>
                     </div>
                     <!-- /.card-header -->
                     <!-- form start -->
-                    <form hx-post="/notes/update" hx-swap="outerHTML">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="card-body row">
-                                    <div class="col-md-6">
-                                        <h5>Note:</h5>
-                                        <textarea class="form-control" name="note">{{ note.note }}</textarea>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h5>Details:</h5>
-                                        <label>Mood: {{note.mood|capitalize}}</label>
-                                        <p>Tags: <input type="text" class="form-control" name="tags" value="{{ note.tags }}"></p>
-                                        <p>Summary: <input type="text" class="form-control" name="summary" value="{{ note.summary }}"></p>
-                                        <p>User ID: {{ note.user_id }}</p>
-                                        <p>Note ID: {{ note.pkid }}</p>
-                                        <p>Date Created: {{ note.date_created }}</p>
-                                        <p>Date Updated: {{ note.date_updated }}</p>
-                                        <p>Word Count: {{ note.word_count }}</p>
-                                        <p>Character Count: {{ note.character_count }}</p>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="card-body">
+                        <div class="input-group mb-5">
+                            <p>Mood: {{ note.mood }}</p>
+                        </div>
+                        <div class="input-group mb-5">
+                            <p>Note: {{ note.note }}</p>
                         </div>
                         <div class="card-footer">
-                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <p>Tags: {{ note.tags }}</p>
+                            <p>Summary: {{ note.summary }}</p>
+                            <p>User ID: {{ note.user_id }}</p>
+                            <p>Note ID: {{ note.pkid }}</p>
+                            <p>Date Created: {{ note.date_created }}</p>
+                            <p>Date Updated: {{ note.date_updated }}</p>
+                            <p>Word Count: {{ note.word_count }}</p>
+                            <p>Character Count: {{ note.character_count }}</p>
                         </div>
-                    </form>
+                    </div>
                     <!-- /.col -->
                 </div>
             </div>
+            <!-- End view form -->
             <!-- /.card -->
         </div>
         <!-- /.row -->

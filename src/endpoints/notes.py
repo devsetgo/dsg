@@ -73,7 +73,7 @@ async def read_notes_pagination(
     limit: int = Query(20),
     csrf_protect: CsrfProtect = Depends(),
 ):
-    await asyncio.sleep(.2)
+    await asyncio.sleep(0.2)
     user_identifier = request.session.get("user_identifier", None)
     user_timezone = request.session.get("timezone", None)
     if user_identifier is None:
@@ -152,95 +152,11 @@ async def read_notes_pagination(
     )
 
 
-# # search /search
-# @router.get("/search")
-# async def search_notes(request: Request, csrf_protect: CsrfProtect = Depends()):
-#     user_identifier = request.session.get("user_identifier", None)
-#     user_timezone = request.session.get("timezone", None)
-#     if user_identifier is None:
-#         return RedirectResponse(url="/users/login", status_code=302)
-
-#     return templates.TemplateResponse(
-#         request=request,
-#         name="/notes/search.html",
-#         context={"user_identifier": user_identifier},
-#     )
-
-
-# # search /search
-# @router.post("/search")
-# async def get_notes(
-#     request: Request,
-#     search_term: str = Form(None),
-#     start_date: str = Form(None),
-#     end_date: str = Form(None),
-#     mood: str = Form(None),
-#     limit: int = 200,
-#     offset: int = 0,
-#     csrf_protect: CsrfProtect = Depends(),
-# ):
-#     await asyncio.sleep(.2)
-#     user_identifier = request.session.get("user_identifier", None)
-#     user_timezone = request.session.get("timezone", None)
-#     if user_identifier is None:
-#         logger.info("Redirecting to login because user_identifier is None")
-#         return RedirectResponse(url="/users/login", status_code=302)
-#     # find search_term in columns: note, mood, tags, summary
-#     query = Select(Notes).where(
-#         (Notes.user_id == user_identifier)
-#         & (
-#             or_(
-#                 Notes.note.contains(search_term) if search_term else True,
-#                 Notes.summary.contains(search_term) if search_term else True,
-#                 Notes.tags.contains(search_term) if search_term else True,
-#             )
-#         )
-#     )
-#     # filter by mood
-#     if mood:
-#         query = query.where(Notes.mood == mood)
-#     # filter by date range
-#     if start_date and end_date:
-#         query = query.where(
-#             (Notes.date_created >= start_date) & (Notes.date_created <= end_date)
-#         )
-#     # order and limit the results
-#     query = query.order_by(Notes.date_created.desc())
-#     notes = await db_ops.read_query(query=query, limit=limit, offset=0)
-#     notes = [note.to_dict() for note in notes]
-#     # offset date_created and date_updated to user's timezone
-#     for note in notes:
-#         note["date_created"] = await date_functions.timezone_update(
-#             user_timezone=user_timezone,
-#             date_time=note["date_created"],
-#             friendly_string=True,
-#         )
-#         note["date_updated"] = await date_functions.timezone_update(
-#             user_timezone=user_timezone,
-#             date_time=note["date_updated"],
-#             friendly_string=True,
-#         )
-#     found = len(notes)
-#     note_count = await db_ops.count_query(
-#         Select(Notes).where((Notes.user_id == user_identifier))
-#     )
-#     logger.info(f"Found {found} notes for user {user_identifier}")
-#     return templates.TemplateResponse(
-#         request=request,
-#         name="/notes/search_term.html",
-#         context={
-#             "user_identifier": user_identifier,
-#             "notes": notes,
-#             "found": found,
-#             "note_count": note_count,
-#         },
-#     )
-
-
 # new note form
 @router.get("/new")
 async def new_note_form(request: Request, csrf_protect: CsrfProtect = Depends()):
     user_identifier = request.session.get("user_identifier", None)
+    user_timezone = request.session.get("timezone", None)
     if user_identifier is None:
         return RedirectResponse(url="/users/login", status_code=302)
     demo_note = get_note_demo_paragraph()
@@ -252,6 +168,7 @@ async def new_note_form(request: Request, csrf_protect: CsrfProtect = Depends())
 @router.post("/new")
 async def create_note(request: Request, csrf_protect: CsrfProtect = Depends()):
     user_identifier = request.session.get("user_identifier", None)
+    user_timezone = request.session.get("timezone", None)
     if user_identifier is None:
         return RedirectResponse(url="/users/login", status_code=302)
     form = await request.form()
@@ -310,6 +227,7 @@ async def edit_note_form(
     request: Request, note_id: str, csrf_protect: CsrfProtect = Depends()
 ):
     user_identifier = request.session.get("user_identifier", None)
+    user_timezone = request.session.get("timezone", None)
     if user_identifier is None:
         return RedirectResponse(url="/users/login", status_code=302)
 
@@ -318,6 +236,7 @@ async def edit_note_form(
     )
     note = await db_ops.read_one_record(query=query)
     note = note.to_dict()
+
     # offset date_created and date_updated to user's timezone
     note["date_created"] = await date_functions.timezone_update(
         user_timezone=user_timezone,
@@ -331,35 +250,31 @@ async def edit_note_form(
     )
 
     return templates.TemplateResponse(
-        request=request, name="/notes/edit.html", context={"note": note.to_dict()}
+        request=request, name="/notes/edit.html", context={"note": note}
     )
 
-
+# TODO: Why is this not working?
 # put /{note_id} requires user_identifier and note_id
-@router.put("/{note_id}")
+@router.put("/edit/{note_id}")
 async def update_note(
     request: Request, note_id: str, csrf_protect: CsrfProtect = Depends()
 ):
     user_identifier = request.session.get("user_identifier", None)
+    user_timezone = request.session.get("timezone", None)
     if user_identifier is None:
         return RedirectResponse(url="/users/login", status_code=302)
     form = await request.form()
     mood = form["mood"]
     note = form["note"]
-
+    print(note)
     # Get the tags and summary from OpenAI
     # analysis = await ai.get_analysis(content=note)
 
     # Create the note
-    note = Notes(
-        mood=mood,
-        note=note,
-        # tags=analysis["tags"],
-        # summary=analysis["summary"],
-        user_id=user_identifier,
-        date_updated=datetime.utc(),
-    )
-    data = await db_ops.create_one(note)
+    new_values = {"mood": mood, "note": note}
+    print(values)
+    data = await db_ops.update_one(table=Notes, record_id=note_id, new_values=new_values)
+    # data = await db_ops.create_one(note)
     return RedirectResponse(url=f"/notes/{data.pkid}", status_code=302)
 
 
