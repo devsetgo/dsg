@@ -73,7 +73,7 @@ async def read_notes_pagination(
     limit: int = Query(20),
     csrf_protect: CsrfProtect = Depends(),
 ):
-    await asyncio.sleep(1)
+    await asyncio.sleep(.2)
     user_identifier = request.session.get("user_identifier", None)
     user_timezone = request.session.get("timezone", None)
     if user_identifier is None:
@@ -179,7 +179,7 @@ async def read_notes_pagination(
 #     offset: int = 0,
 #     csrf_protect: CsrfProtect = Depends(),
 # ):
-#     await asyncio.sleep(1)
+#     await asyncio.sleep(.2)
 #     user_identifier = request.session.get("user_identifier", None)
 #     user_timezone = request.session.get("timezone", None)
 #     if user_identifier is None:
