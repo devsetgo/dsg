@@ -9,8 +9,8 @@
     }
 </style>
 {% endblock %}
-{% block page_breadcrumb %} Notes / New{% endblock %}
-{% block page_head_title %}New Note{% endblock %}
+{% block page_breadcrumb %} Notes / Edit{% endblock %}
+{% block page_head_title %}Edit Note{% endblock %}
 {% block body %}
 <!-- Main content -->
 <section class="content">
@@ -25,50 +25,50 @@
                     </div>
                     <!-- /.card-header -->
                     <!-- form start -->
-                    <form hx-post="/notes/update" hx-swap="outerHTML">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="card-body row">
-                                    <div class="col-md-6">
-                                        <h5>Note:</h5>
-                                        <textarea class="form-control" name="note">{{ note.note }}</textarea>
+                    <div class="row">
+                        <div class="col-12">
+                            <form action="/notes/edit/{{ note.pkid }}" method="put" enctype="multipart/form-data" hx-indicator=".htmx-indicator">
+                                <div class="input-group mb-5">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="mood" id="positive" value="positive" {% if note.mood == 'positive' %}checked{% endif %}>
+                                        <label class="form-check-label" for="positive">Positive</label>
                                     </div>
-                                    <div class="col-md-6">
-                                        <h5>Details:</h5>
-                                        <div class="input-group mb-5">
-                                            <div class="form-check form-check-inline">
-                                              <input class="form-check-input" type="radio" name="mood" id="positive" value="positive">
-                                              <label class="form-check-label" for="positive">Positive</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                              <input class="form-check-input" type="radio" name="mood" id="neutral" value="neutral" checked>
-                                              <label class="form-check-label" for="neutral">Neutral</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                              <input class="form-check-input" type="radio" name="mood" id="negative" value="negative">
-                                              <label class="form-check-label" for="negative">Negative</label>
-                                            </div>
-                                            <div class="form-check">
-                                              <input class="form-check-input" type="checkbox" id="demoNoteCheck">
-                                              <label class="form-check-label" for="demoNoteCheck">Demo Text</label>
-                                            </div>
-                                          </div>
-                                        <p>Tags: <input type="text" class="form-control" name="tags" value="{{ note.tags }}"></p>
-                                        <p>Summary: <input type="text" class="form-control" name="summary" value="{{ note.summary }}"></p>
-                                        <p>User ID: {{ note.user_id }}</p>
-                                        <p>Note ID: {{ note.pkid }}</p>
-                                        <p>Date Created: {{ note.date_created }}</p>
-                                        <p>Date Updated: {{ note.date_updated }}</p>
-                                        <p>Word Count: {{ note.word_count }}</p>
-                                        <p>Character Count: {{ note.character_count }}</p>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="mood" id="neutral" value="neutral" {% if note.mood == 'neutral' %}checked{% endif %}>
+                                        <label class="form-check-label" for="neutral">Neutral</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="mood" id="negative" value="negative" {% if note.mood == 'negative' %}checked{% endif %}>
+                                        <label class="form-check-label" for="negative">Negative</label>
                                     </div>
                                 </div>
-                            </div>
+                                <div class="input-group mb-5">
+                                    <textarea id="note" name="note" placeholder="Enter a new note" rows="20"
+                                        style="width: 100%; height: 100%;" maxlength="20000" required>{{ note.note }}</textarea>
+                                    <small id="notesHelp" class="form-text text-muted">Note: This textarea is limited to 20,000
+                                        characters.</small>
+                                    <small id="charCount" class="form-text text-muted">Character count: {{ note.note|length }}</small>
+                                    <script>
+                                        var textarea = document.getElementById('note');
+                                        var charCount = document.getElementById('charCount');
+
+                                        textarea.addEventListener('input', function (e) {
+                                            var chars = e.target.value.length;
+                                            if (chars > 20000) {
+                                                e.target.value = e.target.value.slice(0, 20000);
+                                            }
+                                            charCount.textContent = "Character count: " + chars;
+                                        });
+                                    </script>
+                                </div>
+                                <div class="input-group mb-5">
+                                    <button type="submit" class="btn btn-primary btn-block" title="Update Note">Update Note</button>
+                                    <!-- CSRF token -->
+                                    <input type='hidden' name='csrf-token' value="{{ csrf_token }}" />
+                                </div>
+                            </form>
                         </div>
-                        <div class="card-footer">
-                            <button type="submit" class="btn btn-primary">Submit</button>
-                        </div>
-                    </form>
+                    </div>
                     <!-- /.col -->
                 </div>
             </div>
