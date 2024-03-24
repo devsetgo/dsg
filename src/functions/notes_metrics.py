@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from collections import Counter, defaultdict
 import json
+from collections import Counter, defaultdict
+
 from loguru import logger
 from sqlalchemy import Select
 
@@ -50,6 +51,7 @@ async def get_note_counts(notes: list):
     logger.info("Note counts calculated successfully")
     return data
 
+
 async def get_note_count_by_year(notes: list):
     logger.info("Calculating note count and word count by year")
     result = defaultdict(lambda: {"note_count": 0, "word_count": 0})
@@ -64,6 +66,7 @@ async def get_note_count_by_year(notes: list):
 
     logger.info("Note count and word count by year calculated successfully")
     return json.dumps(result)
+
 
 async def get_note_count_by_month(notes: list):
     logger.info("Calculating note count and word count by month")
@@ -89,7 +92,9 @@ async def get_note_count_by_week(notes: list):
         result[week_year_str]["word_count"] += note["word_count"]
 
     logger.info("Note count and word count by week calculated successfully")
-    return json.dumps({week_year_str: dict(data) for week_year_str, data in result.items()})
+    return json.dumps(
+        {week_year_str: dict(data) for week_year_str, data in result.items()}
+    )
 
 
 async def mood_metrics(notes: list):
@@ -98,6 +103,7 @@ async def mood_metrics(notes: list):
     mood_count = {k: format(v, ",") for k, v in mood_count.items()}
     logger.info("Mood metrics calculated successfully")
     return dict(mood_count)
+
 
 async def mood_by_month(notes: list):
     logger.info("Calculating mood by month")
@@ -110,6 +116,7 @@ async def mood_by_month(notes: list):
     logger.info("Mood by month calculated successfully")
     return {k: dict(v) for k, v in result.items()}
 
+
 # total unique count
 async def get_total_unique_tag_count(notes: list):
     # example of notes.tags
@@ -118,15 +125,16 @@ async def get_total_unique_tag_count(notes: list):
     tag_count = Counter(tags)
     return len(tag_count)
 
+
 # Count of each tag
 async def get_tag_count(notes: list):
     tags = [tag for note in notes for tag in note["tags"]]
     tag_count = Counter(tags)
-    
+
     # Sort the tag_count dictionary by its values in descending order
     tag_count = dict(sorted(tag_count.items(), key=lambda item: item[1], reverse=True))
-    
+
     # Limit the result to the top 20 tags
     tag_count = dict(list(tag_count.items())[:30])
-    
+
     return json.dumps(tag_count)

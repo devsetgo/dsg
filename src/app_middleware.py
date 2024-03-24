@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import time
 import sys
+import time
+
 # from debug_toolbar.middleware import DebugToolbarMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from loguru import logger
@@ -25,7 +26,6 @@ def add_middleware(app):
         https_only=settings.https_only,
         max_age=settings.max_age,
     )
-
 
     # Check if the application is being run with uvicorn
     if "uvicorn" in sys.argv[0]:

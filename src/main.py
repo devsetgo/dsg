@@ -18,12 +18,12 @@ logging_config.config_log(
     logging_level=settings.logging_level,
     log_rotation=settings.log_rotation,
     log_retention=settings.log_retention,
-    log_backtrace=False,
+    log_backtrace=settings.log_backtrace,
     log_format=None,
-    log_serializer=False,
-    log_diagnose=False,
-    app_name=None,
-    append_app_name=True,
+    log_serializer=settings.log_serializer,
+    log_diagnose=settings.log_diagnose,
+    # app_name="devsetgo",
+    # append_app_name=False,
 )
 
 
@@ -51,7 +51,6 @@ app = FastAPI(
     middleware=[],  # A list of middleware to include in the application
     routes=[],  # A list of routes to include in the application
     lifespan=lifespan,
-    
 )
 if settings.debug_mode:
     logger.warning("Debug mode is enabled and should not be used in production.")
