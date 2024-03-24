@@ -13,11 +13,11 @@ from .resources import startup
 from .settings import settings
 
 logging_config.config_log(
-    logging_directory="log",
-    log_name="log.log",
-    logging_level="INFO",
-    log_rotation="100 MB",
-    log_retention="30 days",
+    logging_directory=settings.logging_directory,
+    log_name=settings.log_name,
+    logging_level=settings.logging_level,
+    log_rotation=settings.log_rotation,
+    log_retention=settings.log_retention,
     log_backtrace=False,
     log_format=None,
     log_serializer=False,
@@ -51,6 +51,7 @@ app = FastAPI(
     middleware=[],  # A list of middleware to include in the application
     routes=[],  # A list of routes to include in the application
     lifespan=lifespan,
+    
 )
 if settings.debug_mode:
     logger.warning("Debug mode is enabled and should not be used in production.")
