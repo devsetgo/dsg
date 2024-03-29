@@ -86,6 +86,8 @@ class Settings(BaseSettings):
     max_age: int = 3600
     session_user_identifier: str = "user_identifier"
     # service accounts
+    # OpenAI Settings
+    open_ai_disabled: bool = False
     openai_key: SecretStr = None  # OpenAI API Key
     # GitHub
     github_id: str = "octocat"

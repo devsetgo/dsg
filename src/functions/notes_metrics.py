@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import json
-from collections import Counter, defaultdict
+import statistics
+from collections import Counter, defaultdict, deque
 
 from loguru import logger
 from sqlalchemy import Select
@@ -26,6 +27,11 @@ async def get_metrics(user_identifier: str, user_timezone: str):
         "note_count_by_month": await get_note_count_by_month(notes),
         "note_count_by_week": await get_note_count_by_week(notes),
         "mood_by_month": {k: dict(v) for k, v in (await mood_by_month(notes)).items()},
+        "mood_trend_by_month": await mood_trend_by_mean_month(notes),
+        "mood_trend_by_median_month": await mood_trend_by_median_month(notes),
+        "mood_trend_by_rolling_mean_month": await mood_trend_by_rolling_mean_month(
+            notes
+        ),
         "tags_common": await get_tag_count(notes=notes),
         "notes": notes,
     }
@@ -115,6 +121,78 @@ async def mood_by_month(notes: list):
 
     logger.info("Mood by month calculated successfully")
     return {k: dict(v) for k, v in result.items()}
+
+
+async def mood_trend_by_mean_month(notes: list):
+    logger.info("Calculating mood trend by month")
+    result = defaultdict(int)
+    count = defaultdict(int)
+
+    mood_values = {"negative": -1, "neutral": 0, "positive": 1}
+
+    for note in notes:
+        month_year = note["date_created"].strftime("%Y-%m")
+        result[month_year] += mood_values[note["mood"]]
+        count[month_year] += 1
+
+    for month_year in result:
+        result[month_year] = round(result[month_year] / count[month_year], 3)
+
+    # Sort the dictionary by keys (year-month)
+    result = dict(sorted(result.items()))
+
+    logger.info("Mood trend by month calculated successfully")
+    return result
+
+
+async def mood_trend_by_median_month(notes: list):
+    logger.info("Calculating mood trend by month")
+    result = defaultdict(list)
+
+    mood_values = {"negative": -1, "neutral": 0, "positive": 1}
+
+    for note in notes:
+        month_year = note["date_created"].strftime("%Y-%m")
+        result[month_year].append(mood_values[note["mood"]])
+
+    for month_year in result:
+        result[month_year] = round(statistics.median(result[month_year]), 3)
+
+    # Sort the dictionary by keys (year-month)
+    result = dict(sorted(result.items()))
+
+    logger.info("Mood trend by month calculated successfully")
+    return result
+
+
+async def mood_trend_by_rolling_mean_month(notes: list):
+    logger.info("Calculating mood trend by month")
+    result = defaultdict(int)
+    count = defaultdict(int)
+    rolling_avg = {}
+
+    mood_values = {"negative": -1, "neutral": 0, "positive": 1}
+
+    for note in notes:
+        month_year = note["date_created"].strftime("%Y-%m")
+        result[month_year] += mood_values[note["mood"]]
+        count[month_year] += 1
+
+    for month_year in result:
+        result[month_year] = round(result[month_year] / count[month_year], 3)
+
+    # Sort the dictionary by keys (year-month)
+    result = dict(sorted(result.items()))
+
+    # Calculate 3-month rolling average
+    months = deque(maxlen=3)
+    for month_year, avg in result.items():
+        months.append(avg)
+        if len(months) == 3:
+            rolling_avg[month_year] = round(sum(months) / len(months), 3)
+
+    logger.info("Mood trend by month calculated successfully")
+    return rolling_avg
 
 
 # total unique count

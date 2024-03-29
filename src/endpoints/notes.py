@@ -10,7 +10,7 @@ from loguru import logger
 from sqlalchemy import Select, and_, or_
 
 from ..db_tables import Notes
-from ..functions import date_functions, notes_metrics
+from ..functions import date_functions, notes_metrics, ai
 from ..functions.demo_functions import get_note_demo_paragraph
 from ..resources import db_ops, templates
 
@@ -176,18 +176,56 @@ async def create_note(request: Request, csrf_protect: CsrfProtect = Depends()):
     note = form["note"]
 
     # Get the tags and summary from OpenAI
-    # analysis = await ai.get_analysis(content=note)
+    analysis = await ai.get_analysis(content=note)
 
     # Create the note
     note = Notes(
         mood=mood,
         note=note,
-        # tags=analysis["tags"],
-        # summary=analysis["summary"],
+        tags=analysis["tags"],
+        summary=analysis["summary"],
+        mood_analysis=analysis["mood_analysis"],
         user_id=user_identifier,
     )
     data = await db_ops.create_one(note)
     return RedirectResponse(url=f"/notes/{data.pkid}", status_code=302)
+
+
+@router.get("/bulk")
+async def bulk_note_form(request: Request, csrf_protect: CsrfProtect = Depends()):
+    user_identifier = request.session.get("user_identifier", None)
+    user_timezone = request.session.get("timezone", None)
+    if user_identifier is None:
+        return RedirectResponse(url="/users/login", status_code=302)
+    demo_note = get_note_demo_paragraph()
+    return templates.TemplateResponse(
+        request=request, name="notes/bulk.html", context={"demo_note": demo_note}
+    )
+
+@router.post("/bulk")
+async def bulk_note(request: Request, csrf_protect: CsrfProtect = Depends()):
+    user_identifier = request.session.get("user_identifier", None)
+    user_timezone = request.session.get("timezone", None)
+    if user_identifier is None:
+        return RedirectResponse(url="/users/login", status_code=302)
+
+    
+
+    # Get the tags and summary from OpenAI
+    analysis = await ai.get_analysis(content=note)
+
+    # Create the note
+    note = Notes(
+        mood=mood,
+        note=note,
+        tags=analysis["tags"],
+        summary=analysis["summary"],
+        mood_analysis=analysis["mood_analysis"],
+        user_id=user_identifier,
+    )
+    data = await db_ops.create_one(note)
+    return RedirectResponse(url=f"/notes/", status_code=302)
+
 
 
 @router.get("/{note_id}")
@@ -221,6 +259,9 @@ async def read_note(request: Request, note_id: str):
     )
 
 
+from ..functions import ai
+
+
 # htmx get edit form
 @router.get("/edit/{note_id}")
 async def edit_note_form(
@@ -250,12 +291,14 @@ async def edit_note_form(
     )
 
     return templates.TemplateResponse(
-        request=request, name="/notes/edit.html", context={"note": note}
+        request=request,
+        name="/notes/edit.html",
+        context={"note": note, "mood_analysis": ai.mood_analysis},
     )
 
-# TODO: Why is this not working?
+
 # put /{note_id} requires user_identifier and note_id
-@router.put("/edit/{note_id}")
+@router.post("/edit/{note_id}")
 async def update_note(
     request: Request, note_id: str, csrf_protect: CsrfProtect = Depends()
 ):
@@ -264,16 +307,38 @@ async def update_note(
     if user_identifier is None:
         return RedirectResponse(url="/users/login", status_code=302)
     form = await request.form()
-    mood = form["mood"]
-    note = form["note"]
-    print(note)
-    # Get the tags and summary from OpenAI
-    # analysis = await ai.get_analysis(content=note)
+
+    mood = form.get("mood")
+    note = form.get("note")
+    tags = form.get("tags")
+    summary = form.get("summary")
+    mood_analysis = form.get("mood_analysis")
+
+    # converts tags from a string to a list if tags is not None
+    if tags:
+        tags = tags.split(",")
+        tags = {'tags': tags}
 
     # Create the note
-    new_values = {"mood": mood, "note": note}
-    print(values)
-    data = await db_ops.update_one(table=Notes, record_id=note_id, new_values=new_values)
+    new_values = {
+        "date_updated": datetime.utcnow(),
+    }
+
+    if summary:
+        new_values["summary"] = summary
+    if mood:
+        new_values["mood"] = mood
+    if tags:
+        new_values["tags"] = tags
+    if mood_analysis:
+        new_values["mood_analysis"] = mood_analysis
+    if note:
+        new_values["note"] = note
+
+
+    data = await db_ops.update_one(
+        table=Notes, record_id=note_id, new_values=new_values
+    )
     # data = await db_ops.create_one(note)
     return RedirectResponse(url=f"/notes/{data.pkid}", status_code=302)
 

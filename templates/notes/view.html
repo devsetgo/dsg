@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block page_title %}| Pypi Check{% endblock %}
+{% block page_title %}| Notes{% endblock %}
 {% block page_stylesheet %}
 <!-- page stylesheets-->
 <style>
@@ -10,51 +10,103 @@
 </style>
 {% endblock %}
 {% block page_breadcrumb %} Notes / New{% endblock %}
-{% block page_head_title %}New Note{% endblock %}
+{% block page_head_title %}View Note{% endblock %}
 {% block body %}
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
         <div class="row">
             <!-- left column -->
-            <!-- View Form -->
             <div class="col-12">
                 <!-- general form elements -->
-                <div class="card card-primary">
-                    <div class="card-header">
-                        <h3 class="card-title">View Note</h3>
-                        <i class="fa-solid fa-pen-to-square"></i>
-                        <a href="/notes/edit/{{ note.pkid }}" class="btn btn-primary float-right"><i class="fa-solid fa-pen-to-square"></i></a>
+                <div class="card card-primary" style="margin: 20px;">
+                    <div class="card-header d-flex align-items-center">
+                        <h3 class="card-title mb-0">View Note</h3>
+                        <a href="/notes/edit/{{ note.pkid }}" class="btn btn-primary ml-auto"><i
+                                class="fa-regular fa-file"></i></a>
                     </div>
                     <!-- /.card-header -->
                     <!-- form start -->
-                    <div class="card-body">
-                        <div class="input-group mb-5">
-                            <p>Mood: {{ note.mood }}</p>
+                    <div class="row">
+                        <div class="col-12">
+                            <!-- Nav tabs -->
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="details-tab" data-toggle="tab" href="#details"
+                                        role="tab" aria-controls="details" aria-selected="true">Details</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="info-tab" data-toggle="tab" href="#info" role="tab"
+                                        aria-controls="info" aria-selected="false">Info</a>
+                                </li>
+                            </ul>
+                            <!-- Tab panes -->
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="details" role="tabpanel" aria-labelledby="details-tab">
+                                    <!-- Begin Details Section -->
+                                    <div class="row" style="padding: 20px; margin: 10px;background-color: #e9ecef;">
+                                        <!-- Begin Optional Fields to View -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="summaryInput">Summary</label>
+                                                <p>{{ note.summary }}</p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="tags">Tags</label>
+                                                <p>{% for tag in note.tags.tags %}{{ tag }}{% if not loop.last %}, {%
+                                                    endif %}{%
+                                                    endfor %}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label><strong>Mood Analysis:</strong></label>
+                                                <p>{{ note.mood_analysis |capitalize}}</p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label><strong>Current Mood:</strong></label>
+                                                <p>{{ note.mood |capitalize}}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- End Details Section -->
+                                </div>
+                                <div class="tab-pane" id="info" role="tabpanel" aria-labelledby="info-tab">
+                                    <!-- Begin Info Section -->
+                                    <div class="row" style="padding: 20px; margin: 10px;background-color: #e9ecef;">
+                                        <div class="col-md-6">
+                                            <p>Date Created: {{ note.date_created }}</p>
+                                            <p>Date Updated: {{ note.date_updated }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p>Word Count: {{ note.word_count }}</p>
+                                            <p>Character Count: {{ note.character_count }}</p>
+                                        </div>
+                                    </div>
+                                    <!-- End Info Section -->
+                                </div>
+                            </div>
                         </div>
-                        <div class="input-group mb-5">
-                            <p>Note: {{ note.note }}</p>
+                        <div class="col-12">
+                            <!-- Being Note Section -->
+                            <div class="row" style="padding: 20px; margin: 10px;background-color: #f8f9fa;">
+                                <div class="col-md-12">
+                                    <label>Note:</label>
+                                    <br>
+                                    {{ note.note|safe }}
+                                </div>
+                            </div>
+                            <!-- End Note Section -->
+
                         </div>
-                        <div class="card-footer">
-                            <p>Tags: {{ note.tags }}</p>
-                            <p>Summary: {{ note.summary }}</p>
-                            <p>User ID: {{ note.user_id }}</p>
-                            <p>Note ID: {{ note.pkid }}</p>
-                            <p>Date Created: {{ note.date_created }}</p>
-                            <p>Date Updated: {{ note.date_updated }}</p>
-                            <p>Word Count: {{ note.word_count }}</p>
-                            <p>Character Count: {{ note.character_count }}</p>
-                        </div>
+                        <!-- /.col -->
                     </div>
-                    <!-- /.col -->
                 </div>
+                <!-- /.card -->
             </div>
-            <!-- End view form -->
-            <!-- /.card -->
+            <!-- /.row -->
         </div>
-        <!-- /.row -->
-    </div>
-    <!-- /.container-fluid -->
+        <!-- /.container-fluid -->
 </section>
 <!-- /.content -->
 </div>
