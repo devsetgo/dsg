@@ -13,3 +13,4 @@ pytz==2024.1 #  From none |   Vulnerabilities: None
 silly==1.1.0 #   Vulnerabilities: None
 tqdm==4.66.2 #   Vulnerabilities: None
 unsync==1.4.0 #   Vulnerabilities: None
+numpy

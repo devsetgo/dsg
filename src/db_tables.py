@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from dsg_lib.async_database_functions import base_schema
-from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import class_mapper, relationship
 
 from .db_init import async_db
@@ -86,9 +95,10 @@ class Notes(base_schema.SchemaBase, async_db.Base):
 
     # Define the columns of the table
     mood = Column(String(50), unique=False, index=True)  # mood of note
-    note = Column(String(), unique=False, index=True)  # note
+    mood_analysis = Column(String(50), unique=False, index=True)  # mood of note
+    note = Column(Text, unique=False, index=True)  # note
     tags = Column(JSON)  # tags from OpenAI
-    summary = Column(String(500), unique=False, index=True)  # summary from OpenAI
+    summary = Column(String(100), unique=False, index=True)  # summary from OpenAI
     # Define the parent relationship to the User class
     user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
 

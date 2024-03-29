@@ -156,7 +156,8 @@ async def add_system_data():
     if settings.create_admin_user is True:
         logger.warning("Creating admin user")
         data = await add_admin()  # Create an admin user
-        await add_notes(user_id=data)  # Create notes for the admin user
+        if settings.create_demo_data is True:
+            await add_notes(user_id=data)  # Create notes for the admin user
 
     if settings.create_demo_user is True:
         logger.warning("Creating demo user")
@@ -216,7 +217,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         tags = list(set([silly.adjective() for x in range(1, 4)]))
 
         # Generate a random date within the last X years
-        days_in_three_years = 365 * 15
+        days_in_three_years = 365 * 5
         random_number_of_days = random.randrange(days_in_three_years)
         date_created = datetime.now() - timedelta(days=random_number_of_days)
 

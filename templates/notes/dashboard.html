@@ -63,22 +63,22 @@
 
                 </div>
               </div>
-                <div class="tab-pane fade" id="custom-tabs-four-notes" role="tabpanel"
-                  aria-labelledby="custom-tabs-four-notes-tab">
-                  <!-- Begin Search Form -->
-                  {% include 'notes/search-form.html' %}
-                  <div class="row" id="notes-data"></div>
-                  <!-- End Search Form -->
-                </div>
-                <!-- <div class="tab-pane fade" id="custom-tabs-four-settings" role="tabpanel"
+              <div class="tab-pane fade" id="custom-tabs-four-notes" role="tabpanel"
+                aria-labelledby="custom-tabs-four-notes-tab">
+                <!-- Begin Search Form -->
+                {% include 'notes/search-form.html' %}
+                <div class="row" id="notes-data"></div>
+                <!-- End Search Form -->
+              </div>
+              <!-- <div class="tab-pane fade" id="custom-tabs-four-settings" role="tabpanel"
               aria-labelledby="custom-tabs-four-settings-tab">
               template for future functionality
             </div> -->
-              </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
 </section>
 {% endblock %}
 
@@ -91,6 +91,106 @@
 <!-- Start of page scripts block -->
 
 <!-- OPTIONAL SCRIPTS -->
+<!-- Mood Trend by Month -->
+<script>
+  // Data for the chart
+  const metricsMood = {{ metrics.mood_trend_by_month | safe }};
+  const metricsMoodMedian = {{ metrics.mood_trend_by_median_month | safe }};
+  const metricsMoodRollingMean = {{ metrics.mood_trend_by_rolling_mean_month | safe }};
+
+  // Create a function to generate a chart
+  function createMoodChart(elementId, metrics, metricsMedian, metricsRollingMean) {
+    const labels = Object.keys(metrics);
+    const moodAverages = labels.map(label => metrics[label]);
+    const moodMedians = labels.map(label => metricsMedian[label]);
+    const moodRollingMeans = labels.map(label => metricsRollingMean[label] || null);
+
+    const datasets = [
+      {
+        yAxisID: 'y1',
+        type: 'line',
+        label: 'Rolling Mean',
+        data: moodRollingMeans,
+        fill: false,
+        borderColor: 'rgb(255, 165, 0)' // orange line for rolling mean values
+      },
+      {
+        yAxisID: 'y1',
+        type: 'line',
+        label: 'Median',
+        data: moodMedians,
+        fill: false,
+        borderColor: 'rgb(0, 0, 255)' // blue line for median values
+      },
+      {
+        yAxisID: 'y1',
+        type: 'bar',
+        label: 'Average',
+        data: moodAverages,
+        backgroundColor: moodAverages.map(value => {
+          if (value < 0) {
+            return 'rgb(255, 0, 0)'; // red for negative values
+          } else if (value < 0.5) {
+            return 'rgb(255, 255, 0)'; // yellow for values between 0 and 0.5
+          } else {
+            return 'rgb(0, 255, 0)'; // green for values greater than 0.5
+          }
+        }),
+      }
+    ];
+
+    const data = {
+      labels: labels,
+      datasets: datasets
+    };
+
+    const config = {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        scales: {
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            min: -1,
+            max: 1
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Mood Trend by Month'
+          },
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: 'x'
+            },
+            zoom: {
+              wheel: {
+                enabled: true,
+              },
+              pinch: {
+                enabled: true
+              },
+              mode: 'x'
+            }
+          }
+        },
+        interaction: {
+          intersect: true,
+        }
+      }
+    };
+
+    new Chart(document.getElementById(elementId), config);
+  }
+
+  // Create the chart
+  createMoodChart('moodTrendChart', metricsMood, metricsMoodMedian, metricsMoodRollingMean);
+</script>
 <!-- Chart of Tags -->
 <script>
   // Assign the Jinja variable to a JavaScript variable
