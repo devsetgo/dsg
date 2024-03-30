@@ -128,4 +128,3 @@ def validate_csv_headers(csv_reader: csv.DictReader):
     #     notes.append(data)
 
     # return notes
-
