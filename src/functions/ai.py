@@ -25,6 +25,7 @@ mood_analysis: list = [
     "furious",
 ]
 
+timeout=10,
 
 async def get_analysis(content: str) -> dict:
 
@@ -50,6 +51,7 @@ async def get_tags(content: str) -> dict:
             {"role": "user", "content": content},
         ],
         temperature=0.2,  # Adjust the temperature here
+        timeout=timeout,
     )
     # print(chat_completion)
     # Extract the content from the response
@@ -77,6 +79,7 @@ async def get_summary(content: str) -> dict:
             {"role": "user", "content": content},
         ],
         temperature=0.2,  # Adjust the temperature here
+        timeout=timeout,
     )
     # Extract the content from the response
     response_content = chat_completion.choices[0].message.content
@@ -97,6 +100,7 @@ async def get_mood_analysis(content: str) -> dict:
             {"role": "user", "content": content},
         ],
         temperature=0.2,  # Adjust the temperature here
+        timeout=timeout,
     )
     # Extract the content from the response
     response_content = chat_completion.choices[0].message.content
@@ -111,73 +115,21 @@ async def get_mood(content: str) -> dict:
         messages=[
             {
                 "role": "system",
-                "content": f"You are a helpful assistant that will pick the mood from these options {str(mood_choices)} and return that word.",
+                "content": f"You are a helpful assistant that will pick the mood from only these options {str(mood_choices)} and return that word.",
             },
             {"role": "user", "content": content},
         ],
         temperature=0.2,  # Adjust the temperature here
+        timeout=timeout,
     )
     # Extract the content from the response and return it as {'mood': response}
     response_content = chat_completion.choices[0].message.content
+    # Set the default mood as 'neutral'
+    mood = "neutral"
     # extract the first word in the response that matches one the mood_choices
-    for mood in mood_choices:
-        if mood in response_content:
-            response_content = mood
+    for mood_choice in mood_choices:
+        if mood_choice in response_content:
+            mood = mood_choice
             break
 
-    return response_content
-
-
-# import json
-
-
-# def open_json():
-#     with open("/workspaces/dsg/note.json") as read_file:
-#         # load file into data variable
-#         result = json.load(read_file)
-
-#     return result
-
-
-# def save_json(data):
-#     with open("/workspaces/dsg/new_note.json", "w") as outfile:
-#         json.dump(data, outfile)
-
-
-# async def run():
-#     big_list = open_json()
-#     # pick 5 random notes from the list
-
-#     import random
-
-#     content_list = random.sample(big_list, 5)
-
-#     new_data = []
-#     for content in content_list:
-
-#         summary = await get_summary(content=content["my_note"])
-
-#         tags = await get_tags(content=content["my_note"])
-
-#         new_data.append(
-#             {
-#                 "created_date": content["created_date"],
-#                 "my_note": content["my_note"],
-#                 "summary": summary,
-#                 "tags": tags,
-#             }
-#         )
-
-#     save_json(new_data)
-
-
-# if __name__ == "__main__":
-#     import asyncio
-
-#     # asyncio.run(run())
-#     content = """
-#     Sell Mom's house to Kelly Thursday/Friday. I am sure Kristi will lose her mind over something to make it a miserable experience.
-
-#     Kristi is a psychopath and Kelly isn't very appreciative. If it wasn't for me, they would both have gained nothing. But of course no good deed goes unpunished.
-#     """
-#     asyncio.run(get_analysis(content=content))
+    return {"mood": mood}
