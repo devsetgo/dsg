@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import json
+import logging
 import statistics
 from collections import Counter, defaultdict, deque
 
@@ -59,6 +61,7 @@ async def get_note_counts(notes: list):
 
 
 async def get_note_count_by_year(notes: list):
+    logger = logging.getLogger(__name__)
     logger.info("Calculating note count and word count by year")
     result = defaultdict(lambda: {"note_count": 0, "word_count": 0})
 
@@ -67,14 +70,19 @@ async def get_note_count_by_year(notes: list):
         result[year]["note_count"] += 1
         result[year]["word_count"] += note["word_count"]
 
-    # Convert the defaultdict to a regular dict before returning
-    result = {year: dict(data) for year, data in result.items()}
+    # Sort the dictionary by keys (year) from oldest to newest
+    result = dict(
+        sorted(
+            result.items(), key=lambda item: datetime.datetime.strptime(item[0], "%Y")
+        )
+    )
 
     logger.info("Note count and word count by year calculated successfully")
     return json.dumps(result)
 
 
 async def get_note_count_by_month(notes: list):
+    logger = logging.getLogger(__name__)
     logger.info("Calculating note count and word count by month")
     result = defaultdict(lambda: {"note_count": 0, "word_count": 0})
 
@@ -83,19 +91,36 @@ async def get_note_count_by_month(notes: list):
         result[month_year]["note_count"] += 1
         result[month_year]["word_count"] += note["word_count"]
 
+    # Sort the dictionary by keys (year-month) from oldest to newest
+    result = dict(
+        sorted(
+            result.items(),
+            key=lambda item: datetime.datetime.strptime(item[0], "%Y-%m"),
+        )
+    )
+
     logger.info("Note count and word count by month calculated successfully")
     return json.dumps({month_year: dict(data) for month_year, data in result.items()})
 
 
 async def get_note_count_by_week(notes: list):
+    logger = logging.getLogger(__name__)
     logger.info("Calculating note count and word count by week")
     result = defaultdict(lambda: {"note_count": 0, "word_count": 0})
 
     for note in notes:
         week_year = note["date_created"].isocalendar()[0:2]  # Get year and week number
-        week_year_str = f"{week_year[0]}-{week_year[1]}"  # Convert the tuple to a string in the format "YYYY-Www"
+        week_year_str = f"{week_year[0]}-{week_year[1]:02d}"  # Convert the tuple to a string in the format "YYYY-Www"
         result[week_year_str]["note_count"] += 1
         result[week_year_str]["word_count"] += note["word_count"]
+
+    # Sort the dictionary by keys (year-week) from oldest to newest
+    result = dict(
+        sorted(
+            result.items(),
+            key=lambda item: datetime.datetime.strptime(item[0], "%Y-%W"),
+        )
+    )
 
     logger.info("Note count and word count by week calculated successfully")
     return json.dumps(
@@ -115,12 +140,23 @@ async def mood_by_month(notes: list):
     logger.info("Calculating mood by month")
     result = defaultdict(lambda: defaultdict(int))
 
+    # Sort notes by date_created from oldest to newest
+    notes = sorted(notes, key=lambda note: note["date_created"])
+
     for note in notes:
         month_year = note["date_created"].strftime("%Y-%m")
         result[month_year][note["mood"]] += 1
 
+    # Sort the result dictionary by keys (year-month) from oldest to newest
+    result = dict(
+        sorted(
+            result.items(),
+            key=lambda item: datetime.datetime.strptime(item[0], "%Y-%m"),
+        )
+    )
+
     logger.info("Mood by month calculated successfully")
-    return {k: dict(v) for k, v in result.items()}
+    return result
 
 
 async def mood_trend_by_mean_month(notes: list):
@@ -132,14 +168,19 @@ async def mood_trend_by_mean_month(notes: list):
 
     for note in notes:
         month_year = note["date_created"].strftime("%Y-%m")
-        result[month_year] += mood_values[note["mood"]]
+        result[month_year] += mood_values[note["mood"].lower()]
         count[month_year] += 1
 
     for month_year in result:
         result[month_year] = round(result[month_year] / count[month_year], 3)
 
-    # Sort the dictionary by keys (year-month)
-    result = dict(sorted(result.items()))
+    # Sort the dictionary by keys (year-month) from oldest to newest
+    result = dict(
+        sorted(
+            result.items(),
+            key=lambda item: datetime.datetime.strptime(item[0], "%Y-%m"),
+        )
+    )
 
     logger.info("Mood trend by month calculated successfully")
     return result
@@ -153,19 +194,25 @@ async def mood_trend_by_median_month(notes: list):
 
     for note in notes:
         month_year = note["date_created"].strftime("%Y-%m")
-        result[month_year].append(mood_values[note["mood"]])
+        result[month_year].append(mood_values[note["mood"].lower()])
 
     for month_year in result:
         result[month_year] = round(statistics.median(result[month_year]), 3)
 
-    # Sort the dictionary by keys (year-month)
-    result = dict(sorted(result.items()))
+    # Sort the dictionary by keys (year-month) from oldest to newest
+    result = dict(
+        sorted(
+            result.items(),
+            key=lambda item: datetime.datetime.strptime(item[0], "%Y-%m"),
+        )
+    )
 
     logger.info("Mood trend by month calculated successfully")
     return result
 
 
 async def mood_trend_by_rolling_mean_month(notes: list):
+    logger = logging.getLogger(__name__)
     logger.info("Calculating mood trend by month")
     result = defaultdict(int)
     count = defaultdict(int)
@@ -175,14 +222,19 @@ async def mood_trend_by_rolling_mean_month(notes: list):
 
     for note in notes:
         month_year = note["date_created"].strftime("%Y-%m")
-        result[month_year] += mood_values[note["mood"]]
+        result[month_year] += mood_values[note["mood"].lower()]
         count[month_year] += 1
 
     for month_year in result:
         result[month_year] = round(result[month_year] / count[month_year], 3)
 
-    # Sort the dictionary by keys (year-month)
-    result = dict(sorted(result.items()))
+    # Sort the dictionary by keys (year-month) from oldest to newest
+    result = dict(
+        sorted(
+            result.items(),
+            key=lambda item: datetime.datetime.strptime(item[0], "%Y-%m"),
+        )
+    )
 
     # Calculate 3-month rolling average
     months = deque(maxlen=3)
@@ -195,7 +247,6 @@ async def mood_trend_by_rolling_mean_month(notes: list):
     return rolling_avg
 
 
-# total unique count
 async def get_total_unique_tag_count(notes: list):
     # example of notes.tags
     # 'tags': ['handed', 'sleepy', 'nutmeg'],
@@ -204,9 +255,9 @@ async def get_total_unique_tag_count(notes: list):
     return len(tag_count)
 
 
-# Count of each tag
 async def get_tag_count(notes: list):
-    tags = [tag for note in notes for tag in note["tags"]]
+
+    tags = [tag.capitalize() for note in notes for tag in note["tags"]]
     tag_count = Counter(tags)
 
     # Sort the tag_count dictionary by its values in descending order
