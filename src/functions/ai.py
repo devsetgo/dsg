@@ -45,7 +45,7 @@ async def get_tags(content: str) -> dict:
         messages=[
             {
                 "role": "system",
-                "content": f"You are a helpful assistant that will provide no more than {keyword_limit} 'one-word' keyword to be used as tags.",
+                "content": f"You are a helpful assistant that will provide no more than {keyword_limit} 'one-word' keyword to be used as tags. Names of people cannot be included.",
             },
             {"role": "user", "content": content},
         ],
@@ -100,6 +100,31 @@ async def get_mood_analysis(content: str) -> dict:
     )
     # Extract the content from the response
     response_content = chat_completion.choices[0].message.content
+    return response_content
+
+
+async def get_mood(content: str) -> dict:
+    mood_choices = ["positive", "negative", "neutral"]
+    prompt = f"Please analyze the following text and tell me what mood choice {str(mood_choices)} it expresses: {content}"
+    chat_completion = await client.chat.completions.create(
+        model="gpt-3.5-turbo-1106",
+        messages=[
+            {
+                "role": "system",
+                "content": f"You are a helpful assistant that will pick the mood from these options {str(mood_choices)} and return that word.",
+            },
+            {"role": "user", "content": content},
+        ],
+        temperature=0.2,  # Adjust the temperature here
+    )
+    # Extract the content from the response and return it as {'mood': response}
+    response_content = chat_completion.choices[0].message.content
+    # extract the first word in the response that matches one the mood_choices
+    for mood in mood_choices:
+        if mood in response_content:
+            response_content = mood
+            break
+
     return response_content
 
 

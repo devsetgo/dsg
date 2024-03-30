@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block page_title %}| NOtes{% endblock %}
+{% block page_title %}| Notes{% endblock %}
 {% block page_stylesheet %}
 <!-- page stylesheets-->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/trumbowyg.min.css"
@@ -17,7 +17,7 @@
             <!-- left column -->
             <div class="col-12">
                 <!-- general form elements -->
-                <div class="card card-primary">
+                <div class="card card-primary" style="margin: 20px;">
                     <div class="card-header">
                         <h3 class="card-title">Add a New Note</h3>
                     </div>
@@ -28,13 +28,46 @@
                             <form action="/notes/bulk" method="post" enctype="multipart/form-data"
                                 hx-indicator=".htmx-indicator">
                                 <div class="form-group">
-                                    <label for="csvFile">Upload CSV file:</label>
-                                    <input type="file" class="form-control-file" id="csvFile" name="csvFile" accept=".csv">
+                                    <label for="csv_file">Upload CSV file:</label>
+                                    <input type="file" class="form-control-file" id="csv_file" name="csv_file"
+                                        accept=".csv">
                                 </div>
                                 <!-- CSRF token -->
                                 <input type='hidden' name='csrf-token' value="{{ csrf_token }}" />
                                 <button type="submit" class="btn btn-primary">Submit</button>
                             </form>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="divider py-1 bg-success"></div>
+                            <h3>Sample CSV Format</h3>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">my_note</th>
+                                        <th scope="col">date_create</th>
+                                        <th scope="col">Mood</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Sample Note 1</td>
+                                        <td>8/18/2013 19:35</td>
+                                        <td>Positive</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sample Note 2</td>
+                                        <td>8/19/2013 19:35</td>
+                                        <td>Neutral</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sample Note 3</td>
+                                        <td>8/20/2013 19:35</td>
+                                        <td>Negative</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                     <!-- /.col -->

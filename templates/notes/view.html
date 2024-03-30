@@ -20,10 +20,12 @@
             <div class="col-12">
                 <!-- general form elements -->
                 <div class="card card-primary" style="margin: 20px;">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h3 class="card-title mb-0">View Note</h3>
-                        <a href="/notes/edit/{{ note.pkid }}" class="btn btn-primary ml-auto"><i
-                                class="fa-regular fa-file"></i></a>
+                        <div class="d-flex align-items-center ml-auto">
+                            <a href="/notes/edit/{{ note.pkid }}" class="btn btn-warning ml-2"><i class="fa-solid fa-pen-to-square" style="color:black;"></i></a>
+                            <a href="/notes/delete/{{ note.pkid }}" class="btn btn-danger ml-2"><i class="fa-solid fa-trash" style="color:lightgray;"></i></a>
+                        </div>
                     </div>
                     <!-- /.card-header -->
                     <!-- form start -->
@@ -53,7 +55,7 @@
                                             </div>
                                             <div class="form-group">
                                                 <label for="tags">Tags</label>
-                                                <p>{% for tag in note.tags.tags %}{{ tag }}{% if not loop.last %}, {%
+                                                <p>{% for tag in note.tags %}{{ tag|capitalize }}{% if not loop.last %}, {%
                                                     endif %}{%
                                                     endfor %}</p>
                                             </div>
@@ -97,7 +99,6 @@
                                 </div>
                             </div>
                             <!-- End Note Section -->
-
                         </div>
                         <!-- /.col -->
                     </div>
