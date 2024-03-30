@@ -31,7 +31,15 @@ async def read_notes_from_file(csv_file: list, user_id: str):
             mood = await ai.get_mood(content=c["my_note"])
         note = c["my_note"]
 
-        analysis = await ai.get_analysis(content=note)
+        try:
+            analysis = await ai.get_analysis(content=note)
+        except Exception as e:
+            logger.error(e)
+            analysis = {
+                "tags": {"tags": ["error"]},
+                "summary": "error",
+                "mood_analysis": "error",
+            }
         # Create the note
         note = Notes(
             mood=mood,
@@ -120,3 +128,4 @@ def validate_csv_headers(csv_reader: csv.DictReader):
     #     notes.append(data)
 
     # return notes
+
