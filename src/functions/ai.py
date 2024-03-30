@@ -25,7 +25,8 @@ mood_analysis: list = [
     "furious",
 ]
 
-timeout=10,
+timeout = (10,)
+
 
 async def get_analysis(content: str) -> dict:
 
