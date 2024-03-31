@@ -20,15 +20,16 @@ async def read_notes_from_file(csv_file: list, user_id: str):
         return {"error": csv_file}
 
     notes: list = []
-    for c in tqdm(csv_file, desc="Importing notes", unit="note"):
+    for c in csv_file:
 
         date_created = c["date_created"]
         # convert date_created to datetime
         date_created = parse_date(date_created)
-
+        print(date_created)
         mood = c["mood"]
         if mood not in ["positive", "negative", "neutral"]:
             mood = await ai.get_mood(content=c["my_note"])
+            mood = mood["mood"]
         note = c["my_note"]
 
         try:
@@ -40,6 +41,7 @@ async def read_notes_from_file(csv_file: list, user_id: str):
                 "summary": "error",
                 "mood_analysis": "error",
             }
+        
         # Create the note
         note = Notes(
             mood=mood,
@@ -95,36 +97,4 @@ def validate_csv_headers(csv_reader: csv.DictReader):
 
     return {"status": "success"}
 
-    # # decode csv_file_content
-    # csv_file_content = csv_file.decode("utf-8").split("\n")
-    # # get the headers
-    # headers = csv_file_content[0].split(",")
-    # # confirm the headers are correct "my_note", "date_created", "mood"
-    # if headers != ["my_note", "date_created", "mood"]:
-    #     return False
-    # # convert notes to json
-    # notes = []
-    # for note in csv_file_content:
-    #     note = note.split(",")
-    #     print(note[0])
-    #     print(note[1])
-    #     print(note[2])
 
-    # if len(note) == 3:
-    #     # Get the tags and summary from OpenAI
-    #     analysis = await ai.get_analysis(content=note[0])
-
-    #     # Create the note
-    #     note = Notes(
-    #         mood=note[2],
-    #         note=note[0],
-    #         tags=analysis["tags"],
-    #         summary=analysis["summary"],
-    #         mood_analysis=analysis["mood_analysis"],
-    #         user_id=user_id,
-    #     )
-    #     data = await db_ops.create_one(note)
-
-    #     notes.append(data)
-
-    # return notes

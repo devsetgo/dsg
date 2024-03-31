@@ -100,7 +100,7 @@ class Notes(base_schema.SchemaBase, async_db.Base):
     tags = Column(JSON)  # tags from OpenAI
     summary = Column(String(100), unique=False, index=True)  # summary from OpenAI
     # Define the parent relationship to the User class
-    user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
+    user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the User table
 
     user = relationship(
         "User", back_populates="Notes"

@@ -2,6 +2,7 @@
 
 from openai import AsyncOpenAI
 
+
 from src.settings import settings
 
 client = AsyncOpenAI(
@@ -25,7 +26,7 @@ mood_analysis: list = [
     "furious",
 ]
 
-timeout = (10,)
+timeout = 10
 
 
 async def get_analysis(content: str) -> dict:
@@ -34,6 +35,21 @@ async def get_analysis(content: str) -> dict:
     summary = await get_summary(content=content)
     mood_analysis = await get_mood_analysis(content=content)
     return {"tags": tags, "summary": summary, "mood_analysis": mood_analysis}
+
+
+# async def check_openai_limit():
+#     try:
+#         # Make a simple request to the OpenAI API
+#         await client.list_engines()
+#     except RateLimitError:
+#         # If a RateLimitError is raised, the rate limit has been reached
+#         return True
+#     except OpenAIError:
+#         # If an OpenAIError is raised, OpenAI is unavailable
+#         return True
+#     # If no exception is raised, the rate limit has not been reached and OpenAI is available
+#     return False
+
 
 
 async def get_tags(content: str) -> dict:
@@ -52,7 +68,7 @@ async def get_tags(content: str) -> dict:
             {"role": "user", "content": content},
         ],
         temperature=0.2,  # Adjust the temperature here
-        timeout=timeout,
+        
     )
     # print(chat_completion)
     # Extract the content from the response
@@ -80,7 +96,7 @@ async def get_summary(content: str) -> dict:
             {"role": "user", "content": content},
         ],
         temperature=0.2,  # Adjust the temperature here
-        timeout=timeout,
+        
     )
     # Extract the content from the response
     response_content = chat_completion.choices[0].message.content
@@ -101,7 +117,7 @@ async def get_mood_analysis(content: str) -> dict:
             {"role": "user", "content": content},
         ],
         temperature=0.2,  # Adjust the temperature here
-        timeout=timeout,
+        
     )
     # Extract the content from the response
     response_content = chat_completion.choices[0].message.content
@@ -121,7 +137,7 @@ async def get_mood(content: str) -> dict:
             {"role": "user", "content": content},
         ],
         temperature=0.2,  # Adjust the temperature here
-        timeout=timeout,
+        
     )
     # Extract the content from the response and return it as {'mood': response}
     response_content = chat_completion.choices[0].message.content

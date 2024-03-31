@@ -211,6 +211,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
     for _ in tqdm(range(qty_notes)):
 
         mood = random.choice(moods)
+        mood_analysis = random.choice(moods)
         length = random.randint(1, 20)
         note = silly.paragraph(length=length)
         summary = note[:50]
@@ -231,6 +232,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
             note=note,
             summary=summary,
             tags=tags,
+            mood_analysis=mood_analysis,
             user_id=user_id,
             date_created=date_created,
             date_updated=date_updated,
