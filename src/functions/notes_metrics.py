@@ -11,7 +11,7 @@ from sqlalchemy import Select
 
 from ..db_tables import Notes
 from ..resources import db_ops
-
+from ..settings import settings
 
 async def get_metrics(user_identifier: str, user_timezone: str):
     logger.info("Getting metrics for user: {}", user_identifier)
@@ -34,6 +34,7 @@ async def get_metrics(user_identifier: str, user_timezone: str):
         "mood_trend_by_rolling_mean_month": await mood_trend_by_rolling_mean_month(
             notes
         ),
+        "mood_analysis_trend_by_mean_month": await mood_analysis_trend_by_mean_month(notes=notes),
         "tags_common": await get_tag_count(notes=notes),
         "notes": notes,
     }
@@ -185,6 +186,35 @@ async def mood_trend_by_mean_month(notes: list):
     logger.info("Mood trend by month calculated successfully")
     return result
 
+
+async def mood_analysis_trend_by_mean_month(notes: list):
+    logger.info("Calculating mood analysis trend by month")
+    result = defaultdict(int)
+    count = defaultdict(int)
+
+    # Step 1: Create a dictionary from the mood_analysis_weights list
+    mood_weights_dict = dict(settings.mood_analysis_weights)
+
+    for note in notes:
+        month_year = note["date_created"].strftime("%Y-%m")
+        mood_word = note["mood_analysis"].lower()  # Use the correct field here
+        if mood_word in mood_weights_dict:
+            result[month_year] += mood_weights_dict[mood_word]
+            count[month_year] += 1
+
+    for month_year in result:
+        result[month_year] = round(result[month_year] / count[month_year], 3)
+
+    # Sort the dictionary by keys (year-month) from oldest to newest
+    result = dict(
+        sorted(
+            result.items(),
+            key=lambda item: datetime.datetime.strptime(item[0], "%Y-%m"),
+        )
+    )
+
+    logger.info("Mood analysis trend by month calculated successfully")
+    return result
 
 async def mood_trend_by_median_month(notes: list):
     logger.info("Calculating mood trend by month")

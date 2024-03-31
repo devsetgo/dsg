@@ -4,7 +4,6 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from loguru import logger
-from tqdm import tqdm
 
 from ..db_tables import Notes
 from ..functions import ai
@@ -41,7 +40,7 @@ async def read_notes_from_file(csv_file: list, user_id: str):
                 "summary": "error",
                 "mood_analysis": "error",
             }
-        
+
         # Create the note
         note = Notes(
             mood=mood,
@@ -50,6 +49,7 @@ async def read_notes_from_file(csv_file: list, user_id: str):
             summary=analysis["summary"],
             mood_analysis=analysis["mood_analysis"],
             date_created=date_created,
+            date_updated=date_created,
             user_id=user_id,
         )
         data = await db_ops.create_one(note)
@@ -96,5 +96,3 @@ def validate_csv_headers(csv_reader: csv.DictReader):
         return data
 
     return {"status": "success"}
-
-

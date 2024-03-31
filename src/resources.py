@@ -207,18 +207,20 @@ async def add_admin():
 async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qty):
     moods = ["positive", "neutral", "negative"]
     demo_notes = []
-
+    mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
+    
     for _ in tqdm(range(qty_notes)):
 
         mood = random.choice(moods)
-        mood_analysis = random.choice(moods)
-        length = random.randint(1, 20)
+        mood_analysis_choice = random.choice(mood_analysis)
+        
+        length = random.randint(5, 20)
         note = silly.paragraph(length=length)
         summary = note[:50]
         tags = list(set([silly.adjective() for x in range(1, 4)]))
 
         # Generate a random date within the last X years
-        days_in_three_years = 365 * 5
+        days_in_three_years = 365 * 2
         random_number_of_days = random.randrange(days_in_three_years)
         date_created = datetime.now() - timedelta(days=random_number_of_days)
 
@@ -232,7 +234,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
             note=note,
             summary=summary,
             tags=tags,
-            mood_analysis=mood_analysis,
+            mood_analysis=mood_analysis_choice,
             user_id=user_id,
             date_created=date_created,
             date_updated=date_updated,
