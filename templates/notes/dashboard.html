@@ -97,13 +97,15 @@
   const metricsMood = {{ metrics.mood_trend_by_month | safe }};
   const metricsMoodMedian = {{ metrics.mood_trend_by_median_month | safe }};
   const metricsMoodRollingMean = {{ metrics.mood_trend_by_rolling_mean_month | safe }};
+  const metricsMoodAnalysis = {{ metrics.mood_analysis_trend_by_mean_month | safe }};
 
   // Create a function to generate a chart
-  function createMoodChart(elementId, metrics, metricsMedian, metricsRollingMean) {
+  function createMoodChart(elementId, metrics, metricsMedian, metricsRollingMean, metricsAnalysis) {
     const labels = Object.keys(metrics);
     const moodAverages = labels.map(label => metrics[label]);
     const moodMedians = labels.map(label => metricsMedian[label]);
     const moodRollingMeans = labels.map(label => metricsRollingMean[label] || null);
+    const moodAnalysisMeans = labels.map(label => metricsAnalysis[label] || null);
 
     const datasets = [
       {
@@ -136,6 +138,14 @@
             return 'rgb(0, 255, 0)'; // green for values greater than 0.5
           }
         }),
+      },
+      {
+        yAxisID: 'y1',
+        type: 'line',
+        label: 'Mood Analysis Mean',
+        data: moodAnalysisMeans,
+        fill: false,
+        borderColor: 'rgb(128, 0, 128)' // purple line for mood analysis mean values
       }
     ];
 
@@ -189,7 +199,7 @@
   }
 
   // Create the chart
-  createMoodChart('moodTrendChart', metricsMood, metricsMoodMedian, metricsMoodRollingMean);
+  createMoodChart('moodTrendChart', metricsMood, metricsMoodMedian, metricsMoodRollingMean, metricsMoodAnalysis);
 </script>
 <!-- Chart of Tags -->
 <script>

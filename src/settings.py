@@ -89,6 +89,26 @@ class Settings(BaseSettings):
     # OpenAI Settings
     open_ai_disabled: bool = False
     openai_key: SecretStr = None  # OpenAI API Key
+    mood_analysis_weights: list = [
+        ("ecstatic", 1),
+        ("joyful", 0.875),
+        ("happy", 0.75),
+        ("pleased", 0.625),
+        ("content", 0.5),
+        ("neutral", 0.375),
+        ("indifferent", 0.25),
+        ("concerned", 0.125),
+        ("disappointed", 0),
+        ("sad", -0.125),
+        ("upset", -0.25),
+        ("angry", -0.375),
+        ("furious", -0.5),
+        ("rage", -0.625),
+        ("despair", -0.75),
+        ("hopeless", -0.875),
+        ("dejected", -1),
+    ]
+    
     # GitHub
     github_id: str = "octocat"
     github_repo_limit: int = 50

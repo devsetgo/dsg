@@ -3,12 +3,12 @@
 <!-- Begin Cards -->
 <div class="row">
     {% for note in notes %}
-    <div class="col-md-auto mb-4 p-2">
+    <div class="col-md-4 mb-4 p-2">
       <div class="card">
         <div class="card-body">
           <h5 class="card-title"><a href="/notes/{{note.pkid}}" class="card-link"><strong>{{
                 note.mood|capitalize }}</strong></a></h5>
-          <p class="card-text">{{ note.summary }}</p>
+          <p class="card-text">{{ note.summary|truncate(30, end='...') }}</p>
         </div>
         <ul class="list-group list-group-flush">
           <li class="list-group-item">{% for tag in note.tags %}{{ tag|capitalize }}{% if not loop.last %}, {%
@@ -16,7 +16,9 @@
             endfor %}</li>
         </ul>
         <div class="card-body">
-          <p class="card-text"><small>{{ note.date_created }}</small></p>
+          <p class="card-text"><small>{{ note.date_created }}</small>
+            <br>
+          <small><strong>Words:</strong> {{ note.word_count }} | <strong>Characters:</strong> {{ note.character_count }}</small></p>
         </div>
       </div>
     </div>
