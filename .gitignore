@@ -10,11 +10,17 @@ log/*
 log.json
 log.log
 *.db
+# hide specific files
+export.csv
+export_cleaned.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 .vscode/
+
+
 
 # C extensions
 *.so
