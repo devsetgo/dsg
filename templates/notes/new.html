@@ -40,10 +40,6 @@
                     <input class="form-check-input" type="radio" name="mood" id="negative" value="negative">
                     <label class="form-check-label" for="negative">Negative</label>
                   </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="demoNoteCheck">
-                    <label class="form-check-label" for="demoNoteCheck">Demo Text</label>
-                  </div>
                 </div>
                 <div class="input-group mb-5">
                   <textarea id="note" name="note" placeholder="Enter a new note" rows="20"
@@ -53,16 +49,6 @@
                   <small id="charCount" class="form-text text-muted">Character count: 0</small>
                   <script>
                     var textarea = document.getElementById('note');
-                    var demoNoteCheck = document.getElementById('demoNoteCheck');
-
-                    demoNoteCheck.addEventListener('change', function (e) {
-                      if (e.target.checked) {
-                        textarea.value = "{{demo_note}}";
-                      } else {
-                        textarea.value = "";
-                      }
-                    });
-
                     var charCount = document.getElementById('charCount');
 
                     textarea.addEventListener('input', function (e) {
