@@ -13,6 +13,7 @@ from ..db_tables import Notes
 from ..resources import db_ops
 from ..settings import settings
 
+
 async def get_metrics(user_identifier: str, user_timezone: str):
     logger.info("Getting metrics for user: {}", user_identifier)
     query = Select(Notes).where((Notes.user_id == user_identifier))
@@ -34,7 +35,9 @@ async def get_metrics(user_identifier: str, user_timezone: str):
         "mood_trend_by_rolling_mean_month": await mood_trend_by_rolling_mean_month(
             notes
         ),
-        "mood_analysis_trend_by_mean_month": await mood_analysis_trend_by_mean_month(notes=notes),
+        "mood_analysis_trend_by_mean_month": await mood_analysis_trend_by_mean_month(
+            notes=notes
+        ),
         "tags_common": await get_tag_count(notes=notes),
         "notes": notes,
     }
@@ -215,6 +218,7 @@ async def mood_analysis_trend_by_mean_month(notes: list):
 
     logger.info("Mood analysis trend by month calculated successfully")
     return result
+
 
 async def mood_trend_by_median_month(notes: list):
     logger.info("Calculating mood trend by month")
