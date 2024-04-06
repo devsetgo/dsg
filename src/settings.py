@@ -108,7 +108,7 @@ class Settings(BaseSettings):
         ("hopeless", -0.875),
         ("dejected", -1),
     ]
-    
+
     # GitHub
     github_id: str = "octocat"
     github_repo_limit: int = 50
