@@ -4,9 +4,10 @@
 <!-- page stylesheets-->
 <style>
   #requirements {
-      width: 100%; /* or any other value that suits your needs */
+    width: 100%;
+    /* or any other value that suits your needs */
   }
-  </style>
+</style>
 {% endblock %}
 {% block page_breadcrumb %} Pypi Check{% endblock %}
 {% block page_head_title %}Pypi Check{% endblock %}
@@ -26,32 +27,36 @@
           <!-- form start -->
           <div class="row">
             <div class="col-12">
-              <form action="/pypi/check?request_group_id={{request_group_id}}" method="post" enctype="multipart/form-data" hx-indicator=".htmx-indicator">
+              <form action="/pypi/check?request_group_id={{request_group_id}}" method="post"
+  enctype="multipart/form-data" hx-post="/pypi/check?request_group_id={{request_group_id}}" hx-indicator=".htmx-indicator">
                 <div class="input-group mb-5">
-                  <textarea id="requirements" name="requirements" placeholder="Paste Requirements.txt here" rows="20" style="width: 100%; height: 100%;">{{demo_list}}</textarea>
+                  <textarea id="requirements" name="requirements" placeholder="Paste Requirements.txt here" rows="20"
+                    style="width: 100%; height: 100%;"></textarea>
 
-                  <small id="requirementsHelp" class="form-text text-muted">Note: This textarea is limited to 200 rows.</small>
+                  <small id="requirementsHelp" class="form-text text-muted">Note: This textarea is limited to 200 rows.
+                    Processing can take 2 minutes.</small>
                   <small id="rowCount" class="form-text text-muted">Row count: 0</small>
 
                   <script>
-                  var textarea = document.getElementById('requirements');
-                  var rowCount = document.getElementById('rowCount');
+                    var textarea = document.getElementById('requirements');
+                    var rowCount = document.getElementById('rowCount');
 
-                  textarea.addEventListener('input', function(e) {
-                    var lines = e.target.value.split('\n');
-                    if(lines.length > 200) {
-                      lines = lines.slice(0, 200);
-                      e.target.value = lines.join('\n');
-                    }
-                    rowCount.textContent = "Row count: " + lines.length;
-                  });
+                    textarea.addEventListener('input', function (e) {
+                      var lines = e.target.value.split('\n');
+                      if (lines.length > 200) {
+                        lines = lines.slice(0, 200);
+                        e.target.value = lines.join('\n');
+                      }
+                      rowCount.textContent = "Row count: " + lines.length;
+                    });
                   </script>
                 </div>
 
                 <div class="input-group mb-5">
-                  <button type="submit" class="btn btn-primary btn-block" title="Create Bot in deactivated mode">Check For Updates</button>
+                  <button type="submit" class="btn btn-primary btn-block" title="Create Bot in deactivated mode">Check
+                    For Updates</button>
                   <!-- CSRF token -->
-                  <input type='hidden' name='csrf-token' value="{{ csrf_token }}"/>
+                  <input type='hidden' name='csrf-token' value="{{ csrf_token }}" />
                 </div>
               </form>
             </div>
