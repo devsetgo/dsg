@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import asyncio
 import csv
 import io
 from datetime import datetime
@@ -21,6 +20,7 @@ from sqlalchemy import Select, and_, or_
 from ..db_tables import Notes
 from ..functions import ai, date_functions, note_import, notes_metrics
 from ..functions.demo_functions import get_note_demo_paragraph
+from ..functions.user_check import get_user_info
 from ..resources import db_ops, templates
 
 router = APIRouter()
@@ -32,6 +32,7 @@ async def read_notes(
     offset: int = 0,
     limit: int = 100,
     csrf_protect: CsrfProtect = Depends(),
+    user_info: tuple = Depends(get_user_info),
 ):
     user_identifier = request.session.get("user_identifier", None)
     user_timezone = request.session.get("timezone", None)
@@ -51,12 +52,12 @@ async def read_notes(
 
 
 @router.get("/bulk")
-async def bulk_note_form(request: Request, csrf_protect: CsrfProtect = Depends()):
-    user_identifier = request.session.get("user_identifier", None)
-    user_timezone = request.session.get("timezone", None)
-    if user_identifier is None:
-        logger.debug("User identifier is None, redirecting to login")
-        return RedirectResponse(url="/users/login", status_code=302)
+async def bulk_note_form(
+    request: Request,
+    csrf_protect: CsrfProtect = Depends(),
+    user_info: tuple = Depends(get_user_info),
+):
+    user_identifier, user_timezone = user_info
     return templates.TemplateResponse(
         request=request, name="notes/bulk.html", context={"demo_note": None}
     )
@@ -68,13 +69,9 @@ async def bulk_note(
     request: Request,
     csv_file: UploadFile = File(...),
     csrf_protect: CsrfProtect = Depends(),
+    user_info: tuple = Depends(get_user_info),
 ):
-    user_identifier = request.session.get("user_identifier", None)
-    user_timezone = request.session.get("timezone", None)
-    if user_identifier is None:
-        logger.debug("User identifier is None, redirecting to login")
-        return RedirectResponse(url="/users/login", status_code=302)
-
+    user_identifier, user_timezone = user_info
     # read the file content
     file_content = await csv_file.read()
     file_content = file_content.decode("utf-8")
@@ -100,14 +97,9 @@ async def read_notes_pagination(
     page: int = Query(1),
     limit: int = Query(20),
     csrf_protect: CsrfProtect = Depends(),
+    user_info: tuple = Depends(get_user_info),
 ):
-    logger.debug("Starting pagination")
-    await asyncio.sleep(0.2)
-    user_identifier = request.session.get("user_identifier", None)
-    user_timezone = request.session.get("timezone", None)
-    if user_identifier is None:
-        logger.info("Redirecting to login because user_identifier is None")
-        return RedirectResponse(url="/users/login", status_code=302)
+    user_identifier, user_timezone = user_info
 
     logger.debug(
         f"Searching for term: {search_term}, start_date: {start_date}, end_date: {end_date}, mood: {mood}"
@@ -185,12 +177,12 @@ async def read_notes_pagination(
 
 
 @router.get("/new")
-async def new_note_form(request: Request, csrf_protect: CsrfProtect = Depends()):
-    user_identifier = request.session.get("user_identifier", None)
-    user_timezone = request.session.get("timezone", None)
-    if user_identifier is None:
-        logger.debug("User identifier is None, redirecting to login")
-        return RedirectResponse(url="/users/login", status_code=302)
+async def new_note_form(
+    request: Request,
+    csrf_protect: CsrfProtect = Depends(),
+    user_info: tuple = Depends(get_user_info),
+):
+    user_identifier, user_timezone = user_info
     demo_note = get_note_demo_paragraph()
     logger.info("Generated demo note")
     return templates.TemplateResponse(
@@ -199,12 +191,12 @@ async def new_note_form(request: Request, csrf_protect: CsrfProtect = Depends())
 
 
 @router.post("/new")
-async def create_note(request: Request, csrf_protect: CsrfProtect = Depends()):
-    user_identifier = request.session.get("user_identifier", None)
-    user_timezone = request.session.get("timezone", None)
-    if user_identifier is None:
-        logger.debug("User identifier is None, redirecting to login")
-        return RedirectResponse(url="/users/login", status_code=302)
+async def create_note(
+    request: Request,
+    csrf_protect: CsrfProtect = Depends(),
+    user_info: tuple = Depends(get_user_info),
+):
+    user_identifier, user_timezone = user_info
     form = await request.form()
     mood = form["mood"]
     note = form["note"]
@@ -231,16 +223,11 @@ async def create_note(request: Request, csrf_protect: CsrfProtect = Depends()):
     return RedirectResponse(url=f"/notes/{data.pkid}", status_code=302)
 
 
-from loguru import logger
-
-
 @router.get("/{note_id}")
-async def read_note(request: Request, note_id: str):
-    user_identifier = request.session.get("user_identifier", None)
-    user_timezone = request.session.get("timezone", None)
-    if user_identifier is None:
-        logger.debug("User identifier is None, redirecting to login")
-        return RedirectResponse(url="/users/login", status_code=302)
+async def read_note(
+    request: Request, note_id: str, user_info: tuple = Depends(get_user_info)
+):
+    user_identifier, user_timezone = user_info
 
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
@@ -272,21 +259,15 @@ async def read_note(request: Request, note_id: str):
     )
 
 
-from loguru import logger
-
-from ..functions import ai
-
-
 # htmx get edit form
 @router.get("/edit/{note_id}")
 async def edit_note_form(
-    request: Request, note_id: str, csrf_protect: CsrfProtect = Depends()
+    request: Request,
+    note_id: str,
+    csrf_protect: CsrfProtect = Depends(),
+    user_info: tuple = Depends(get_user_info),
 ):
-    user_identifier = request.session.get("user_identifier", None)
-    user_timezone = request.session.get("timezone", None)
-    if user_identifier is None:
-        logger.debug("User identifier is None, redirecting to login")
-        return RedirectResponse(url="/users/login", status_code=302)
+    user_identifier, user_timezone = user_info
 
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
@@ -321,19 +302,15 @@ async def edit_note_form(
     )
 
 
-from loguru import logger
-
-
 # put /{note_id} requires user_identifier and note_id
 @router.post("/edit/{note_id}")
 async def update_note(
-    request: Request, note_id: str, csrf_protect: CsrfProtect = Depends()
+    request: Request,
+    note_id: str,
+    csrf_protect: CsrfProtect = Depends(),
+    user_info: tuple = Depends(get_user_info),
 ):
-    user_identifier = request.session.get("user_identifier", None)
-    user_timezone = request.session.get("timezone", None)
-    if user_identifier is None:
-        logger.debug("User identifier is None, redirecting to login")
-        return RedirectResponse(url="/users/login", status_code=302)
+    user_identifier, user_timezone = user_info
     form = await request.form()
 
     mood = form.get("mood")
@@ -379,14 +356,12 @@ async def update_note(
 # delete/{note_id}
 @router.get("/delete/{note_id}")
 async def delete_note_form(
-    request: Request, note_id: str, csrf_protect: CsrfProtect = Depends()
+    request: Request,
+    note_id: str,
+    csrf_protect: CsrfProtect = Depends(),
+    user_info: tuple = Depends(get_user_info),
 ):
-    user_identifier = request.session.get("user_identifier", None)
-    user_timezone = request.session.get("timezone", None)
-    if user_identifier is None:
-        logger.debug("User identifier is None, redirecting to login")
-        return RedirectResponse(url="/users/login", status_code=302)
-
+    user_identifier, user_timezone = user_info
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
@@ -399,14 +374,12 @@ async def delete_note_form(
 
 @router.post("/delete/{note_id}")
 async def delete_note(
-    request: Request, note_id: str, csrf_protect: CsrfProtect = Depends()
+    request: Request,
+    note_id: str,
+    csrf_protect: CsrfProtect = Depends(),
+    user_info: tuple = Depends(get_user_info),
 ):
-    user_identifier = request.session.get("user_identifier", None)
-    user_timezone = request.session.get("timezone", None)
-    if user_identifier is None:
-        logger.debug("User identifier is None, redirecting to login")
-        return RedirectResponse(url="/users/login", status_code=302)
-
+    user_identifier, user_timezone = user_info
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )

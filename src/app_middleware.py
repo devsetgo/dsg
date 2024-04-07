@@ -6,7 +6,9 @@ import time
 from fastapi.middleware.gzip import GZipMiddleware
 from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.middleware.sessions import SessionMiddleware
+
+# from starlette.middleware.sessions import SessionMiddleware
+from starlette_authlib.middleware import AuthlibMiddleware as SessionMiddleware
 
 from .settings import settings
 
@@ -19,6 +21,7 @@ def add_middleware(app):
     # )
     # app.add_middleware(HTTPSRedirectMiddleware)
     app.add_middleware(GZipMiddleware, minimum_size=1000)
+
     app.add_middleware(
         SessionMiddleware,
         secret_key=settings.session_secret_key,
@@ -26,7 +29,6 @@ def add_middleware(app):
         https_only=settings.https_only,
         max_age=settings.max_age,
     )
-
     # Check if the application is being run with uvicorn
     if "uvicorn" in sys.argv[0]:
         app.add_middleware(

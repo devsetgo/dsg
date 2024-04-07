@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import asyncio
 from datetime import datetime
 
 from fastapi import APIRouter, Request, Response, status
@@ -44,7 +45,6 @@ async def login_user(request: Request):
     Returns:
         TemplateResponse: A response object with the result of the login attempt.
     """
-    import asyncio
 
     await asyncio.sleep(0.2)
     # Get the form data from the request
@@ -131,8 +131,9 @@ async def login_user(request: Request):
 # log out user endpoint
 @router.get("/logout")
 async def logout(request: Request):
-    request.session["user_identifier"] = None
-    request.session["login_attempt"] = 0
+    user_identifier = request.session.get("user_identifier", None)  
+    request.session.clear()
+    logger.info(F"User {user_identifier} logged out")
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 

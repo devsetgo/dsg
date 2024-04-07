@@ -8,10 +8,12 @@
   <!-- Sidebar -->
   <div class="sidebar">
     {% include "base_nav_items.html" %}
-    {% if request.session.user_identifier is not none %}
+    {% if request.session.get('user_identifier') is not none %}
     {% include "base_nav_loggedin.html" %}
+    {% if request.session.is_admin is not none%}
     {% include "base_nav_admin.html" %}
     {% include "base_nav_developer.html" %}
+    {% endif %}
     <ul>
       <li class="nav-item">
         <form action="/users/logout" method="GET">
