@@ -131,9 +131,9 @@ async def login_user(request: Request):
 # log out user endpoint
 @router.get("/logout")
 async def logout(request: Request):
-    user_identifier = request.session.get("user_identifier", None)  
+    user_identifier = request.session.get("user_identifier", None)
     request.session.clear()
-    logger.info(F"User {user_identifier} logged out")
+    logger.info(f"User {user_identifier} logged out")
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 
