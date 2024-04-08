@@ -38,61 +38,63 @@ def add_middleware(app):
 #         logger.info("Surpressing AccessLoggerMiddleware as not running with uvicorn")
 
 
-# class AccessLoggerMiddleware(BaseHTTPMiddleware):
-#     """
-#     Middleware to log all requests made to application
-#     """
+class AccessLoggerMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware to log all requests made to application
+    """
 
-#     def __init__(self, app, user_identifier: str = "id"):
-#         super().__init__(app)
-#         self.user_identifier = user_identifier
+    def __init__(self, app, user_identifier: str = "id"):
+        super().__init__(app)
+        self.user_identifier = user_identifier
 
-#     async def dispatch(self, request, call_next):
-#         # Record the start time
-#         start_time = time.time()
-#         try:
-#             # Call the next middleware or endpoint in the stack
-#             response = await call_next(request)
-#             # Get the status code from the response
-#             status_code = response.status_code
-#             logger.debug(f"Response: {response}")
-#         except Exception as e:
-#             # Log the exception and re-raise it
-#             logger.error(f"An error occurred while processing the request: {e}")
-#             raise
+    async def dispatch(self, request, call_next):
+        #TODO: Figure out State bug
+        # | ERROR    |  src.app_middleware:dispatch:61 - An error occurred while processing the request: 'State' object has no attribute 'user_info'
+        # Record the start time
+        start_time = time.time()
+        try:
+            # Call the next middleware or endpoint in the stack
+            response = await call_next(request)
+            # Get the status code from the response
+            status_code = response.status_code
+            logger.debug(f"Response: {response}")
+        except Exception as e:
+            # Log the exception and re-raise it
+            logger.error(f"An error occurred while processing the request: {e}")
+            raise
 
-#         # Calculate the processing time
-#         process_time = time.time() - start_time
-#         logger.debug(f"Processing time: {process_time}")
+        # Calculate the processing time
+        process_time = time.time() - start_time
+        logger.debug(f"Processing time: {process_time}")
 
-#         # Get the request details
-#         method = request.method
-#         url = request.url
-#         client = request.client.host
-#         referer = request.headers.get("referer", "No referer")
-#         user_id = request.session.get(self.user_identifier, "unknown guest")
-#         headers = dict(request.headers.items())
-#         sensitive_headers = ["Authorization"]
+        # Get the request details
+        method = request.method
+        url = request.url
+        client = request.client.host
+        referer = request.headers.get("referer", "No referer")
+        user_id = request.session.get(self.user_identifier, "unknown guest")
+        headers = dict(request.headers.items())
+        sensitive_headers = ["Authorization"]
 
-#         # Redact sensitive headers
-#         for header in sensitive_headers:
-#             if header in headers:
-#                 headers[header] = "[REDACTED]"
+        # Redact sensitive headers
+        for header in sensitive_headers:
+            if header in headers:
+                headers[header] = "[REDACTED]"
 
-#         # Log the request details, but ignore favicon.ico requests
-#         if url.path != "/favicon.ico":
-#             logger.info(
-#                 {
-#                     "method": method,
-#                     "url": str(url),
-#                     "client": client,
-#                     "referer": referer,
-#                     "user_id": user_id,
-#                     "headers": headers,
-#                     "status_code": status_code,
-#                     "process_time": process_time,
-#                 }
-#             )
+        # Log the request details, but ignore favicon.ico requests
+        if url.path != "/favicon.ico":
+            logger.info(
+                {
+                    "method": method,
+                    "url": str(url),
+                    "client": client,
+                    "referer": referer,
+                    "user_id": user_id,
+                    "headers": headers,
+                    "status_code": status_code,
+                    "process_time": process_time,
+                }
+            )
 
-#         # Return the response
-#         return response
+        # Return the response
+        return response
