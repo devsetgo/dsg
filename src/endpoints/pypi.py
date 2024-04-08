@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import uuid
-from collections import Counter
-from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
-from sqlalchemy import Select, and_, func
-from sqlalchemy.orm import joinedload
+from sqlalchemy import Select
 
-from ..functions.pypi_metrics import get_pypi_metrics
-from ..db_tables import Library, LibraryName, Requirement
+from ..db_tables import Requirement
 from ..functions.pypi_core import check_packages
+from ..functions.pypi_metrics import get_pypi_metrics
 from ..resources import db_ops, templates
 
 router = APIRouter()
@@ -82,7 +79,10 @@ async def post_check_form(
         packages=data, request_group_id=request_group_id, request=request
     )
 
-    return RedirectResponse(url=f"/pypi/check/{request_group_id}", status_code=303)
+    return Response(
+        headers={"HX-Redirect": f"/pypi/check/{request_group_id}"}, status_code=303
+    )
+    # return RedirectResponse(url=f"/pypi/check/{request_group_id}", status_code=303)
 
 
 @router.get("/check/{request_group_id}")

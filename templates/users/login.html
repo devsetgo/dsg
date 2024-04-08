@@ -48,9 +48,10 @@ page_head_title %}Login {% endblock %} {% block body %}
           <div class="col-4">
             <button type="submit" class="btn btn-primary btn-block">Sign In</button>
           </div>
+          <!-- CSRF token -->
+          <input type='hidden' name='csrf-token' value="{{ csrf_token }}" />
         </div>
       </form>
-
       <!-- <p class="mb-1">
         <a href="users/forgot-password.html">I forgot my password</a>
       </p>

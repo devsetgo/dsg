@@ -6,7 +6,7 @@
     <div class="col-md-4 mb-4 p-2">
       <div class="card">
         <div class="card-body">
-          <h5 class="card-title"><a href="/notes/{{note.pkid}}" class="card-link"><strong>{{
+          <h5 class="card-title"><a href="/notes/view/{{note.pkid}}" class="card-link"><strong>{{
                 note.mood|capitalize }}</strong></a></h5>
           <p class="card-text">{{ note.summary|truncate(30, end='...') }}</p>
         </div>
