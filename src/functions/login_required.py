@@ -7,14 +7,23 @@ The `require_login` function is a decorator that checks if a user is logged in a
 This decorator should be used on all endpoints that require the user to be logged in.
 
 Example:
-    @app.get("/protected-endpoint")
     @require_login
-    async def protected_endpoint():
-        return {"message": "You are viewing a protected endpoint"}
+    @app.get("/protected-endpoint")
+    async def protected_endpoint(request: Request):
+        user_info = request.state.user_info
+        return {"message": f"You are viewing a protected endpoint, {user_info['user_identifier']}"}
 
 This module depends on the `settings` module for configuration settings like the session user identifier and the login timeout.
 
 This module uses the `loguru` library for logging.
+
+The order of decorators matters. The decorator closest to the function (i.e., the one at the bottom) is applied first, then the one above it, and so on. Therefore, when using this decorator with others (like route decorators), make sure to place it above the route decorator to ensure the `require_login` function is called after the routing function, allowing any dependencies injected by the routing function to be available within `require_login`.
+
+Example:
+    @require_login
+    @app.get("/protected-endpoint")
+    async def protected_endpoint():
+        return {"message": "You are viewing a protected endpoint"}
 """
 from datetime import datetime, timedelta
 from typing import Callable
@@ -40,47 +49,58 @@ def require_login(endpoint: Callable) -> Callable:
         HTTPException: If the user is not logged in or if the session is not valid, it redirects to the login page.
 
     Example:
-        @app.get("/protected-endpoint")
         @require_login
-        async def protected_endpoint():
-            return {"message": "You are viewing a protected endpoint"}
+        @app.get("/protected-endpoint")
+        async def protected_endpoint(request: Request):
+            user_info = request.state.user_info
+            return {"message": f"You are viewing a protected endpoint, {user_info['user_identifier']}"}
 
     Note:
         This decorator should be used on all endpoints that require the user to be logged in.
     """
-
+    
     async def check_login(request: Request) -> Response:
-        if not request.session.get(settings.sesson_user_identifier):
+        # Add user information to the request object
+        
+        request.state.user_info = {
+            "user_identifier": request.session.get("user_identifier", None),
+            "timezone": request.session.get("timezone", None),
+            "is_admin": request.session.get("is_admin", False) is True,
+            "exp": request.session.get("exp", 0),
+        }
+        logger.debug(f'check login initial: {request.state.user_info}')
+        # Check if the user is logged in
+        if not request.session.get("user_identifier"):
+            # Log an error message and redirect to the login page
             logger.error(
                 f"user page access without being logged in from {request.client.host}"
             )
             return RedirectResponse(url="/users/login", status_code=303)
-
         else:
-            session_expiry_time = datetime.now() - timedelta(
-                minutes=config_settings.login_timeout
-            )
+            # Calculate the session expiry time
+            session_expiry_time = datetime.now() - timedelta(minutes=settings.max_age)
+
             try:
-                last_updated = datetime.strptime(
-                    request.session.get("updated", ""), "%Y-%m-%d %H:%M:%S.%f"
-                )
+                # Convert the session expiry time to a datetime object
+                last_updated = datetime.fromtimestamp(request.session.get("exp", 0))
             except ValueError:
+                # Log an error message and redirect to the login page
                 logger.error("Invalid session update time")
                 return RedirectResponse(url="/users/login", status_code=303)
 
+            # Check if the session is still valid
             current = session_expiry_time < last_updated
 
             if not current:
+                # Log an error message and redirect to the login page
                 logger.error(
-                    f"user {request.session.get(settings.sesson_user_identifier)} outside window: {current}"
+                    f"user {request.session.get('user_identifier')} outside window: {current}"
                 )
                 return RedirectResponse(url="/users/login", status_code=303)
 
-            # update datetime of last use
-            logger.info(
-                f"user {request.session.get('id')} within timeout window: {current}"
-            )
-            request.session["updated"] = str(datetime.now())
+        # If the user is logged in and the session is valid, proceed to the endpoint
+        logger.critical(f'check login return: {request.state.user_info}')
         return await endpoint(request)
 
+    # Return the decorated function
     return check_login

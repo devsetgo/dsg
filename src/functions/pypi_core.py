@@ -45,7 +45,9 @@ async def check_packages(packages: list, request_group_id: str, request):
              {request_group_id}"
     )
     cleaned_packages = clean_packages(packages)
-    async with httpx.AsyncClient(timeout=90.0) as client:  # Increase timeout to 30 seconds
+    async with httpx.AsyncClient(
+        timeout=90.0
+    ) as client:  # Increase timeout to 30 seconds
         tasks = [fetch_package_data(client, package) for package in cleaned_packages]
         results = []
         for f in async_tqdm.as_completed(tasks, total=len(tasks)):
