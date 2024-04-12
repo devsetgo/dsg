@@ -28,7 +28,7 @@ Example:
 from datetime import datetime, timedelta
 from typing import Callable
 
-from fastapi import Request
+from fastapi import HTTPException, Request
 from fastapi.responses import RedirectResponse, Response
 from loguru import logger
 
@@ -58,17 +58,17 @@ def require_login(endpoint: Callable) -> Callable:
     Note:
         This decorator should be used on all endpoints that require the user to be logged in.
     """
-    
+
     async def check_login(request: Request) -> Response:
         # Add user information to the request object
-        
+
         request.state.user_info = {
             "user_identifier": request.session.get("user_identifier", None),
             "timezone": request.session.get("timezone", None),
             "is_admin": request.session.get("is_admin", False) is True,
             "exp": request.session.get("exp", 0),
         }
-        logger.debug(f'check login initial: {request.state.user_info}')
+        logger.debug(f"check login initial: {request.state.user_info}")
         # Check if the user is logged in
         if not request.session.get("user_identifier"):
             # Log an error message and redirect to the login page
@@ -99,8 +99,42 @@ def require_login(endpoint: Callable) -> Callable:
                 return RedirectResponse(url="/users/login", status_code=303)
 
         # If the user is logged in and the session is valid, proceed to the endpoint
-        logger.critical(f'check login return: {request.state.user_info}')
+        logger.critical(f"check login return: {request.state.user_info}")
         return await endpoint(request)
 
     # Return the decorated function
     return check_login
+
+
+async def check_login(request: Request):
+    request.state.user_info = {
+        "user_identifier": request.session.get("user_identifier", None),
+        "timezone": request.session.get("timezone", None),
+        "is_admin": request.session.get("is_admin", False) is True,
+        "exp": request.session.get("exp", 0),
+    }
+    logger.debug(f"check login initial: {request.state.user_info}")
+    
+    if request.session.get("user_identifier") is None:
+        logger.error(
+            f"user page access without being logged in from {request.client.host}"
+        )
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    else:
+        session_expiry_time = datetime.now() - timedelta(minutes=settings.max_age)
+        try:
+            last_updated = datetime.fromtimestamp(request.session.get("exp", 0))
+        except ValueError:
+            logger.error("Invalid session update time")
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+        current = session_expiry_time < last_updated
+
+        if not current:
+            logger.error(
+                f"user {request.session.get('user_identifier')} outside window: {current}"
+            )
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+    logger.critical(f"check login return: {request.state.user_info}")
+    return request.state.user_info

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -102,9 +102,13 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
         # Set the user identifier in the session
         request.session["user_identifier"] = user.pkid
         if user.is_admin == True:
-
             request.session["is_admin"] = True
         request.session["timezone"] = user.my_timezone
+
+        # Set the session expiration time
+        session_duration = timedelta(minutes=settings.max_age)
+        expiration_time = datetime.now() + session_duration
+        request.session["exp"] = expiration_time.timestamp()
 
         # Create the response object
         response = Response(headers={"HX-Redirect": "/"}, status_code=200)
