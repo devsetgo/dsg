@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-import sys
 import time
-
+import sys
 # from debug_toolbar.middleware import DebugToolbarMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
-# from starlette.middleware.sessions import SessionMiddleware
-from starlette_authlib.middleware import AuthlibMiddleware as SessionMiddleware
+
+from starlette.middleware.sessions import SessionMiddleware
+# from starlette_authlib.middleware import AuthlibMiddleware as SessionMiddleware
 
 from .settings import settings
 
@@ -29,13 +29,15 @@ def add_middleware(app):
         max_age=settings.max_age,
     )
     # Check if the application is being run with uvicorn
-#     if "uvicorn" in sys.argv[0]:
-#         app.add_middleware(
-#             AccessLoggerMiddleware, user_identifier=settings.session_user_identifier
-#         )
-#         logger.debug("AccessLoggerMiddleware added")
-#     else:
-#         logger.info("Surpressing AccessLoggerMiddleware as not running with uvicorn")
+
+
+    if "uvicorn" in sys.argv[0]:
+        app.add_middleware(
+            AccessLoggerMiddleware, user_identifier=settings.session_user_identifier
+        )
+        logger.debug("AccessLoggerMiddleware added")
+    else:
+        logger.info("Surpressing AccessLoggerMiddleware as not running with uvicorn")
 
 
 class AccessLoggerMiddleware(BaseHTTPMiddleware):
@@ -48,7 +50,7 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
         self.user_identifier = user_identifier
 
     async def dispatch(self, request, call_next):
-        #TODO: Figure out State bug
+        # TODO: Figure out State bug
         # | ERROR    |  src.app_middleware:dispatch:61 - An error occurred while processing the request: 'State' object has no attribute 'user_info'
         # Record the start time
         start_time = time.time()
