@@ -3,7 +3,7 @@
 from contextlib import asynccontextmanager
 
 from dsg_lib.common_functions import logging_config
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import RedirectResponse
 from loguru import logger
 
@@ -51,9 +51,11 @@ app = FastAPI(
     middleware=[],  # A list of middleware to include in the application
     routes=[],  # A list of routes to include in the application
     lifespan=lifespan,
+    # exception_handlers=
 )
 if settings.debug_mode:
     logger.warning("Debug mode is enabled and should not be used in production.")
+
 
 add_middleware(app)
 create_routes(app)
