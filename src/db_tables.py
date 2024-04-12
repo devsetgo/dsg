@@ -42,6 +42,9 @@ class User(base_schema.SchemaBase, async_db.Base):
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
+    def to_dict(self):
+        return {c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns}
+
     # Define the child relationship to the InterestingThings class
     InterestingThings = relationship(
         "InterestingThings", back_populates="user"
@@ -72,6 +75,8 @@ class InterestingThings(base_schema.SchemaBase, async_db.Base):
         "User", back_populates="InterestingThings"
     )  # Relationship to the User class
 
+    def to_dict(self):
+        return {c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns}
 
 class Categories(base_schema.SchemaBase, async_db.Base):
     __tablename__ = "categories"  # Name of the table in the database
@@ -88,6 +93,8 @@ class Categories(base_schema.SchemaBase, async_db.Base):
         "User", back_populates="Categories"
     )  # Relationship to the User class
 
+    def to_dict(self):
+        return {c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns}
 
 class Notes(base_schema.SchemaBase, async_db.Base):
     __tablename__ = "notes"  # Name of the table in the database
