@@ -8,7 +8,7 @@ from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import User
+from ..db_tables import Users
 from ..functions.hash_function import verify_password
 from ..functions.login_required import require_login
 from ..resources import db_ops, templates
@@ -51,9 +51,11 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
     # Log the login attempt
     logger.debug(f"Attempting to log in user: {user_name}")
     # Fetch the user record from the database
-    user = await db_ops.read_one_record(Select(User).where(User.user_name == user_name))
+    user = await db_ops.read_one_record(
+        Select(Users).where(Users.user_name == user_name)
+    )
 
-    logger.debug(f"User: {user}")
+    logger.debug(f"Users: {user}")
     # Check if the user exists and if they have made too many failed login attempts
     if (
         user is not None
@@ -79,7 +81,7 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
         if user is not None:
             login_attempt = user.failed_login_attempts + 1
             await db_ops.update_one(
-                table=User,
+                table=Users,
                 new_values={"failed_login_attempts": login_attempt},
                 record_id=user.pkid,
             )
@@ -115,7 +117,7 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
 
         # Update the last login date and reset the failed login attempts in the database
         login_update = await db_ops.update_one(
-            table=User,
+            table=Users,
             new_values={
                 "date_last_login": datetime.utcnow(),
                 "failed_login_attempts": 0,
@@ -132,7 +134,7 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
 async def logout(request: Request):
     user_identifier = request.session.get("user_identifier", None)
     request.session.clear()
-    logger.info(f"User {user_identifier} logged out")
+    logger.info(f"Users {user_identifier} logged out")
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 
@@ -168,7 +170,7 @@ async def post_password_change_form(
     new_password_confirm = form["new_password_confirm"]
     user_identifier = request.session.get("user_identifier", None)
     user = await db_ops.read_one_record(
-        Select(User).where(User.pkid == user_identifier)
+        Select(Users).where(Users.pkid == user_identifier)
     )
     if not verify_password(hash=user.password, password=old_password):
         request.session["error"] = "Old password is incorrect"
@@ -184,7 +186,7 @@ async def post_password_change_form(
         )
     new_password_hash = hash_password(new_password)
     update = await db_ops.update_one(
-        table=User,
+        table=Users,
         new_values={"password": new_password_hash},
         record_id=user_identifier,
     )

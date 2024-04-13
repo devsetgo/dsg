@@ -19,7 +19,7 @@ This module uses the `loguru` library for logging and the `pydantic` library for
 """
 import random
 import secrets
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import silly
 from dsg_lib.async_database_functions import database_operations
@@ -32,7 +32,7 @@ from sqlalchemy import Select, func
 from tqdm import tqdm
 
 from .db_init import async_db
-from .db_tables import Categories, InterestingThings, Notes, User
+from .db_tables import Categories, InterestingThings, Notes, Users
 from .functions.hash_function import hash_password
 from .settings import settings
 
@@ -116,7 +116,7 @@ async def startup():
     tables = (
         await db_ops.get_table_names()
     )  # Get the names of the tables in the database
-
+    print(tables)
     logger.info(
         "creating database tables"
     )  # Log that the database tables are being created
@@ -159,17 +159,17 @@ async def add_system_data():
         if settings.create_demo_notes is True:
             await add_notes(user_id=data)  # Create notes for the admin user
 
-    if settings.create_demo_user is True:
-        logger.warning("Creating demo user")
-        await add_user()  # Create a demo user
+    # if settings.create_demo_user is True:
+    #     logger.warning("Creating demo user")
+    #     await add_user()  # Create a demo user
 
-    if settings.create_base_categories is True:
-        logger.warning("Creating base categories")
-        await add_categories()  # Create base categories
+    # if settings.create_base_categories is True:
+    #     logger.warning("Creating base categories")
+    #     await add_categories()  # Create base categories
 
-    if settings.create_demo_data is True:
-        logger.warning("Creating demo data")
-        await add_interesting_things()  # Create demo data
+    # if settings.create_demo_data is True:
+    #     logger.warning("Creating demo data")
+    #     await add_interesting_things()  # Create demo data
 
 
 async def add_admin():
@@ -184,24 +184,27 @@ async def add_admin():
         password = settings.admin_password.get_secret_value()
 
         hashed_password = hash_password(password)
-        user = User(
+        user = Users(
             first_name="Admin",
-            last_name="User",
+            last_name="Users",
             user_name=user_name,
             password=hashed_password,
             is_active=True,
             is_admin=True,
         )
         try:
-            await db_ops.create_one(user)
+            res = await db_ops.create_one(user)
+            print(res)
             user = await db_ops.read_one_record(
-                Select(User).where(User.user_name == user_name)
+                Select(Users).where(Users.user_name == user_name)
             )
-            # print the full_name property
+            print(user)
             logger.warning(f"Admin created: {user.full_name}")
+            print(user.pkid)
             return user.pkid
         except Exception as e:
             logger.error(e)
+            print(e)
 
 
 async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qty):
@@ -209,7 +212,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
     demo_notes = []
     mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
 
-    for _ in tqdm(range(qty_notes)):
+    for _ in tqdm(range(qty_notes), desc="creating demo notes"):
 
         mood = random.choice(moods)
         mood_analysis_choice = random.choice(mood_analysis)
@@ -222,7 +225,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         # Generate a random date within the last X years
         days_in_three_years = 365 * 2
         random_number_of_days = random.randrange(days_in_three_years)
-        date_created = datetime.now() - timedelta(days=random_number_of_days)
+        date_created = datetime.now(UTC) - timedelta(days=random_number_of_days)
 
         # Make date_updated the same as date_created or 3-15 days later
         days_to_add = random.choice([0] + list(range(3, 16)))
@@ -243,23 +246,49 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         # data = await db_ops.create_one(note)
     data = await db_ops.create_many(demo_notes)
 
+    # add a note to the database that has the same date, but different years. Use today's datetime as the base
+    for i in range(20):
+        mood = random.choice(moods)
+        mood_analysis_choice = random.choice(mood_analysis)
+
+        length = random.randint(5, 20)
+        note = silly.paragraph(length=length)
+        summary = note[:50]
+        tags = list(set([silly.adjective() for x in range(1, 4)]))
+
+        # Make date_updated the same as date_created or 3-15 days later
+        date_created = datetime.now(UTC) - timedelta(days=365 * i)
+
+        date_updated = date_created
+        note = Notes(
+            mood="positive",
+            note="This is a note that was created in the past",
+            summary="Past Note",
+            tags=list(set([silly.adjective() for x in range(1, 4)])),
+            mood_analysis="positive",
+            user_id=user_id,
+            date_created=date_created,
+            date_updated=date_updated,
+        )
+        data = await db_ops.create_one(note)
+
 
 async def add_user():
     # This function is responsible for adding a default user 'Mike' as a system admin.
     # It first checks if the user 'Mike' already exists in the database.
     # If the user exists, it logs that the system user has already been added and returns.
-    # If the user doesn't exist, it creates a User instance with the user details and then tries to add it to the database.
+    # If the user doesn't exist, it creates a Users instance with the user details and then tries to add it to the database.
     # If the user is successfully added, it logs the full name of the user.
     # If there's an error while adding the user, it logs the error.
 
-    user = await db_ops.read_query(Select(User).where(User.user_name == "Mike"))
+    user = await db_ops.read_query(Select(Users).where(Users.user_name == "Mike"))
     if len(user) > 0:
         logger.info("system user already added")
         return
 
     logger.info("adding system user")
     hashed_password = hash_password("password")
-    user = User(
+    user = Users(
         first_name="Mike",
         last_name="Ryan",
         user_name="Mike",
@@ -270,7 +299,7 @@ async def add_user():
     try:
         await db_ops.create_one(user)
         user = await db_ops.read_one_record(
-            Select(User).where(User.user_name == "Mike")
+            Select(Users).where(Users.user_name == "Mike")
         )
         # print the full_name property
         logger.info(user.full_name)
@@ -288,7 +317,7 @@ async def add_categories():
     # After all categories have been added, it logs the name of each category.
 
     # cat_number = await db_ops.count_query(Categories)
-    # Query the User table and count the number of categories for each user
+    # Query the Users table and count the number of categories for each user
     cat_number = await db_ops.count_query(query=Select(func.count(Categories.pkid)))
 
     if cat_number == 0:
@@ -297,7 +326,7 @@ async def add_categories():
 
     cat: list = ["technology", "news", "sites", "programming", "woodworking", "other"]
 
-    user = await db_ops.read_one_record(Select(User).where(User.user_name == "Mike"))
+    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == "Mike"))
 
     for c in cat:
         logger.info(f"adding system category {c}")
@@ -393,7 +422,7 @@ async def add_interesting_things():
             return
 
     # Get the user record for 'Mike'
-    user = await db_ops.read_one_record(Select(User).where(User.user_name == "Mike"))
+    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == "Mike"))
 
     # Loop through the list of items
     for item in my_stuff:

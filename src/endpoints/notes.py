@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import csv
 import io
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 
+# from pytz import timezone, UTC
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -16,12 +17,16 @@ from fastapi import (
 from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
-from sqlalchemy import Select, and_, or_
+from pytz import timezone
+from sqlalchemy import Select, and_, between, extract, func, or_, select
+from sqlalchemy.sql.expression import cast
+from sqlalchemy.sql.sqltypes import Integer
 
 from ..db_tables import Notes
 from ..functions import ai, date_functions, note_import, notes_metrics
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
+from ..settings import settings
 
 router = APIRouter()
 
@@ -49,6 +54,85 @@ async def read_notes(
     context = {"user_identifier": user_identifier, "metrics": metrics}
     return templates.TemplateResponse(
         request=request, name="/notes/dashboard.html", context=context
+    )
+
+
+# today in history notes list
+@router.get("/today")
+async def read_today_notes(
+    request: Request,
+    user_info: dict = Depends(check_login),
+    csrf_protect: CsrfProtect = Depends(),
+):
+
+    user_identifier = user_info["user_identifier"]
+    user_timezone = user_info["timezone"]
+
+    if user_identifier is None:
+        logger.debug("User identifier is None, redirecting to login")
+        return RedirectResponse(url="/users/login", status_code=302)
+
+    # get today's date
+    today = datetime.now(UTC)
+
+    # calculate the dates for 7 days before and after today
+    start_date = today - timedelta(days=settings.history_range)
+    end_date = today + timedelta(days=settings.history_range)
+
+    # get notes within 7 days of today
+    query = Select(Notes).where(
+        and_(
+            Notes.user_id == user_identifier,
+            or_(
+                and_(
+                    extract("month", Notes.date_created) == start_date.month,
+                    between(
+                        extract("day", Notes.date_created), start_date.day, end_date.day
+                    ),
+                ),
+                and_(
+                    extract("month", Notes.date_created) == end_date.month,
+                    between(
+                        extract("day", Notes.date_created), start_date.day, end_date.day
+                    ),
+                ),
+            ),
+        )
+    )
+    notes = await db_ops.read_query(query=query)
+
+    # offset date_created and date_updated to user's timezone
+    notes = [note.to_dict() for note in notes]
+
+    metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
+    for note in notes:
+        note["date_created"] = await date_functions.timezone_update(
+            user_timezone=user_timezone,
+            date_time=note["date_created"],
+            friendly_string=True,
+        )
+        note["date_updated"] = await date_functions.timezone_update(
+            user_timezone=user_timezone,
+            date_time=note["date_updated"],
+            friendly_string=True,
+        )
+        metrics["word_count"] += len(note["note"].split())
+        metrics["character_count"] += len(note["note"])
+    logger.info(f"Found {len(notes)} notes for user {user_identifier}")
+
+    # get the user's timezone
+    user_tz = timezone(user_timezone)
+
+    # convert the UTC datetime to the user's timezone
+    today_user_tz = today.astimezone(user_tz)
+
+    # format it as "5 April"
+    formatted_today = today_user_tz.strftime("%d %B")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="/notes/today.html",
+        context={"notes": notes, "metrics": metrics, "today": formatted_today},
     )
 
 
