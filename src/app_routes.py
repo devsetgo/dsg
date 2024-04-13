@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from dsg_lib.fastapi_functions import system_health_endpoints
+
 # from fastapi import FastAPI, Request, HTTPException, status
-from fastapi import FastAPI, Request,  status
-from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_csrf_protect.exceptions import CsrfProtectError
 from loguru import logger
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
 from .endpoints import devtools, error, notes, pages, pypi, users
 from .resources import templates
 
@@ -230,12 +232,11 @@ def create_routes(app: FastAPI):
             error_code = 500  # default to Internal Server Error
         logger.error(f"{error_code} error: {exc}")
         return RedirectResponse(url=f"/error/{error_code}")
-        
+
     # @app.exception_handler(status.HTTP_404_NOT_FOUND)
     # async def not_found_exception_handler(request: Request, exc: HTTPException):
     #     logger.error(f"404 error: {exc}")
     #     return RedirectResponse(url=f"/error/{exc.status_code}")
-
 
     @app.get("/error/{error_code}")
     async def error_page(request: Request, error_code: int):
@@ -247,7 +248,6 @@ def create_routes(app: FastAPI):
             "link": ALL_HTTP_CODES[error_code]["link"],
         }
         return templates.TemplateResponse("error/error-page.html", context)
-
 
     app.include_router(
         devtools.router,
