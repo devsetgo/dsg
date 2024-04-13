@@ -1,7 +1,5 @@
 {% extends "base.html" %} <!-- Extends the base HTML layout -->
-
 {% block page_title %}| Notes{% endblock %} <!-- Sets the page title -->
-
 {% block page_stylesheet %} <!-- Starts the block for page-specific stylesheets -->
 <!-- DataTables -->
 <link rel="stylesheet" href="{{ url_for('static' , path='plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
@@ -12,14 +10,9 @@
 <link rel="stylesheet"
   href="{{ url_for('static' , path='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
 <!-- Stylesheet for DataTables Buttons Bootstrap 4 -->
-
-
 {% endblock %} <!-- Ends the block for page-specific stylesheets -->
-
 {% block page_breadcrumb %} Notes{% endblock %} <!-- Sets the breadcrumb -->
-
 {% block page_head_title %}Notes{% endblock %} <!-- Sets the page head title -->
-
 {% block body %} <!-- Starts the block for the body of the page -->
 <section> <!-- Starts a section -->
   <div class="container-fluid"> <!-- Starts a container-fluid -->
@@ -40,10 +33,14 @@
                   Notes
                 </a>
               </li>
-              <!-- <li class="nav-item">
-                <a class="nav-link" id="custom-tabs-four-notes-tab" data-toggle="pill" href="#custom-tabs-four-notes"
-                  role="tab" aria-controls="custom-tabs-four-notes" aria-selected="false">Notes</a>
-              </li> -->
+              <li class="nav-item">
+                <a class="nav-link" id="custom-tabs-four-history-tab" data-toggle="pill"
+                  href="#custom-tabs-four-history" role="tab" aria-controls="custom-tabs-four-history"
+                  aria-selected="false" hx-get="/notes/today" hx-trigger="click" hx-target="#history-data"
+                  hx-indicator=".htmx-indicator">
+                  History
+                </a>
+              </li>
               <!-- <li class="nav-item">
               <a class="nav-link" id="custom-tabs-four-settings-tab" data-toggle="pill"
                 href="#custom-tabs-four-settings" role="tab" aria-controls="custom-tabs-four-template"
@@ -55,25 +52,23 @@
             <div class="tab-content" id="custom-tabs-four-tabContent">
               <div class="tab-pane fade show active" id="custom-tabs-four-dash" role="tabpanel"
                 aria-labelledby="custom-tabs-four-dash-tab">
-
                 <div class="container-fluid">
                   {% include 'notes/metrics.html' %}
                   {% include 'notes/data-block.html' %}
                   {% include 'notes/charting.html' %}
-
                 </div>
               </div>
               <div class="tab-pane fade" id="custom-tabs-four-notes" role="tabpanel"
                 aria-labelledby="custom-tabs-four-notes-tab">
                 <!-- Begin Search Form -->
-                {% include 'notes/search-form.html' %}
+
                 <div class="row" id="notes-data"></div>
                 <!-- End Search Form -->
               </div>
-              <!-- <div class="tab-pane fade" id="custom-tabs-four-settings" role="tabpanel"
-              aria-labelledby="custom-tabs-four-settings-tab">
-              template for future functionality
-            </div> -->
+              <div class="tab-pane fade" id="custom-tabs-four-history" role="tabpanel"
+                aria-labelledby="custom-tabs-four-history-tab">
+                <div class="row" id="history-data"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -81,15 +76,11 @@
     </div>
 </section>
 {% endblock %}
-
-
 {% block page_sidebar_content %}
 <!-- blank and demo script adds page configuration example -->
-
 {% endblock %}
 {% block page_scripts %}
 <!-- Start of page scripts block -->
-
 <!-- OPTIONAL SCRIPTS -->
 <!-- Mood Trend by Month -->
 <script>
@@ -519,48 +510,33 @@
 
   new Chart(document.getElementById('moodChart'), config);
 </script>
-
 <!-- Import dashboard3.js script -->
 <script src="{{ url_for('static' , path='dist/js/pages/dashboard3.js') }}"></script>
-
 <!-- DataTables & Plugins -->
-
 <!-- Import jQuery DataTables library -->
 <script src="{{ url_for('static' , path='plugins/datatables/jquery.dataTables.min.js') }}"></script>
-
 <!-- Import Bootstrap 4 DataTables library -->
 <script src="{{ url_for('static' , path='plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
-
 <!-- Import DataTables Responsive library -->
 <script src="{{ url_for('static' , path='plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
-
 <!-- Import DataTables Responsive Bootstrap 4 library -->
 <script src="{{ url_for('static' , path='plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
-
 <!-- Import DataTables Buttons library -->
 <script src="{{ url_for('static' , path='plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
-
 <!-- Import DataTables Buttons Bootstrap 4 library -->
 <script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
-
 <!-- Import JSZip library (for Excel export) -->
 <script src="{{ url_for('static' , path='plugins/jszip/jszip.min.js') }}"></script>
-
 <!-- Import PDFMake library (for PDF export) -->
 <script src="{{ url_for('static' , path='plugins/pdfmake/pdfmake.min.js') }}"></script>
-
 <!-- Import PDFMake fonts -->
 <script src="{{ url_for('static' , path='plugins/pdfmake/vfs_fonts.js') }}"></script>
-
 <!-- Import DataTables HTML5 Buttons library -->
 <script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
-
 <!-- Import DataTables Print Button library -->
 <script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
-
 <!-- Import DataTables Column Visibility Button library -->
 <script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
-
 <!-- Initialize DataTable with specific options -->
 <script>
   $(document).ready(function () {
@@ -578,6 +554,5 @@
     }).buttons().container().appendTo('#requirementsTable_wrapper .col-md-6:eq(0)');  // Append buttons to DataTable
   });
 </script>
-
 {% endblock %}
 <!-- End of page scripts block -->
