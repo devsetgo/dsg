@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
-import time
 import sys
+import time
+
 # from debug_toolbar.middleware import DebugToolbarMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
-
 from starlette.middleware.sessions import SessionMiddleware
-# from starlette_authlib.middleware import AuthlibMiddleware as SessionMiddleware
 
 from .settings import settings
+
+# from starlette_authlib.middleware import AuthlibMiddleware as SessionMiddleware
 
 
 def add_middleware(app):
@@ -29,7 +30,6 @@ def add_middleware(app):
         max_age=settings.max_age,
     )
     # Check if the application is being run with uvicorn
-
 
     if "uvicorn" in sys.argv[0]:
         app.add_middleware(
