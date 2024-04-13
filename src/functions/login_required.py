@@ -114,7 +114,7 @@ async def check_login(request: Request):
         "exp": request.session.get("exp", 0),
     }
     logger.debug(f"check login initial: {request.state.user_info}")
-    
+
     if request.session.get("user_identifier") is None:
         logger.error(
             f"user page access without being logged in from {request.client.host}"
