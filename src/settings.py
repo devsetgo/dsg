@@ -113,7 +113,8 @@ class Settings(BaseSettings):
     github_id: str = "octocat"
     github_repo_limit: int = 50
     github_token: SecretStr = "<enter key>"
-
+    # historical data
+    history_range: int = 3
     # add an admin user
     create_admin_user: bool = False
     admin_user: SecretStr = None
