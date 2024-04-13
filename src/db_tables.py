@@ -11,12 +11,12 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.orm import class_mapper, relationship
+from sqlalchemy.orm import backref, class_mapper, relationship
 
 from .db_init import async_db
 
 
-class User(base_schema.SchemaBase, async_db.Base):
+class Users(base_schema.SchemaBase, async_db.Base):
     __tablename__ = "users"  # Name of the table in the database
     __tableargs__ = {"comment": "Users of the application"}
 
@@ -43,20 +43,17 @@ class User(base_schema.SchemaBase, async_db.Base):
         return f"{self.first_name} {self.last_name}"
 
     def to_dict(self):
-        return {c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns}
+        return {
+            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+        }
 
     # Define the child relationship to the InterestingThings class
-    InterestingThings = relationship(
-        "InterestingThings", back_populates="user"
+    interesting_things = relationship(
+        "InterestingThings", back_populates="users"
     )  # Relationship to the InterestingThings class
-    # Define the child relationship to the Categories class
-    Categories = relationship(
-        "Categories", back_populates="user"
-    )  # Relationship to the Categories class
+    categories = relationship("Categories", back_populates="users")
     # Define the child relationship to the Notes class
-    Notes = relationship(
-        "Notes", back_populates="user"
-    )  # Relationship to the Notes class
+    notes = relationship("Notes", back_populates="users")
 
 
 class InterestingThings(base_schema.SchemaBase, async_db.Base):
@@ -70,13 +67,16 @@ class InterestingThings(base_schema.SchemaBase, async_db.Base):
     category = Column(String, unique=False, index=True)  # category of item
     public = Column(Boolean, default=False)  # If the item is public
     # Define the parent relationship to the User class
-    user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
-    user = relationship(
-        "User", back_populates="InterestingThings"
-    )  # Relationship to the User class
+    user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the User table
+    users = relationship(
+        "Users", back_populates="interesting_things"
+    )  # Relationship to the Users class
 
     def to_dict(self):
-        return {c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns}
+        return {
+            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+        }
+
 
 class Categories(base_schema.SchemaBase, async_db.Base):
     __tablename__ = "categories"  # Name of the table in the database
@@ -87,14 +87,14 @@ class Categories(base_schema.SchemaBase, async_db.Base):
     description = Column(String(500), unique=False, index=True)  # description of item
     is_system = Column(Boolean, default=True)  # If the category is a system default
     is_active = Column(Boolean, default=True)  # If the c   ategory is active
-    # Define the parent relationship to the User class
-    user_id = Column(Integer, ForeignKey("users.pkid"))  # Foreign key to the User table
-    user = relationship(
-        "User", back_populates="Categories"
-    )  # Relationship to the User class
+    user_id = Column(String, ForeignKey("users.pkid"))
+    users = relationship("Users", back_populates="categories")
 
     def to_dict(self):
-        return {c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns}
+        return {
+            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+        }
+
 
 class Notes(base_schema.SchemaBase, async_db.Base):
     __tablename__ = "notes"  # Name of the table in the database
@@ -108,10 +108,7 @@ class Notes(base_schema.SchemaBase, async_db.Base):
     summary = Column(String(100), unique=False, index=True)  # summary from OpenAI
     # Define the parent relationship to the User class
     user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the User table
-
-    user = relationship(
-        "User", back_populates="Notes"
-    )  # Relationship to the User class
+    users = relationship("Users", back_populates="notes")
 
     @property
     def word_count(self):
