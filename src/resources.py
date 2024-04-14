@@ -159,17 +159,17 @@ async def add_system_data():
         if settings.create_demo_notes is True:
             await add_notes(user_id=data)  # Create notes for the admin user
 
-    # if settings.create_demo_user is True:
-    #     logger.warning("Creating demo user")
-    #     await add_user()  # Create a demo user
+    if settings.create_demo_user is True:
+        logger.warning("Creating demo user")
+        await add_user()  # Create a demo user
 
-    # if settings.create_base_categories is True:
-    #     logger.warning("Creating base categories")
-    #     await add_categories()  # Create base categories
+    if settings.create_base_categories is True:
+        logger.warning("Creating base categories")
+        await add_categories()  # Create base categories
 
-    # if settings.create_demo_data is True:
-    #     logger.warning("Creating demo data")
-    #     await add_interesting_things()  # Create demo data
+    if settings.create_demo_data is True:
+        logger.warning("Creating demo data")
+        await add_interesting_things()  # Create demo data
 
 
 async def add_admin():
@@ -198,7 +198,7 @@ async def add_admin():
             user = await db_ops.read_one_record(
                 Select(Users).where(Users.user_name == user_name)
             )
-            print(user)
+            print(user.to_dict())
             logger.warning(f"Admin created: {user.full_name}")
             print(user.pkid)
             return user.pkid
