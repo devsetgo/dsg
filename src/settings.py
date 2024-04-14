@@ -35,6 +35,7 @@ class SameSiteEnum(str, Enum):
 
 class DatabaseDriverEnum(str, Enum):
     postgres = "postgresql+asyncpg"
+    postgresql = "postgresql+asyncpg"
     sqlite = "sqlite+aiosqlite"
     memory = "sqlite+aiosqlite:///:memory:?cache=shared"
     mysql = "mysql+aiomysql"
@@ -131,7 +132,8 @@ class Settings(BaseSettings):
         db_driver = values.get("db_driver")
         if isinstance(db_driver, str):
             try:
-                values["db_driver"] = DatabaseDriverEnum[db_driver].value
+                # Convert db_driver to lower case before getting its value from the enum
+                values["db_driver"] = DatabaseDriverEnum[db_driver.lower()].value
             except KeyError:
                 pass
         return values
