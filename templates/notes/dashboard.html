@@ -67,7 +67,7 @@
               </div>
               <div class="tab-pane fade" id="custom-tabs-four-history" role="tabpanel"
                 aria-labelledby="custom-tabs-four-history-tab">
-                <div class="row" id="history-data"></div>
+                <div class="row" id="history-data" style="display: flex; flex-direction: column;"></div>
               </div>
             </div>
           </div>
@@ -78,6 +78,11 @@
 {% endblock %}
 {% block page_sidebar_content %}
 <!-- blank and demo script adds page configuration example -->
+<ul>
+  {% for _ in range(5) %}
+  <li>Hi</li>
+  {% endfor %}
+</ul>
 {% endblock %}
 {% block page_scripts %}
 <!-- Start of page scripts block -->
