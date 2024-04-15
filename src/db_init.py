@@ -52,7 +52,6 @@ for option in [
             break
 
 logger.debug(f"database config: {config}")
-print(config)
 logger.info("setting up database")
 db_config = database_config.DBConfig(config)
 async_db = async_database.AsyncDatabase(db_config)
