@@ -15,3 +15,5 @@ silly==1.1.0 #   Vulnerabilities: None
 starlette-authlib==0.1.39 #  From none |   Vulnerabilities: None
 tqdm==4.66.2 #   Vulnerabilities: None
 unsync==1.4.0 #   Vulnerabilities: None
+alembic==1.13.1
+# psycopg2[binary]==2.9.9
