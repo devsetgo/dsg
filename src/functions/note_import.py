@@ -24,7 +24,6 @@ async def read_notes_from_file(csv_file: list, user_id: str):
         date_created = c["date_created"]
         # convert date_created to datetime
         date_created = parse_date(date_created)
-        print(date_created)
         mood = c["mood"]
         if mood not in ["positive", "negative", "neutral"]:
             mood = await ai.get_mood(content=c["my_note"])
@@ -92,7 +91,6 @@ def validate_csv_headers(csv_reader: csv.DictReader):
                 "extra_headers": extra_headers,
             }
         }
-        print(data)
         return data
 
     return {"status": "success"}

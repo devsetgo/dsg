@@ -19,7 +19,7 @@ from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from pytz import timezone
 from sqlalchemy import Select, and_, between, extract, or_
-from sqlalchemy import cast, Text
+from sqlalchemy import cast, Text,text
 
 from ..db_tables import Notes
 from ..functions import ai, date_functions, note_import, notes_metrics
@@ -70,16 +70,21 @@ async def get_note_issue(
         logger.debug("User identifier is None, redirecting to login")
         return RedirectResponse(url="/users/login", status_code=302)
 
-    # get today's date
-    today = datetime.now(UTC)
-
-    # calculate the dates for 7 days before and after today
-    start_date = today - timedelta(days=settings.history_range)
-    end_date = today + timedelta(days=settings.history_range)
-
     # get notes within 7 days of today
-    query = Select(Notes).where(Notes.user_id == user_identifier)
-    notes = await db_ops.read_query(query=query)
+    # query = Select(Notes).where(Notes.user_id == user_identifier)
+    # notes = await db_ops.read_query(query=query, limit=5)
+    # Define the regular expression pattern
+    pattern = '[^a-zA-Z0-9 ]'
+
+    if settings.db_driver.startswith("sqlite"):
+        query = Select(Notes).where(text(f"(tags REGEXP '{pattern}')"))
+    elif settings.db_driver.startswith("postgres"):
+        query = Select(Notes).where(text(f"(tags::text ~ '{pattern}')"))
+    else:
+        raise ValueError("Untested database driver")
+
+    # Execute the query
+    notes = await db_ops.read_query(query=query, limit=5)
 
     # offset date_created and date_updated to user's timezone
     notes = [note.to_dict() for note in notes]
@@ -102,10 +107,11 @@ async def get_note_issue(
 
     return templates.TemplateResponse(
         request=request,
-        name="/notes/today.html",
+        name="/notes/issues.html",
         context={"notes": notes, "metrics": metrics},
     )
 
+#TODO: Add a post to fix issue
 
 @router.get("/bulk")
 async def bulk_note_form(
