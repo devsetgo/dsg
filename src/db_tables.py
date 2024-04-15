@@ -11,12 +11,20 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.orm import backref, class_mapper, relationship
+from sqlalchemy.orm import class_mapper, relationship
 
 from .db_init import async_db
+from .settings import settings
+
+if settings.db_driver.startswith("sqlite"):
+    schema_base = base_schema.SchemaBaseSQLite
+elif settings.db_driver.startswith("postgres"):
+    schema_base = base_schema.SchemaBasePostgres
+else:
+    raise ValueError("Untested database driver")
 
 
-class Users(base_schema.SchemaBase, async_db.Base):
+class Users(schema_base, async_db.Base):
     __tablename__ = "users"  # Name of the table in the database
     __tableargs__ = {"comment": "Users of the application"}
 
@@ -54,9 +62,10 @@ class Users(base_schema.SchemaBase, async_db.Base):
     categories = relationship("Categories", back_populates="users")
     # Define the child relationship to the Notes class
     notes = relationship("Notes", back_populates="users")
+    job_applications = relationship("JobApplications", back_populates="users")
 
 
-class InterestingThings(base_schema.SchemaBase, async_db.Base):
+class InterestingThings(schema_base, async_db.Base):
     __tablename__ = "interesting_things"  # Name of the table in the database
     __tableargs__ = {"comment": "Interesting things that the user finds"}
 
@@ -78,7 +87,7 @@ class InterestingThings(base_schema.SchemaBase, async_db.Base):
         }
 
 
-class Categories(base_schema.SchemaBase, async_db.Base):
+class Categories(schema_base, async_db.Base):
     __tablename__ = "categories"  # Name of the table in the database
     __tableargs__ = {"comment": "Categories of interesting things"}
 
@@ -96,7 +105,7 @@ class Categories(base_schema.SchemaBase, async_db.Base):
         }
 
 
-class Notes(base_schema.SchemaBase, async_db.Base):
+class Notes(schema_base, async_db.Base):
     __tablename__ = "notes"  # Name of the table in the database
     __tableargs__ = {"comment": "Notes that the user writes"}
 
@@ -137,7 +146,7 @@ class LibraryName(async_db.Base):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-class Library(base_schema.SchemaBase, async_db.Base):
+class Library(schema_base, async_db.Base):
     __tablename__ = "libraries"
     __tableargs__ = {
         "comment": "Stores library data including current and new versions"
@@ -156,7 +165,7 @@ class Library(base_schema.SchemaBase, async_db.Base):
         return data
 
 
-class Requirement(base_schema.SchemaBase, async_db.Base):
+class Requirement(schema_base, async_db.Base):
     __tablename__ = "requirements"
     __tableargs__ = {
         "comment": "Stores requirement data including input text and JSON data"
@@ -175,5 +184,46 @@ class Requirement(base_schema.SchemaBase, async_db.Base):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-# storing for review later
-# date_created = Column(DateTime(timezone=True), server_default=func.now())
+class JobApplications(schema_base, async_db.Base):
+    __tablename__ = "job_applications"  # Name of the table in the database
+    __tableargs__ = {"comment": "Job applications that the user has submitted"}
+
+    # Define the columns of the table
+    url = Column(String, unique=False, index=True)  # URL of the job posting
+    job_title = Column(String, unique=False, index=True)  # Job title
+    company_name = Column(String, unique=False, index=True)  # Company name
+    application_date = Column(DateTime, unique=False, index=True)  # Application date
+    application_status = Column(String, unique=False, index=True)  # Application status
+    user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the User table
+
+    # Define the parent relationship to the User class
+    users = relationship("Users", back_populates="job_applications")
+
+    # Define the child relationship to the JobApplicationTasks class
+    tasks = relationship("JobApplicationTasks", back_populates="job_application")
+
+    def to_dict(self):
+        return {
+            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+        }
+
+
+class JobApplicationTasks(schema_base, async_db.Base):
+    __tablename__ = "job_application_tasks"  # Name of the table in the database
+    __tableargs__ = {"comment": "Tasks related to a job application"}
+
+    # Define the columns of the table
+    task_description = Column(String, unique=False, index=True)  # Task description
+    due_date = Column(DateTime, unique=False, index=True)  # Due date for the task
+    status = Column(String, unique=False, index=True)  # Status of the task
+    job_application_id = Column(
+        String, ForeignKey("job_applications.pkid")
+    )  # Foreign key to the JobApplications table
+
+    # Define the parent relationship to the JobApplications class
+    job_application = relationship("JobApplications", back_populates="tasks")
+
+    def to_dict(self):
+        return {
+            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+        }

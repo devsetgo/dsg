@@ -107,46 +107,37 @@ async def startup():
 
     This function is typically called when the application starts up.
     """
-    logger.info("starting up services")  # Log that the services are starting up
+    logger.info("starting up services")
+    logger.info("checking database for tables")
+    tables = await db_ops.get_table_names()
+    logger.info("creating database tables")
 
-    # Create a DBConfig instance
-    logger.info(
-        "checking database for tables"
-    )  # Log that the database is being checked for tables
-    tables = (
-        await db_ops.get_table_names()
-    )  # Get the names of the tables in the database
-    print(tables)
-    logger.info(
-        "creating database tables"
-    )  # Log that the database tables are being created
-    await async_db.create_tables()  # Create the database tables
-    logger.info(
-        "database tables created"
-    )  # Log that the database tables have been created
-    tables = (
-        await db_ops.get_table_names()
-    )  # Get the names of the tables in the database
-    logger.info(
-        f"tables {tables} have been created"
-    )  # Log the names of the tables that have been created
-    await add_system_data()  # Add system data to the database
+    if tables.__len__ == 0:
+        await async_db.create_tables()
+        logger.info("database tables created")
+        tables = await db_ops.get_table_names()
+        logger.info(f"tables {tables} have been created")
+
+    user = await db_ops.read_query(Select(Users))
+    if len(user) == 0:
+        await add_system_data()
 
 
 async def shutdown():
-    # This function is used to shut down the application.
-    # It's an asynchronous function, which means it can be used with the `await` keyword.
-    # The function does the following:
-    # - Logs that the services are shutting down.
-    # - Disconnects from the database.
-    # This function is typically called when the application is shutting down.
+    """
+    This function is used to shut down the application.
+    It's an asynchronous function, which means it can be used with the `await` keyword.
+    The function does the following:
+    - Logs that the services are shutting down.
+    - Disconnects from the database.
+    This function is typically called when the application is shutting down.
+    """
 
-    logger.info("shutting down services")  # Log that the services are shutting down
+    # Log that the services are shutting down
+    logger.info("shutting down services")
 
     # Disconnect from the database
-    logger.info(
-        "disconnecting from database"
-    )  # Log that the application is disconnecting from the database
+    logger.info("disconnecting from database")
 
 
 async def add_system_data():
@@ -194,17 +185,16 @@ async def add_admin():
         )
         try:
             res = await db_ops.create_one(user)
-            print(res)
+
             user = await db_ops.read_one_record(
                 Select(Users).where(Users.user_name == user_name)
             )
-            print(user.to_dict())
+
             logger.warning(f"Admin created: {user.full_name}")
-            print(user.pkid)
+
             return user.pkid
         except Exception as e:
             logger.error(e)
-            print(e)
 
 
 async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qty):
@@ -223,13 +213,17 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         tags = list(set([silly.adjective() for x in range(1, 4)]))
 
         # Generate a random date within the last X years
-        days_in_three_years = 365 * 2
+        days_in_three_years = 365 * 12
         random_number_of_days = random.randrange(days_in_three_years)
         date_created = datetime.now(UTC) - timedelta(days=random_number_of_days)
 
         # Make date_updated the same as date_created or 3-15 days later
         days_to_add = random.choice([0] + list(range(3, 16)))
         date_updated = date_created + timedelta(days=days_to_add)
+
+        # Convert the timezone-aware datetimes to timezone-naive datetimes
+        date_created = date_created.replace(tzinfo=None)
+        date_updated = date_updated.replace(tzinfo=None)
 
         # Create the note
         note = Notes(
@@ -242,9 +236,9 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
             date_created=date_created,
             date_updated=date_updated,
         )
-        demo_notes.append(note)
-        # data = await db_ops.create_one(note)
-    data = await db_ops.create_many(demo_notes)
+        # demo_notes.append(note)
+        data = await db_ops.create_one(note)
+    # data = await db_ops.create_many(demo_notes)
 
     # add a note to the database that has the same date, but different years. Use today's datetime as the base
     for i in range(20):
@@ -301,7 +295,6 @@ async def add_user():
         user = await db_ops.read_one_record(
             Select(Users).where(Users.user_name == "Mike")
         )
-        # print the full_name property
         logger.info(user.full_name)
 
     except Exception as e:

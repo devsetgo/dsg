@@ -41,11 +41,11 @@
                   History
                 </a>
               </li>
-              <!-- <li class="nav-item">
-              <a class="nav-link" id="custom-tabs-four-settings-tab" data-toggle="pill"
-                href="#custom-tabs-four-settings" role="tab" aria-controls="custom-tabs-four-template"
-                aria-selected="false">Template</a>
-            </li> -->
+              <li class="nav-item">
+              <a class="nav-link" id="custom-tabs-four-aifix-tab" data-toggle="pill"
+                href="#custom-tabs-four-aifix" role="tab" aria-controls="custom-tabs-four-aifix"
+                aria-selected="false">AI Issues</a>
+            </li>
             </ul>
           </div>
           <div class="card-body">
@@ -61,7 +61,7 @@
               <div class="tab-pane fade" id="custom-tabs-four-notes" role="tabpanel"
                 aria-labelledby="custom-tabs-four-notes-tab">
                 <!-- Begin Search Form -->
-
+                {% include 'notes/search-form.html' %}
                 <div class="row" id="notes-data"></div>
                 <!-- End Search Form -->
               </div>
@@ -69,6 +69,10 @@
                 aria-labelledby="custom-tabs-four-history-tab">
                 <div class="row" id="history-data" style="display: flex; flex-direction: column;"></div>
               </div>
+              <div class="tab-pane fade" id="custom-tabs-four-aifix" role="tabpanel"
+              aria-labelledby="custom-tabs-four-aifix-tab">
+              <div class="row" id="aifix-data" style="display: flex; flex-direction: column;">Stuff here caused by AI</div>
+            </div>
             </div>
           </div>
         </div>
