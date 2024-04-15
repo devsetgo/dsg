@@ -35,7 +35,15 @@ option_support = {
 config = {"database_uri": db_uri}
 
 # Check each option
-for option in ["echo", "future", "pool_pre_ping", "pool_size", "max_overflow", "pool_recycle", "pool_timeout"]:
+for option in [
+    "echo",
+    "future",
+    "pool_pre_ping",
+    "pool_size",
+    "max_overflow",
+    "pool_recycle",
+    "pool_timeout",
+]:
     value = getattr(settings, option)
     # Check if the driver string starts with a supported driver
     for driver in option_support[option]:

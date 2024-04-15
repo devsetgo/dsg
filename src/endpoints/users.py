@@ -113,7 +113,7 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
         request.session["exp"] = expiration_time.timestamp()
 
         # Create the response object
-        response = Response(headers={"HX-Redirect": "/"}, status_code=200)
+        response = Response(headers={"HX-Redirect": "/notes"}, status_code=200)
 
         # Update the last login date and reset the failed login attempts in the database
         login_update = await db_ops.update_one(

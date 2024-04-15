@@ -2,14 +2,14 @@
 from dsg_lib.fastapi_functions import system_health_endpoints
 
 # from fastapi import FastAPI, Request, HTTPException, status
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_csrf_protect.exceptions import CsrfProtectError
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .endpoints import devtools, error, notes, pages, pypi, users
+from .endpoints import devtools, notes, pages, pypi, users
 from .resources import templates
 
 

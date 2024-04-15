@@ -18,9 +18,8 @@ from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from pytz import timezone
-from sqlalchemy import Select, and_, between, extract, func, or_, select
-from sqlalchemy.sql.expression import cast
-from sqlalchemy.sql.sqltypes import Integer
+from sqlalchemy import Select, and_, between, extract, or_
+from sqlalchemy import cast, Text
 
 from ..db_tables import Notes
 from ..functions import ai, date_functions, note_import, notes_metrics
@@ -57,9 +56,8 @@ async def read_notes(
     )
 
 
-# today in history notes list
-@router.get("/today")
-async def read_today_notes(
+@router.get("/issues")
+async def get_note_issue(
     request: Request,
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
@@ -80,25 +78,7 @@ async def read_today_notes(
     end_date = today + timedelta(days=settings.history_range)
 
     # get notes within 7 days of today
-    query = Select(Notes).where(
-        and_(
-            Notes.user_id == user_identifier,
-            or_(
-                and_(
-                    extract("month", Notes.date_created) == start_date.month,
-                    between(
-                        extract("day", Notes.date_created), start_date.day, end_date.day
-                    ),
-                ),
-                and_(
-                    extract("month", Notes.date_created) == end_date.month,
-                    between(
-                        extract("day", Notes.date_created), start_date.day, end_date.day
-                    ),
-                ),
-            ),
-        )
-    )
+    query = Select(Notes).where(Notes.user_id == user_identifier)
     notes = await db_ops.read_query(query=query)
 
     # offset date_created and date_updated to user's timezone
@@ -120,19 +100,10 @@ async def read_today_notes(
         metrics["character_count"] += len(note["note"])
     logger.info(f"Found {len(notes)} notes for user {user_identifier}")
 
-    # get the user's timezone
-    user_tz = timezone(user_timezone)
-
-    # convert the UTC datetime to the user's timezone
-    today_user_tz = today.astimezone(user_tz)
-
-    # format it as "5 April"
-    formatted_today = today_user_tz.strftime("%d %B")
-
     return templates.TemplateResponse(
         request=request,
         name="/notes/today.html",
-        context={"notes": notes, "metrics": metrics, "today": formatted_today},
+        context={"notes": notes, "metrics": metrics},
     )
 
 
@@ -381,8 +352,14 @@ async def read_notes_pagination(
     user_info: dict = Depends(check_login),
     # csrf_protect: CsrfProtect = Depends(),
 ):
-    # print(f"function:{request.state.user_info}")
-    #
+    query_params = {
+        "search_term": search_term,
+        "start_date": start_date,
+        "end_date": end_date,
+        "mood": mood,
+        "limit": limit,
+    }
+
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     # user_identifier = request.session.get("user_identifier")
@@ -398,7 +375,7 @@ async def read_notes_pagination(
             or_(
                 Notes.note.contains(search_term) if search_term else True,
                 Notes.summary.contains(search_term) if search_term else True,
-                Notes.tags.contains(search_term) if search_term else True,
+                cast(Notes.tags, Text).contains(search_term) if search_term else True,
             )
         )
     )
@@ -408,6 +385,8 @@ async def read_notes_pagination(
         query = query.where(Notes.mood == mood)
     # filter by date range
     if start_date and end_date:
+        start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = datetime.strptime(end_date, "%Y-%m-%d")
         query = query.where(
             (Notes.date_created >= start_date) & (Notes.date_created <= end_date)
         )
@@ -415,7 +394,7 @@ async def read_notes_pagination(
     query = query.order_by(Notes.date_created.desc())
     offset = (page - 1) * limit
     notes = await db_ops.read_query(query=query, limit=limit, offset=offset)
-
+    print(notes)
     if isinstance(notes, str):
         logger.error(f"Unexpected result from read_query: {notes}")
         notes = []
@@ -435,17 +414,22 @@ async def read_notes_pagination(
         )
     found = len(notes)
     note_count = await db_ops.count_query(query=query)
-    if offset == 0:
-        current_count = limit
-    else:
-        current_count = limit + offset
+    # if offset == 0:
+    current_count = found
+    # else:
+    #     current_count = note_count
 
     total_pages = -(-note_count // limit)  # Ceiling division
+    # Generate the URLs for the previous and next pages
     prev_page_url = (
-        f"/notes/pagination?page={page - 1}&limit={limit}" if page > 1 else None
+        f"/notes/pagination?page={page - 1}&"
+        + "&".join(f"{k}={v}" for k, v in query_params.items() if v)
+        if page > 1
+        else None
     )
     next_page_url = (
-        f"/notes/pagination?page={page + 1}&limit={limit}"
+        f"/notes/pagination?page={page + 1}&"
+        + "&".join(f"{k}={v}" for k, v in query_params.items() if v)
         if page < total_pages
         else None
     )
@@ -464,6 +448,85 @@ async def read_notes_pagination(
             "prev_page_url": prev_page_url,
             "next_page_url": next_page_url,
         },
+    )
+
+
+# today in history notes list
+@router.get("/today")
+async def read_today_notes(
+    request: Request,
+    user_info: dict = Depends(check_login),
+    csrf_protect: CsrfProtect = Depends(),
+):
+
+    user_identifier = user_info["user_identifier"]
+    user_timezone = user_info["timezone"]
+
+    if user_identifier is None:
+        logger.debug("User identifier is None, redirecting to login")
+        return RedirectResponse(url="/users/login", status_code=302)
+
+    # get today's date
+    today = datetime.now(UTC)
+
+    # calculate the dates for 7 days before and after today
+    start_date = today - timedelta(days=settings.history_range)
+    end_date = today + timedelta(days=settings.history_range)
+
+    # get notes within 7 days of today
+    query = Select(Notes).where(
+        and_(
+            Notes.user_id == user_identifier,
+            or_(
+                and_(
+                    extract("month", Notes.date_created) == start_date.month,
+                    between(
+                        extract("day", Notes.date_created), start_date.day, end_date.day
+                    ),
+                ),
+                and_(
+                    extract("month", Notes.date_created) == end_date.month,
+                    between(
+                        extract("day", Notes.date_created), start_date.day, end_date.day
+                    ),
+                ),
+            ),
+        )
+    )
+    notes = await db_ops.read_query(query=query)
+
+    # offset date_created and date_updated to user's timezone
+    notes = [note.to_dict() for note in notes]
+
+    metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
+    for note in notes:
+        note["date_created"] = await date_functions.timezone_update(
+            user_timezone=user_timezone,
+            date_time=note["date_created"],
+            friendly_string=True,
+        )
+        note["date_updated"] = await date_functions.timezone_update(
+            user_timezone=user_timezone,
+            date_time=note["date_updated"],
+            friendly_string=True,
+        )
+        metrics["word_count"] += len(note["note"].split())
+        metrics["character_count"] += len(note["note"])
+    logger.info(f"Found {len(notes)} notes for user {user_identifier}")
+
+    # get the user's timezone
+    user_tz = timezone(user_timezone)
+
+    # convert the UTC datetime to the user's timezone
+    today_user_tz = today.astimezone(user_tz)
+
+    # format it as "5 April"
+    formatted_today = today_user_tz.strftime("%d %B")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="/notes/today.html",
+        context={"notes": notes, "metrics": metrics, "today": formatted_today},
     )
 
 
