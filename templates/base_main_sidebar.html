@@ -10,8 +10,8 @@
     {% include "base_nav_items.html" %}
     {% if request.session.get('user_identifier') is not none %}
     {% include "base_nav_loggedin.html" %}
-    {% if request.session.is_admin is not none%}
-    {% include "base_nav_admin.html" %}
+    {% if request.session.is_admin is true%}
+    {% include "admin/nav.html" %}
     {% include "base_nav_developer.html" %}
     {% endif %}
     <ul>
