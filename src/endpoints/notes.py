@@ -2,7 +2,7 @@
 import csv
 import io
 from datetime import UTC, datetime, timedelta
-
+import re
 # from pytz import timezone, UTC
 from fastapi import (
     APIRouter,
@@ -69,11 +69,6 @@ async def get_note_issue(
         logger.debug("User identifier is None, redirecting to login")
         return RedirectResponse(url="/users/login", status_code=302)
 
-    # get notes within 7 days of today
-    # query = Select(Notes).where(Notes.user_id == user_identifier)
-    # notes = await db_ops.read_query(query=query, limit=5)
-    # Define the regular expression pattern
-    import re
 
     pattern = re.compile("[^a-zA-Z, ]")
 
@@ -135,12 +130,13 @@ async def ai_update_note(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
     note = await db_ops.read_one_record(query=query)
-    print(note)
+
     if note is None:
         logger.warning(f"No note found with ID: {note_id} for user: {user_identifier}")
         return RedirectResponse(url="/error/404", status_code=404)
 
     note = note.to_dict()
+
     return templates.TemplateResponse(
         request=request, name="/notes/ai-resubmit.html", context={"note": note}
     )
@@ -154,21 +150,22 @@ async def ai_fix_processing(request:Request,note_id:str, user_info: dict = Depen
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
     note = await db_ops.read_one_record(query=query)
-    note = note.to_dict()
+    note=note.to_dict()
+
     # Get the tags and summary from OpenAI
     analysis = await ai.get_analysis(content=note['note'])
 
     logger.info(f"Received analysis from AI: {analysis}")
     # Create the note
+    print(analysis["tags"]['tags'])
     note_update = {'tags':analysis["tags"]["tags"],
         'summary':analysis["summary"],
         'mood_analysis':analysis["mood_analysis"],}
         
     data = await db_ops.update_one(table=Notes, record_id=note['pkid'], new_values=note_update)
-
-    logger.info(f"Resubmited note to AI with ID: {data.pkid}")
-
-    return RedirectResponse(url=f"/notes/view/{data.pkid}", status_code=302)
+    data = data.to_dict()
+    logger.info(f"Resubmited note to AI with ID: {data['pkid']}")
+    return RedirectResponse(url=f"/notes/view/{data['pkid']}?ai=true", status_code=302)
 
 @router.get("/bulk")
 async def bulk_note_form(
@@ -263,46 +260,41 @@ async def update_note(
 
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
+
+    # Fetch the old data
+    old_data = await db_ops.read_one_record(query=Select(Notes).where(Notes.pkid == note_id))
+    old_data = old_data.to_dict()
+
+    # Get the new data from the form
     form = await request.form()
 
-    mood = form.get("mood")
-    note = form.get("note")
-    tags = form.get("tags")
-    summary = form.get("summary")
-    mood_analysis = form.get("mood_analysis")
+    # Initialize the updated data dictionary with the current date and time
+    updated_data = {"date_updated": datetime.utcnow()}
 
-    logger.debug(
-        f"Received mood: {mood}, note: {note}, tags: {tags}, summary: {summary}, mood_analysis: {mood_analysis}"
-    )
+    # List of fields to update
+    fields = ["mood", "note", "tags", "summary", "mood_analysis"]
+    print(form.get("tags"))
+    # Compare the old data to the new data
+    for field in fields:
+        new_value = form.get(field)
+        if new_value is not None and new_value != old_data.get(field):
+            if field == "tags":
+                # Ensure tags is a list
+                if isinstance(new_value, str):
+                    new_value = [tag.strip() for tag in new_value.split(",")]
+                elif not isinstance(new_value, list):
+                    new_value = [new_value]
+            updated_data[field] = new_value
 
-    # converts tags from a string to a list if tags is not None
-    if tags:
-        tags = tags.split(",")
-        tags = {"tags": tags}
-
-    # Create the note
-    new_values = {
-        "date_updated": datetime.utcnow(),
-    }
-
-    if summary:
-        new_values["summary"] = summary
-    if mood:
-        new_values["mood"] = mood
-    if tags:
-        new_values["tags"] = tags
-    if mood_analysis:
-        new_values["mood_analysis"] = mood_analysis
-    if note:
-        new_values["note"] = note
-
+    print(updated_data)
+    # Update the database
     data = await db_ops.update_one(
-        table=Notes, record_id=note_id, new_values=new_values
+        table=Notes, record_id=note_id, new_values=updated_data
     )
-
+    # print(data.to_dict())
     logger.info(f"Updated note with ID: {note_id}")
 
-    return RedirectResponse(url=f"/notes/{data.pkid}", status_code=302)
+    return RedirectResponse(url=f"/notes/view/{data.pkid}", status_code=302)
 
 
 @router.get("/delete/{note_id}")
@@ -596,8 +588,10 @@ async def read_today_notes(
 
 @router.get("/view/{note_id}")
 async def read_note(
-    request: Request, note_id: str, user_info: dict = Depends(check_login)
+    request: Request, note_id: str, user_info: dict = Depends(check_login), ai:bool=None
 ):
+    if ai is None:
+        ai = False
 
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
@@ -612,7 +606,7 @@ async def read_note(
         return RedirectResponse(url="/notes", status_code=302)
 
     note = note.to_dict()
-
+    print(note['tags'])
     # offset date_created and date_updated to user's timezone
     note["date_created"] = await date_functions.timezone_update(
         user_timezone=user_timezone,
@@ -628,6 +622,6 @@ async def read_note(
     logger.info(f"Returning note with ID: {note_id} for user: {user_identifier}")
 
     return templates.TemplateResponse(
-        request=request, name="/notes/view.html", context={"note": note}
+        request=request, name="/notes/view.html", context={"note": note,'ai':ai}
     )
 

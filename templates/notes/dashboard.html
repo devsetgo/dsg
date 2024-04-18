@@ -92,6 +92,30 @@
 {% block page_scripts %}
 <!-- Start of page scripts block -->
 <!-- OPTIONAL SCRIPTS -->
+<!-- tab links -->
+<script>
+// Add click event listener to each tab
+document.querySelectorAll('.nav-link').forEach(tab => {
+  tab.addEventListener('click', function() {
+    // Update URL hash when a tab is clicked
+    window.location.hash = this.id;
+  });
+});
+
+// On page load, check the URL hash and open the corresponding tab
+window.onload = function() {
+  let hash = window.location.hash;
+  if (hash) {
+    // Remove '#' from the hash
+    let tabId = hash.slice(1);
+    // Open the tab
+    let tab = document.getElementById(tabId);
+    if (tab) {
+      tab.click();
+    }
+  }
+};
+</script>
 <!-- Mood Trend by Month -->
 <script>
   // Data for the chart
