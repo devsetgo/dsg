@@ -18,8 +18,7 @@ from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from pytz import timezone
-from sqlalchemy import Select, and_, between, extract, or_
-from sqlalchemy import cast, Text,text
+from sqlalchemy import Select, Text, and_, between, cast, extract, or_, text
 
 from ..db_tables import Notes
 from ..functions import ai, date_functions, note_import, notes_metrics
@@ -74,7 +73,7 @@ async def get_note_issue(
     # query = Select(Notes).where(Notes.user_id == user_identifier)
     # notes = await db_ops.read_query(query=query, limit=5)
     # Define the regular expression pattern
-    pattern = '[^a-zA-Z0-9 ]'
+    pattern = "[^a-zA-Z, ]"
 
     if settings.db_driver.startswith("sqlite"):
         query = Select(Notes).where(text(f"(tags REGEXP '{pattern}')"))
@@ -111,7 +110,9 @@ async def get_note_issue(
         context={"notes": notes, "metrics": metrics},
     )
 
-#TODO: Add a post to fix issue
+
+# TODO: Add a post to fix issue
+
 
 @router.get("/bulk")
 async def bulk_note_form(
@@ -400,7 +401,7 @@ async def read_notes_pagination(
     query = query.order_by(Notes.date_created.desc())
     offset = (page - 1) * limit
     notes = await db_ops.read_query(query=query, limit=limit, offset=offset)
-    print(notes)
+    logger.debug(f"notes returned from pagination query {notes}")
     if isinstance(notes, str):
         logger.error(f"Unexpected result from read_query: {notes}")
         notes = []

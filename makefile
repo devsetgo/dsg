@@ -18,9 +18,13 @@ DEV_REQUIREMENTS_PATH = requirements/dev.txt
 
 .PHONY: autoflake black cache cleanup compile dev flake8 gdev gprd grdev help install install-dev isort prd test
 
-migrate: # migrate database using alembic
+alembic-migrate: # migrate database using alembic
 	alembic upgrade head
 
+alembic-rev: # Create revision database using alembic
+	@read -p "Enter revision name: " name; \
+	alembic revision --autogenerate -m "$$name"
+	
 autoflake:  # Remove unused imports and variables
 	autoflake --in-place --remove-all-unused-imports -r $(SERVICE_PATH)
 
