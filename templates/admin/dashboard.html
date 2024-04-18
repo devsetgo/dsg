@@ -1,0 +1,169 @@
+{% extends "base.html" %} <!-- Extends the base HTML layout -->
+{% block page_title %}| Notes{% endblock %} <!-- Sets the page title -->
+{% block page_stylesheet %} <!-- Starts the block for page-specific stylesheets -->
+<!-- DataTables -->
+<link rel="stylesheet" href="{{ url_for('static' , path='plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Bootstrap 4 -->
+<link rel="stylesheet"
+  href="{{ url_for('static' , path='plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Responsive Bootstrap 4 -->
+<link rel="stylesheet"
+  href="{{ url_for('static' , path='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Buttons Bootstrap 4 -->
+{% endblock %} <!-- Ends the block for page-specific stylesheets -->
+{% block page_breadcrumb %} Notes{% endblock %} <!-- Sets the breadcrumb -->
+{% block page_head_title %}Notes{% endblock %} <!-- Sets the page head title -->
+{% block body %} <!-- Starts the block for the body of the page -->
+<section> <!-- Starts a section -->
+  <div class="container-fluid"> <!-- Starts a container-fluid -->
+    <div class="row"> <!-- Starts a row -->
+      <div class="col-12">
+        <div class="card card-primary card-outline card-outline-tabs">
+          <div class="card-header p-0 border-bottom-0">
+            <ul class="nav nav-tabs" id="custom-tabs-four-tab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="dash-tab" data-toggle="pill" href="#custom-tabs-four-dash" role="tab"
+                  aria-controls="custom-tabs-four-dash" aria-selected="true" hx-trigger="click"
+                  hx-indicator=".htmx-indicator">Dashboard</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="access-tab" data-toggle="pill" href="#custom-tabs-four-access" role="tab"
+                  aria-controls="custom-tabs-four-access" aria-selected="false" hx-trigger="click"
+                  hx-indicator=".htmx-indicator">Access</a>
+              </li>
+            </ul>
+          </div>
+          <div class="card-body">
+            <div class="tab-content" id="custom-tabs-four-tabContent">
+              <div class="tab-pane fade show active" id="custom-tabs-four-dash" role="tabpanel"
+                aria-labelledby="custom-tabs-four-dash-tab">
+                <div class="container-fluid">
+                  Metrics
+                </div>
+              </div>
+              <div class="tab-pane fade" id="custom-tabs-four-access" role="tabpanel"
+                aria-labelledby="custom-tabs-four-access-tab">
+                {{users}}
+                <table id="usersTable" class="display" style="width:100%">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>User Name</th>
+                      <th>Email</th>
+                      <th>Active</th>
+                      <th>Admin</th>
+                      <th>Site Access</th>
+                      <th>Last Access</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for u in users %}
+                    <tr>
+                      <td>{{u.first_name}} {{u.last_name}}</td>
+                      <td>{{u.user_name}}</td>
+                      <td>{{u.email}}</td>
+                      <td>{{u.is_active}}</td>
+                      <td>{{u.is_admin}}</td>
+                      <td>{{u.site_access}}</td>
+                      <td>{{u.date_last_login}}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th>Name</th>
+                      <th>user_name</th>
+                      <th>email</th>
+                      <th>is_active</th>
+                      <th>is_admin</th>
+                      <th>site_access</th>
+                      <th>Last Access</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</section>
+{% endblock %}
+{% block page_sidebar_content %}
+<!-- blank and demo script adds page configuration example -->
+<ul>
+  {% for _ in range(5) %}
+  <li>Hi</li>
+  {% endfor %}
+</ul>
+{% endblock %}
+{% block page_scripts %}
+<!-- Start of page scripts block -->
+<!-- OPTIONAL SCRIPTS -->
+<!-- tab links -->
+<script>
+  // Add click event listener to each tab
+  document.querySelectorAll('.nav-link').forEach(tab => {
+    tab.addEventListener('click', function () {
+      // Update URL hash when a tab is clicked
+      window.location.hash = this.id;
+    });
+  });
+
+  // On page load, check the URL hash and open the corresponding tab
+  window.onload = function () {
+    let hash = window.location.hash;
+    if (hash) {
+      // Remove '#' from the hash
+      let tabId = hash.slice(1);
+      // Open the tab
+      let tab = document.getElementById(tabId);
+      if (tab) {
+        tab.click();
+      }
+    }
+  };
+</script>
+
+<!-- Import dashboard3.js script -->
+<script src="{{ url_for('static' , path='dist/js/pages/dashboard3.js') }}"></script>
+<!-- DataTables & Plugins -->
+<!-- Import jQuery DataTables library -->
+<script src="{{ url_for('static' , path='plugins/datatables/jquery.dataTables.min.js') }}"></script>
+<!-- Import Bootstrap 4 DataTables library -->
+<script src="{{ url_for('static' , path='plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+<!-- Import DataTables Responsive library -->
+<script src="{{ url_for('static' , path='plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
+<!-- Import DataTables Responsive Bootstrap 4 library -->
+<script src="{{ url_for('static' , path='plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
+<!-- Import DataTables Buttons library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
+<!-- Import DataTables Buttons Bootstrap 4 library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
+<!-- Import JSZip library (for Excel export) -->
+<script src="{{ url_for('static' , path='plugins/jszip/jszip.min.js') }}"></script>
+<!-- Import PDFMake library (for PDF export) -->
+<script src="{{ url_for('static' , path='plugins/pdfmake/pdfmake.min.js') }}"></script>
+<!-- Import PDFMake fonts -->
+<script src="{{ url_for('static' , path='plugins/pdfmake/vfs_fonts.js') }}"></script>
+<!-- Import DataTables HTML5 Buttons library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
+<!-- Import DataTables Print Button library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
+<!-- Import DataTables Column Visibility Button library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
+<!-- Initialize DataTable with specific options -->
+
+<script>
+  new DataTable('#usersTable', {
+    layout: {
+      bottomEnd: {
+        paging: {
+          boundaryNumbers: false
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}
+<!-- End of page scripts block -->

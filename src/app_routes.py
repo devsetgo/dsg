@@ -9,7 +9,7 @@ from fastapi_csrf_protect.exceptions import CsrfProtectError
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .endpoints import devtools, notes, pages, pypi, users
+from .endpoints import devtools, notes, pages, pypi, users,admin
 from .resources import templates
 
 
@@ -255,11 +255,11 @@ def create_routes(app: FastAPI):
         tags=["devtools"],
     )
 
-    # app.include_router(
-    #     error.router,
-    #     prefix="/error",
-    #     tags=["error"],
-    # )
+    app.include_router(
+        admin.router,
+        prefix="/admin",
+        tags=["admin"],
+    )
     app.include_router(
         notes.router,
         prefix="/notes",
