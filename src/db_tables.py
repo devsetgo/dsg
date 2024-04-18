@@ -57,12 +57,15 @@ class Users(schema_base, async_db.Base):
 
     # Define the child relationship to the InterestingThings class
     interesting_things = relationship(
-        "InterestingThings", back_populates="users"
-    )  # Relationship to the InterestingThings class
-    categories = relationship("Categories", back_populates="users")
-    # Define the child relationship to the Notes class
-    notes = relationship("Notes", back_populates="users")
-    job_applications = relationship("JobApplications", back_populates="users")
+        "InterestingThings", back_populates="users", cascade="all,delete"
+    )
+    categories = relationship(
+        "Categories", back_populates="users", cascade="all,delete"
+    )
+    notes = relationship("Notes", back_populates="users", cascade="all,delete")
+    job_applications = relationship(
+        "JobApplications", back_populates="users", cascade="all,delete"
+    )
 
 
 class InterestingThings(schema_base, async_db.Base):

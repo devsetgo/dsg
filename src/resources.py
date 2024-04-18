@@ -112,11 +112,12 @@ async def startup():
     tables = await db_ops.get_table_names()
     logger.info("creating database tables")
 
-    if tables.__len__ == 0:
-        await async_db.create_tables()
-        logger.info("database tables created")
-        tables = await db_ops.get_table_names()
-        logger.info(f"tables {tables} have been created")
+    print(tables.__len__())
+    # if tables.__len__() == 0:
+    await async_db.create_tables()
+    logger.info("database tables created")
+    tables = await db_ops.get_table_names()
+    logger.info(f"tables {tables} have been created")
 
     user = await db_ops.read_query(Select(Users))
     if len(user) == 0:
@@ -152,7 +153,9 @@ async def add_system_data():
 
     if settings.create_demo_user is True:
         logger.warning("Creating demo user")
-        await add_user()  # Create a demo user
+        data = await add_user()  # Create a demo user
+        if settings.create_demo_notes is True:
+            await add_notes(user_id=data)  # Create notes for the admin user
 
     if settings.create_base_categories is True:
         logger.warning("Creating base categories")
@@ -202,6 +205,31 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
     demo_notes = []
     mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
 
+    for i in tqdm(range(20), desc="same day notes"):
+        mood = random.choice(moods)
+        mood_analysis_choice = random.choice(mood_analysis)
+
+        length = random.randint(5, 20)
+        note = silly.paragraph(length=length)
+        summary = note[:50]
+        tags = list(set([silly.adjective() for x in range(1, 4)]))
+
+        # Make date_updated the same as date_created or 3-15 days later
+        date_created = datetime.now(UTC) - timedelta(days=365 * i)
+
+        date_updated = date_created
+        note = Notes(
+            mood="positive",
+            note=f"{user_id} This is a note that was created in the past",
+            summary="Past Note",
+            tags=list(set([silly.adjective() for x in range(1, 4)])),
+            mood_analysis="positive",
+            user_id=user_id,
+            date_created=date_created,
+            date_updated=date_updated,
+        )
+        data = await db_ops.create_one(note)
+
     for _ in tqdm(range(qty_notes), desc="creating demo notes"):
 
         mood = random.choice(moods)
@@ -239,32 +267,6 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         # demo_notes.append(note)
         data = await db_ops.create_one(note)
     # data = await db_ops.create_many(demo_notes)
-
-    # add a note to the database that has the same date, but different years. Use today's datetime as the base
-    for i in range(20):
-        mood = random.choice(moods)
-        mood_analysis_choice = random.choice(mood_analysis)
-
-        length = random.randint(5, 20)
-        note = silly.paragraph(length=length)
-        summary = note[:50]
-        tags = list(set([silly.adjective() for x in range(1, 4)]))
-
-        # Make date_updated the same as date_created or 3-15 days later
-        date_created = datetime.now(UTC) - timedelta(days=365 * i)
-
-        date_updated = date_created
-        note = Notes(
-            mood="positive",
-            note="This is a note that was created in the past",
-            summary="Past Note",
-            tags=list(set([silly.adjective() for x in range(1, 4)])),
-            mood_analysis="positive",
-            user_id=user_id,
-            date_created=date_created,
-            date_updated=date_updated,
-        )
-        data = await db_ops.create_one(note)
 
 
 async def add_user():
