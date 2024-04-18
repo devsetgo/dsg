@@ -24,8 +24,9 @@ async def get_analysis(content: str) -> dict:
 
 
 async def get_tags(content: str) -> dict:
-    keyword_limit: int = 4
-    # prompt = f"Please analyze the following text and provide one-word psychological keywords capture its essence: {content}"
+    keyword_limit: int = 2
+    # prompt = f"Please analyze the following text and provide one-word
+    # psychological keywords capture its essence: {content}"
     prompt = f"Please analyze the following text and provide 'one-word' keywords capture its essence: {content}"
 
     chat_completion = await client.chat.completions.create(
@@ -34,7 +35,7 @@ async def get_tags(content: str) -> dict:
         messages=[
             {
                 "role": "system",
-                "content": f"You are a helpful assistant that will provide no more than {keyword_limit} 'one-word' keyword to be used as tags. Names of people cannot be included. Words with numbers, symbols or spaces cannot be used.",
+                "content": f"You are a helpful assistant that will provide no more than {keyword_limit} 'one-word' keywords to generalize the note. Names of people cannot be included. Words with numbers, symbols or spaces cannot be used.",
             },
             {"role": "user", "content": content},
         ],
@@ -54,7 +55,9 @@ async def get_tags(content: str) -> dict:
 
 async def get_summary(content: str) -> dict:
     summary_length: int = 5
-    # prompt = f"Please analyze the following text and provide a very short description (less than 10 words) in the format of 'feeling blank': {content}"
+    # prompt = f"Please analyze the following text and provide a very short
+    # description (less than 10 words) in the format of 'feeling blank':
+    # {content}"
     prompt = f"Please analyze the following text and provide a short description and without naming a person in the summary: {content}"
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
@@ -74,7 +77,9 @@ async def get_summary(content: str) -> dict:
 
 async def get_mood_analysis(content: str) -> dict:
 
-    # prompt = f"Please analyze the following text and provide a very short description (less than 10 words) in the format of 'feeling blank': {content}"
+    # prompt = f"Please analyze the following text and provide a very short
+    # description (less than 10 words) in the format of 'feeling blank':
+    # {content}"
     prompt = f"Please analyze the following text and tell me what overall mood it expresses in a single word: {content}"
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",

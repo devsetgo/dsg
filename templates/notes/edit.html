@@ -46,7 +46,7 @@
                                             <label for="tags">Tags</label>
                                             <input type="text" class="form-control" id="tags" name="tags"
                                                 placeholder="Enter tags"
-                                                value="{% for tag in note.tags.tags %}{{ tag }}{% if not loop.last %}, {% endif %}{% endfor %}"
+                                                value="{% for tag in note.tags %}{{ tag }}{% if not loop.last %}, {% endif %}{% endfor %}"
                                                 readonly>
                                         </div>
                                     </div>
