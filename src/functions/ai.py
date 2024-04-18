@@ -34,7 +34,7 @@ async def get_tags(content: str) -> dict:
         messages=[
             {
                 "role": "system",
-                "content": f"You are a helpful assistant that will provide no more than {keyword_limit} 'one-word' keyword to be used as tags. Names of people cannot be included.",
+                "content": f"You are a helpful assistant that will provide no more than {keyword_limit} 'one-word' keyword to be used as tags. Names of people cannot be included. Words with numbers, symbols or spaces cannot be used.",
             },
             {"role": "user", "content": content},
         ],
