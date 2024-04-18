@@ -73,23 +73,35 @@ async def get_note_issue(
     # query = Select(Notes).where(Notes.user_id == user_identifier)
     # notes = await db_ops.read_query(query=query, limit=5)
     # Define the regular expression pattern
-    pattern = "[^a-zA-Z, ]"
+    import re
+
+    pattern = re.compile("[^a-zA-Z, ]")
 
     if settings.db_driver.startswith("sqlite"):
-        query = Select(Notes).where(text(f"(tags REGEXP '{pattern}')"))
+        # Fetch all notes from the SQLite database
+        query = Select(Notes).where(Notes.user_id == user_identifier)
+        all_notes = await db_ops.read_query(query=query)
+        # Filter the notes in Python using the regular expression
+        notes = []
+        for note in all_notes:
+            if any(pattern.search(tag) for tag in note.tags):
+                notes.append(note)
+                if len(notes) == 5:
+                    break
     elif settings.db_driver.startswith("postgres"):
-        query = Select(Notes).where(text(f"(tags::text ~ '{pattern}')"))
+        # Use the regular expression in the PostgreSQL query
+        query = Select(Notes).where(text(f"EXISTS (SELECT 1 FROM json_array_elements_text(tags) as tag WHERE tag ~* '{pattern.pattern}')"))
+        query= query.where(Notes.user_id == user_identifier)
+        notes = await db_ops.read_query(query=query, limit=5)
     else:
         raise ValueError("Untested database driver")
 
-    # Execute the query
-    notes = await db_ops.read_query(query=query, limit=5)
-
     # offset date_created and date_updated to user's timezone
     notes = [note.to_dict() for note in notes]
-
     metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
     for note in notes:
+        for n in note['tags']:
+            print(n)
         note["date_created"] = await date_functions.timezone_update(
             user_timezone=user_timezone,
             date_time=note["date_created"],
@@ -111,8 +123,52 @@ async def get_note_issue(
     )
 
 
-# TODO: Add a post to fix issue
+@router.get("/ai-resubmit/{note_id}")
+async def ai_update_note(
+    request: Request, note_id: str, user_info: dict = Depends(check_login)
+):
 
+    user_identifier = user_info["user_identifier"]
+    user_timezone = user_info["timezone"]
+
+    query = Select(Notes).where(
+        and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
+    )
+    note = await db_ops.read_one_record(query=query)
+    print(note)
+    if note is None:
+        logger.warning(f"No note found with ID: {note_id} for user: {user_identifier}")
+        return RedirectResponse(url="/error/404", status_code=404)
+
+    note = note.to_dict()
+    return templates.TemplateResponse(
+        request=request, name="/notes/ai-resubmit.html", context={"note": note}
+    )
+
+@router.get("/ai-fix/{note_id}")
+async def ai_fix_processing(request:Request,note_id:str, user_info: dict = Depends(check_login)):
+    user_identifier = user_info["user_identifier"]
+    user_timezone = user_info["timezone"]
+
+    query = Select(Notes).where(
+        and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
+    )
+    note = await db_ops.read_one_record(query=query)
+    note = note.to_dict()
+    # Get the tags and summary from OpenAI
+    analysis = await ai.get_analysis(content=note['note'])
+
+    logger.info(f"Received analysis from AI: {analysis}")
+    # Create the note
+    note_update = {'tags':analysis["tags"]["tags"],
+        'summary':analysis["summary"],
+        'mood_analysis':analysis["mood_analysis"],}
+        
+    data = await db_ops.update_one(table=Notes, record_id=note['pkid'], new_values=note_update)
+
+    logger.info(f"Resubmited note to AI with ID: {data.pkid}")
+
+    return RedirectResponse(url=f"/notes/view/{data.pkid}", status_code=302)
 
 @router.get("/bulk")
 async def bulk_note_form(
@@ -347,6 +403,7 @@ async def create_note(
     return RedirectResponse(url=f"/notes/{data.pkid}", status_code=302)
 
 
+
 @router.get("/pagination")
 async def read_notes_pagination(
     request: Request,
@@ -573,3 +630,4 @@ async def read_note(
     return templates.TemplateResponse(
         request=request, name="/notes/view.html", context={"note": note}
     )
+

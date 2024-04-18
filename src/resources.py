@@ -112,7 +112,6 @@ async def startup():
     tables = await db_ops.get_table_names()
     logger.info("creating database tables")
 
-    print(tables.__len__())
     # if tables.__len__() == 0:
     await async_db.create_tables()
     logger.info("database tables created")
@@ -298,9 +297,13 @@ async def add_user():
             Select(Users).where(Users.user_name == "Mike")
         )
         logger.info(user.full_name)
+        print(user.pkid)
+        second_user_notes = await add_notes(user_id=user.pkid, qty_notes=11)
 
     except Exception as e:
         logger.error(e)
+
+
 
 
 async def add_categories():
