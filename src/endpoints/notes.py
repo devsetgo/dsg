@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import csv
 import io
-from datetime import UTC, datetime, timedelta
 import re
+from datetime import UTC, datetime, timedelta
+
 # from pytz import timezone, UTC
 from fastapi import (
     APIRouter,
@@ -69,7 +70,6 @@ async def get_note_issue(
         logger.debug("User identifier is None, redirecting to login")
         return RedirectResponse(url="/users/login", status_code=302)
 
-
     pattern = re.compile("[^a-zA-Z, ]")
 
     if settings.db_driver.startswith("sqlite"):
@@ -85,8 +85,12 @@ async def get_note_issue(
                     break
     elif settings.db_driver.startswith("postgres"):
         # Use the regular expression in the PostgreSQL query
-        query = Select(Notes).where(text(f"EXISTS (SELECT 1 FROM json_array_elements_text(tags) as tag WHERE tag ~* '{pattern.pattern}')"))
-        query= query.where(Notes.user_id == user_identifier)
+        query = Select(Notes).where(
+            text(
+                f"EXISTS (SELECT 1 FROM json_array_elements_text(tags) as tag WHERE tag ~* '{pattern.pattern}')"
+            )
+        )
+        query = query.where(Notes.user_id == user_identifier)
         notes = await db_ops.read_query(query=query, limit=5)
     else:
         raise ValueError("Untested database driver")
@@ -95,7 +99,7 @@ async def get_note_issue(
     notes = [note.to_dict() for note in notes]
     metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
     for note in notes:
-        for n in note['tags']:
+        for n in note["tags"]:
             print(n)
         note["date_created"] = await date_functions.timezone_update(
             user_timezone=user_timezone,
@@ -141,8 +145,11 @@ async def ai_update_note(
         request=request, name="/notes/ai-resubmit.html", context={"note": note}
     )
 
+
 @router.get("/ai-fix/{note_id}")
-async def ai_fix_processing(request:Request,note_id:str, user_info: dict = Depends(check_login)):
+async def ai_fix_processing(
+    request: Request, note_id: str, user_info: dict = Depends(check_login)
+):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -150,22 +157,27 @@ async def ai_fix_processing(request:Request,note_id:str, user_info: dict = Depen
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
     note = await db_ops.read_one_record(query=query)
-    note=note.to_dict()
+    note = note.to_dict()
 
     # Get the tags and summary from OpenAI
-    analysis = await ai.get_analysis(content=note['note'])
+    analysis = await ai.get_analysis(content=note["note"])
 
     logger.info(f"Received analysis from AI: {analysis}")
     # Create the note
-    print(analysis["tags"]['tags'])
-    note_update = {'tags':analysis["tags"]["tags"],
-        'summary':analysis["summary"],
-        'mood_analysis':analysis["mood_analysis"],}
-        
-    data = await db_ops.update_one(table=Notes, record_id=note['pkid'], new_values=note_update)
+    print(analysis["tags"]["tags"])
+    note_update = {
+        "tags": analysis["tags"]["tags"],
+        "summary": analysis["summary"],
+        "mood_analysis": analysis["mood_analysis"],
+    }
+
+    data = await db_ops.update_one(
+        table=Notes, record_id=note["pkid"], new_values=note_update
+    )
     data = data.to_dict()
     logger.info(f"Resubmited note to AI with ID: {data['pkid']}")
     return RedirectResponse(url=f"/notes/view/{data['pkid']}?ai=true", status_code=302)
+
 
 @router.get("/bulk")
 async def bulk_note_form(
@@ -262,7 +274,9 @@ async def update_note(
     user_timezone = user_info["timezone"]
 
     # Fetch the old data
-    old_data = await db_ops.read_one_record(query=Select(Notes).where(Notes.pkid == note_id))
+    old_data = await db_ops.read_one_record(
+        query=Select(Notes).where(Notes.pkid == note_id)
+    )
     old_data = old_data.to_dict()
 
     # Get the new data from the form
@@ -393,7 +407,6 @@ async def create_note(
     logger.info(f"Created note with ID: {data.pkid}")
 
     return RedirectResponse(url=f"/notes/{data.pkid}", status_code=302)
-
 
 
 @router.get("/pagination")
@@ -588,7 +601,10 @@ async def read_today_notes(
 
 @router.get("/view/{note_id}")
 async def read_note(
-    request: Request, note_id: str, user_info: dict = Depends(check_login), ai:bool=None
+    request: Request,
+    note_id: str,
+    user_info: dict = Depends(check_login),
+    ai: bool = None,
 ):
     if ai is None:
         ai = False
@@ -606,7 +622,7 @@ async def read_note(
         return RedirectResponse(url="/notes", status_code=302)
 
     note = note.to_dict()
-    print(note['tags'])
+    print(note["tags"])
     # offset date_created and date_updated to user's timezone
     note["date_created"] = await date_functions.timezone_update(
         user_timezone=user_timezone,
@@ -622,6 +638,5 @@ async def read_note(
     logger.info(f"Returning note with ID: {note_id} for user: {user_identifier}")
 
     return templates.TemplateResponse(
-        request=request, name="/notes/view.html", context={"note": note,'ai':ai}
+        request=request, name="/notes/view.html", context={"note": note, "ai": ai}
     )
-

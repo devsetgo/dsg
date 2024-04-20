@@ -141,20 +141,21 @@ async def shutdown():
 
 
 async def add_system_data():
-    # This function is responsible for adding system data to the application.
-    # It checks various settings and based on those settings, it creates an admin user, a demo user, base categories, and demo data.
 
     if settings.create_admin_user is True:
         logger.warning("Creating admin user")
         data = await add_admin()  # Create an admin user
+
         if settings.create_demo_notes is True:
-            await add_notes(user_id=data)  # Create notes for the admin user
+            await add_notes(user_id=data['pkid'])  # Create notes for the admin user
 
     if settings.create_demo_user is True:
         logger.warning("Creating demo user")
-        data = await add_user()  # Create a demo user
-        if settings.create_demo_notes is True:
-            await add_notes(user_id=data)  # Create notes for the admin user
+        for _ in range(2):
+            data = await add_user()  # Create a demo user
+
+            if settings.create_demo_notes is True:
+                await add_notes(user_id=data['pkid'])  # Create notes for the loop user
 
     if settings.create_base_categories is True:
         logger.warning("Creating base categories")
@@ -166,10 +167,6 @@ async def add_system_data():
 
 
 async def add_admin():
-    # This function is responsible for creating an admin user.
-    # It creates a User instance with the admin user details and then tries to add it to the database.
-    # If the user is successfully added, it logs the full name of the user.
-    # If there's an error while adding the user, it logs the error.
 
     if settings.create_admin_user is True:
         logger.warning("creating admin user")
@@ -187,16 +184,16 @@ async def add_admin():
         )
         try:
             res = await db_ops.create_one(user)
-
+            logger.debug(f"add admin {res.to_dict()}")
             user = await db_ops.read_one_record(
                 Select(Users).where(Users.user_name == user_name)
             )
 
             logger.warning(f"Admin created: {user.full_name}")
-
-            return user.pkid
+            return user.to_dict()
         except Exception as e:
             logger.error(e)
+
 
 
 async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qty):
@@ -204,7 +201,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
     demo_notes = []
     mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
 
-    for i in tqdm(range(20), desc="same day notes"):
+    for i in tqdm(range(5), desc=f"same day notes for {user_id}"):
         mood = random.choice(moods)
         mood_analysis_choice = random.choice(mood_analysis)
 
@@ -229,7 +226,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         )
         data = await db_ops.create_one(note)
 
-    for _ in tqdm(range(qty_notes), desc="creating demo notes"):
+    for _ in tqdm(range(qty_notes), desc=f"creating demo notes for {user_id}"):
 
         mood = random.choice(moods)
         mood_analysis_choice = random.choice(mood_analysis)
@@ -269,41 +266,39 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
 
 
 async def add_user():
-    # This function is responsible for adding a default user 'Mike' as a system admin.
-    # It first checks if the user 'Mike' already exists in the database.
-    # If the user exists, it logs that the system user has already been added and returns.
-    # If the user doesn't exist, it creates a Users instance with the user details and then tries to add it to the database.
-    # If the user is successfully added, it logs the full name of the user.
-    # If there's an error while adding the user, it logs the error.
 
-    user = await db_ops.read_query(Select(Users).where(Users.user_name == "Mike"))
-    if len(user) > 0:
-        logger.info("system user already added")
-        return
+    # user = await db_ops.read_query(Select(Users).where(Users.user_name == "admin"))
+    # if len(user) > 0:
+    #     logger.info("system user already added")
+    #     return
 
     logger.info("adding system user")
     hashed_password = hash_password("password")
+    import secrets
+    user_name=f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
+
     user = Users(
-        first_name="Mike",
-        last_name="Ryan",
-        user_name="Mike",
+        first_name=f'{silly.verb()}',
+        last_name=f'{silly.noun()}',
+        user_name=user_name,
         password=hashed_password,
         is_active=True,
-        is_admin=True,
+        is_admin=False,
+        site_access=True
     )
     try:
         await db_ops.create_one(user)
         user = await db_ops.read_one_record(
-            Select(Users).where(Users.user_name == "Mike")
+            Select(Users).where(Users.user_name == user_name)
         )
         logger.info(user.full_name)
-        print(user.pkid)
-        second_user_notes = await add_notes(user_id=user.pkid, qty_notes=11)
+        # print(user.pkid)
+        return user.to_dict()
 
     except Exception as e:
         logger.error(e)
-
-
+        print(e)
+    # return user.pkid
 
 
 async def add_categories():
@@ -324,7 +319,7 @@ async def add_categories():
 
     cat: list = ["technology", "news", "sites", "programming", "woodworking", "other"]
 
-    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == "Mike"))
+    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == "admin"))
 
     for c in cat:
         logger.info(f"adding system category {c}")
@@ -419,8 +414,8 @@ async def add_interesting_things():
             logger.info(f"system item {item['name']} already added")
             return
 
-    # Get the user record for 'Mike'
-    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == "Mike"))
+    # Get the user record for 'admin'
+    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == "admin"))
 
     # Loop through the list of items
     for item in my_stuff:

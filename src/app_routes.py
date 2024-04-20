@@ -9,7 +9,7 @@ from fastapi_csrf_protect.exceptions import CsrfProtectError
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .endpoints import devtools, notes, pages, pypi, users,admin
+from .endpoints import admin, devtools, notes, pages, pypi, users
 from .resources import templates
 
 
