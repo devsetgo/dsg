@@ -9,8 +9,8 @@ from loguru import logger
 from sqlalchemy import Select
 
 from ..db_tables import Users
-from ..functions.hash_function import verify_password
-from ..functions.login_required import require_login
+from ..functions.hash_function import hash_password, verify_password
+from ..functions.login_required import check_login
 from ..resources import db_ops, templates
 from ..settings import settings
 
@@ -129,7 +129,6 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
         return response
 
 
-# log out user endpoint
 @router.get("/logout")
 async def logout(request: Request):
     user_identifier = request.session.get("user_identifier", None)
@@ -138,19 +137,17 @@ async def logout(request: Request):
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 
-# update user information endpoint
 
-
-# update password endpoints
-# get password change form
-@require_login
 @router.get("/password-change", response_class=HTMLResponse)
 async def get_password_change_form(
-    request: Request, csrf_protect: CsrfProtect = Depends()
+    request: Request,
+    csrf_protect: CsrfProtect = Depends(),
+    user_info: dict = Depends(check_login),
+    error: str = None,
 ):
 
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
-    context = {"csrf_token": csrf_token}
+    context = {"csrf_token": csrf_token, "error": error}
     response = templates.TemplateResponse(
         request=request, name="users/password_change.html", context=context
     )
@@ -158,10 +155,11 @@ async def get_password_change_form(
     return response
 
 
-# post password change form
 @router.post("/password-change")
 async def post_password_change_form(
-    request: Request, csrf_protect: CsrfProtect = Depends()
+    request: Request,
+    csrf_protect: CsrfProtect = Depends(),
+    user_info: dict = Depends(check_login),
 ):
     await csrf_protect.validate_csrf(request)
     form = await request.form()

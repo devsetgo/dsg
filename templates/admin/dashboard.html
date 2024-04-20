@@ -1,8 +1,10 @@
 {% extends "base.html" %} <!-- Extends the base HTML layout -->
-{% block page_title %}| Notes{% endblock %} <!-- Sets the page title -->
+{% block page_title %}| Admin Dashboard{% endblock %} <!-- Sets the page title -->
 {% block page_stylesheet %} <!-- Starts the block for page-specific stylesheets -->
 <!-- DataTables -->
-<link rel="stylesheet" href="{{ url_for('static' , path='plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+<link
+  href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.5/b-3.0.2/b-html5-3.0.2/b-print-3.0.2/sc-2.4.1/sb-1.7.1/datatables.min.css"
+  rel="stylesheet">
 <!-- Stylesheet for DataTables Bootstrap 4 -->
 <link rel="stylesheet"
   href="{{ url_for('static' , path='plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
@@ -11,8 +13,8 @@
   href="{{ url_for('static' , path='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
 <!-- Stylesheet for DataTables Buttons Bootstrap 4 -->
 {% endblock %} <!-- Ends the block for page-specific stylesheets -->
-{% block page_breadcrumb %} Notes{% endblock %} <!-- Sets the breadcrumb -->
-{% block page_head_title %}Notes{% endblock %} <!-- Sets the page head title -->
+{% block page_breadcrumb %} Dashboard{% endblock %} <!-- Sets the breadcrumb -->
+{% block page_head_title %}Dashboard{% endblock %} <!-- Sets the page head title -->
 {% block body %} <!-- Starts the block for the body of the page -->
 <section> <!-- Starts a section -->
   <div class="container-fluid"> <!-- Starts a container-fluid -->
@@ -43,8 +45,7 @@
               </div>
               <div class="tab-pane fade" id="custom-tabs-four-access" role="tabpanel"
                 aria-labelledby="custom-tabs-four-access-tab">
-                {{users}}
-                <table id="usersTable" class="display" style="width:100%">
+                <table id="usersTable" class="table table-striped" style="width:100%">
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -60,7 +61,7 @@
                     {% for u in users %}
                     <tr>
                       <td>{{u.first_name}} {{u.last_name}}</td>
-                      <td>{{u.user_name}}</td>
+                      <td><a href="/admin/user/{{u.pkid}}">{{u.user_name}}</a></td>
                       <td>{{u.email}}</td>
                       <td>{{u.is_active}}</td>
                       <td>{{u.is_admin}}</td>
@@ -124,45 +125,27 @@
     }
   };
 </script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"
+  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
-<!-- Import dashboard3.js script -->
-<script src="{{ url_for('static' , path='dist/js/pages/dashboard3.js') }}"></script>
-<!-- DataTables & Plugins -->
-<!-- Import jQuery DataTables library -->
-<script src="{{ url_for('static' , path='plugins/datatables/jquery.dataTables.min.js') }}"></script>
-<!-- Import Bootstrap 4 DataTables library -->
-<script src="{{ url_for('static' , path='plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
-<!-- Import DataTables Responsive library -->
-<script src="{{ url_for('static' , path='plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
-<!-- Import DataTables Responsive Bootstrap 4 library -->
-<script src="{{ url_for('static' , path='plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
-<!-- Import DataTables Buttons library -->
-<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
-<!-- Import DataTables Buttons Bootstrap 4 library -->
-<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
-<!-- Import JSZip library (for Excel export) -->
-<script src="{{ url_for('static' , path='plugins/jszip/jszip.min.js') }}"></script>
-<!-- Import PDFMake library (for PDF export) -->
-<script src="{{ url_for('static' , path='plugins/pdfmake/pdfmake.min.js') }}"></script>
-<!-- Import PDFMake fonts -->
-<script src="{{ url_for('static' , path='plugins/pdfmake/vfs_fonts.js') }}"></script>
-<!-- Import DataTables HTML5 Buttons library -->
-<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
-<!-- Import DataTables Print Button library -->
-<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
-<!-- Import DataTables Column Visibility Button library -->
-<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
-<!-- Initialize DataTable with specific options -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script
+  src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.5/b-3.0.2/b-html5-3.0.2/b-print-3.0.2/sc-2.4.1/sb-1.7.1/datatables.min.js"></script>
+
 
 <script>
-  new DataTable('#usersTable', {
-    layout: {
-      bottomEnd: {
-        paging: {
-          boundaryNumbers: false
-        }
-      }
-    }
+  $(function () {
+    $('#usersTable').DataTable({
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+      dom: 'Bfrtip',
+      buttons: ['copy', 'csv','pdf']
+    });
   });
 </script>
 {% endblock %}

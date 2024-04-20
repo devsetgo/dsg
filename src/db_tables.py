@@ -31,19 +31,27 @@ class Users(schema_base, async_db.Base):
     # Define the columns of the table
     first_name = Column(String, unique=False, index=True)  # First name of the user
     last_name = Column(String, unique=False, index=True)  # Last name of the user
-    user_name = Column(String, unique=True, index=True,nullable=False)  # Last name of the user
+    user_name = Column(
+        String, unique=True, index=True, nullable=False
+    )  # Last name of the user
     email = Column(
         String, unique=False, index=True, nullable=True
     )  # Email of the user, must be unique
-    password = Column(String, unique=False, index=True,nullable=False)  # Password of the user
+    password = Column(
+        String, unique=False, index=True, nullable=False
+    )  # Password of the user
     # timezone of the user, should default to new york
     my_timezone = Column(String, unique=False, index=True, default="America/New_York")
-    is_active = Column(Boolean, default=True,nullable=False)  # If the user is active
-    is_admin = Column(Boolean, default=False,nullable=False)  # If the user is an admin
-    site_access = Column(Boolean, default=False,nullable=False)  # If the user has access to the site
+    is_active = Column(Boolean, default=True, nullable=False)  # If the user is active
+    is_admin = Column(Boolean, default=False, nullable=False)  # If the user is an admin
+    site_access = Column(
+        Boolean, default=False, nullable=False
+    )  # If the user has access to the site
     date_last_login = Column(DateTime, unique=False, index=True)  # Last login date
     failed_login_attempts = Column(Integer, default=0)  # Failed login attempts
-    is_locked = Column(Boolean, default=False,index=True,nullable=False)  # If the user account is locked
+    is_locked = Column(
+        Boolean, default=False, index=True, nullable=False
+    )  # If the user account is locked
 
     # combine first and last name into a full name
     @property
@@ -115,11 +123,13 @@ class Notes(schema_base, async_db.Base):
     # Define the columns of the table
     mood = Column(String(50), unique=False, index=True)  # mood of note
     mood_analysis = Column(String(50), unique=False, index=True)  # mood of note
-    note = Column(Text, unique=False, index=True,nullable=False)  # note
+    note = Column(Text, unique=False, index=True, nullable=False)  # note
     tags = Column(JSON)  # tags from OpenAI
     summary = Column(String(100), unique=False, index=True)  # summary from OpenAI
     # Define the parent relationship to the User class
-    user_id = Column(String, ForeignKey("users.pkid"),nullable=False, index=True)  # Foreign key to the User table
+    user_id = Column(
+        String, ForeignKey("users.pkid"), nullable=False, index=True
+    )  # Foreign key to the User table
     users = relationship("Users", back_populates="notes")
 
     @property

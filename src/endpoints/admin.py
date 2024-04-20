@@ -1,31 +1,15 @@
 # -*- coding: utf-8 -*-
-import csv
-import io
-from datetime import UTC, datetime, timedelta
-import re
 
 # from pytz import timezone, UTC
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    Depends,
-    File,
-    Path,
-    Query,
-    Request,
-    UploadFile,
-)
+from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import RedirectResponse
-from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
-from pytz import timezone
-from sqlalchemy import Select, Text, and_, between, cast, extract, or_, text
+from sqlalchemy import Select
 
-from ..db_tables import Notes, Users
-from ..functions import ai, date_functions, note_import, notes_metrics
+from ..db_tables import Users, Notes, InterestingThings, JobApplications, JobApplicationTasks
+from ..functions import date_functions
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
-from ..settings import settings
 
 router = APIRouter()
 
@@ -38,19 +22,19 @@ async def admin_dashboard(
 
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
+    is_admin = user_info["is_admin"]
 
-    if user_identifier is None:
-        logger.debug("User identifier is None, redirecting to login")
-        return RedirectResponse(url="/users/login", status_code=302)
-
-    user_list =  await get_list_of_users(user_timezone=user_timezone)
-
+    
+    user_list = await get_list_of_users(user_timezone=user_timezone)
+    
     context = {"user_identifier": user_identifier, "users": user_list}
     return templates.TemplateResponse(
         request=request, name="/admin/dashboard.html", context=context
     )
 
+
 async def get_list_of_users(user_timezone: str):
+    
     query = Select(Users)
     users = await db_ops.read_query(query=query)
     users = [user.to_dict() for user in users]
@@ -68,3 +52,29 @@ async def get_list_of_users(user_timezone: str):
         )
 
     return users
+
+
+
+@router.get("/user/{user_id}")
+async def admin_user(request:Request,user_id:str,user_info: dict = Depends(check_login)):
+    
+    user_identifier = user_info["user_identifier"]
+    user_timezone = user_info["timezone"]
+    is_admin = user_info["is_admin"]
+    
+    query = Select(Users).where(Users.pkid == user_id)
+    user = await db_ops.read_one_record(query=query)
+
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user = user.to_dict()
+
+    notes_query = Select(Notes).where(Notes.user_id == user_id)
+    notes_count = await db_ops.count_query(query=notes_query)
+
+    job_app_query = Select(JobApplications).where(JobApplications.user_id == user_id)
+    job_app_count = await db_ops.count_query(query=job_app_query)
+
+    context = {"user":user,"notes_count":notes_count,"job_app_count":job_app_count}
+    return templates.TemplateResponse(request=request, name="/admin/user.html", context=context)        
