@@ -92,6 +92,9 @@ async def get_response(
     db_data = await db_ops.read_query(
         Select(Requirement).where(Requirement.request_group_id == request_group_id)
     )
+    print(db_data)
+    if len(db_data) == 0:
+        return RedirectResponse(url="/error/404", status_code=303)
     db_data_dict = [
         {k: v for k, v in item.__dict__.items() if not k.startswith("_")}
         for item in db_data

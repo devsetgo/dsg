@@ -2,18 +2,18 @@
 import asyncio
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import Users
+from ..db_tables import JobApplications, Notes, Users
 from ..functions.hash_function import hash_password, verify_password
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
 from ..settings import settings
-
+from ..functions.validator import validate_email_address,timezones
 router = APIRouter()
 
 
@@ -137,7 +137,6 @@ async def logout(request: Request):
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 
-
 @router.get("/password-change", response_class=HTMLResponse)
 async def get_password_change_form(
     request: Request,
@@ -196,13 +195,111 @@ async def post_password_change_form(
     )
 
 
+# get user information endpoint
+@router.get("/user-info", response_class=HTMLResponse)
+async def get_user_info(
+    request: Request, message: dict = None, user_info: dict = Depends(check_login)
+):
+
+    user_identifier = user_info["user_identifier"]
+    user_timezone = user_info["timezone"]
+    is_admin = user_info["is_admin"]
+
+    query = Select(Users).where(Users.pkid == user_identifier)
+    user = await db_ops.read_one_record(query=query)
+
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user = user.to_dict()
+
+    notes_query = Select(Notes).where(Notes.user_id == user_identifier)
+    notes_count = await db_ops.count_query(query=notes_query)
+
+    job_app_query = Select(JobApplications).where(
+        JobApplications.user_id == user_identifier
+    )
+    job_app_count = await db_ops.count_query(query=job_app_query)
+
+    context = {
+        "user": user,
+        "notes_count": notes_count,
+        "job_app_count": job_app_count,
+        "message": message,
+    }
+    return templates.TemplateResponse(
+        request=request, name="/users/user_info.html", context=context
+    )
+
+
+@router.get("/edit-user", response_class=HTMLResponse)
+async def edit_user(
+    request: Request,
+    user_info: dict = Depends(check_login),
+    csrf_protect: CsrfProtect = Depends(),
+):
+
+    user_identifier = user_info["user_identifier"]
+    user_timezone = user_info["timezone"]
+    is_admin = user_info["is_admin"]
+
+    query = Select(Users).where(Users.pkid == user_identifier)
+    user = await db_ops.read_one_record(query=query)
+
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user = user.to_dict()
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    context = {"user": user, "csrf_token": csrf_token,"timezones":timezones}
+    return templates.TemplateResponse(
+        request=request, name="/users/user_edit.html", context=context
+    )
+
+
+@router.post("/edit-user")
+async def edit_user_post(
+    request: Request,
+    user_info: dict = Depends(check_login),
+    csrf_protect: CsrfProtect = Depends(),
+):
+    await csrf_protect.validate_csrf(request)
+    form = await request.form()
+    user_identifier = user_info["user_identifier"]
+    user_timezone = user_info["timezone"]
+    is_admin = user_info["is_admin"]
+
+    first_name = form["first_name"]
+    last_name = form["last_name"]
+    email = form["email"]
+    user_name = form["user_name"]
+    is_admin = form["is_admin"]
+    user_timezone = form["user_timezone"]
+
+    update = await db_ops.update_one(
+        table=Users,
+        new_values={
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
+            "user_name": user_name,
+            "is_admin": is_admin,
+            "my_timezone": user_timezone,
+        },
+        record_id=user_identifier,
+    )
+    message = "User updated successfully"
+
+    logger.debug(f"User update: {update}")
+    request.session["message"] = message
+    return RedirectResponse(url="/users/user-info", status_code=303)
+
+
 # deactivate user endpoint
 
 # delete user endpoint
 
 # get user endpoint
-
-# get users endpoint
 
 # user metrics endpoint
 

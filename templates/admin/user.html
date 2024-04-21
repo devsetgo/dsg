@@ -9,19 +9,51 @@
 <!-- Main content -->
 <section class="content">
   <div class="row">
-    <div class="col-12">
-      <p>User</p>
-      <ul>
-        {% for k,v in user.items() %}
-        <li><strong>{{k}}</strong>: {{v}}</li>
-        {% endfor %}
-      </ul>
-      <p><strong>Notes</strong>: {{notes_count}}</p>
-      <p><strong>Job Apps</strong>: {{job_app_count}}</p>
-
+    <div class="col-6">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Hello {{user.first_name|capitalize}} {{user.last_name|capitalize}}</h3>
+            </div>
+            <div class="card-body">
+                <strong><i class="fa-solid fa-id-badge"></i> User Name:</strong> {{user.user_name|lower}}
+                <hr>
+                <strong><i class="fa-regular fa-envelope"></i> Email:</strong> {{user.email|lower}}
+                <hr>
+                <strong><i class="fa-regular fa-clock"></i> Timezone:</strong> {{user.my_timezone}}
+                <hr>
+                <strong><i class="fa-solid fa-calendar"></i> Date Joined:</strong> {{user.date_created}}
+                <hr>
+                {% if request.session.is_admin is true%}
+                <div class="card card-success collapsed-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Admin Section</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <strong><i class="fa-solid fa-id-badge"></i> User ID:</strong> {{user.pkid}}
+                        <hr>
+                        <strong><i class="fa-brands fa-black-tie"></i> Is Admin:</strong> {{user.is_admin}}
+                        <hr>
+                        <strong><i class="fa-solid fa-lock-open"></i> Site Access:</strong> {{user.site_access}}
+                        <hr>
+                        <strong><i class="fa-solid fa-door-open"></i> Active:</strong> {{user.is_active}}
+                        <hr>
+                        <strong><i class="fa-solid fa-lock"></i> Locked:</strong> {{user.is_locked}}
+                        <hr>
+                        <strong><i class="fa-solid fa-calendar"></i> Last Login:</strong> {{user.date_last_login}}
+                        <hr>
+                        <strong><i class="fa-solid fa-calendar"></i> Date Updated:</strong> {{user.date_updated}}
+                        <hr>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
-    <!-- /.col -->
-  </div>
+</div>
   <!-- /.row -->
 </section>
 <!-- /.content -->

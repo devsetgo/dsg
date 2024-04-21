@@ -26,14 +26,11 @@ Example:
         return {"message": "You are viewing a protected endpoint"}
 """
 from datetime import datetime, timedelta
-from typing import Callable
 
 from fastapi import HTTPException, Request
-from fastapi.responses import RedirectResponse, Response
 from loguru import logger
 
 from ..settings import settings
-
 
 # def require_login(endpoint: Callable) -> Callable:
 #     """
@@ -114,6 +111,7 @@ def check_user_identifier(request):
         )
         raise HTTPException(status_code=401, detail="Unauthorized")
 
+
 def check_session_expiry(request):
     session_expiry_time = datetime.now() - timedelta(minutes=settings.max_age)
     try:
@@ -130,6 +128,7 @@ def check_session_expiry(request):
         )
         raise HTTPException(status_code=401, detail="Unauthorized")
 
+
 async def check_login(request: Request):
     request.state.user_info = {
         "user_identifier": request.session.get("user_identifier", None),
@@ -138,8 +137,8 @@ async def check_login(request: Request):
         "exp": request.session.get("exp", 0),
     }
     logger.debug(f"check login initial: {request.state.user_info}")
-    url=request.url
-    
+    url = request.url
+
     # if url contains "/admin" then check if user is admin
     if "/admin" in url.path:
         if not request.session.get("is_admin"):
