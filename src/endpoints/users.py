@@ -235,8 +235,9 @@ async def get_user_info(
 @router.get("/edit-user", response_class=HTMLResponse)
 async def edit_user(
     request: Request,
-    user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
+    user_info: dict = Depends(check_login),
+    
 ):
 
     user_identifier = user_info["user_identifier"]
@@ -260,21 +261,37 @@ async def edit_user(
 @router.post("/edit-user")
 async def edit_user_post(
     request: Request,
-    user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
+    user_info: dict = Depends(check_login),
 ):
-    await csrf_protect.validate_csrf(request)
     form = await request.form()
+    # await csrf_protect.validate_csrf(request)
+
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
-    is_admin = user_info["is_admin"]
+
+    errors = []
 
     first_name = form["first_name"]
+    if len(first_name) < 2:
+        errors.append("First name is too short")
+
     last_name = form["last_name"]
+    if len(last_name) < 2:
+        errors.append("Last name is too short")
+
     email = form["email"]
-    user_name = form["user_name"]
-    is_admin = form["is_admin"]
-    user_timezone = form["user_timezone"]
+    email_validation = validate_email_address(email)
+    if email_validation['valid'] == False:
+        errors.append(email_validation['error'])
+
+    user_timezone = form["my_timezone"]
+    if user_timezone not in timezones:
+        errors.append("Invalid timezone")
+
+    if errors:
+        request.session["error-message"] = errors
+        return RedirectResponse(url="/users/edit-user", status_code=303)
 
     update = await db_ops.update_one(
         table=Users,
@@ -282,8 +299,6 @@ async def edit_user_post(
             "first_name": first_name,
             "last_name": last_name,
             "email": email,
-            "user_name": user_name,
-            "is_admin": is_admin,
             "my_timezone": user_timezone,
         },
         record_id=user_identifier,
@@ -293,7 +308,6 @@ async def edit_user_post(
     logger.debug(f"User update: {update}")
     request.session["message"] = message
     return RedirectResponse(url="/users/user-info", status_code=303)
-
 
 # deactivate user endpoint
 
