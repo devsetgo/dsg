@@ -238,6 +238,18 @@ def create_routes(app: FastAPI):
     #     logger.error(f"404 error: {exc}")
     #     return RedirectResponse(url=f"/error/{exc.status_code}")
 
+    app.include_router(
+        admin.router,
+        prefix="/admin",
+        tags=["admin"],
+    )
+
+    app.include_router(
+        devtools.router,
+        prefix="/devtools",
+        tags=["devtools"],
+    )
+
     @app.get("/error/{error_code}")
     async def error_page(request: Request, error_code: int):
         context = {
@@ -249,17 +261,6 @@ def create_routes(app: FastAPI):
         }
         return templates.TemplateResponse("error/error-page.html", context)
 
-    app.include_router(
-        devtools.router,
-        prefix="/devtools",
-        tags=["devtools"],
-    )
-
-    app.include_router(
-        admin.router,
-        prefix="/admin",
-        tags=["admin"],
-    )
     app.include_router(
         notes.router,
         prefix="/notes",

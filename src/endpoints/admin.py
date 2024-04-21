@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 # from pytz import timezone, UTC
-from fastapi import APIRouter, Depends, Request, HTTPException
-from fastapi.responses import RedirectResponse
-from loguru import logger
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import Select
 
-from ..db_tables import Users, Notes, InterestingThings, JobApplications, JobApplicationTasks
+from ..db_tables import (
+    JobApplications,
+    Notes,
+    Users,
+)
 from ..functions import date_functions
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
@@ -24,9 +26,8 @@ async def admin_dashboard(
     user_timezone = user_info["timezone"]
     is_admin = user_info["is_admin"]
 
-    
     user_list = await get_list_of_users(user_timezone=user_timezone)
-    
+
     context = {"user_identifier": user_identifier, "users": user_list}
     return templates.TemplateResponse(
         request=request, name="/admin/dashboard.html", context=context
@@ -34,7 +35,7 @@ async def admin_dashboard(
 
 
 async def get_list_of_users(user_timezone: str):
-    
+
     query = Select(Users)
     users = await db_ops.read_query(query=query)
     users = [user.to_dict() for user in users]
@@ -54,14 +55,15 @@ async def get_list_of_users(user_timezone: str):
     return users
 
 
-
 @router.get("/user/{user_id}")
-async def admin_user(request:Request,user_id:str,user_info: dict = Depends(check_login)):
-    
+async def admin_user(
+    request: Request, user_id: str, user_info: dict = Depends(check_login)
+):
+
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     is_admin = user_info["is_admin"]
-    
+
     query = Select(Users).where(Users.pkid == user_id)
     user = await db_ops.read_one_record(query=query)
 
@@ -76,5 +78,7 @@ async def admin_user(request:Request,user_id:str,user_info: dict = Depends(check
     job_app_query = Select(JobApplications).where(JobApplications.user_id == user_id)
     job_app_count = await db_ops.count_query(query=job_app_query)
 
-    context = {"user":user,"notes_count":notes_count,"job_app_count":job_app_count}
-    return templates.TemplateResponse(request=request, name="/admin/user.html", context=context)        
+    context = {"user": user, "notes_count": notes_count, "job_app_count": job_app_count}
+    return templates.TemplateResponse(
+        request=request, name="/admin/user.html", context=context
+    )

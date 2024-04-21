@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block page_title %}| User Info{% endblock %}
+{% block page_stylesheet %}
+
+{% endblock %}
+{% block page_breadcrumb %} User Info{% endblock %}
+{% block page_head_title %}User Info{% endblock %}
+{% block body %}
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-6">
+            <div class="card card-primary">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Edit User Details</h3>
+                    <div class="d-flex align-items-center ml-auto">
+                        <a href="/users/user-info" class="btn btn-success ml-2" title="Return to View User"><i class="fa-solid fa-right-from-bracket" style="color:black;"></i></a>
+                    </div>
+                </div>
+                <form action="/users/edit-user" method="post">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="first_name">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" value="{{user.first_name|capitalize}}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="last_name">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" value="{{user.last_name|capitalize}}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{user.email|lower}}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="my_timezone">Timezone</label>
+                            <select class="form-control" id="my_timezone" name="my_timezone" required>
+                                {% for timezone in timezones %}
+                                    <option value="{{ timezone }}"
+                                        {% if user.my_timezone == timezone %}
+                                            selected
+                                        {% elif not user.my_timezone and timezone == "America/New_York" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ timezone }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+{% endblock %}
+
+{% block page_sidebar_content %}
+<!-- blank and demo script adds page configuration example -->
+<!-- <div class="p-3">
+  <h5>Title</h5>
+  <p>Sidebar content</p>
+</div> -->
+{% endblock %}
+{% block page_scripts %}
+{% endblock %}

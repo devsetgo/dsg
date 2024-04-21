@@ -147,7 +147,7 @@ async def add_system_data():
         data = await add_admin()  # Create an admin user
 
         if settings.create_demo_notes is True:
-            await add_notes(user_id=data['pkid'])  # Create notes for the admin user
+            await add_notes(user_id=data["pkid"])  # Create notes for the admin user
 
     if settings.create_demo_user is True:
         logger.warning("Creating demo user")
@@ -155,7 +155,7 @@ async def add_system_data():
             data = await add_user()  # Create a demo user
 
             if settings.create_demo_notes is True:
-                await add_notes(user_id=data['pkid'])  # Create notes for the loop user
+                await add_notes(user_id=data["pkid"])  # Create notes for the loop user
 
     if settings.create_base_categories is True:
         logger.warning("Creating base categories")
@@ -193,7 +193,6 @@ async def add_admin():
             return user.to_dict()
         except Exception as e:
             logger.error(e)
-
 
 
 async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qty):
@@ -275,16 +274,17 @@ async def add_user():
     logger.info("adding system user")
     hashed_password = hash_password("password")
     import secrets
-    user_name=f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
+
+    user_name = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
 
     user = Users(
-        first_name=f'{silly.verb()}',
-        last_name=f'{silly.noun()}',
+        first_name=f"{silly.verb()}",
+        last_name=f"{silly.noun()}",
         user_name=user_name,
         password=hashed_password,
         is_active=True,
         is_admin=False,
-        site_access=True
+        site_access=True,
     )
     try:
         await db_ops.create_one(user)
