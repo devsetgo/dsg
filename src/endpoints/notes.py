@@ -406,7 +406,7 @@ async def create_note(
 
     logger.info(f"Created note with ID: {data.pkid}")
 
-    return RedirectResponse(url=f"/notes/{data.pkid}", status_code=302)
+    return RedirectResponse(url=f"/notes/view/{data.pkid}", status_code=302)
 
 
 @router.get("/pagination")
