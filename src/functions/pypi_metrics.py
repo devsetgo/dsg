@@ -20,14 +20,14 @@ async def get_pypi_metrics():
         total_libraries = await db_ops.count_query(query=Select(LibraryName))
     except Exception as e:
         logger.error(f"Error in total_libraries: {e}")
-        print(f"total_libraries: {e}")
+
         total_libraries = []
 
     try:
         most_common_libraries = await most_common_library()
     except Exception as e:
         logger.error(f"Error in most_common_libraries: {e}")
-        print(f"most_common_libraries: {e}")
+
         most_common_libraries = []
 
     try:
@@ -39,7 +39,7 @@ async def get_pypi_metrics():
         )
     except Exception as e:
         logger.error(f"Error in libraries_per_request_group: {e}")
-        print(f"libraries_per_request_group: {e}")
+
         libraries_per_request_group = []
 
     try:
@@ -48,14 +48,14 @@ async def get_pypi_metrics():
         )
     except Exception as e:
         logger.error(f"Error in libraries_with_new_versions: {e}")
-        print(f"libraries_with_new_versions: {e}")
+
         libraries_with_new_versions = []
 
     try:
         total_requirements = await db_ops.count_query(query=Select(Requirement))
     except Exception as e:
         logger.error(f"Error in total_requirements: {e}")
-        print(f"total_requirements: {e}")
+
         total_requirements = []
 
     try:
@@ -67,7 +67,7 @@ async def get_pypi_metrics():
         )
     except Exception as e:
         logger.error(f"Error in requirements_by_host_ip: {e}")
-        print(f"requirements_by_host_ip: {e}")
+
         requirements_by_host_ip = []
 
     try:
@@ -79,7 +79,6 @@ async def get_pypi_metrics():
         )
     except Exception as e:
         logger.error(f"Error in most_common_user_agents: {e}")
-        print(f"most_common_user_agents: {e}")
         most_common_user_agents = []
 
 
@@ -94,7 +93,7 @@ async def get_pypi_metrics():
         ]
     except Exception as e:
         logger.error(f"Error in last_one_hundred_requests: {e}")
-        print(f"last_one_hundred_requests: {e}")
+
         last_one_hundred_requests = []
 
     try:
@@ -104,8 +103,10 @@ async def get_pypi_metrics():
         ]
     except Exception as e:
         logger.error(f"Error in library_name: {e}")
-        print(f"library_name {e}")
+
         library_name = []
+
+
     context = {
         "total_libraries": total_libraries,
         "libraries_per_request_group": libraries_per_request_group,
@@ -135,7 +136,7 @@ async def get_libraries_with_most_vulnerabilities():
         ]
     except Exception as e:
         logger.error(f"Error in get_libraries_with_most_vulnerabilities: {e}")
-        print(f"get_libraries_with_most_vulnerabilities: {e}")
+
         libraries_with_vulnerabilities = []
 
     # Count the occurrences of each library_id
@@ -143,14 +144,19 @@ async def get_libraries_with_most_vulnerabilities():
     for library in libraries_with_vulnerabilities:
         library_id = library['library_id']
         if library_id in library_counts:
-            library_counts[library_id] += 1
+            library_counts[library_id]['count'] += 1
         else:
-            library_counts[library_id] = 1
+            library['count'] = 1
+            library_counts[library_id] = library
 
-    # Sort the libraries by count and get the top 10
-    libraries_with_most_vulnerabilities = sorted(libraries_with_vulnerabilities, key=lambda x: library_counts[x['library_id']], reverse=True)[:10]
+    # Convert the dictionary to a list and sort it by count
+    libraries_with_most_vulnerabilities = sorted(
+        [{"library_name": lib["library_name"], "count": lib["count"]} for lib in library_counts.values()],
+        key=lambda x: x['count'], reverse=True)[:10]
 
+    print(libraries_with_most_vulnerabilities)
     return libraries_with_most_vulnerabilities
+
 
 async def number_of_vulnerabilities():
     logger.info("Starting to count vulnerabilities.")
