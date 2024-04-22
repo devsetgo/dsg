@@ -265,7 +265,7 @@ async def edit_user_post(
     user_info: dict = Depends(check_login),
 ):
     form = await request.form()
-    # await csrf_protect.validate_csrf(request)
+    await csrf_protect.validate_csrf(request)
 
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
