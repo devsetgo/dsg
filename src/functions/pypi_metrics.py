@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter
 from loguru import logger
-from sqlalchemy import Select, and_, func
+from sqlalchemy import Select, and_, func, select
 from sqlalchemy.orm import joinedload
 
 from ..db_tables import Library, LibraryName, Requirement
@@ -16,56 +16,96 @@ router = APIRouter()
 
 async def get_pypi_metrics():
 
-    total_libraries = await db_ops.count_query(query=Select(LibraryName))
+    try:
+        total_libraries = await db_ops.count_query(query=Select(LibraryName))
+    except Exception as e:
+        logger.error(f"Error in total_libraries: {e}")
+        print(f"total_libraries: {e}")
+        total_libraries = []
 
-    most_common_libraries = await most_common_library()
+    try:
+        most_common_libraries = await most_common_library()
+    except Exception as e:
+        logger.error(f"Error in most_common_libraries: {e}")
+        print(f"most_common_libraries: {e}")
+        most_common_libraries = []
 
-    libraries_per_request_group = await db_ops.count_query(
-        query=Select(Library.request_group_id)
-        .group_by(Library.request_group_id)
-        .order_by(func.count(Library.request_group_id).desc())
-        .limit(10)
-    )
-    libraries_with_new_versions = await db_ops.count_query(
-        query=Select(Library).where(Library.current_version != Library.new_version)
-    )
-    total_requirements = await db_ops.count_query(query=Select(Requirement))
-    requirements_by_host_ip = await db_ops.count_query(
-        query=Select(Requirement.host_ip)
-        .group_by(Requirement.host_ip)
-        .order_by(func.count(Requirement.host_ip).desc())
-        .limit(10)
-    )
-    most_common_user_agents = await db_ops.count_query(
-        query=Select(Requirement.user_agent)
-        .group_by(Requirement.user_agent)
-        .order_by(func.count(Requirement.user_agent).desc())
-        .limit(10)
-    )
-
-    libraries_with_most_vulnerabilities = [
-        library.to_dict()
-        for library in await db_ops.read_query(
-            query=Select(Library)
-            .where(Library.new_version_vulnerability == True)
-            .options(joinedload(Library.library))
-            .group_by(Library.library_id)
-            .order_by(func.count(Library.library_id).desc())
+    try:
+        libraries_per_request_group = await db_ops.count_query(
+            query=Select(Library.request_group_id)
+            .group_by(Library.request_group_id)
+            .order_by(func.count(Library.request_group_id).desc())
             .limit(10)
         )
-    ]
+    except Exception as e:
+        logger.error(f"Error in libraries_per_request_group: {e}")
+        print(f"libraries_per_request_group: {e}")
+        libraries_per_request_group = []
 
-    last_one_hundred_requests = [
-        requirement.to_dict()
-        for requirement in await db_ops.read_query(
-            query=Select(Requirement).order_by(Requirement.date_created.desc()).limit(1)
+    try:
+        libraries_with_new_versions = await db_ops.count_query(
+            query=Select(Library).where(Library.current_version != Library.new_version)
         )
-    ]
+    except Exception as e:
+        logger.error(f"Error in libraries_with_new_versions: {e}")
+        print(f"libraries_with_new_versions: {e}")
+        libraries_with_new_versions = []
 
-    library_name = [
-        library.to_dict()
-        for library in await db_ops.read_query(query=Select(LibraryName).limit(100))
-    ]
+    try:
+        total_requirements = await db_ops.count_query(query=Select(Requirement))
+    except Exception as e:
+        logger.error(f"Error in total_requirements: {e}")
+        print(f"total_requirements: {e}")
+        total_requirements = []
+
+    try:
+        requirements_by_host_ip = await db_ops.count_query(
+            query=Select(Requirement.host_ip)
+            .group_by(Requirement.host_ip)
+            .order_by(func.count(Requirement.host_ip).desc())
+            .limit(10)
+        )
+    except Exception as e:
+        logger.error(f"Error in requirements_by_host_ip: {e}")
+        print(f"requirements_by_host_ip: {e}")
+        requirements_by_host_ip = []
+
+    try:
+        most_common_user_agents = await db_ops.count_query(
+            query=Select(Requirement.user_agent)
+            .group_by(Requirement.user_agent)
+            .order_by(func.count(Requirement.user_agent).desc())
+            .limit(10)
+        )
+    except Exception as e:
+        logger.error(f"Error in most_common_user_agents: {e}")
+        print(f"most_common_user_agents: {e}")
+        most_common_user_agents = []
+
+
+    try:
+        last_one_hundred_requests = [
+            requirement.to_dict()
+            for requirement in await db_ops.read_query(
+                query=Select(Requirement)
+                .order_by(Requirement.date_created.desc())
+                .limit(1)
+            )
+        ]
+    except Exception as e:
+        logger.error(f"Error in last_one_hundred_requests: {e}")
+        print(f"last_one_hundred_requests: {e}")
+        last_one_hundred_requests = []
+
+    try:
+        library_name = [
+            library.to_dict()
+            for library in await db_ops.read_query(query=Select(LibraryName).limit(100))
+        ]
+    except Exception as e:
+        logger.error(f"Error in library_name: {e}")
+        print(f"library_name {e}")
+        library_name = []
     context = {
         "total_libraries": total_libraries,
         "libraries_per_request_group": libraries_per_request_group,
@@ -76,12 +116,41 @@ async def get_pypi_metrics():
         "average_number_of_libraries_per_requirement": await average_number_of_libraries_per_requirement(),
         "total_number_of_vulnerabilities": await number_of_vulnerabilities(),
         "most_common_libraries": most_common_libraries,
-        "libraries_with_most_vulnerabilities": libraries_with_most_vulnerabilities,
+        "libraries_with_most_vulnerabilities": await get_libraries_with_most_vulnerabilities(),
         "last_one_hundred_requests": last_one_hundred_requests,
         "library_name": library_name,
     }
     return context
 
+
+async def get_libraries_with_most_vulnerabilities():
+    try:
+        libraries_with_vulnerabilities = [
+            library.to_dict()
+            for library in await db_ops.read_query(
+                query=Select(Library)
+                .where(Library.new_version_vulnerability == True)
+                .options(joinedload(Library.library))
+            )
+        ]
+    except Exception as e:
+        logger.error(f"Error in get_libraries_with_most_vulnerabilities: {e}")
+        print(f"get_libraries_with_most_vulnerabilities: {e}")
+        libraries_with_vulnerabilities = []
+
+    # Count the occurrences of each library_id
+    library_counts = {}
+    for library in libraries_with_vulnerabilities:
+        library_id = library['library_id']
+        if library_id in library_counts:
+            library_counts[library_id] += 1
+        else:
+            library_counts[library_id] = 1
+
+    # Sort the libraries by count and get the top 10
+    libraries_with_most_vulnerabilities = sorted(libraries_with_vulnerabilities, key=lambda x: library_counts[x['library_id']], reverse=True)[:10]
+
+    return libraries_with_most_vulnerabilities
 
 async def number_of_vulnerabilities():
     logger.info("Starting to count vulnerabilities.")
