@@ -3,6 +3,7 @@ note.json
 new_note.json
 __archive/
 .env
+.env.*
 _venv/
 _scratch_pad/
 logs/*
