@@ -57,22 +57,7 @@ grdev:  # Run the FastAPI application in development mode with hot-reloading usi
 	granian --interface rsgi ${SERVICE_PATH}.main:app --port ${PORT} --reload
 
 help:  # Display available targets
-	@echo "Available targets:"
-	@echo "  autoflake     - Remove unused imports and variables"
-	@echo "  black         - Format code using black"
-	@echo "  cache         - Clean pycache"
-	@echo "  cleanup       - Run isort, black, and autoflake"
-	@echo "  compile       - Compile http_request.c into a shared library"
-	@echo "  dev           - Run the FastAPI application in development mode with hot-reloading"
-	@echo "  flake8        - Run flake8 and output report"
-	@echo "  gdev          - Run the FastAPI application in development mode with hot-reloading using granian"
-	@echo "  gprd          - Run the FastAPI application in production mode using granian"
-	@echo "  grdev         - Run the FastAPI application in development mode with hot-reloading using granian and rsgi interface"
-	@echo "  install       - Install required dependencies"
-	@echo "  install-dev   - Install development dependencies"
-	@echo "  isort         - Sort imports using isort"
-	@echo "  prd           - Run the FastAPI application in production mode"
-	@echo "  test          - Run tests and generate coverage report"
+	@awk 'BEGIN {FS = ":  # "} /^[a-zA-Z_-]+:  # / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 install:  # Install required dependencies
 	$(PIP) install -r $(REQUIREMENTS_PATH)
