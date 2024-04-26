@@ -139,7 +139,7 @@ class Settings(BaseSettings):
         return values
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=".env.test",
         env_file_encoding="utf-8",
         extra="allow",
         # use_enum_values=True

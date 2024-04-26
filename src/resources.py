@@ -292,12 +292,11 @@ async def add_user():
             Select(Users).where(Users.user_name == user_name)
         )
         logger.info(user.full_name)
-        # print(user.pkid)
         return user.to_dict()
 
     except Exception as e:
         logger.error(e)
-        print(e)
+
     # return user.pkid
 
 

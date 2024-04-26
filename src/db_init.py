@@ -15,11 +15,13 @@ else:
     db_username = settings.db_username.get_secret_value()
     db_password = settings.db_password.get_secret_value()
     db_name = settings.db_name.get_secret_value()
+    db_port = settings.db_port
     # postgresql://username:password@localhost:5432/mydatabase
     db_uri: str = (
         f"{settings.db_driver.value}://{db_username}:{db_password}@{settings.db_host}:{settings.db_port}/{db_name}"
     )
 logger.debug(db_uri)
+
 
 # Mapping of configuration options to database drivers that support them
 option_support = {

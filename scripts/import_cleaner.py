@@ -29,7 +29,6 @@ def fix_date_value(date_created):
         try:
             new_datetime = datetime.datetime.strptime(date_created, "%Y-%m-%d %H:%M:%S")
         except ValueError:
-            print(date_created)
             raise ValueError(
                 "Incorrect data format, should be YYYY-MM-DD HH:MM:SS or YYYY-MM-DD HH:MM:SS.ffffff"
             )
@@ -78,9 +77,7 @@ def main():
     new_data = clean_data(data)
     print(len(new_data))
     save_csv(data=new_data, file_name="export_cleaned.csv")
-    # new_data_json = clean_data_json(data)
-    # print(len(new_data_json))
-    # save_json(data=new_data_json, file_name="export_cleaned.json")
+
 
 if __name__ == "__main__":
     main()

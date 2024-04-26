@@ -27,9 +27,9 @@ import pytz
 timezones = pytz.all_timezones
 
 
-
 # Create a caching resolver with a timeout of 5 seconds
 resolver = caching_resolver(timeout=5)
+
 
 # Function to validate an email address
 def validate_email_address(email: str) -> str:

@@ -13,7 +13,8 @@ from ..functions.hash_function import hash_password, verify_password
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
 from ..settings import settings
-from ..functions.validator import validate_email_address,timezones
+from ..functions.validator import validate_email_address, timezones
+
 router = APIRouter()
 
 
@@ -237,7 +238,6 @@ async def edit_user(
     request: Request,
     csrf_protect: CsrfProtect = Depends(),
     user_info: dict = Depends(check_login),
-    
 ):
 
     user_identifier = user_info["user_identifier"]
@@ -252,7 +252,7 @@ async def edit_user(
 
     user = user.to_dict()
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
-    context = {"user": user, "csrf_token": csrf_token,"timezones":timezones}
+    context = {"user": user, "csrf_token": csrf_token, "timezones": timezones}
     return templates.TemplateResponse(
         request=request, name="/users/user_edit.html", context=context
     )
@@ -282,8 +282,8 @@ async def edit_user_post(
 
     email = form["email"]
     email_validation = validate_email_address(email)
-    if email_validation['valid'] == False:
-        errors.append(email_validation['error'])
+    if email_validation["valid"] == False:
+        errors.append(email_validation["error"])
 
     user_timezone = form["my_timezone"]
     if user_timezone not in timezones:
@@ -308,6 +308,7 @@ async def edit_user_post(
     logger.debug(f"User update: {update}")
     request.session["message"] = message
     return RedirectResponse(url="/users/user-info", status_code=303)
+
 
 # deactivate user endpoint
 
