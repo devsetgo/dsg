@@ -4,11 +4,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import Select
 
-from ..db_tables import (
-    JobApplications,
-    Notes,
-    Users,
-)
+from ..db_tables import JobApplications, Notes, Users
 from ..functions import date_functions
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates

@@ -11,9 +11,9 @@ from sqlalchemy import Select
 from ..db_tables import JobApplications, Notes, Users
 from ..functions.hash_function import hash_password, verify_password
 from ..functions.login_required import check_login
+from ..functions.validator import timezones, validate_email_address
 from ..resources import db_ops, templates
 from ..settings import settings
-from ..functions.validator import validate_email_address, timezones
 
 router = APIRouter()
 
