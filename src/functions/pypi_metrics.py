@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter
 from loguru import logger
-from sqlalchemy import Select, and_, func, select
+from sqlalchemy import Select, and_, func
 from sqlalchemy.orm import joinedload
 
 from ..db_tables import Library, LibraryName, Requirement

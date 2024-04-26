@@ -297,7 +297,6 @@ async def update_note(
                     new_value = [new_value]
             updated_data[field] = new_value
 
-
     # Update the database
     data = await db_ops.update_one(
         table=Notes, record_id=note_id, new_values=updated_data

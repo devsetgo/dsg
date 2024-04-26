@@ -20,9 +20,9 @@ Functions:
         returns a dictionary with information about the email address.
 """
 
+import pytz
 from email_validator import EmailNotValidError, caching_resolver, validate_email
 from loguru import logger
-import pytz
 
 timezones = pytz.all_timezones
 
