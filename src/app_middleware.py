@@ -68,7 +68,6 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
         # Calculate the processing time
         process_time = time.time() - start_time
         logger.debug(f"Processing time: {process_time}")
-
         # Get the request details
         method = request.method
         url = request.url

@@ -81,7 +81,6 @@ async def get_pypi_metrics():
         logger.error(f"Error in most_common_user_agents: {e}")
         most_common_user_agents = []
 
-
     try:
         last_one_hundred_requests = [
             requirement.to_dict()
@@ -105,7 +104,6 @@ async def get_pypi_metrics():
         logger.error(f"Error in library_name: {e}")
 
         library_name = []
-
 
     context = {
         "total_libraries": total_libraries,
@@ -142,19 +140,22 @@ async def get_libraries_with_most_vulnerabilities():
     # Count the occurrences of each library_id
     library_counts = {}
     for library in libraries_with_vulnerabilities:
-        library_id = library['library_id']
+        library_id = library["library_id"]
         if library_id in library_counts:
-            library_counts[library_id]['count'] += 1
+            library_counts[library_id]["count"] += 1
         else:
-            library['count'] = 1
+            library["count"] = 1
             library_counts[library_id] = library
 
     # Convert the dictionary to a list and sort it by count
     libraries_with_most_vulnerabilities = sorted(
-        [{"library_name": lib["library_name"], "count": lib["count"]} for lib in library_counts.values()],
-        key=lambda x: x['count'], reverse=True)[:10]
-
-    print(libraries_with_most_vulnerabilities)
+        [
+            {"library_name": lib["library_name"], "count": lib["count"]}
+            for lib in library_counts.values()
+        ],
+        key=lambda x: x["count"],
+        reverse=True,
+    )[:10]
     return libraries_with_most_vulnerabilities
 
 

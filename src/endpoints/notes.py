@@ -99,8 +99,7 @@ async def get_note_issue(
     notes = [note.to_dict() for note in notes]
     metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
     for note in notes:
-        for n in note["tags"]:
-            print(n)
+
         note["date_created"] = await date_functions.timezone_update(
             user_timezone=user_timezone,
             date_time=note["date_created"],
@@ -164,7 +163,6 @@ async def ai_fix_processing(
 
     logger.info(f"Received analysis from AI: {analysis}")
     # Create the note
-    print(analysis["tags"]["tags"])
     note_update = {
         "tags": analysis["tags"]["tags"],
         "summary": analysis["summary"],
@@ -287,7 +285,6 @@ async def update_note(
 
     # List of fields to update
     fields = ["mood", "note", "tags", "summary", "mood_analysis"]
-    print(form.get("tags"))
     # Compare the old data to the new data
     for field in fields:
         new_value = form.get(field)
@@ -300,12 +297,11 @@ async def update_note(
                     new_value = [new_value]
             updated_data[field] = new_value
 
-    print(updated_data)
+
     # Update the database
     data = await db_ops.update_one(
         table=Notes, record_id=note_id, new_values=updated_data
     )
-    # print(data.to_dict())
     logger.info(f"Updated note with ID: {note_id}")
 
     return RedirectResponse(url=f"/notes/view/{data.pkid}", status_code=302)
@@ -622,7 +618,6 @@ async def read_note(
         return RedirectResponse(url="/notes", status_code=302)
 
     note = note.to_dict()
-    print(note["tags"])
     # offset date_created and date_updated to user's timezone
     note["date_created"] = await date_functions.timezone_update(
         user_timezone=user_timezone,
