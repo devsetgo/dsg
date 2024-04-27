@@ -77,3 +77,11 @@ test:  # Run tests and generate coverage report
 	PYTHONPATH=. pytest
 	sed -i 's|<source>/workspaces/dsg</source>|<source>/github/workspace/dsg</source>|' /workspaces/dsg/coverage.xml
 	coverage-badge -o coverage.svg -f
+
+docker-build:  # Build docker image
+	docker build -t dsg .
+
+docker-push-beta:  # Push beta test image to docker hub
+	# get current date yy-mm-dd
+	docker tag dsg:beta-$(shell date +'%y-%m-%d')
+	docker push dsg:beta-$(shell date +'%y-%m-%d')
