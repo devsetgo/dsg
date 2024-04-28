@@ -78,10 +78,15 @@ test:  # Run tests and generate coverage report
 	sed -i 's|<source>/workspaces/dsg</source>|<source>/github/workspace/dsg</source>|' /workspaces/dsg/coverage.xml
 	coverage-badge -o coverage.svg -f
 
-docker-build:  # Build docker image
-	docker build -t dsg .
+docker-beta-run:  # Run docker container
+	docker run -p 5000:5000 dsg:beta-$(shell date +'%y-%m-%d')
 
-docker-push-beta:  # Push beta test image to docker hub
+docker-beta-build:  # Build docker image
+	docker build --no-cache -t dsg:beta-$(shell date +'%y-%m-%d') .
+
+docker-beta-push:  # Push beta test image to docker hub
 	# get current date yy-mm-dd
-	docker tag dsg:beta-$(shell date +'%y-%m-%d')
-	docker push dsg:beta-$(shell date +'%y-%m-%d')
+	docker tag dsg:beta-$(shell date +'%y-%m-%d') mikeryan56/dsg:beta-$(shell date +'%y-%m-%d')
+	docker push mikeryan56/dsg:beta-$(shell date +'%y-%m-%d')
+
+docker-beta-bp: docker-beta-build docker-beta-push
