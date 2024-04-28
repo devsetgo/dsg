@@ -398,7 +398,7 @@ async def create_note(
         user_id=user_identifier,
     )
     data = await db_ops.create_one(note)
-
+    logger.debug(f"Created Note: {data}")
     logger.info(f"Created note with ID: {data.pkid}")
 
     return RedirectResponse(url=f"/notes/view/{data.pkid}", status_code=302)
