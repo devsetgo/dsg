@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from dsg_lib.fastapi_functions import system_health_endpoints
-
 # from fastapi import FastAPI, Request, HTTPException, status
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -119,7 +118,7 @@ def create_routes(app: FastAPI):
         },
         422: {
             "description": "Unprocessable Entity",
-            "extended_description": "The server understands the content type of the request entity, and the syntax of the request entity is correct, but it was unable to process the contained instructions.",
+            "extended_description": "The server understands the content type of the request entimy, and the syntax of the request entity is correct, but it was unable to process the contained instructions.",
             "link": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/422",
         },
         423: {

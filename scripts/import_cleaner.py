@@ -1,6 +1,6 @@
 from dsg_lib.common_functions.file_functions import open_csv, save_csv, save_json
 import datetime
-
+import pytz
 
 # set mood value
 def set_mood_value(mood_id):
@@ -19,7 +19,7 @@ def set_mood_value(mood_id):
         return "unknown"
 
 
-def fix_date_value(date_created):
+def fix_date_value(date_created, timezone="America/New_York"):
     # ensure date is a valid datetime object
     # examples 2013-08-18 19:48:00, 2017-08-20 21:36:42.000000
     # if date is not valid error is raised
@@ -32,6 +32,18 @@ def fix_date_value(date_created):
             raise ValueError(
                 "Incorrect data format, should be YYYY-MM-DD HH:MM:SS or YYYY-MM-DD HH:MM:SS.ffffff"
             )
+
+    # Convert the datetime to the provided timezone
+    try:
+        tz = pytz.timezone(timezone)
+        new_datetime = tz.localize(new_datetime)
+    except pytz.exceptions.UnknownTimeZoneError:
+        # If the provided timezone is invalid, use America/New_York
+        tz = pytz.timezone("America/New_York")
+        new_datetime = tz.localize(new_datetime)
+
+    # Convert the datetime to UTC
+    new_datetime = new_datetime.astimezone(pytz.UTC)
     return new_datetime
 
 def clean_data(data):
@@ -42,7 +54,7 @@ def clean_data(data):
         new_dict = {
             "my_note": d["my_note"],
             "mood": set_mood_value(d["mood_id"]),
-            "date_created": fix_date_value(d["date_created"]),
+            "date_created": fix_date_value(d["date_created"],d["timezone"]),
         }
         new_data.append(list(new_dict.values()))
 
@@ -72,10 +84,9 @@ def main():
     data = open_csv(
         "export", delimiter=",", quote_level="minimal", skip_initial_space=False
     )
-
     # Clean the data
     new_data = clean_data(data)
-    print(len(new_data))
+    print(f"{len(new_data)-1} of {len(data)} have been converted")
     save_csv(data=new_data, file_name="export_cleaned.csv")
 
 

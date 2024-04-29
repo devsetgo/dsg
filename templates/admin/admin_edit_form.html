@@ -1,0 +1,46 @@
+<form hx-post="/admin/user/{{user.pkid}}" hx-trigger="submit" hx-indicator=".htmx-indicator">
+    <label for="account-action">Account Action:</label>
+
+    <div>
+        <input type="radio" id="none" name="account-action" value="none" checked>
+        <label for="none">None</label>
+    </div>
+
+    <div>
+        <input type="radio" id="lock-account" name="account-action" value="lock">
+        <label for="lock-account">Lock</label>
+        <input type="text" id="lock-account-entry" name="lock-account-entry" title="Type 'yes' to confirm" style="display: none;">
+    </div>
+    <div>
+        <input type="radio" id="delete-account" name="account-action" value="delete">
+        <label for="delete-account">Delete</label>
+        <input type="text" id="delete-account-entry" name="delete-account-entry" title="Type 'yes' to confirm" style="display: none;">
+    </div>
+
+    <div>
+        <input type="radio" id="change-password" name="account-action" value="change-password">
+        <label for="change-password">Change Password</label>
+        <input type="text" id="new-password-entry" name="new-password-entry" title="Enter new password" style="display: none;">
+    </div>
+
+    <div>
+        <input type="radio" id="change-email" name="account-action" value="change-email">
+        <label for="change-email">Change Email</label>
+        <input type="email" id="change-email-entry" name="change-email-entry" title="Enter new email" style="display: none;">
+    </div>
+
+    <!-- CSRF token -->
+    <input type='hidden' name='csrf-token' value="{{ csrf_token }}" />
+    <input type="submit" value="Submit">
+</form>
+
+<script>
+    document.querySelectorAll('input[type="radio"]').forEach((radio) => {
+        radio.addEventListener('change', (event) => {
+            document.querySelectorAll('input[type="text"], input[type="email"]').forEach((input) => {
+                input.style.display = 'none';
+            });
+            document.getElementById(event.target.id + '-entry').style.display = 'block';
+        });
+    });
+</script>

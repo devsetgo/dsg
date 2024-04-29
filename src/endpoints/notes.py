@@ -56,69 +56,42 @@ async def read_notes(
     )
 
 
-@router.get("/issues")
-async def get_note_issue(
+# TODO: Add a route to get the metrics for the notes using HTMX to speed up page loading
+
+
+@router.get("/metrics/counts")
+async def get_note_counts(
     request: Request,
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
-    if user_identifier is None:
-        logger.debug("User identifier is None, redirecting to login")
-        return RedirectResponse(url="/users/login", status_code=302)
-
-    pattern = re.compile("[^a-zA-Z, ]")
-
-    if settings.db_driver.startswith("sqlite"):
-        # Fetch all notes from the SQLite database
-        query = Select(Notes).where(Notes.user_id == user_identifier)
-        all_notes = await db_ops.read_query(query=query)
-        # Filter the notes in Python using the regular expression
-        notes = []
-        for note in all_notes:
-            if any(pattern.search(tag) for tag in note.tags):
-                notes.append(note)
-                if len(notes) == 5:
-                    break
-    elif settings.db_driver.startswith("postgres"):
-        # Use the regular expression in the PostgreSQL query
-        query = Select(Notes).where(
-            text(
-                f"EXISTS (SELECT 1 FROM json_array_elements_text(tags) as tag WHERE tag ~* '{pattern.pattern}')"
-            )
-        )
-        query = query.where(Notes.user_id == user_identifier)
-        notes = await db_ops.read_query(query=query, limit=5)
-    else:
-        raise ValueError("Untested database driver")
-
-    # offset date_created and date_updated to user's timezone
+    query = Select(Notes).where(Notes.user_id == user_identifier)
+    notes = await db_ops.read_query(query=query, limit=10000, offset=0)
     notes = [note.to_dict() for note in notes]
-    metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
-    for note in notes:
 
-        note["date_created"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=note["date_created"],
-            friendly_string=True,
-        )
-        note["date_updated"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=note["date_updated"],
-            friendly_string=True,
-        )
-        metrics["word_count"] += len(note["note"].split())
-        metrics["character_count"] += len(note["note"])
-    logger.info(f"Found {len(notes)} notes for user {user_identifier}")
+    mood_counts = await notes_metrics.mood_metrics(notes=notes)
+    note_counts = await notes_metrics.get_note_counts(notes=notes)
+    tag_count = await notes_metrics.get_total_unique_tag_count(notes=notes)
+
+    counts = {
+        "mood_counts": dict(mood_counts),
+        "note_count": len(notes),
+        "note_counts": note_counts,
+        "tag_count": tag_count,
+    }
+
+    logger.info(f"User {user_identifier} fetched note counts: {counts}")
 
     return templates.TemplateResponse(
-        request=request,
-        name="/notes/issues.html",
-        context={"notes": notes, "metrics": metrics},
+        request=request, name="/notes/metrics.html", context={"counts": counts}
     )
+
+
+# get charting data mood
+# get charting data tags
+# get charting data notes by year, month week
 
 
 @router.get("/ai-resubmit/{note_id}")
@@ -353,6 +326,71 @@ async def delete_note(
     return RedirectResponse(url="/notes", status_code=302)
 
 
+@router.get("/issues")
+async def get_note_issue(
+    request: Request,
+    user_info: dict = Depends(check_login),
+    csrf_protect: CsrfProtect = Depends(),
+):
+
+    user_identifier = user_info["user_identifier"]
+    user_timezone = user_info["timezone"]
+
+    if user_identifier is None:
+        logger.debug("User identifier is None, redirecting to login")
+        return RedirectResponse(url="/users/login", status_code=302)
+
+    pattern = re.compile("[^a-zA-Z, ]")
+
+    if settings.db_driver.startswith("sqlite"):
+        # Fetch all notes from the SQLite database
+        query = Select(Notes).where(Notes.user_id == user_identifier)
+        all_notes = await db_ops.read_query(query=query)
+        # Filter the notes in Python using the regular expression
+        notes = []
+        for note in all_notes:
+            if any(pattern.search(tag) for tag in note.tags):
+                notes.append(note)
+                if len(notes) == 5:
+                    break
+    elif settings.db_driver.startswith("postgres"):
+        # Use the regular expression in the PostgreSQL query
+        query = Select(Notes).where(
+            text(
+                f"EXISTS (SELECT 1 FROM json_array_elements_text(tags) as tag WHERE tag ~* '{pattern.pattern}')"
+            )
+        )
+        query = query.where(Notes.user_id == user_identifier)
+        notes = await db_ops.read_query(query=query, limit=5)
+    else:
+        raise ValueError("Untested database driver")
+
+    # offset date_created and date_updated to user's timezone
+    notes = [note.to_dict() for note in notes]
+    metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
+    for note in notes:
+
+        note["date_created"] = await date_functions.timezone_update(
+            user_timezone=user_timezone,
+            date_time=note["date_created"],
+            friendly_string=True,
+        )
+        note["date_updated"] = await date_functions.timezone_update(
+            user_timezone=user_timezone,
+            date_time=note["date_updated"],
+            friendly_string=True,
+        )
+        metrics["word_count"] += len(note["note"].split())
+        metrics["character_count"] += len(note["note"])
+    logger.info(f"Found {len(notes)} notes for user {user_identifier}")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="/notes/issues.html",
+        context={"notes": notes, "metrics": metrics},
+    )
+
+
 @router.get("/new")
 async def new_note_form(
     request: Request,
@@ -398,7 +436,7 @@ async def create_note(
         user_id=user_identifier,
     )
     data = await db_ops.create_one(note)
-    logger.debug(f"Created Note: {data}")
+    logger.debug(f"Created Note: data")
     logger.info(f"Created note with ID: {data.pkid}")
 
     return RedirectResponse(url=f"/notes/view/{data.pkid}", status_code=302)

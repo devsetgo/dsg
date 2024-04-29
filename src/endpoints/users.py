@@ -71,6 +71,7 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
         request.session["error"] = (
             "Account is locked due to too many failed login attempts"
         )
+        csrf_protect.unset_csrf_cookie(response)
         return templates.TemplateResponse(
             "users/error_message.html",
             {"request": request, "error": request.session["error"]},
@@ -92,6 +93,7 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
 
         # Set the error message and return it in the response
         request.session["error"] = "Username and/or Password is incorrect"
+        csrf_protect.unset_csrf_cookie(response)
         return templates.TemplateResponse(
             "users/error_message.html",
             {"request": request, "error": request.session["error"]},
@@ -126,6 +128,7 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
             record_id=user.pkid,
         )
         logger.debug(f"Login update: {login_update}")
+        csrf_protect.unset_csrf_cookie(response)
         # Return the response
         return response
 

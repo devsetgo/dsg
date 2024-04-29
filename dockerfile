@@ -26,7 +26,7 @@ USER dsgUser
 
 # Set environment variables
 ENV release_env=prd
-ENV DB_DRIVER=memory
+ENV DB_DRIVER=sqlite
 ENV DB_USERNAME=postgres
 ENV DB_PASSWORD=postgres
 ENV DB_HOST=postgresdb
@@ -61,7 +61,7 @@ ENV MAX_AGE=7200
 ENV OPENAI_KEY=<OpenAIKey>
 ENV GITHUB_ID=octocat
 ENV GITHUB_TOKEN=<githubToken>
-ENV GITHUB_REPO_LIMIT=100
+ENV GITHUB_REPO_LIMIT=2000
 ENV HISTORY_RANGE=3
 # Set the port and workers as environment variables
 ENV PORT=5000
