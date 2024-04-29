@@ -20,12 +20,12 @@ async def get_metrics(user_identifier: str, user_timezone: str):
     notes = await db_ops.read_query(query=query, limit=10000, offset=0)
     notes = [note.to_dict() for note in notes]
     metrics = {
-        "counts": {
-            "mood_counts": dict(await mood_metrics(notes=notes)),
-            "note_count": format(len(notes), ","),
-            "note_counts": await get_note_counts(notes=notes),
-            "tag_count": format(await get_total_unique_tag_count(notes=notes), ","),
-        },
+        # "counts": {
+        #     "mood_counts": dict(await mood_metrics(notes=notes)),
+        #     "note_count": format(len(notes), ","),
+        #     "note_counts": await get_note_counts(notes=notes),
+        #     "tag_count": format(await get_total_unique_tag_count(notes=notes), ","),
+        # },
         "note_count_by_year": await get_note_count_by_year(notes),
         "note_count_by_month": await get_note_count_by_month(notes),
         "note_count_by_week": await get_note_count_by_week(notes),

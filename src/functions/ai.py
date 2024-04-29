@@ -27,7 +27,7 @@ async def get_tags(content: str) -> dict:
     keyword_limit: int = 2
     # prompt = f"Please analyze the following text and provide one-word
     # psychological keywords capture its essence: {content}"
-    prompt = f"Please analyze the following text and provide 'one-word' keywords capture its essence: {content}"
+    prompt = f"Please analyze the following text and provide 'one word' keywords capture its essence: {content}"
 
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
@@ -35,7 +35,7 @@ async def get_tags(content: str) -> dict:
         messages=[
             {
                 "role": "system",
-                "content": f"You are a helpful assistant that will provide no more than {keyword_limit} 'one-word' keywords to generalize the note. Names of people cannot be included. Words with numbers, symbols or spaces cannot be used.",
+                "content": f"You are a helpful assistant that will provide no more than {keyword_limit} 'one word' keywords. Rules are names of people cannot be included. Words with numbers, symbols, spaces, or hyphenated words cannot be used.",
             },
             {"role": "user", "content": content},
         ],

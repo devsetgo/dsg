@@ -4,7 +4,10 @@ from loguru import logger
 
 from .settings import settings
 
-if settings.db_driver.value == "sqlite+aiosqlite:///:memory:?cache=shared":
+print(settings.db_driver.value)
+if str(settings.db_driver.value).startswith(
+    "sqlite+aiosqlite:///:memory:?cache=shared"
+):
     db_uri: str = settings.db_driver.value
 elif settings.db_driver.value == "sqlite+aiosqlite":
     db_name = settings.db_name.get_secret_value()
@@ -20,7 +23,7 @@ else:
     db_uri: str = (
         f"{settings.db_driver.value}://{db_username}:{db_password}@{settings.db_host}:{settings.db_port}/{db_name}"
     )
-logger.debug(db_uri)
+logger.debug(f"{db_uri}")
 
 
 # Mapping of configuration options to database drivers that support them
