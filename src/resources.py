@@ -287,6 +287,7 @@ async def add_user():
         is_active=True,
         is_admin=False,
         site_access=True,
+        date_last_login=datetime.utcnow(),
     )
     try:
         await db_ops.create_one(user)
