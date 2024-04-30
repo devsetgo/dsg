@@ -52,6 +52,9 @@ class Users(schema_base, async_db.Base):
     is_locked = Column(
         Boolean, default=False, index=True, nullable=False
     )  # If the user account is locked
+    roles = Column(JSON, default={})  # Roles of the user
+    # roles notes: true, interesting_things: true, job_applications: true, categories: true, notes: true
+
 
     # combine first and last name into a full name
     @property
@@ -240,3 +243,6 @@ class JobApplicationTasks(schema_base, async_db.Base):
         return {
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
+
+
+

@@ -20,7 +20,10 @@
     <div>
         <input type="radio" id="change-password" name="account-action" value="change-password">
         <label for="change-password">Change Password</label>
-        <input type="text" id="new-password-entry" name="new-password-entry" title="Enter new password" style="display: none;">
+        <div id="change-password-entry" style="display: none;">
+            <input type="password" name="new-password-entry" title="Enter new password">
+            <label>Password: {{ random_pass }}</label>
+        </div>
     </div>
 
     <div>
@@ -35,12 +38,14 @@
 </form>
 
 <script>
-    document.querySelectorAll('input[type="radio"]').forEach((radio) => {
-        radio.addEventListener('change', (event) => {
-            document.querySelectorAll('input[type="text"], input[type="email"]').forEach((input) => {
-                input.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', (event) => {
+        document.querySelectorAll('input[type="radio"]').forEach((radio) => {
+            radio.addEventListener('change', (event) => {
+                document.querySelectorAll('div[id$="-entry"]').forEach((div) => {
+                    div.style.display = 'none';
+                });
+                document.getElementById(event.target.id + '-entry').style.display = 'block';
             });
-            document.getElementById(event.target.id + '-entry').style.display = 'block';
         });
     });
 </script>

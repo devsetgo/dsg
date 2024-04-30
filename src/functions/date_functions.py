@@ -23,6 +23,8 @@ async def timezone_update(user_timezone: str, date_time, friendly_string=False):
         f"Updating timezone: {user_timezone}, date_time: {date_time}, friendly_string: {friendly_string}"
     )
 
+    if date_time is None:
+        return None
     # If date_time is a string, parse it into a datetime object
     if isinstance(date_time, str):
         date_time = datetime.fromisoformat(date_time)
