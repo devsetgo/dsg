@@ -20,7 +20,7 @@ class RoleEnum(str, Enum):
     notes = "notes"
     interesting_things = "interesting_things"
     job_applications = "job_applications"
-    categories = "categories"
+    developer = "developer"
 
 
 @router.get("/")
@@ -130,12 +130,10 @@ async def admin_update_user(
     account_action = form.get("account-action")
 
     if account_action == "delete":
-        print("delete")
         data = await db_ops.delete_one(table=Users, record_id=update_user_id)
         logger.info(f"User {update_user_id} deleted by {user_identifier}")
         logger.debug(f"data: {data}")
         data_notes =  await db_ops.read_query(query=Select(Notes).where(Notes.user_id == update_user_id))
-        print(data_notes)
         response = Response(
             headers={"HX-Redirect": f"/admin/#access-tab"}, status_code=200
         )
@@ -148,7 +146,6 @@ async def admin_update_user(
     change_email_entry = form.get("change-email-entry")
 
     if account_action == "lock":
-        print("lock")
         
         new_values["is_locked"] = True
 
@@ -156,18 +153,15 @@ async def admin_update_user(
         
         hashed_password = hash_password(new_password)
         new_values["password"] = hashed_password
-        print(f"new password: {new_password}, hashed_password: {hashed_password}")
     
     elif change_email_entry != "":
-        print(f"email: {change_email_entry}")
+
         new_values["email"] = change_email_entry
 
     data =  await db_ops.update_one(table=Users, record_id=update_user_id, new_values=new_values)
 
     query = Select(Users).where(Users.pkid == update_user_id)
     user = await db_ops.read_one_record(query=query)
-
-    print(new_values)
 
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -201,13 +195,11 @@ async def admin_update_user_access(
         return Response(headers={"HX-Redirect": f"/error/422"}, status_code=200)
 
     form = await request.form()
-    print(form)
     new_data = {}
     for key, value in form.items():
         if key != 'csrf-token':
             role = key
             new_data[role] = value == 'true'
-    print(new_data)
     new_values = {'roles':new_data}
     data =  await db_ops.update_one(table=Users, record_id=update_user_id, new_values=new_values)
 

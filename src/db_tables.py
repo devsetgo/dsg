@@ -44,17 +44,16 @@ class Users(schema_base, async_db.Base):
     my_timezone = Column(String, unique=False, index=True, default="America/New_York")
     is_active = Column(Boolean, default=True, nullable=False)  # If the user is active
     is_admin = Column(Boolean, default=False, nullable=False)  # If the user is an admin
-    site_access = Column(
-        Boolean, default=False, nullable=False
-    )  # If the user has access to the site
+    # site_access = Column(
+    #     Boolean, default=False, nullable=False
+    # )  # If the user has access to the site
     date_last_login = Column(DateTime, unique=False, index=True)  # Last login date
     failed_login_attempts = Column(Integer, default=0)  # Failed login attempts
     is_locked = Column(
         Boolean, default=False, index=True, nullable=False
     )  # If the user account is locked
     roles = Column(JSON, default={})  # Roles of the user
-    # roles notes: true, interesting_things: true, job_applications: true, categories: true, notes: true
-
+    removal_flag = Column(DateTime, index=True)  # Removal flag
 
     # combine first and last name into a full name
     @property

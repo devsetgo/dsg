@@ -33,6 +33,12 @@
                     <hr>
                     <strong><i class="fa-solid fa-calendar"></i> Date Joined:</strong> {{user.date_created}}
                     <hr>
+                    <strong><i class="fa-solid fa-calendar"></i> Access Rights:</strong> 
+                    <br>
+                    {% for k,v in user.roles.items() %}
+                    <span class="badge badge-success">{% if v == true %}{{k|replace("_", " ")|title}}{%endif%}</span>
+                    {% endfor %}
+                    <hr>
                 </div>
             </div>
         </div>

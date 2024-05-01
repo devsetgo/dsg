@@ -106,6 +106,8 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
 
         # Set the user identifier in the session
         request.session["user_identifier"] = user.pkid
+        request.session['roles'] = user.roles
+        
         if user.is_admin == True:
             request.session["is_admin"] = True
         request.session["timezone"] = user.my_timezone
