@@ -151,12 +151,12 @@ async def add_system_data():
 
     if settings.create_demo_user is True:
         logger.warning("Creating demo user")
-        for _ in range(2):
+        for _ in range(10):
             data = await add_user()  # Create a demo user
 
             if settings.create_demo_notes is True:
                 await add_notes(
-                    user_id=data["pkid"], qty_notes=5
+                    user_id=data["pkid"], qty_notes=random.randint(1, 5)
                 )  # Create notes for the loop user
 
     if settings.create_base_categories is True:
@@ -183,6 +183,12 @@ async def add_admin():
             password=hashed_password,
             is_active=True,
             is_admin=True,
+            roles={
+                "notes": True,
+                "interesting_things": True,
+                "job_applications": True,
+                "developer": True,
+            },
         )
         try:
             res = await db_ops.create_one(user)
@@ -278,6 +284,13 @@ async def add_user():
     import secrets
 
     user_name = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
+    roles = ["notes", "interesting_things", "job_applications", "developer"]
+    role_data = {}
+
+    for role in roles:
+        if random.choice([True, False]):
+            role_data[role] = random.choice([True, False])
+
 
     user = Users(
         first_name=f"{silly.verb()}",
@@ -285,8 +298,9 @@ async def add_user():
         user_name=user_name,
         password=hashed_password,
         is_active=True,
-        is_admin=False,
-        site_access=True,
+        is_admin=random.choice([True, False]),
+        roles=role_data,
+        is_locked=random.choice([True, False]),
         date_last_login=datetime.utcnow(),
     )
     try:
