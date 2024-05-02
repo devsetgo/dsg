@@ -1,3 +1,5 @@
+# Shell
+SHELL := /bin/bash
 # Variables
 PYTHON = python3
 PIP = $(PYTHON) -m pip
@@ -10,21 +12,32 @@ LOG_PATH = log
 DEV_SERVER = uvicorn ${SERVICE_PATH}.main:app
 PROD_SERVER = uvicorn ${SERVICE_PATH}.main:app
 PORT = 5000
-WORKERS = 8
+WORKERS = 4
 
 VENV_PATH = _venv
 REQUIREMENTS_PATH = requirements.txt 
 DEV_REQUIREMENTS_PATH = requirements/dev.txt
 
-.PHONY: autoflake black cache cleanup compile dev flake8 gdev gprd grdev help install install-dev isort prd test
+.PHONY: alembic-downgrade alembic-init alembic-migrate alembic-rev autoflake black cache cleanup compile dev flake8 gdev gprd grdev help install install-dev isort prd test
 
-alembic-migrate: # migrate database using alembic
+alembic-init: # Initialize Alembic
+	alembic init alembic
+
+alembic-migrate: # Migrate database using Alembic
 	alembic upgrade head
 
-alembic-rev: # Create revision database using alembic
+alembic-rev: # Create a new revision file
+	cp env-files/.test .env && \
+	./scripts/env.sh && \
+	export DATABASE_URL=`cat /tmp/db_url.txt` && \
+	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL"
 	@read -p "Enter revision name: " name; \
 	alembic revision --autogenerate -m "$$name"
-	
+
+alembic-downgrade: # Downgrade database using Alembic
+	@read -p "Enter revision name: " name; \
+	alembic downgrade $$name
+
 autoflake:  # Remove unused imports and variables
 	autoflake --in-place --remove-all-unused-imports -r $(SERVICE_PATH)
 
@@ -41,8 +54,21 @@ cleanup: isort black autoflake  # Run isort, black, and autoflake
 compile:  # Compile http_request.c into a shared library
 	gcc -shared -o http_request.so http_request.c -lcurl -fPIC
 
-dev:  # Run the FastAPI application in development mode with hot-reloading
+env-dev:  # Run the FastAPI application in development mode with hot-reloading
+	cp env-files/.env.dev .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
+env-local:  # Run the FastAPI application in development mode with hot-reloading
+	cp env-files/.env.local .env
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
+env-test:  # Run the FastAPI application in development mode with hot-reloading
+	cp env-files/.env.test .env
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
+env-prod:  # Run the FastAPI application in production mode
+	cp env-files/.env.stage .env
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
 
 flake8:  # Run flake8 and output report
 	flake8 --tee . > _flake8Report.txt
@@ -69,8 +95,6 @@ isort:  # Sort imports using isort
 	isort $(SERVICE_PATH)
 	isort $(TESTS_PATH)
 
-prd:  # Run the FastAPI application in production mode
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
 
 test:  # Run tests and generate coverage report
 	pre-commit run -a

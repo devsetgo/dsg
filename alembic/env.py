@@ -1,6 +1,6 @@
 import asyncio
 from logging.config import fileConfig
-
+import os
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
@@ -63,13 +63,16 @@ def do_run_migrations(connection: Connection) -> None:
 async def run_async_migrations() -> None:
     """In this scenario we need to create an Engine
     and associate a connection with the context.
-
     """
+
+    # Fetch the DATABASE_URL from the environment variables
+    url = os.getenv("DATABASE_URL")
 
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        url=url,  # Use the DATABASE_URL from the environment variables
     )
 
     async with connectable.connect() as connection:
