@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
 
 # from pytz import timezone, UTC
+import secrets
 from enum import Enum
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from sqlalchemy import Select
-import secrets
+
 from ..db_tables import JobApplications, Notes, Users
 from ..functions import date_functions
 from ..functions.hash_function import hash_password
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
-from datetime import UTC, datetime, timedelta
+
 router = APIRouter()
+
 
 class RoleEnum(str, Enum):
     notes = "notes"
@@ -46,10 +48,10 @@ async def get_list_of_users(user_timezone: str):
     query = Select(Users)
     users = await db_ops.read_query(query=query)
     users = [user.to_dict() for user in users]
-    
+
     for user in users:
-        for k,v in user.items():
-            if k.startswith('date_'):
+        for k, v in user.items():
+            if k.startswith("date_"):
                 user[k] = await date_functions.timezone_update(
                     user_timezone=user_timezone,
                     date_time=user[k],
@@ -78,8 +80,8 @@ async def admin_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     user = user.to_dict()
-    for k,v in user.items():
-        if k.startswith('date_'):
+    for k, v in user.items():
+        if k.startswith("date_"):
             user[k] = await date_functions.timezone_update(
                 user_timezone=user_timezone,
                 date_time=user[k],
@@ -99,7 +101,9 @@ async def admin_user(
         "job_app_count": job_app_count,
         "csrf_token": csrf_token,
         "random_pass": secrets.token_urlsafe(10),
-        "roles": [role.value for role in RoleEnum],  # List of all role values from the Enum
+        "roles": [
+            role.value for role in RoleEnum
+        ],  # List of all role values from the Enum
     }
     response = templates.TemplateResponse(
         request=request, name="/admin/user.html", context=context
@@ -133,32 +137,36 @@ async def admin_update_user(
         data = await db_ops.delete_one(table=Users, record_id=update_user_id)
         logger.info(f"User {update_user_id} deleted by {user_identifier}")
         logger.debug(f"data: {data}")
-        data_notes =  await db_ops.read_query(query=Select(Notes).where(Notes.user_id == update_user_id))
+        data_notes = await db_ops.read_query(
+            query=Select(Notes).where(Notes.user_id == update_user_id)
+        )
         response = Response(
             headers={"HX-Redirect": f"/admin/#access-tab"}, status_code=200
         )
         csrf_protect.unset_csrf_cookie(response)
         return response
-    
+
     new_values = {}
 
     new_password = form.get("new-password-entry")
     change_email_entry = form.get("change-email-entry")
 
     if account_action == "lock":
-        
+
         new_values["is_locked"] = True
 
     elif new_password != "":
-        
+
         hashed_password = hash_password(new_password)
         new_values["password"] = hashed_password
-    
+
     elif change_email_entry != "":
 
         new_values["email"] = change_email_entry
 
-    data =  await db_ops.update_one(table=Users, record_id=update_user_id, new_values=new_values)
+    data = await db_ops.update_one(
+        table=Users, record_id=update_user_id, new_values=new_values
+    )
 
     query = Select(Users).where(Users.pkid == update_user_id)
     user = await db_ops.read_one_record(query=query)
@@ -174,7 +182,6 @@ async def admin_update_user(
     )
     csrf_protect.unset_csrf_cookie(response)
     return response
-
 
 
 @router.post("/user/access/{update_user_id}")
@@ -197,15 +204,16 @@ async def admin_update_user_access(
     form = await request.form()
     new_data = {}
     for key, value in form.items():
-        if key != 'csrf-token':
+        if key != "csrf-token":
             role = key
-            new_data[role] = value == 'true'
-    new_values = {'roles':new_data}
-    data =  await db_ops.update_one(table=Users, record_id=update_user_id, new_values=new_values)
+            new_data[role] = value == "true"
+    new_values = {"roles": new_data}
+    data = await db_ops.update_one(
+        table=Users, record_id=update_user_id, new_values=new_values
+    )
 
     response = Response(
         headers={"HX-Redirect": f"/admin/user/{update_user_id}"}, status_code=200
     )
     csrf_protect.unset_csrf_cookie(response)
     return response
-

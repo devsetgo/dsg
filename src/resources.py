@@ -291,7 +291,6 @@ async def add_user():
         if random.choice([True, False]):
             role_data[role] = random.choice([True, False])
 
-
     user = Users(
         first_name=f"{silly.verb()}",
         last_name=f"{silly.noun()}",
