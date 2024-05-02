@@ -242,6 +242,3 @@ class JobApplicationTasks(schema_base, async_db.Base):
         return {
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
-
-
-
