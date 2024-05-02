@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import csv
 import io
-import re
 from datetime import UTC, datetime, timedelta
 
 # from pytz import timezone, UTC
@@ -19,7 +18,7 @@ from fastapi.responses import RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from pytz import timezone
-from sqlalchemy import Select, Text, and_, between, cast, extract, or_, text
+from sqlalchemy import Select, Text, and_, between, cast, extract, or_
 
 from ..db_tables import Notes
 from ..functions import ai, date_functions, note_import, notes_metrics
@@ -54,9 +53,6 @@ async def read_notes(
     return templates.TemplateResponse(
         request=request, name="/notes/dashboard.html", context=context
     )
-
-
-# TODO: Add a route to get the metrics for the notes using HTMX to speed up page loading
 
 
 @router.get("/metrics/counts")
@@ -340,31 +336,10 @@ async def get_note_issue(
         logger.debug("User identifier is None, redirecting to login")
         return RedirectResponse(url="/users/login", status_code=302)
 
-    pattern = re.compile("[^a-zA-Z, ]")
-
-    if settings.db_driver.startswith("sqlite"):
-        # Fetch all notes from the SQLite database
-        query = Select(Notes).where(Notes.user_id == user_identifier)
-        all_notes = await db_ops.read_query(query=query)
-        # Filter the notes in Python using the regular expression
-        notes = []
-        for note in all_notes:
-            if any(pattern.search(tag) for tag in note.tags):
-                notes.append(note)
-                if len(notes) == 5:
-                    break
-    elif settings.db_driver.startswith("postgres"):
-        # Use the regular expression in the PostgreSQL query
-        query = Select(Notes).where(
-            text(
-                f"EXISTS (SELECT 1 FROM json_array_elements_text(tags) as tag WHERE tag ~* '{pattern.pattern}')"
-            )
-        )
-        query = query.where(Notes.user_id == user_identifier)
-        notes = await db_ops.read_query(query=query, limit=5)
-    else:
-        raise ValueError("Untested database driver")
-
+    query = Select(Notes).where(
+        and_(Notes.user_id == user_identifier, Notes.ai_fix == True)
+    )
+    notes = await db_ops.read_query(query=query, limit=20)
     # offset date_created and date_updated to user's timezone
     notes = [note.to_dict() for note in notes]
     metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
@@ -400,8 +375,7 @@ async def new_note_form(
 
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
-    # demo_note = get_note_demo_paragraph()
-    # logger.info("Generated demo note")
+
     return templates.TemplateResponse(
         request=request, name="notes/new.html", context={}
     )
@@ -464,8 +438,6 @@ async def read_notes_pagination(
 
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
-    # user_identifier = request.session.get("user_identifier")
-    # user_timezone = request.session.get("timezone")
 
     logger.critical(
         f"Searching for term: {search_term}, start_date: {start_date}, end_date: {end_date}, mood: {mood}, user: {user_identifier}"
@@ -516,10 +488,8 @@ async def read_notes_pagination(
         )
     found = len(notes)
     note_count = await db_ops.count_query(query=query)
-    # if offset == 0:
+
     current_count = found
-    # else:
-    #     current_count = note_count
 
     total_pages = -(-note_count // limit)  # Ceiling division
     # Generate the URLs for the previous and next pages
