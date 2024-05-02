@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 
 from dsg_lib.async_database_functions import base_schema
 from sqlalchemy import (
@@ -10,6 +11,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    event,
 )
 from sqlalchemy.orm import class_mapper, relationship
 
@@ -119,36 +121,38 @@ class Categories(schema_base, async_db.Base):
 
 
 class Notes(schema_base, async_db.Base):
-    __tablename__ = "notes"  # Name of the table in the database
+    __tablename__ = "notes"
     __tableargs__ = {"comment": "Notes that the user writes"}
 
-    # Define the columns of the table
-    mood = Column(String(50), unique=False, index=True)  # mood of note
-    mood_analysis = Column(String(50), unique=False, index=True)  # mood of note
-    note = Column(Text, unique=False, index=True, nullable=False)  # note
-    tags = Column(JSON)  # tags from OpenAI
-    summary = Column(String(100), unique=False, index=True)  # summary from OpenAI
-    # Define the parent relationship to the User class
-    user_id = Column(
-        String, ForeignKey("users.pkid"), nullable=False, index=True
-    )  # Foreign key to the User table
+    mood = Column(String(50), unique=False, index=True)
+    mood_analysis = Column(String(50), unique=False, index=True)
+    note = Column(Text, unique=False, index=True, nullable=False)
+    tags = Column(JSON)
+    summary = Column(String(100), unique=False, index=True)
+    word_count = Column(Integer)
+    character_count = Column(Integer)
+    ai_fix = Column(Boolean, default=False)
+    user_id = Column(String, ForeignKey("users.pkid"), nullable=False, index=True)
     users = relationship("Users", back_populates="notes")
-
-    @property
-    def word_count(self):
-        return len(self.note.split())
-
-    @property
-    def character_count(self):
-        return len(self.note)
 
     def to_dict(self):
         data = {
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
-        data["word_count"] = self.word_count
-        data["character_count"] = self.character_count
         return data
+
+
+@event.listens_for(Notes, "before_insert")
+@event.listens_for(Notes, "before_update")
+def on_change(mapper, connection, target):
+    target.word_count = len(target.note.split())
+    target.character_count = len(target.note)
+
+    pattern = re.compile("[^a-zA-Z, ]")
+    for tag in target.tags:
+        if pattern.search(tag) or " " in tag:
+            target.ai_fix = True
+            break
 
 
 class LibraryName(async_db.Base):
