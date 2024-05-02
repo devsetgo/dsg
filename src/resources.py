@@ -151,7 +151,7 @@ async def add_system_data():
 
     if settings.create_demo_user is True:
         logger.warning("Creating demo user")
-        for _ in range(10):
+        for _ in range(settings.create_demo_notes_qty):
             data = await add_user()  # Create a demo user
 
             if settings.create_demo_notes is True:

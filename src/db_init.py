@@ -4,7 +4,7 @@ from loguru import logger
 
 from .settings import settings
 
-print(settings.db_driver.value)
+
 if str(settings.db_driver.value).startswith(
     "sqlite+aiosqlite:///:memory:?cache=shared"
 ):

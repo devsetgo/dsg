@@ -122,6 +122,7 @@ class Settings(BaseSettings):
     admin_password: SecretStr = None
     # create psuedo data
     create_demo_user: bool = False
+    create_demo_users_qty: int = 0
     create_base_categories: bool = False
     create_demo_data: bool = False
     create_demo_notes: bool = False
@@ -139,7 +140,7 @@ class Settings(BaseSettings):
         return values
 
     model_config = SettingsConfigDict(
-        env_file=".env.dev",
+        env_file=".env",
         env_file_encoding="utf-8",
         extra="allow",
         # use_enum_values=True

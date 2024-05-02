@@ -25,3 +25,49 @@ BEGIN
     END LOOP;
 END $$;
 ```
+
+# Database Migration
+
+We use Alembic for database migration. Here are the steps to create and apply database migrations:
+
+1. **Initialize Alembic**
+
+    If you haven't already, initialize Alembic in your project:
+
+    ```bash
+    make alembic-init
+    ```
+
+    This will create a new directory named `alembic` in your project root, which contains your migration scripts.
+
+2. **Create a New Migration**
+
+    After you've made changes to your SQLAlchemy models, you can create a new migration script with:
+
+    ```bash
+    make alembic-rev
+    ```
+
+    You'll be prompted to enter a name for the migration. This name should describe the changes you've made.
+
+3. **Apply Migrations**
+
+    To apply the migrations to your database, run:
+
+    ```bash
+    make alembic-migrate
+    ```
+
+    This will upgrade your database to the latest version.
+
+4. **Downgrade Database**
+
+    If you need to downgrade your database to a previous version, you can use:
+
+    ```bash
+    make alembic-downgrade
+    ```
+
+    You'll be prompted to enter the name of the revision to downgrade to.
+
+Remember to commit your migration scripts to version control along with the corresponding changes to your models.
