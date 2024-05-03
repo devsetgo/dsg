@@ -122,7 +122,7 @@ class Settings(BaseSettings):
     admin_password: SecretStr = None
     # create psuedo data
     create_demo_user: bool = False
-    create_demo_users_qty: int = 0
+    create_demo_users_qty: int = 20
     create_base_categories: bool = False
     create_demo_data: bool = False
     create_demo_notes: bool = False
