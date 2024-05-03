@@ -31,9 +31,6 @@ logging_config.config_log(
 async def lifespan(app: FastAPI):
     logger.info("starting up")
     await startup()
-    # create_users = True
-    # if create_users:
-    #     await create_a_bunch_of_users(single_entry=23, many_entries=2000)
     yield
     logger.info("shutting down")
 
@@ -65,7 +62,4 @@ create_routes(app)
 async def root(request: Request):
     # get user_identifier from session
     user_identifier = request.session.get("user_identifier", None)
-    # if user_identifier is None:
-    #     return RedirectResponse(url="/users/login")
-    # else:
     return RedirectResponse(url="/pages/index")
