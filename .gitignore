@@ -11,6 +11,8 @@ log/*
 log.json
 log.log
 *.db
+.VSCodeCounter
+
 # hide specific files
 export.csv
 export_cleaned.csv
