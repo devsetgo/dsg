@@ -149,15 +149,15 @@ async def add_system_data():
         if settings.create_demo_notes is True:
             await add_notes(user_id=data["pkid"])  # Create notes for the admin user
 
-    if settings.create_demo_user is True:
+    
+    if settings.create_demo_user == True:
+
         logger.warning("Creating demo user")
         for _ in range(settings.create_demo_users_qty):
             data = await add_user()  # Create a demo user
-
-            if settings.create_demo_notes is True:
-                await add_notes(
-                    user_id=data["pkid"], qty_notes=random.randint(1, 5)
-                )  # Create notes for the loop user
+            await add_notes(
+                user_id=data["pkid"], qty_notes=random.randint(1, 5)
+            )  # Create notes for the loop user
 
     if settings.create_base_categories is True:
         logger.warning("Creating base categories")
@@ -269,15 +269,9 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         )
         # demo_notes.append(note)
         data = await db_ops.create_one(note)
-    # data = await db_ops.create_many(demo_notes)
 
 
 async def add_user():
-
-    # user = await db_ops.read_query(Select(Users).where(Users.user_name == "admin"))
-    # if len(user) > 0:
-    #     logger.info("system user already added")
-    #     return
 
     logger.info("adding system user")
     hashed_password = hash_password("password")
