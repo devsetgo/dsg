@@ -6,7 +6,7 @@ from dateutil.parser import parse
 from loguru import logger
 
 from ..db_tables import Notes
-from ..functions import ai
+from ..functions import ai, notes_metrics
 from ..resources import db_ops
 
 
@@ -53,7 +53,8 @@ async def read_notes_from_file(csv_file: list, user_id: str):
         )
         data = await db_ops.create_one(note)
         logger.info(data.to_dict())
-        notes.append(data.to_dict())
+        # notes.append(data.to_dict())
+        await notes_metrics.update_notes_metrics(user_identifier=user_id)
 
 
 def parse_date(date_created):

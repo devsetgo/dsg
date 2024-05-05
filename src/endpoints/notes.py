@@ -20,7 +20,7 @@ from loguru import logger
 from pytz import timezone
 from sqlalchemy import Select, Text, and_, between, cast, extract, or_
 
-from ..db_tables import Notes
+from ..db_tables import NoteMetrics, Notes
 from ..functions import ai, date_functions, note_import, notes_metrics
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
@@ -48,8 +48,21 @@ async def read_notes(
     metrics = await notes_metrics.get_metrics(
         user_identifier=user_identifier, user_timezone=user_timezone
     )
+    note_metrics = await db_ops.read_one_record(
+        query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
+    )
+    if note_metrics is not None:
+        note_metrics = note_metrics.to_dict()
+        note_metrics.pop("pkid")
+        note_metrics.pop("date_created")
+        note_metrics.pop("date_updated")
+        note_metrics.pop("user_id")
 
-    context = {"user_identifier": user_identifier, "metrics": metrics}
+    context = {
+        "user_identifier": user_identifier,
+        "metrics": metrics,
+        "note_metrics": note_metrics,
+    }
     return templates.TemplateResponse(
         request=request, name="/notes/dashboard.html", context=context
     )
@@ -63,25 +76,25 @@ async def get_note_counts(
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
-    query = Select(Notes).where(Notes.user_id == user_identifier)
-    notes = await db_ops.read_query(query=query, limit=10000, offset=0)
-    notes = [note.to_dict() for note in notes]
+    note_metrics = await db_ops.read_one_record(
+        query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
+    )
+    if note_metrics is None:
+        await notes_metrics.update_notes_metrics(user_id=user_identifier)
+        note_metrics = await db_ops.read_one_record(
+            query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
+        )
 
-    mood_counts = await notes_metrics.mood_metrics(notes=notes)
-    note_counts = await notes_metrics.get_note_counts(notes=notes)
-    tag_count = await notes_metrics.get_total_unique_tag_count(notes=notes)
+    note_metrics = note_metrics.to_dict()
+    for field in ["pkid", "date_created", "date_updated", "user_id"]:
+        note_metrics.pop(field, None)
 
-    counts = {
-        "mood_counts": dict(mood_counts),
-        "note_count": len(notes),
-        "note_counts": note_counts,
-        "tag_count": tag_count,
-    }
-
-    logger.info(f"User {user_identifier} fetched note counts: {counts}")
+    logger.info(f"User {user_identifier} fetched note counts: {note_metrics}")
 
     return templates.TemplateResponse(
-        request=request, name="/notes/metrics.html", context={"counts": counts}
+        request=request,
+        name="/notes/metrics.html",
+        context={"note_metrics": note_metrics},
     )
 
 
@@ -231,6 +244,7 @@ async def edit_note_form(
 
 @router.post("/edit/{note_id}")
 async def update_note(
+    background_tasks: BackgroundTasks,
     request: Request,
     note_id: str = Path(...),
     user_info: dict = Depends(check_login),
@@ -271,7 +285,9 @@ async def update_note(
         table=Notes, record_id=note_id, new_values=updated_data
     )
     logger.info(f"Updated note with ID: {note_id}")
-
+    background_tasks.add_task(
+        notes_metrics.update_notes_metrics, user_id=user_identifier
+    )
     return RedirectResponse(url=f"/notes/view/{data.pkid}", status_code=302)
 
 
@@ -318,7 +334,9 @@ async def delete_note(
     await db_ops.delete_one(table=Notes, record_id=note_id)
 
     logger.info(f"Deleted note with ID: {note_id}")
-
+    background_tasks.add_task(
+        notes_metrics.update_notes_metrics, user_id=user_identifier
+    )
     return RedirectResponse(url="/notes", status_code=302)
 
 
@@ -383,6 +401,7 @@ async def new_note_form(
 
 @router.post("/new")
 async def create_note(
+    background_tasks: BackgroundTasks,
     request: Request,
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
@@ -410,6 +429,12 @@ async def create_note(
         user_id=user_identifier,
     )
     data = await db_ops.create_one(note)
+
+    # add the task to background tasks
+    # await notes_metrics.update_notes_metrics(user_id=user_identifier)
+    background_tasks.add_task(
+        notes_metrics.update_notes_metrics, user_id=user_identifier
+    )
     logger.debug(f"Created Note: data")
     logger.info(f"Created note with ID: {data.pkid}")
 
@@ -439,7 +464,7 @@ async def read_notes_pagination(
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
-    logger.critical(
+    logger.info(
         f"Searching for term: {search_term}, start_date: {start_date}, end_date: {end_date}, mood: {mood}, user: {user_identifier}"
     )
     # find search_term in columns: note, mood, tags, summary

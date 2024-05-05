@@ -102,8 +102,8 @@ async def admin_user(
         "csrf_token": csrf_token,
         "random_pass": secrets.token_urlsafe(10),
         "roles": [
-            role.value for role in RoleEnum
-        ],  # List of all role values from the Enum
+            role.value for role in sorted(RoleEnum, key=lambda x: x.name)
+        ],  # List of all role values from the Enum, sorted by name
     }
     response = templates.TemplateResponse(
         request=request, name="/admin/user.html", context=context

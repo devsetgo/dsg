@@ -11,9 +11,7 @@
         </div>
         <div class="card-body" style="display: none;">
           <!-- <div class="row">notes: {{metrics.notes|safe}}</div> -->
-          <div class="row">tags: {{ metrics.mood_analysis_trend_by_mean_month| safe }}</div>
-          <div class="row">tags: {{ metrics.mood_trend_by_rolling_mean_month| safe }}</div>
-          <!-- <div class="row">Week:{{metrics.note_count_by_week|safe}}</div> -->
+          <div class="row">note metrics: {{ note_metrics }}</div>
         </div>
       </div>
     </div>
