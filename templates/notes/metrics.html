@@ -6,7 +6,7 @@
                 <span class="info-box-icon"><i class="fas fa-file-alt"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Notes</span>
-                    <span class="info-box-number">{{counts.note_count}}</span>
+                    <span class="info-box-number">{{ '{:,}'.format(note_metrics.note_count) }}</span>
                 </div>
             </div>
 
@@ -14,7 +14,7 @@
                 <span class="info-box-icon"><i class="fas fa-file-word"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Words</span>
-                    <span class="info-box-number">{{counts.note_counts.word_count}}</span>
+                    <span class="info-box-number">{{ '{:,}'.format(note_metrics.word_count) }}</span>
                 </div>
             </div>
 
@@ -22,14 +22,14 @@
                 <span class="info-box-icon"><i class="fas fa-file-alt"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Characters</span>
-                    <span class="info-box-number">{{counts.note_counts.char_count}}</span>
+                    <span class="info-box-number">{{ '{:,}'.format(note_metrics.character_count)}}</span>
                 </div>
             </div>
             <div class="info-box bg-indigo col-md-3">
                 <span class="info-box-icon"><i class="fa-solid fa-user-tag"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Tags</span>
-                    <span class="info-box-number">{{counts.tag_count}}</span>
+                    <span class="info-box-number">{{ '{:,}'.format(note_metrics.total_unique_tag_count)}}</span>
                 </div>
             </div>
         </div>
@@ -40,7 +40,7 @@
                 <span class="info-box-icon"><i class="far fa-smile"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Positive Mood Count</span>
-                    <span class="info-box-number">{{counts.mood_counts.positive}}</span>
+                    <span class="info-box-number">{{ '{:,}'.format(note_metrics.mood_metric.positive)}}</span>
                 </div>
             </div>
 
@@ -48,7 +48,7 @@
                 <span class="info-box-icon"><i class="far fa-meh"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Neutral Mood Count</span>
-                    <span class="info-box-number">{{counts.mood_counts.neutral}}</span>
+                    <span class="info-box-number">{{ '{:,}'.format(note_metrics.mood_metric.neutral)}}</span>
                 </div>
             </div>
 
@@ -56,7 +56,7 @@
                 <span class="info-box-icon"><i class="far fa-frown"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Negative Mood Count</span>
-                    <span class="info-box-number">{{counts.mood_counts.negative}}</span>
+                    <span class="info-box-number">{{ '{:,}'.format(note_metrics.mood_metric.negative)}}</span>
                 </div>
             </div>
         </div>

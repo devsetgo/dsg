@@ -75,6 +75,9 @@ class Users(schema_base, async_db.Base):
         "Categories", back_populates="users", cascade="all,delete"
     )
     notes = relationship("Notes", back_populates="users", cascade="all,delete")
+    note_metrics = relationship(
+        "NoteMetrics", back_populates="users", cascade="all,delete"
+    )
     job_applications = relationship(
         "JobApplications", back_populates="users", cascade="all,delete"
     )
@@ -120,6 +123,24 @@ class Categories(schema_base, async_db.Base):
         }
 
 
+class NoteMetrics(schema_base, async_db.Base):
+    __tablename__ = "note_metrics"
+
+    user_id = Column(String, ForeignKey("users.pkid"), nullable=False, index=True)
+    word_count = Column(Integer, default=0)
+    character_count = Column(Integer, default=0)
+    note_count = Column(Integer, default=0)
+    mood_metric = Column(JSON)
+    total_unique_tag_count = Column(Integer, default=0)
+    users = relationship("Users", back_populates="note_metrics")
+
+    def to_dict(self):
+        data = {
+            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+        }
+        return data
+
+
 class Notes(schema_base, async_db.Base):
     __tablename__ = "notes"
     __tableargs__ = {"comment": "Notes that the user writes"}
@@ -153,6 +174,24 @@ def on_change(mapper, connection, target):
         if pattern.search(tag) or " " in tag:
             target.ai_fix = True
             break
+
+
+# @event.listens_for(Notes, "after_insert")
+# @event.listens_for(Notes, "after_update")
+# def on_change(mapper, connection, target):
+#     note_metrics = connection.execute(select(NoteMetrics)).first()
+#     if note_metrics is None:
+#         note_metrics = NoteMetrics()
+#         connection.execute(insert(NoteMetrics))
+
+#     connection.execute(
+#         update(NoteMetrics).
+#         where(NoteMetrics.id == note_metrics.id).
+#         values(
+#             total_word_count=NoteMetrics.total_word_count + target.word_count,
+#             total_character_count=NoteMetrics.total_character_count + target.character_count
+#         )
+#     )
 
 
 class LibraryName(async_db.Base):

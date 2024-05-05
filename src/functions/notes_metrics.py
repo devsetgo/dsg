@@ -9,9 +9,41 @@ from collections import Counter, defaultdict, deque
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import Notes
+from ..db_tables import NoteMetrics, Notes
 from ..resources import db_ops
 from ..settings import settings
+
+
+async def update_notes_metrics(user_id: str):
+    logger.critical("background task for metrics")
+
+    query_metric = Select(NoteMetrics).where(NoteMetrics.user_id == user_id)
+    metric_data = await db_ops.read_one_record(query=query_metric)
+    query = Select(Notes).where((Notes.user_id == user_id))
+    notes = await db_ops.read_query(query=query, limit=100000, offset=0)
+    notes = [note.to_dict() for note in notes]
+
+
+    mood_metric = await mood_metrics(notes=notes)
+    total_unique_tag_count = await get_total_unique_tag_count(notes=notes)
+    note_counts = await get_note_counts(notes=notes)
+    
+    if metric_data is None:
+        note_metric = NoteMetrics(
+            word_count=note_counts["word_count"],
+            note_count=note_counts["note_count"],
+            character_count=note_counts["char_count"],
+            mood_metric=mood_metric,
+            total_unique_tag_count=total_unique_tag_count,
+            user_id=user_id,
+        )
+        result = await db_ops.create_one(note_metric)
+    else:
+        # Update the database
+        result = await db_ops.update_one(
+            table=NoteMetrics, record_id=user_id, new_values=updated_data
+        )
+    logger.critical(result)
 
 
 async def get_metrics(user_identifier: str, user_timezone: str):
@@ -39,7 +71,7 @@ async def get_metrics(user_identifier: str, user_timezone: str):
             notes=notes
         ),
         "tags_common": await get_tag_count(notes=notes),
-        "notes": notes,
+        # "notes": notes,
     }
     logger.info("Metrics retrieved successfully for user: {}", user_identifier)
     return metrics
@@ -56,12 +88,43 @@ async def get_note_counts(notes: list):
         char_count += note["character_count"]
 
     data = {
-        "word_count": format(word_count, ","),
-        "char_count": format(char_count, ","),
-        "note_count": format(note_count, ","),
+        "word_count": word_count,
+        "char_count": char_count,
+        "note_count": note_count,
     }
     logger.info("Note counts calculated successfully")
     return data
+
+
+async def mood_metrics(notes: list):
+    logger.info("Calculating mood metrics")
+    mood_count = Counter([note["mood"] for note in notes])
+    mood_count = {k: v for k, v in mood_count.items()}
+    logger.info("Mood metrics calculated successfully")
+    return mood_count
+
+
+async def get_total_unique_tag_count(notes: list):
+    # example of notes.tags
+    # 'tags': ['handed', 'sleepy', 'nutmeg'],
+    tags = [tag for note in notes for tag in note["tags"]]
+    tag_count = Counter(tags)
+    return len(tag_count)
+
+
+# charting data metrics
+async def get_tag_count(notes: list):
+
+    tags = [tag.capitalize() for note in notes for tag in note["tags"]]
+    tag_count = Counter(tags)
+
+    # Sort the tag_count dictionary by its values in descending order
+    tag_count = dict(sorted(tag_count.items(), key=lambda item: item[1], reverse=True))
+
+    # Limit the result to the top 20 tags
+    tag_count = dict(list(tag_count.items())[:30])
+
+    return json.dumps(tag_count)
 
 
 async def get_note_count_by_year(notes: list):
@@ -130,14 +193,6 @@ async def get_note_count_by_week(notes: list):
     return json.dumps(
         {week_year_str: dict(data) for week_year_str, data in result.items()}
     )
-
-
-async def mood_metrics(notes: list):
-    logger.info("Calculating mood metrics")
-    mood_count = Counter([note["mood"] for note in notes])
-    mood_count = {k: format(v, ",") for k, v in mood_count.items()}
-    logger.info("Mood metrics calculated successfully")
-    return dict(mood_count)
 
 
 async def mood_by_month(notes: list):
@@ -279,25 +334,3 @@ async def mood_trend_by_rolling_mean_month(notes: list):
 
     logger.info("Mood trend by month calculated successfully")
     return rolling_avg
-
-
-async def get_total_unique_tag_count(notes: list):
-    # example of notes.tags
-    # 'tags': ['handed', 'sleepy', 'nutmeg'],
-    tags = [tag for note in notes for tag in note["tags"]]
-    tag_count = Counter(tags)
-    return len(tag_count)
-
-
-async def get_tag_count(notes: list):
-
-    tags = [tag.capitalize() for note in notes for tag in note["tags"]]
-    tag_count = Counter(tags)
-
-    # Sort the tag_count dictionary by its values in descending order
-    tag_count = dict(sorted(tag_count.items(), key=lambda item: item[1], reverse=True))
-
-    # Limit the result to the top 20 tags
-    tag_count = dict(list(tag_count.items())[:30])
-
-    return json.dumps(tag_count)
