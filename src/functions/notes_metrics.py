@@ -23,11 +23,10 @@ async def update_notes_metrics(user_id: str):
     notes = await db_ops.read_query(query=query, limit=100000, offset=0)
     notes = [note.to_dict() for note in notes]
 
-
     mood_metric = await mood_metrics(notes=notes)
     total_unique_tag_count = await get_total_unique_tag_count(notes=notes)
     note_counts = await get_note_counts(notes=notes)
-    
+
     if metric_data is None:
         note_metric = NoteMetrics(
             word_count=note_counts["word_count"],

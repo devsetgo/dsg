@@ -148,7 +148,6 @@ async def add_system_data():
 
         if settings.create_demo_notes is True:
             await add_notes(user_id=data["pkid"])  # Create notes for the admin user
-            
 
     if settings.create_demo_user == True:
 
@@ -158,7 +157,6 @@ async def add_system_data():
             await add_notes(
                 user_id=data["pkid"], qty_notes=random.randint(1, 5)
             )  # Create notes for the loop user
-
 
     if settings.create_base_categories is True:
         logger.warning("Creating base categories")
