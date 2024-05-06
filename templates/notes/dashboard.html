@@ -42,11 +42,10 @@
                 </a>
               </li>
               <li class="nav-item">
-              <a class="nav-link" id="custom-tabs-four-aifix-tab" data-toggle="pill"
-                href="#custom-tabs-four-aifix" role="tab" aria-controls="custom-tabs-four-aifix"
-                aria-selected="false" hx-get="/notes/issues" hx-trigger="click" hx-target="#aifix-data"
-                hx-indicator=".htmx-indicator">AI Issues</a>
-            </li>
+                <a class="nav-link" id="custom-tabs-four-aifix-tab" data-toggle="pill" href="#custom-tabs-four-aifix"
+                  role="tab" aria-controls="custom-tabs-four-aifix" aria-selected="false" hx-get="/notes/issues"
+                  hx-trigger="click" hx-target="#aifix-data" hx-indicator=".htmx-indicator">AI Issues</a>
+              </li>
             </ul>
           </div>
           <div class="card-body">
@@ -55,7 +54,6 @@
                 aria-labelledby="custom-tabs-four-dash-tab">
                 <div class="container-fluid">
                   <div hx-get="/notes/metrics/counts" hx-trigger="load" hx-indicator=".htmx-indicator">Loading....</div>
-                  
                   {% include 'notes/data-block.html' %}
                   {% include 'notes/charting.html' %}
                 </div>
@@ -72,9 +70,10 @@
                 <div class="row" id="history-data" style="display: flex; flex-direction: column;"></div>
               </div>
               <div class="tab-pane fade" id="custom-tabs-four-aifix" role="tabpanel"
-              aria-labelledby="custom-tabs-four-aifix-tab">
-              <div class="row" id="aifix-data" style="display: flex; flex-direction: column;">Stuff here caused by AI</div>
-            </div>
+                aria-labelledby="custom-tabs-four-aifix-tab">
+                <div class="row" id="aifix-data" style="display: flex; flex-direction: column;">Stuff here caused by AI
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -95,27 +94,26 @@
 <!-- OPTIONAL SCRIPTS -->
 <!-- tab links -->
 <script>
-// Add click event listener to each tab
-document.querySelectorAll('.nav-link').forEach(tab => {
-  tab.addEventListener('click', function() {
-    // Update URL hash when a tab is clicked
-    window.location.hash = this.id;
+  // Add click event listener to each tab
+  document.querySelectorAll('.nav-link').forEach(tab => {
+    tab.addEventListener('click', function () {
+      // Update URL hash when a tab is clicked
+      window.location.hash = this.id;
+    });
   });
-});
-
-// On page load, check the URL hash and open the corresponding tab
-window.onload = function() {
-  let hash = window.location.hash;
-  if (hash) {
-    // Remove '#' from the hash
-    let tabId = hash.slice(1);
-    // Open the tab
-    let tab = document.getElementById(tabId);
-    if (tab) {
-      tab.click();
+  // On page load, check the URL hash and open the corresponding tab
+  window.onload = function () {
+    let hash = window.location.hash;
+    if (hash) {
+      // Remove '#' from the hash
+      let tabId = hash.slice(1);
+      // Open the tab
+      let tab = document.getElementById(tabId);
+      if (tab) {
+        tab.click();
+      }
     }
-  }
-};
+  };
 </script>
 <!-- Mood Trend by Month -->
 <script>
@@ -124,7 +122,6 @@ window.onload = function() {
   const metricsMoodMedian = {{ metrics.mood_trend_by_median_month | safe }};
   const metricsMoodRollingMean = {{ metrics.mood_trend_by_rolling_mean_month | safe }};
   const metricsMoodAnalysis = {{ metrics.mood_analysis_trend_by_mean_month | safe }};
-
   // Create a function to generate a chart
   function createMoodChart(elementId, metrics, metricsMedian, metricsRollingMean, metricsAnalysis) {
     const labels = Object.keys(metrics);
