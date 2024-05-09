@@ -62,6 +62,11 @@ env-local:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.local .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
 
+env-real:  # Run the FastAPI application in development mode with hot-reloading
+	cp env-files/.env.local .env
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
+
 env-test:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.test .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
