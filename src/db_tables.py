@@ -131,6 +131,16 @@ class NoteMetrics(schema_base, async_db.Base):
     character_count = Column(Integer, default=0)
     note_count = Column(Integer, default=0)
     mood_metric = Column(JSON)
+    metrics = Column(JSON)
+    # note_count_by_year = Column(JSON)
+    # note_count_by_month = Column(JSON)
+    # note_count_by_week = Column(JSON)
+    # mood_by_month = Column(JSON)
+    # mood_trend_by_month = Column(JSON)
+    # mood_trend_by_median_month = Column(JSON)
+    # mood_trend_by_rolling_mean_month = Column(JSON)
+    # mood_analysis_trend_by_mean_month = Column(JSON)
+    # tags_common = Column(JSON)
     total_unique_tag_count = Column(Integer, default=0)
     users = relationship("Users", back_populates="note_metrics")
 
@@ -170,9 +180,12 @@ def on_change(mapper, connection, target):
     target.character_count = len(target.note)
 
     pattern = re.compile("[^a-zA-Z, ]")
+    target.ai_fix = False  # Set ai_fix to False by default
     for tag in target.tags:
         if pattern.search(tag) or " " in tag:
-            target.ai_fix = True
+            target.ai_fix = (
+                True  # Set ai_fix to True only if an illegal character is found
+            )
             break
 
 

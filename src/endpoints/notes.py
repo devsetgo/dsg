@@ -45,18 +45,26 @@ async def read_notes(
         logger.debug("User identifier is None, redirecting to login")
         return RedirectResponse(url="/users/login", status_code=302)
 
-    metrics = await notes_metrics.get_metrics(
-        user_identifier=user_identifier, user_timezone=user_timezone
-    )
+    # metrics = await notes_metrics.get_metrics(
+    #     user_identifier=user_identifier, user_timezone=user_timezone
+    # )
     note_metrics = await db_ops.read_one_record(
         query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
     )
+
+    if note_metrics is None:
+        await notes_metrics.update_notes_metrics(user_id=user_identifier)
+        note_metrics = await db_ops.read_one_record(
+            query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
+        )
+
     if note_metrics is not None:
         note_metrics = note_metrics.to_dict()
         note_metrics.pop("pkid")
         note_metrics.pop("date_created")
         note_metrics.pop("date_updated")
         note_metrics.pop("user_id")
+        metrics = note_metrics["metrics"]
 
     context = {
         "user_identifier": user_identifier,
@@ -142,13 +150,13 @@ async def ai_fix_processing(
 
     # Get the tags and summary from OpenAI
     analysis = await ai.get_analysis(content=note["note"])
-
     logger.info(f"Received analysis from AI: {analysis}")
     # Create the note
     note_update = {
         "tags": analysis["tags"]["tags"],
         "summary": analysis["summary"],
         "mood_analysis": analysis["mood_analysis"],
+        # "ai_fix":False
     }
 
     data = await db_ops.update_one(
