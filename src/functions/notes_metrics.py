@@ -26,21 +26,31 @@ async def update_notes_metrics(user_id: str):
     mood_metric = await mood_metrics(notes=notes)
     total_unique_tag_count = await get_total_unique_tag_count(notes=notes)
     note_counts = await get_note_counts(notes=notes)
-
+    metrics = await get_metrics(user_identifier=user_id, user_timezone="UTC")
     if metric_data is None:
-        note_metric = NoteMetrics(
+        note_metrics = NoteMetrics(
             word_count=note_counts["word_count"],
             note_count=note_counts["note_count"],
             character_count=note_counts["char_count"],
             mood_metric=mood_metric,
             total_unique_tag_count=total_unique_tag_count,
+            metrics=metrics,
             user_id=user_id,
         )
-        result = await db_ops.create_one(note_metric)
+        result = await db_ops.create_one(note_metrics)
     else:
+        note_metrics = {
+            "word_count": note_counts["word_count"],
+            "note_count": note_counts["note_count"],
+            "character_count": note_counts["char_count"],
+            "mood_metric": mood_metric,
+            "total_unique_tag_count": total_unique_tag_count,
+            "metrics": metrics,
+            "user_id": user_id,
+        }
         # Update the database
         result = await db_ops.update_one(
-            table=NoteMetrics, record_id=user_id, new_values=updated_data
+            table=NoteMetrics, record_id=user_id, new_values=note_metrics
         )
     logger.critical(result)
 

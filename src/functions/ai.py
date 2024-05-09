@@ -23,23 +23,50 @@ async def get_analysis(content: str) -> dict:
     return {"tags": tags, "summary": summary, "mood_analysis": mood_analysis}
 
 
-async def get_tags(content: str) -> dict:
-    keyword_limit: int = 2
-    # prompt = f"Please analyze the following text and provide one-word
-    # psychological keywords capture its essence: {content}"
-    prompt = f"Please analyze the following text and provide 'one word' keywords capture its essence: {content}"
+# async def get_tags(content: str) -> dict:
+#     keyword_limit: int = 2
+#     # prompt = f"Please analyze the following text and provide one-word
+#     # psychological keywords capture its essence: {content}"
+#     prompt = f"Please analyze the following text and provide 'one word' keywords capture its essence: {content}"
+
+#     chat_completion = await client.chat.completions.create(
+#         model="gpt-3.5-turbo-1106",
+#         # response_format={"type": "json_object"},
+#         messages=[
+#             {
+#                 "role": "system",
+#                 "content": f"You are a helpful assistant that will provide no more than {keyword_limit} 'one word' keywords. Rules are names of people cannot be included. Words with numbers, symbols, spaces, or hyphenated words cannot be used.",
+#             },
+#             {"role": "user", "content": content},
+#         ],
+#         temperature=temperature,  # Adjust the temperature here
+#     )
+
+#     # Extract the content from the response
+#     response_content = chat_completion.choices[0].message.content
+
+#     # Split the content into a list of keywords
+#     keywords = response_content.split(", ")
+
+#     # Store the keywords in a dictionary
+#     response_dict = {"tags": keywords}
+#     return response_dict
+
+
+async def get_tags(content: str, temperature: float = temperature) -> dict:
+    keyword_limit: int = 3
+    prompt = f"Please analyze the following text and provide no more than {keyword_limit} 'one word' keywords capture its essence: {content}"
 
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
-        # response_format={"type": "json_object"},
         messages=[
             {
                 "role": "system",
-                "content": f"You are a helpful assistant that will provide no more than {keyword_limit} 'one word' keywords. Rules are names of people cannot be included. Words with numbers, symbols, spaces, or hyphenated words cannot be used.",
+                "content": prompt,
             },
             {"role": "user", "content": content},
         ],
-        temperature=temperature,  # Adjust the temperature here
+        temperature=temperature,
     )
 
     # Extract the content from the response
@@ -53,64 +80,105 @@ async def get_tags(content: str) -> dict:
     return response_dict
 
 
-async def get_summary(content: str) -> dict:
+# async def get_summary(content: str) -> dict:
+#     summary_length: int = 5
+#     # prompt = f"Please analyze the following text and provide a very short
+#     # description (less than 10 words) in the format of 'feeling blank':
+#     # {content}"
+#     prompt = f"Please analyze the following text and provide a short description and without naming a person in the summary: {content}"
+#     chat_completion = await client.chat.completions.create(
+#         model="gpt-3.5-turbo-1106",
+#         messages=[
+#             {
+#                 "role": "system",
+#                 "content": f"You are a helpful assistant that will provide a short desciption without naming a person and focusing on the sentiments expressed in less than {summary_length} words.",
+#             },
+#             {"role": "user", "content": content},
+#         ],
+#         temperature=temperature,  # Adjust the temperature here
+#     )
+#     # Extract the content from the response
+#     response_content = chat_completion.choices[0].message.content
+#     return response_content
+
+
+async def get_summary(content: str, temperature: float = temperature) -> dict:
     summary_length: int = 5
-    # prompt = f"Please analyze the following text and provide a very short
-    # description (less than 10 words) in the format of 'feeling blank':
-    # {content}"
     prompt = f"Please analyze the following text and provide a short description and without naming a person in the summary: {content}"
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
         messages=[
             {
                 "role": "system",
-                "content": f"You are a helpful assistant that will provide a short desciption without naming a person and focusing on the sentiments expressed in less than {summary_length} words.",
+                "content": prompt,
             },
             {"role": "user", "content": content},
         ],
-        temperature=temperature,  # Adjust the temperature here
+        temperature=temperature,
     )
     # Extract the content from the response
     response_content = chat_completion.choices[0].message.content
+    # Truncate the response_content to the desired length
+    response_content = response_content[:summary_length]
     return response_content
 
 
-async def get_mood_analysis(content: str) -> dict:
+# async def get_mood_analysis(content: str) -> dict:
 
-    # prompt = f"Please analyze the following text and provide a very short
-    # description (less than 10 words) in the format of 'feeling blank':
-    # {content}"
+#     # prompt = f"Please analyze the following text and provide a very short
+#     # description (less than 10 words) in the format of 'feeling blank':
+#     # {content}"
+#     prompt = f"Please analyze the following text and tell me what overall mood it expresses in a single word: {content}"
+#     chat_completion = await client.chat.completions.create(
+#         model="gpt-3.5-turbo-1106",
+#         messages=[
+#             {
+#                 "role": "system",
+#                 "content": f"You are a helpful assistant that will pick the mood from these options {str(mood_analysis)} as the overall feeling and return as a single word.",
+#             },
+#             {"role": "user", "content": content},
+#         ],
+#         temperature=temperature,  # Adjust the temperature here
+#     )
+#     # Extract the content from the response
+#     response_content = chat_completion.choices[0].message.content
+#     return response_content
+
+
+async def get_mood_analysis(content: str, temperature: float = temperature) -> dict:
     prompt = f"Please analyze the following text and tell me what overall mood it expresses in a single word: {content}"
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
         messages=[
             {
                 "role": "system",
-                "content": f"You are a helpful assistant that will pick the mood from these options {str(mood_analysis)} as the overall feeling and return as a single word.",
+                "content": prompt,
             },
             {"role": "user", "content": content},
         ],
-        temperature=temperature,  # Adjust the temperature here
+        temperature=temperature,
     )
     # Extract the content from the response
     response_content = chat_completion.choices[0].message.content
     return response_content
 
 
-async def get_mood(content: str) -> dict:
+async def get_mood(content: str, temperature: float = temperature) -> dict:
     mood_choices = ["positive", "negative", "neutral"]
     prompt = f"Please analyze the following text and tell me what mood choice {str(mood_choices)} it expresses: {content}"
+
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
         messages=[
             {
                 "role": "system",
-                "content": f"You are a helpful assistant that will pick the mood from only these options {str(mood_choices)} and return that word.",
+                "content": prompt,
             },
             {"role": "user", "content": content},
         ],
-        temperature=temperature,  # Adjust the temperature here
+        temperature=temperature,
     )
+
     # Extract the content from the response and return it as {'mood': response}
     response_content = chat_completion.choices[0].message.content
     # Set the default mood as 'neutral'
@@ -122,3 +190,30 @@ async def get_mood(content: str) -> dict:
             break
 
     return {"mood": mood}
+
+
+# async def get_mood(content: str) -> dict:
+#     mood_choices = ["positive", "negative", "neutral"]
+#     prompt = f"Please analyze the following text and tell me what mood choice {str(mood_choices)} it expresses: {content}"
+#     chat_completion = await client.chat.completions.create(
+#         model="gpt-3.5-turbo-1106",
+#         messages=[
+#             {
+#                 "role": "system",
+#                 "content": f"You are a helpful assistant that will pick the mood from only these options {str(mood_choices)} and return that word.",
+#             },
+#             {"role": "user", "content": content},
+#         ],
+#         temperature=temperature,  # Adjust the temperature here
+#     )
+#     # Extract the content from the response and return it as {'mood': response}
+#     response_content = chat_completion.choices[0].message.content
+#     # Set the default mood as 'neutral'
+#     mood = "neutral"
+#     # extract the first word in the response that matches one the mood_choices
+#     for mood_choice in mood_choices:
+#         if mood_choice in response_content:
+#             mood = mood_choice
+#             break
+
+#     return {"mood": mood}

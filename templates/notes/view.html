@@ -2,6 +2,7 @@
 {% block page_title %}| Notes{% endblock %}
 {% block page_stylesheet %}
 <!-- page stylesheets-->
+
 <style>
     #requirements {
         width: 100%;
@@ -23,10 +24,13 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h3 class="card-title mb-0">View Note</h3>
                         <div class="d-flex align-items-center ml-auto">
-                            <a href="/notes/edit/{{ note.pkid }}" class="btn btn-warning ml-2" title="Edit"><i class="fa-solid fa-pen-to-square" style="color:black;"></i></a>
-                            <a href="/notes/delete/{{ note.pkid }}" class="btn btn-danger ml-2" title="Delete"><i class="fa-solid fa-trash" style="color:lightgray;"></i></a>
+                            <a href="/notes/edit/{{ note.pkid }}" class="btn btn-warning ml-2" title="Edit"><i
+                                    class="fa-solid fa-pen-to-square" style="color:black;"></i></a>
+                            <a href="/notes/delete/{{ note.pkid }}" class="btn btn-danger ml-2" title="Delete"><i
+                                    class="fa-solid fa-trash" style="color:lightgray;"></i></a>
                             {% if ai==True %}
-                            <a href="/notes/ai-fix/{{note.pkid}}" class="btn btn-success ml-2" title="Send to AI Fix"><i class="fa-solid fa-robot" style="color:black;"></i></a>
+                            <a href="/notes/ai-fix/{{note.pkid}}" class="btn btn-success ml-2" title="Send to AI Fix"><i
+                                    class="fa-solid fa-robot" style="color:black;"></i></a>
                             {% endif %}
                         </div>
                     </div>
@@ -58,7 +62,8 @@
                                             </div>
                                             <div class="form-group">
                                                 <label for="tags">Tags</label>
-                                                <p>{% for tag in note.tags %}{{ tag|capitalize }}{% if not loop.last %}, {%
+                                                <p>{% for tag in note.tags %}{{ tag|capitalize }}{% if not loop.last %},
+                                                    {%
                                                     endif %}{%
                                                     endfor %}</p>
                                             </div>
@@ -93,13 +98,15 @@
                             </div>
                         </div>
                         <div class="col-12">
-                            <!-- Being Note Section -->
+                            <!-- Begin Note Section -->
                             <div class="row" style="padding: 20px; margin: 10px;background-color: #f8f9fa;">
-                                <div class="col-md-12">
-                                    <label>Note:</label>
-                                    <br>
-                                    {{ note.note|safe }}
-                                </div>
+                                {% include "notes/note_view_md.html" %}
+                                <hr>
+                                <ul>
+                                    {% for k,v in note.items() %}
+                                    <li>{{k}}: {{v}}</li>
+                                    {% endfor %}
+                                </ul>
                             </div>
                             <!-- End Note Section -->
                         </div>
