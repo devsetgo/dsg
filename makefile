@@ -18,7 +18,7 @@ VENV_PATH = _venv
 REQUIREMENTS_PATH = requirements.txt 
 DEV_REQUIREMENTS_PATH = requirements/dev.txt
 
-.PHONY: alembic-downgrade alembic-init alembic-migrate alembic-rev autoflake black cache cleanup compile dev flake8 gdev gprd grdev help install install-dev isort prd test
+.PHONY: alembic-downgrade alembic-init alembic-migrate alembic-rev autoflake black cache cleanup compile dev docker-beta-bp docker-beta-build docker-beta-push docker-beta-run flake8 gdev gprd grdev help install install-dev isort prd run-dev run-gdev run-gprd run-grdev run-local run-prod run-real run-test test
 
 alembic-init: # Initialize Alembic
 	alembic init alembic
@@ -54,38 +54,20 @@ cleanup: isort black autoflake  # Run isort, black, and autoflake
 compile:  # Compile http_request.c into a shared library
 	gcc -shared -o http_request.so http_request.c -lcurl -fPIC
 
-env-dev:  # Run the FastAPI application in development mode with hot-reloading
-	cp env-files/.env.dev .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+docker-beta-run:  # Run docker container
+	docker run -p 5000:5000 dsg:beta-$(shell date +'%y-%m-%d')
 
-env-local:  # Run the FastAPI application in development mode with hot-reloading
-	cp env-files/.env.local .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+docker-beta-build:  # Build docker image
+	docker build --no-cache -t dsg:beta-$(shell date +'%y-%m-%d') .
 
-env-real:  # Run the FastAPI application in development mode with hot-reloading
-	cp env-files/.env.local .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+docker-beta-push:  # Push beta test image to docker hub
+	# get current date yy-mm-dd
+	docker tag dsg:beta-$(shell date +'%y-%m-%d') mikeryan56/dsg:beta-$(shell date +'%y-%m-%d')
+	docker push mikeryan56/dsg:beta-$(shell date +'%y-%m-%d')
 
-
-env-test:  # Run the FastAPI application in development mode with hot-reloading
-	cp env-files/.env.test .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
-
-env-prod:  # Run the FastAPI application in production mode
-	cp env-files/.env.stage .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
-
+docker-beta-bp: docker-beta-build docker-beta-push
 flake8:  # Run flake8 and output report
 	flake8 --tee . > _flake8Report.txt
-
-gdev:  # Run the FastAPI application in development mode with hot-reloading using granian
-	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --reload
-
-gprd:  # Run the FastAPI application in production mode using granian
-	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
-
-grdev:  # Run the FastAPI application in development mode with hot-reloading using granian and rsgi interface
-	granian --interface rsgi ${SERVICE_PATH}.main:app --port ${PORT} --reload
 
 help:  # Display available targets
 	@awk 'BEGIN {FS = ":  # "} /^[a-zA-Z_-]+:  # / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -100,6 +82,39 @@ isort:  # Sort imports using isort
 	isort $(SERVICE_PATH)
 	isort $(TESTS_PATH)
 
+run-dev:  # Run the FastAPI application in development mode with hot-reloading
+	cp env-files/.env.dev .env
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
+run-local:  # Run the FastAPI application in development mode with hot-reloading
+	cp env-files/.env.local .env
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
+run-real:  # Run the FastAPI application in development mode with hot-reloading
+	cp env-files/.env.local .env
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
+
+run-test:  # Run the FastAPI application in development mode with hot-reloading
+	cp env-files/.env.test .env
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
+run-prod:  # Run the FastAPI application in production mode
+	cp env-files/.env.stage .env
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
+
+run-gdev:  # Run the FastAPI application in development mode with hot-reloading using granian
+	cp env-files/.env.dev .env
+	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
+run-gprd:  # Run the FastAPI application in production mode using granian
+	cp env-files/.env.prd .env
+	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
+
+run-grdev:  # Run the FastAPI application in development mode with hot-reloading using granian and rsgi interface
+	cp env-files/.env.dev .env
+	granian --interface rsgi ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
 
 test:  # Run tests and generate coverage report
 	pre-commit run -a
@@ -107,15 +122,3 @@ test:  # Run tests and generate coverage report
 	sed -i 's|<source>/workspaces/dsg</source>|<source>/github/workspace/dsg</source>|' /workspaces/dsg/coverage.xml
 	coverage-badge -o coverage.svg -f
 
-docker-beta-run:  # Run docker container
-	docker run -p 5000:5000 dsg:beta-$(shell date +'%y-%m-%d')
-
-docker-beta-build:  # Build docker image
-	docker build --no-cache -t dsg:beta-$(shell date +'%y-%m-%d') .
-
-docker-beta-push:  # Push beta test image to docker hub
-	# get current date yy-mm-dd
-	docker tag dsg:beta-$(shell date +'%y-%m-%d') mikeryan56/dsg:beta-$(shell date +'%y-%m-%d')
-	docker push mikeryan56/dsg:beta-$(shell date +'%y-%m-%d')
-
-docker-beta-bp: docker-beta-build docker-beta-push
