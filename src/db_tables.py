@@ -9,6 +9,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    LargeBinary,
     String,
     Text,
     event,
@@ -68,9 +69,11 @@ class Users(schema_base, async_db.Base):
         }
 
     # Define the child relationship to the InterestingThings class
+    
     interesting_things = relationship(
         "InterestingThings", back_populates="users", cascade="all,delete"
     )
+    posts = relationship("Posts", back_populates="user", cascade="all,delete")
     categories = relationship(
         "Categories", back_populates="users", cascade="all,delete"
     )
@@ -82,14 +85,44 @@ class Users(schema_base, async_db.Base):
         "JobApplications", back_populates="users", cascade="all,delete"
     )
 
+class Posts(schema_base, async_db.Base):
+    __tablename__ = 'posts'
+
+    title = Column(String(200), nullable=False)
+    content = Column(Text, nullable=False)  # Stores the HTML or Markdown text
+    category = Column(String, unique=False, index=True)  # category of item
+    tags = Column(JSON)
+    word_count = Column(Integer)
+    user_id = Column(String, ForeignKey('users.pkid'))  # Foreign key to the Users table
+    # Define the parent relationship to the Users class
+    user = relationship("Users", back_populates="posts")
+
+    def to_dict(self):
+        return {
+            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+        }
+
+@event.listens_for(Posts, "before_insert")
+@event.listens_for(Posts, "before_update")
+def on_change(mapper, connection, target):
+    target.word_count = len(target.content.split())
+
+    pattern = re.compile("[^a-zA-Z, ]")
+    target.ai_fix = False  # Set ai_fix to False by default
+    for tag in target.tags:
+        if pattern.search(tag) or " " in tag:
+            target.ai_fix = (
+                True  # Set ai_fix to True only if an illegal character is found
+            )
+            break
 
 class InterestingThings(schema_base, async_db.Base):
     __tablename__ = "interesting_things"  # Name of the table in the database
     __tableargs__ = {"comment": "Interesting things that the user finds"}
 
     # Define the columns of the table
-    name = Column(String, unique=False, index=True)  # name of item
-    description = Column(String, unique=False, index=True)  # description of item
+    title = Column(String, unique=False, index=True)  # name of item
+    summary = Column(String, unique=False, index=True)  # description of item
     url = Column(String, unique=False, index=True)  # url of item
     category = Column(String, unique=False, index=True)  # category of item
     public = Column(Boolean, default=False)  # If the item is public
@@ -103,7 +136,6 @@ class InterestingThings(schema_base, async_db.Base):
         return {
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
-
 
 class Categories(schema_base, async_db.Base):
     __tablename__ = "categories"  # Name of the table in the database
@@ -132,15 +164,7 @@ class NoteMetrics(schema_base, async_db.Base):
     note_count = Column(Integer, default=0)
     mood_metric = Column(JSON)
     metrics = Column(JSON)
-    # note_count_by_year = Column(JSON)
-    # note_count_by_month = Column(JSON)
-    # note_count_by_week = Column(JSON)
-    # mood_by_month = Column(JSON)
-    # mood_trend_by_month = Column(JSON)
-    # mood_trend_by_median_month = Column(JSON)
-    # mood_trend_by_rolling_mean_month = Column(JSON)
-    # mood_analysis_trend_by_mean_month = Column(JSON)
-    # tags_common = Column(JSON)
+
     total_unique_tag_count = Column(Integer, default=0)
     users = relationship("Users", back_populates="note_metrics")
 

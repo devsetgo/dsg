@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from dsg_lib.fastapi_functions import system_health_endpoints
-
 # from fastapi import FastAPI, Request, HTTPException, status
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -9,7 +8,16 @@ from fastapi_csrf_protect.exceptions import CsrfProtectError
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .endpoints import admin, devtools, notes, pages, pypi, users
+from .endpoints import (
+    admin,
+    blog_posts,
+    devtools,
+    interesting_things,
+    notes,
+    pages,
+    pypi,
+    users,
+)
 from .resources import templates
 
 
@@ -261,6 +269,17 @@ def create_routes(app: FastAPI):
         }
         return templates.TemplateResponse("error/error-page.html", context)
 
+    app.include_router(
+        interesting_things.router,
+        prefix="/interesting-things",
+        tags=["interesting things"],
+    )
+
+    app.include_router(
+        blog_posts.router,
+        prefix="/posts",
+        tags=["posts"],
+    )
     app.include_router(
         notes.router,
         prefix="/notes",
