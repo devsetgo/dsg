@@ -1,0 +1,32 @@
+<!-- Begin Pagination Template -->
+{% include 'posts/page-controls.html' %}
+<!-- Begin Cards -->
+<div class="row">
+  <div class="col-12">
+    <h3 class="text-center">Use the search to filter on terms, dates, and/or mood.</h3>
+  </div>
+  {% for post in posts %}
+  <div class="col-md-4 mb-4 p-2">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title"><a href="/posts/view/{{post.pkid}}" class="card-link"><strong>{{
+              post.title|capitalize }}</strong></a></h5>
+        <p class="card-text">{{ post.content|truncate(30, end='...') }}</p>
+      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">{% for tag in post.tags %}{{ tag|capitalize }}{% if not loop.last %}, {%
+          endif %}{%
+          endfor %}</li>
+      </ul>
+      <div class="card-body">
+        <p class="card-text"><small>{{ post.date_created }}</small>
+          <br>
+          <small><strong>Words:</strong> {{ post.word_count }}</small>
+        </p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% include 'posts/page-controls.html' %}
+<!-- End Pagination Template -->

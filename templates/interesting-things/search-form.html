@@ -1,0 +1,67 @@
+<div class="col-md-10">
+    <div class="card card-primary collapsed-card">
+        <div class="card-header">
+            <h3 class="card-title">Search Form</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Begin Search Form -->
+            <form hx-get="/notes/pagination" hx-trigger="submit" hx-target="#notes-data" hx-indicator=".htmx-indicator">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="search_term">Search Term</label>
+                        <input id="search_term" class="form-control" type="search" name="search_term"
+                            placeholder="Begin Typing To Search Notes...">
+                    </div>
+                    <!-- Mood input -->
+                    <div class="col-md-4">
+                        <label for="mood">Mood</label>
+                        <select id="mood" class="form-control" name="mood">
+                            <option value="">Select Mood</option>
+                            <option value="positive">Positive</option>
+                            <option value="neutral">Neutral</option>
+                            <option value="negative">Negative</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </div>
+                <!-- Date range inputs -->
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <label for="start_date">From Date</label>
+                        <input id="start_date" class="form-control" type="date" name="start_date"
+                            placeholder="From Date">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="end_date">To Date</label>
+                        <input id="end_date" class="form-control" type="date" name="end_date" placeholder="To Date">
+                    </div>
+                    <!-- ... rest of the form ... -->
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-warning" type="button" id="resetButton">Reset</button>
+                    </div>
+                    <script>
+                        document.getElementById('resetButton').addEventListener('click', function () {
+                            // Get the form
+                            var form = this.closest('form');
+
+                            // Reset the form fields
+                            form.reset();
+
+                            // Submit a new query
+                            // form.submit();
+                        });
+                    </script>
+                    <!-- ... rest of the form ... -->
+                </div>
+            </form>
+            <!-- End Search Form -->
+        </div>
+    </div>
+
+</div>
