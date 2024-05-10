@@ -126,7 +126,7 @@ async def ai_update_note(
 
     if note is None:
         logger.warning(f"No note found with ID: {note_id} for user: {user_identifier}")
-        return RedirectResponse(url="/error/404", status_code=404)
+        return RedirectResponse(url="/error/404", status_code=303)
 
     note = note.to_dict()
 

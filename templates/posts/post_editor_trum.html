@@ -1,0 +1,25 @@
+<div class="input-group mb-5">
+  <textarea id="content" name="content" placeholder="Enter a new post" rows="20"
+    style="width: 100%; height: 100%;" maxlength="20000" required></textarea>
+  <small id="notesHelp" class="form-text text-muted">Note: This textarea is limited to 20,000
+    characters.</small>
+  <small id="charCount" class="form-text text-muted">Character count: 0</small>
+  <script>
+    var textarea = document.getElementById('content');
+    var charCount = document.getElementById('charCount');
+
+    textarea.addEventListener('input', function (e) {
+      var chars = e.target.value.length;
+      if (chars > 5000) {
+        e.target.value = e.target.value.slice(0, 20000);
+      }
+      charCount.textContent = "Character count: " + chars;
+    });
+  </script>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/trumbowyg.min.js" integrity="sha512-YJgZG+6o3xSc0k5wv774GS+W1gx0vuSI/kr0E0UylL/Qg/noNspPtYwHPN9q6n59CTR/uhgXfjDXLTRI+uIryg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+  $('#content').trumbowyg();
+</script>

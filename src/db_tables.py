@@ -69,7 +69,7 @@ class Users(schema_base, async_db.Base):
         }
 
     # Define the child relationship to the InterestingThings class
-    
+
     interesting_things = relationship(
         "InterestingThings", back_populates="users", cascade="all,delete"
     )
@@ -85,15 +85,17 @@ class Users(schema_base, async_db.Base):
         "JobApplications", back_populates="users", cascade="all,delete"
     )
 
+
 class Posts(schema_base, async_db.Base):
-    __tablename__ = 'posts'
+    __tablename__ = "posts"
 
     title = Column(String(200), nullable=False)
+    summary = Column(String(500), index=True)
     content = Column(Text, nullable=False)  # Stores the HTML or Markdown text
     category = Column(String, unique=False, index=True)  # category of item
     tags = Column(JSON)
     word_count = Column(Integer)
-    user_id = Column(String, ForeignKey('users.pkid'))  # Foreign key to the Users table
+    user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the Users table
     # Define the parent relationship to the Users class
     user = relationship("Users", back_populates="posts")
 
@@ -101,6 +103,7 @@ class Posts(schema_base, async_db.Base):
         return {
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
+
 
 @event.listens_for(Posts, "before_insert")
 @event.listens_for(Posts, "before_update")
@@ -115,6 +118,7 @@ def on_change(mapper, connection, target):
                 True  # Set ai_fix to True only if an illegal character is found
             )
             break
+
 
 class InterestingThings(schema_base, async_db.Base):
     __tablename__ = "interesting_things"  # Name of the table in the database
@@ -136,6 +140,7 @@ class InterestingThings(schema_base, async_db.Base):
         return {
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
+
 
 class Categories(schema_base, async_db.Base):
     __tablename__ = "categories"  # Name of the table in the database
