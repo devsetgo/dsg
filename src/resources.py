@@ -148,7 +148,6 @@ async def add_system_data():
 
         if settings.create_demo_notes is True:
             await add_notes(user_id=data["pkid"])  # Create notes for the admin user
-            
 
     if settings.create_demo_user == True:
 
@@ -167,6 +166,7 @@ async def add_system_data():
         logger.warning("Creating demo data")
         await add_interesting_things()  # Create demo data
         await add_posts()
+
 
 async def add_admin():
 
@@ -459,16 +459,16 @@ async def add_interesting_things():
 
 
 async def add_posts():
-        # Get the user record for 'admin'
+    # Get the user record for 'admin'
     user = await db_ops.read_one_record(Select(Users).where(Users.user_name == "admin"))
     categories = await db_ops.read_query(Select(Categories))
     categories = [cat.to_dict() for cat in categories]
-    cat_list= [cat['name'] for cat in categories]
+    cat_list = [cat["name"] for cat in categories]
 
     for _ in tqdm(range(30)):
-        rand_cat =  random.randint(0,len(cat_list)-1)
+        rand_cat = random.randint(0, len(cat_list) - 1)
         tags = [silly.noun() for _ in range(random.randint(2, 5))]
-        date_created= datetime.now(UTC) - timedelta(days=random.randint(1, 700))
+        date_created = datetime.now(UTC) - timedelta(days=random.randint(1, 700))
         post = Posts(
             title=silly.title(),
             content=silly.markdown(),

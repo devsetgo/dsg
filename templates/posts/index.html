@@ -6,9 +6,9 @@
 
 {% endblock %} <!-- Ends the block for page-specific stylesheets -->
 
-{% block page_breadcrumb %} PyPi Data{% endblock %} <!-- Sets the breadcrumb -->
+{% block page_breadcrumb %} Posts{% endblock %} <!-- Sets the breadcrumb -->
 
-{% block page_head_title %}PyPi Data{% endblock %} <!-- Sets the page head title -->
+{% block page_head_title %}Posts{% endblock %} <!-- Sets the page head title -->
 
 {% block body %} <!-- Starts the block for the body of the page -->
 <section> <!-- Starts a section -->
@@ -17,6 +17,15 @@
   <div class="content">
     <div class="container-fluid">
       {% include 'posts/search-form.html' %}
+      <script>
+        document.addEventListener('htmx:configRequest', (event) => {
+          const urlParams = new URLSearchParams(window.location.search);
+          for (const [key, value] of urlParams) {
+            event.detail.parameters[key] = value;
+          }
+        });
+      </script>
+
       <div class="row" hx-get="/posts/pagination" hx-trigger="load" hx-target="#posts-data" hx-indicator=".htmx-indicator">
         <div id="posts-data"></div>
       </div>

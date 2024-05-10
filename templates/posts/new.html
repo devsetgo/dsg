@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block page_title %}| NOtes{% endblock %}
+{% block page_stylesheet %}
+<!-- page stylesheets-->
+<link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/trumbowyg.min.css" integrity="sha512-Fm8kRNVGCBZn0sPmwJbVXlqfJmPC13zRsMElZenX6v721g/H7OukJd8XzDEBRQ2FSATK8xNF9UYvzsCtUpfeJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+{% block page_breadcrumb %} Notes / New{% endblock %}
+{% block page_head_title %}New Note{% endblock %}
+{% block body %}
+<!-- Main content -->
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- left column -->
+      <div class="col-12">
+        <!-- general form elements -->
+        <div class="card card-primary">
+          <div class="card-header">
+            <h3 class="card-title">Add a New Note</h3>
+          </div>
+          <!-- /.card-header -->
+          <!-- form start -->
+          <div class="row">
+            <div class="col-12">
+              <form action="/notes/new" method="post" enctype="multipart/form-data" hx-indicator=".htmx-indicator">
+                <!-- Category input -->
+                <div class="col-md-4 form-inline">
+                  <label for="category" class="mr-3">Category</label>
+                  <select id="category" class="form-control" name="category">
+                    <option value="">Select Category</option>
+                    <!-- Categories will be populated here -->
+                  </select>
+                </div>
+                <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+                <script>
+                  $(document).ready(function () {
+                    $.getJSON('/posts/categories', function (data) {
+                      $.each(data, function (index, value) {
+                        $('#category').append('<option value="' + value + '">' + value + '</option>');
+                      });
+                    });
+                  });
+                </script>
+                <div class="input-group mb-5">
+                  {% include "posts/post_editor_md.html" %}
+                </div>
+                <div class="input-group mb-5">
+                  <button type="submit" class="btn btn-primary btn-block" title="Create Note">Create Note</button>
+                  <!-- CSRF token -->
+                  <input type='hidden' name='csrf-token' value="{{ csrf_token }}" />
+                </div>
+              </form>
+            </div>
+          </div>
+          <!-- /.col -->
+        </div>
+      </div>
+      <!-- /.card -->
+    </div>
+    <!-- /.row -->
+  </div>
+  <!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+{% endblock %}
+{% block page_sidebar_content %}
+<div class="p-3">
+  <h5>Title</h5>
+  <p>Sidebar content</p>
+</div>
+{% endblock %}
+{% block page_scripts %}
+<!-- page scripts-->
+{% endblock %}

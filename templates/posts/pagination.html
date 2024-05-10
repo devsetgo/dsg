@@ -14,7 +14,7 @@
         <p class="card-text">{{ post.content|truncate(30, end='...') }}</p>
       </div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item">{% for tag in post.tags %}{{ tag|capitalize }}{% if not loop.last %}, {%
+        <li class="list-group-item">Tags: {% for tag in post.tags %}<a href="/posts/?search_term={{tag}}">{{ tag|capitalize }}</a>{% if not loop.last %}, {%
           endif %}{%
           endfor %}</li>
       </ul>
@@ -29,4 +29,5 @@
   {% endfor %}
 </div>
 {% include 'posts/page-controls.html' %}
+{{prev_page_url}}
 <!-- End Pagination Template -->

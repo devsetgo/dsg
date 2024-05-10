@@ -39,7 +39,7 @@ async def list_of_interesting_things(
     # user_info: dict = Depends(check_login),
 ):
 
-    user_timezone = request.session.get("timezone",None)
+    user_timezone = request.session.get("timezone", None)
     if user_timezone is None:
         user_timezone = "America/New_York"
 
@@ -68,6 +68,7 @@ async def list_of_interesting_things(
         request=request, name="/posts/index.html", context=context
     )
 
+
 @router.get("/pagination")
 async def read_notes_pagination(
     request: Request,
@@ -88,7 +89,7 @@ async def read_notes_pagination(
         "limit": limit,
     }
 
-    user_timezone = request.session.get("timezone",None)
+    user_timezone = request.session.get("timezone", None)
     if user_timezone is None:
         user_timezone = "America/New_York"
 
@@ -101,7 +102,11 @@ async def read_notes_pagination(
         & (
             or_(
                 InterestingThings.name.contains(search_term) if search_term else True,
-                InterestingThings.description.contains(search_term) if search_term else True,
+                (
+                    InterestingThings.description.contains(search_term)
+                    if search_term
+                    else True
+                ),
             )
         )
     )
@@ -114,7 +119,8 @@ async def read_notes_pagination(
         start_date = datetime.strptime(start_date, "%Y-%m-%d")
         end_date = datetime.strptime(end_date, "%Y-%m-%d")
         query = query.where(
-            (InterestingThings.date_created >= start_date) & (InterestingThings.date_created <= end_date)
+            (InterestingThings.date_created >= start_date)
+            & (InterestingThings.date_created <= end_date)
         )
     # order and limit the results
     query = query.order_by(InterestingThings.date_created.desc())
@@ -173,7 +179,6 @@ async def read_notes_pagination(
             "next_page_url": next_page_url,
         },
     )
-
 
 
 # get /item/{id}

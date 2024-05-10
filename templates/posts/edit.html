@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block page_title %}| Notes{% endblock %}
+{% block page_stylesheet %}
+<!-- page stylesheets-->
+<link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css"
+    />
+
+{% endblock %}
+{% block page_breadcrumb %} Notes / Edit{% endblock %}
+{% block page_head_title %}Edit Note{% endblock %}
+{% block body %}
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-12">
+                <!-- general form elements -->
+                <div class="card card-primary" style="margin: 20px;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">Edit Note</h3>
+                        <div class="d-flex align-items-center ml-auto">
+                            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                <input type="checkbox" class="custom-control-input" id="editSwitch">
+                                <label class="custom-control-label" for="editSwitch">Edit</label>
+                            </div>
+                            <a href="/notes/view/{{ note.pkid }}" class="btn btn-success ml-2"><i class="fa-solid fa-file" style="color:black;"></i></a>
+                        </div>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <div class="row">
+                        <div class="col-12">
+                            <form action="/notes/edit/{{ note.pkid }}" method="POST" enctype="multipart/form-data"
+                                hx-indicator=".htmx-indicator">
+                                <div class="row">
+                                    <!-- Begin Optional Fields to Edit -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="summaryInput">Summary</label>
+                                            <input type="text" class="form-control" id="summary" name="summary"
+                                                placeholder="Enter summary" value="{{ note.summary }}" readonly>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="tags">Tags</label>
+                                            <input type="text" class="form-control" id="tags" name="tags"
+                                                placeholder="Enter tags"
+                                                value="{% for tag in note.tags %}{{ tag }}{% if not loop.last %}, {% endif %}{% endfor %}"
+                                                readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="moodAnalysisSelect"><strong>Mood Analysis:</strong></label>
+                                            <select class="form-control" id="moodAnalysisSelect" name="mood_analysis"
+                                                disabled>
+                                                {% for mood in mood_analysis %}
+                                                <option value="{{ mood }}" {% if mood==note.mood_analysis %}selected{%
+                                                    endif %}>{{ mood |capitalize}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label><strong>Current Mood:</strong></label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="mood" id="positive"
+                                                    value="positive" {% if note.mood=='positive' %}checked{% endif %}
+                                                    disabled>
+                                                <label class="form-check-label" for="positive">Positive</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="mood" id="neutral"
+                                                    value="neutral" {% if note.mood=='neutral' %}checked{% endif %}
+                                                    disabled>
+                                                <label class="form-check-label" for="neutral">Neutral</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="mood" id="negative"
+                                                    value="negative" {% if note.mood=='negative' %}checked{% endif %}
+                                                    disabled>
+                                                <label class="form-check-label" for="negative">Negative</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End Optional Fields to Edit -->
+                                <div class="input-group mb-5">
+                                    <textarea id="note" name="note" maxlength="20000">{{note.note|safe}}</textarea>
+                                </div>
+                                <div class="input-group mb-5">
+                                    <button type="submit" class="btn btn-primary btn-block" title="Update Note">Update
+                                        Note</button>
+                                    <!-- CSRF token -->
+                                    <input type='hidden' name='csrf-token' value="{{ csrf_token }}" />
+                                    <input type="hidden" name="pkid" value="{{ note.pkid }}">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- /.col -->
+                </div>
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+{% endblock %}
+{% block page_sidebar_content %}
+<div class="p-3">
+    <h5>Title</h5>
+    <p>Sidebar content</p>
+</div>
+{% endblock %}
+{% block page_scripts %}
+<!-- page scripts-->
+<script>
+    document.getElementById('editSwitch').addEventListener('change', function () {
+        var inputs = document.querySelectorAll('input, select');
+        var isEditable = this.checked;
+        for (var i = 0; i < inputs.length; i++) {
+            if (inputs[i].type !== 'checkbox') { // Exclude checkboxes
+                if (inputs[i].tagName === 'SELECT' || inputs[i].type === 'radio') {
+                    inputs[i].disabled = !isEditable;
+                } else {
+                    inputs[i].readOnly = !isEditable;
+                }
+            }
+        }
+    });
+</script>
+<script>
+    $("[name='editSwitch']").bootstrapSwitch();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<script>
+  const easymde = new EasyMDE({
+    toolbar: ["bold", "italic","strikethrough", "heading", "|", "quote","code", "image","horizontal-rule","link","heading-2","heading-3","undo","redo","guide"],
+    sideBySideFullscreen: false,
+    placeholder: "Type here...",
+    element: document.getElementById('note'),
+  });
+  easymde.toggleSideBySide();
+
+  document.querySelector('form').addEventListener('submit', function(e) {
+    if (easymde.value().trim() === '') {
+      e.preventDefault();
+      alert('Please enter a note.');
+    }
+  });
+</script>
+{% endblock %}
