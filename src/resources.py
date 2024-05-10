@@ -32,7 +32,7 @@ from sqlalchemy import Select, func
 from tqdm import tqdm
 
 from .db_init import async_db
-from .db_tables import Categories, InterestingThings, Notes, Users
+from .db_tables import Categories, InterestingThings, Notes, Posts, Users
 from .functions.hash_function import hash_password
 from .settings import settings
 
@@ -148,6 +148,7 @@ async def add_system_data():
 
         if settings.create_demo_notes is True:
             await add_notes(user_id=data["pkid"])  # Create notes for the admin user
+            
 
     if settings.create_demo_user == True:
 
@@ -165,7 +166,7 @@ async def add_system_data():
     if settings.create_demo_data is True:
         logger.warning("Creating demo data")
         await add_interesting_things()  # Create demo data
-
+        await add_posts()
 
 async def add_admin():
 
@@ -355,58 +356,58 @@ async def add_interesting_things():
     # Define the list of items to be added
     my_stuff = [
         {
-            "name": "Test API",
-            "description": "An example API built with FastAPI",
+            "title": "Test API",
+            "summary": "An example API built with FastAPI",
             "url": "https://test-api.devsetgo.com/",
             "category": "programming",
         },
         {
-            "name": "Starlette Dashboard",
-            "description": "A Starlette based version of the AdminLTE template.",
+            "title": "Starlette Dashboard",
+            "summary": "A Starlette based version of the AdminLTE template.",
             "url": "https://stardash.devsetgo.com/",
             "category": "programming",
         },
         {
-            "name": "DevSetGo Library",
-            "description": "A helper library I use for my Python projects",
+            "title": "DevSetGo Library",
+            "summary": "A helper library I use for my Python projects",
             "url": "https://devsetgo.github.io/devsetgo_lib/",
             "category": "programming",
         },
         {
-            "name": "Pypi Checker",
-            "description": "Get the latest version of python libraries",
+            "title": "Pypi Checker",
+            "summary": "Get the latest version of python libraries",
             "url": "/pypi",
             "category": "programming",
         },
         {
-            "name": "FastAPI",
-            "description": "An async Python framework for building great APIs",
+            "title": "FastAPI",
+            "summary": "An async Python framework for building great APIs",
             "category": "programming",
             "url": "https://fastapi.tiangolo.com/",
         },
         {
-            "name": "Starlette",
-            "description": "An async Python framework for building sites and is what\
+            "title": "Starlette",
+            "summary": "An async Python framework for building sites and is what\
                  FastAPI is built on top of.",
             "category": "programming",
             "url": "https://fastapi.tiangolo.com/",
         },
         {
-            "name": "Portainer",
-            "description": "How to manage containers for Docker or Kubernetes",
+            "title": "Portainer",
+            "summary": "How to manage containers for Docker or Kubernetes",
             "url": "https://www.portainer.io/",
             "category": "technology",
         },
         {
-            "name": "Digital Ocean",
-            "description": "Great hosting option for servers, apps, and K8s. Plus great\
+            "title": "Digital Ocean",
+            "summary": "Great hosting option for servers, apps, and K8s. Plus great\
                  documentation and tutorials. (referral link) ",
             "url": "https://m.do.co/c/9a3b3c4fbc90",
             "category": "technology",
         },
         {
-            "name": "Kubernetes",
-            "description": "Run containers at scale.",
+            "title": "Kubernetes",
+            "summary": "Run containers at scale.",
             "url": "https://m.do.co/c/9a3b3c4fbc90",
             "category": "programming",
         },
@@ -415,11 +416,11 @@ async def add_interesting_things():
     for item in my_stuff:
         # Query the database for each item by name
         data = await db_ops.read_query(
-            Select(InterestingThings).where(InterestingThings.name == item["name"])
+            Select(InterestingThings).where(InterestingThings.title == item["title"])
         )
         # If the item already exists in the database, log a message and return
         if len(data) > 0:
-            logger.info(f"system item {item['name']} already added")
+            logger.info(f"system item {item['title']} already added")
             return
 
     # Get the user record for 'admin'
@@ -434,11 +435,11 @@ async def add_interesting_things():
         # Log the category name
         logger.info(category.name)
         # Log a message indicating that the current item is being added
-        logger.info(f"adding system item {item['name']}")
+        logger.info(f"adding system item {item['title']}")
         # Create a new InterestingThings instance with the item details
         thing = InterestingThings(
-            name=item["name"],
-            description=item["description"],
+            title=item["title"],
+            summary=item["summary"],
             url=item["url"],
             user_id=user.pkid,
             category=category.name,
@@ -452,6 +453,34 @@ async def add_interesting_things():
 
     # Get all items from the InterestingThings table
     all_things = await db_ops.read_query(Select(InterestingThings))
-    # Log the name, category, URL, and description of each item
+    # Log the title, category, URL, and summary of each item
     for thing in all_things:
-        logger.info(f"{thing.name}, {thing.category}, {thing.url}, {thing.description}")
+        logger.info(f"{thing.title}, {thing.category}, {thing.url}, {thing.summary}")
+
+
+async def add_posts():
+        # Get the user record for 'admin'
+    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == "admin"))
+    categories = await db_ops.read_query(Select(Categories))
+    categories = [cat.to_dict() for cat in categories]
+    cat_list= [cat['name'] for cat in categories]
+
+    for _ in tqdm(range(30)):
+        rand_cat =  random.randint(0,len(cat_list)-1)
+        tags = [silly.noun() for _ in range(random.randint(2, 5))]
+        date_created= datetime.now(UTC) - timedelta(days=random.randint(1, 700))
+        post = Posts(
+            title=silly.title(),
+            content=silly.markdown(),
+            user_id=user.pkid,
+            category=str(cat_list[rand_cat]).lower(),
+            tags=tags,
+            date_created=date_created,
+        )
+        # Try to add the new item to the database
+        try:
+            data = await db_ops.create_one(post)
+            logger.info(f"adding demo posts {data}")
+        except Exception as e:
+            # If there's an error while adding the item, log the error
+            logger.error(e)

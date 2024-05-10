@@ -217,3 +217,12 @@ async def get_mood(content: str, temperature: float = temperature) -> dict:
 #             break
 
 #     return {"mood": mood}
+
+
+#### Analyze posts
+async def analyze_post(content: str) -> dict:
+    tags = await get_tags(content=content)
+    summary = await get_summary(content=content)
+    return {"tags": tags, "summary": summary}
+
+    
