@@ -47,6 +47,9 @@ class Users(schema_base, async_db.Base):
     my_timezone = Column(String, unique=False, index=True, default="America/New_York")
     is_active = Column(Boolean, default=True, nullable=False)  # If the user is active
     is_admin = Column(Boolean, default=False, nullable=False)  # If the user is an admin
+    update_by = Column(
+        String, unique=False, index=True
+    )  # Last user to update the record
     # site_access = Column(
     #     Boolean, default=False, nullable=False
     # )  # If the user has access to the site
