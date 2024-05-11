@@ -13,12 +13,14 @@
                     <p>Posts</p>
                 </a>
             </li>
+            {% if request.session.roles and request.session.roles.interesting_things %}
             <li class="nav-item">
                 <a href="/interesting-things/new" class="nav-link" title="New Thing">
                     <i class="far fa-circle nav-icon"></i>
                     <p>New Thing</p>
                 </a>
             </li>
+            {% endif %}
             <!-- <li class="nav-item">
                 <a href="/notes/search" class="nav-link" title="Search">
                     <i class="far fa-circle nav-icon"></i>
