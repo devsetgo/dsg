@@ -2,30 +2,26 @@
 
 # from pytz import timezone, UTC
 import secrets
+from datetime import datetime, timedelta
 from enum import Enum
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from sqlalchemy import Select
 
 from ..db_tables import JobApplications, Notes, Users
-from ..functions import date_functions
+from ..functions import date_functions, validator
 from ..functions.hash_function import hash_password
 from ..functions.login_required import check_login
+from ..functions.models import RoleEnum
 from ..resources import db_ops, templates
 
 router = APIRouter()
 
 
-class RoleEnum(str, Enum):
-    notes = "notes"
-    interesting_things = "interesting_things"
-    job_applications = "job_applications"
-    developer = "developer"
-
-
-@router.get("/")
+@router.get("/", response_class=HTMLResponse)
 async def admin_dashboard(
     request: Request,
     user_info: dict = Depends(check_login),
@@ -61,7 +57,7 @@ async def get_list_of_users(user_timezone: str):
     return users
 
 
-@router.get("/user/{user_id}")
+@router.get("/user/{user_id}", response_class=HTMLResponse)
 async def admin_user(
     request: Request,
     user_id: str,
@@ -112,7 +108,7 @@ async def admin_user(
     return response
 
 
-@router.post("/user/{update_user_id}")
+@router.post("/user/{update_user_id}", response_class=HTMLResponse)
 async def admin_update_user(
     request: Request,
     update_user_id: str,
@@ -140,6 +136,9 @@ async def admin_update_user(
         data_notes = await db_ops.read_query(
             query=Select(Notes).where(Notes.user_id == update_user_id)
         )
+        if data_notes is not None:
+            logger.warning(f"No post found with ID: {update_user_id}")
+            return RedirectResponse(url="/error/404", status_code=303)
         response = Response(
             headers={"HX-Redirect": f"/admin/#access-tab"}, status_code=200
         )
@@ -162,7 +161,11 @@ async def admin_update_user(
 
     elif change_email_entry != "":
 
-        new_values["email"] = change_email_entry
+        valid_email = validator.validate_email_address(change_email_entry)
+        if valid_email["valid"]:
+            new_values["email"] = change_email_entry
+        else:
+            return Response(headers={"HX-Redirect": f"/error/400"}, status_code=200)
 
     data = await db_ops.update_one(
         table=Users, record_id=update_user_id, new_values=new_values
@@ -175,8 +178,7 @@ async def admin_update_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     user = user.to_dict()
-    # context = {"request": request, "user": user, "user_id": update_user_id}
-    # response = RedirectResponse(url=f"/admin/user/{update_user_id}", status_code=303)
+
     response = Response(
         headers={"HX-Redirect": f"/admin/user/{update_user_id}"}, status_code=200
     )
@@ -184,7 +186,7 @@ async def admin_update_user(
     return response
 
 
-@router.post("/user/access/{update_user_id}")
+@router.post("/user/access/{update_user_id}", response_class=HTMLResponse)
 async def admin_update_user_access(
     request: Request,
     update_user_id: str,
@@ -192,28 +194,43 @@ async def admin_update_user_access(
     csrf_protect: CsrfProtect = Depends(),
 ):
 
+    logger.debug("Validating CSRF token.")
     await csrf_protect.validate_csrf(request)
+    logger.debug("CSRF token validated.")
+
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     is_admin = user_info["is_admin"]
 
-    if update_user_id == user_identifier:
+    logger.debug(f"User {user_identifier} is admin: {is_admin}")
 
-        return Response(headers={"HX-Redirect": f"/error/422"}, status_code=200)
+    if is_admin:
 
-    form = await request.form()
-    new_data = {}
-    for key, value in form.items():
-        if key != "csrf-token":
-            role = key
-            new_data[role] = value == "true"
-    new_values = {"roles": new_data}
-    data = await db_ops.update_one(
-        table=Users, record_id=update_user_id, new_values=new_values
-    )
+        form = await request.form()
+        new_data = {}
+        for key, value in form.items():
+            if key != "csrf-token":
+                role = key
+                new_data[role] = value == "true"
 
-    response = Response(
-        headers={"HX-Redirect": f"/admin/user/{update_user_id}"}, status_code=200
-    )
-    csrf_protect.unset_csrf_cookie(response)
-    return response
+        logger.debug(f"Form data: {new_data}")
+
+        new_values = {
+            "roles": new_data,
+            "update_by": user_identifier,
+            "date_updated": datetime.utcnow(),
+        }
+
+        logger.debug(f"Updating database with values: {new_values}")
+        data = await db_ops.update_one(
+            table=Users, record_id=update_user_id, new_values=new_values
+        )
+        logger.debug(f"Database update result: {data}")
+
+        response = Response(
+            headers={"HX-Redirect": f"/admin/user/{update_user_id}"}, status_code=200
+        )
+        csrf_protect.unset_csrf_cookie(response)
+        return response
+    else:
+        return Response(headers={"HX-Redirect": f"/error/403"}, status_code=200)
