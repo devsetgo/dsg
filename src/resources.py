@@ -34,6 +34,7 @@ from tqdm import tqdm
 from .db_init import async_db
 from .db_tables import Categories, InterestingThings, Notes, Posts, Users
 from .functions.hash_function import hash_password
+from .functions.models import RoleEnum
 from .settings import settings
 
 
@@ -175,6 +176,10 @@ async def add_admin():
         user_name = settings.admin_user.get_secret_value()
         password = settings.admin_password.get_secret_value()
 
+        add_roles = {}
+        for role in RoleEnum:
+            add_roles[role] = True
+
         hashed_password = hash_password(password)
         user = Users(
             first_name="Admin",
@@ -183,12 +188,7 @@ async def add_admin():
             password=hashed_password,
             is_active=True,
             is_admin=True,
-            roles={
-                "notes": True,
-                "interesting_things": True,
-                "job_applications": True,
-                "developer": True,
-            },
+            roles=add_roles,
         )
         try:
             res = await db_ops.create_one(user)
@@ -278,7 +278,7 @@ async def add_user():
     import secrets
 
     user_name = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
-    roles = ["notes", "interesting_things", "job_applications", "developer"]
+    roles = ["notes", "interesting_things", "job_applications", "developer", "posts"]
     role_data = {}
 
     for role in roles:
