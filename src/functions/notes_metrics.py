@@ -123,7 +123,6 @@ async def get_total_unique_tag_count(notes: list):
 
 # charting data metrics
 async def get_tag_count(notes: list):
-
     tags = [tag.capitalize() for note in notes for tag in note["tags"]]
     tag_count = Counter(tags)
 

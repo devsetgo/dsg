@@ -1,5 +1,0 @@
- File "/home/vscode/.local/lib/python3.12/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/workspaces/dsg/src/endpoints/users.py", line 64, in login_user
-    and user.failed_login_attempts >= settings.max_failed_login_attempts

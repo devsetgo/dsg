@@ -142,7 +142,6 @@ async def shutdown():
 
 
 async def add_system_data():
-
     if settings.create_admin_user is True:
         logger.warning("Creating admin user")
         data = await add_admin()  # Create an admin user
@@ -151,7 +150,6 @@ async def add_system_data():
             await add_notes(user_id=data["pkid"])  # Create notes for the admin user
 
     if settings.create_demo_user == True:
-
         logger.warning("Creating demo user")
         for _ in range(settings.create_demo_users_qty):
             data = await add_user()  # Create a demo user
@@ -170,7 +168,6 @@ async def add_system_data():
 
 
 async def add_admin():
-
     if settings.create_admin_user is True:
         logger.warning("creating admin user")
         user_name = settings.admin_user.get_secret_value()
@@ -234,7 +231,6 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         data = await db_ops.create_one(note)
 
     for _ in tqdm(range(qty_notes), desc=f"creating demo notes for {user_id}"):
-
         mood = random.choice(moods)
         mood_analysis_choice = random.choice(mood_analysis)
 
@@ -272,7 +268,6 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
 
 
 async def add_user():
-
     logger.info("adding system user")
     hashed_password = hash_password("password")
     import secrets

@@ -38,7 +38,6 @@ async def list_of_interesting_things(
     limit: int = Query(100, description="Limit for pagination"),
     # user_info: dict = Depends(check_login),
 ):
-
     user_timezone = request.session.get("timezone", None)
     if user_timezone is None:
         user_timezone = "America/New_York"

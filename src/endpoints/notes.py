@@ -37,7 +37,6 @@ async def read_notes(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -115,7 +114,6 @@ async def get_note_counts(
 async def ai_update_note(
     request: Request, note_id: str, user_info: dict = Depends(check_login)
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -173,7 +171,6 @@ async def bulk_note_form(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     return templates.TemplateResponse(
         request=request, name="notes/bulk.html", context={"demo_note": None}
     )
@@ -187,7 +184,6 @@ async def bulk_note(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -213,7 +209,6 @@ async def edit_note_form(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -258,7 +253,6 @@ async def update_note(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -306,7 +300,6 @@ async def delete_note_form(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     query = Select(Notes).where(
@@ -326,7 +319,6 @@ async def delete_note(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -354,7 +346,6 @@ async def get_note_issue(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -370,7 +361,6 @@ async def get_note_issue(
     notes = [note.to_dict() for note in notes]
     metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
     for note in notes:
-
         note["date_created"] = await date_functions.timezone_update(
             user_timezone=user_timezone,
             date_time=note["date_created"],
@@ -398,7 +388,6 @@ async def new_note_form(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -414,7 +403,6 @@ async def create_note(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     form = await request.form()
@@ -563,7 +551,6 @@ async def read_today_notes(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
