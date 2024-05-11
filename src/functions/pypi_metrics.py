@@ -15,7 +15,6 @@ router = APIRouter()
 
 
 async def get_pypi_metrics():
-
     try:
         total_libraries = await db_ops.count_query(query=Select(LibraryName))
     except Exception as e:

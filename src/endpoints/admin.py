@@ -26,7 +26,6 @@ async def admin_dashboard(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     is_admin = user_info["is_admin"]
@@ -40,7 +39,6 @@ async def admin_dashboard(
 
 
 async def get_list_of_users(user_timezone: str):
-
     query = Select(Users)
     users = await db_ops.read_query(query=query)
     users = [user.to_dict() for user in users]
@@ -64,7 +62,6 @@ async def admin_user(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     is_admin = user_info["is_admin"]
@@ -115,14 +112,12 @@ async def admin_update_user(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     await csrf_protect.validate_csrf(request)
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     is_admin = user_info["is_admin"]
 
     if update_user_id == user_identifier:
-
         return Response(headers={"HX-Redirect": f"/error/422"}, status_code=200)
 
     form = await request.form()
@@ -151,16 +146,13 @@ async def admin_update_user(
     change_email_entry = form.get("change-email-entry")
 
     if account_action == "lock":
-
         new_values["is_locked"] = True
 
     elif new_password != "":
-
         hashed_password = hash_password(new_password)
         new_values["password"] = hashed_password
 
     elif change_email_entry != "":
-
         valid_email = validator.validate_email_address(change_email_entry)
         if valid_email["valid"]:
             new_values["email"] = change_email_entry
@@ -193,7 +185,6 @@ async def admin_update_user_access(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     logger.debug("Validating CSRF token.")
     await csrf_protect.validate_csrf(request)
     logger.debug("CSRF token validated.")
@@ -205,7 +196,6 @@ async def admin_update_user_access(
     logger.debug(f"User {user_identifier} is admin: {is_admin}")
 
     if is_admin:
-
         form = await request.form()
         new_data = {}
         for key, value in form.items():

@@ -11,7 +11,6 @@ from ..resources import db_ops
 
 
 async def read_notes_from_file(csv_file: list, user_id: str):
-
     validation_result = validate_csv_headers(csv_file)
 
     if validation_result["status"] != "success":
@@ -20,7 +19,6 @@ async def read_notes_from_file(csv_file: list, user_id: str):
 
     notes: list = []
     for c in csv_file:
-
         date_created = c["date_created"]
         # convert date_created to datetime
         date_created = parse_date(date_created)

@@ -26,12 +26,12 @@
                         <tr>
                             <td>{{ role|replace("_", " ") | title }}</td>
                             <td>
-                                <input type="radio" id="{{ role }}_enable" name="{{ role }}" value="true" 
+                                <input type="radio" id="{{ role }}_enable" name="{{ role }}" value="true"
                                        {% if user.roles.get(role, False) %}checked{% endif %}>
                                 <label for="{{ role }}_enable">Enable</label>
                             </td>
                             <td>
-                                <input type="radio" id="{{ role }}_disable" name="{{ role }}" value="false" 
+                                <input type="radio" id="{{ role }}_disable" name="{{ role }}" value="false"
                                        {% if not user.roles.get(role, False) %}checked{% endif %}>
                                 <label for="{{ role }}_disable">Disable</label>
                             </td>

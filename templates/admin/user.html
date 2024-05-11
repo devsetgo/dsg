@@ -39,7 +39,7 @@
                     <hr>
                     <strong><i class="fa-solid fa-calendar"></i> Date Updated:</strong> {{user.date_updated}}
                     <hr>
-                    <strong><i class="fa-solid fa-calendar"></i> Access Rights:</strong> 
+                    <strong><i class="fa-solid fa-calendar"></i> Access Rights:</strong>
                     <br>
                     {% for k,v in user.roles.items() %}
                     {% if v == true %}<span class="badge badge-success">{{k|replace("_", " ")|title}}</span>{%else%}<span class="badge badge-secondary">{{k|replace("_", " ")|title}}</span>{%endif%}

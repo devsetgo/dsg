@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 from dsg_lib.common_functions.file_functions import open_csv, save_csv, save_json
 import datetime
 import pytz
 
+
 # set mood value
 def set_mood_value(mood_id):
-
     # mood_id = 1 is "positive"abs
     # mood_id = 2 is "neutral"
     # mood_id = 3 is "negative"
@@ -46,6 +47,7 @@ def fix_date_value(date_created, timezone="America/New_York"):
     new_datetime = new_datetime.astimezone(pytz.UTC)
     return new_datetime
 
+
 def clean_data(data):
     new_data = []
     headers = ["my_note", "mood", "date_created"]
@@ -54,7 +56,7 @@ def clean_data(data):
         new_dict = {
             "my_note": d["my_note"],
             "mood": set_mood_value(d["mood_id"]),
-            "date_created": fix_date_value(d["date_created"],d["timezone"]),
+            "date_created": fix_date_value(d["date_created"], d["timezone"]),
         }
         new_data.append(list(new_dict.values()))
 
@@ -63,9 +65,10 @@ def clean_data(data):
 
     return new_data
 
+
 def clean_data_json(data):
     new_data = []
-    
+
     for d in data:
         new_dict = {
             "my_note": d["my_note"],
@@ -73,10 +76,8 @@ def clean_data_json(data):
             "date_created": fix_date_value(d["date_created"]),
         }
         new_data.append(list(new_dict.values()))
-    
 
     return new_data
-
 
 
 def main():

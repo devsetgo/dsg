@@ -15,7 +15,7 @@ PORT = 5000
 WORKERS = 4
 
 VENV_PATH = _venv
-REQUIREMENTS_PATH = requirements.txt 
+REQUIREMENTS_PATH = requirements.txt
 DEV_REQUIREMENTS_PATH = requirements/dev.txt
 
 .PHONY: alembic-downgrade alembic-init alembic-migrate alembic-rev autoflake black cache cleanup compile dev docker-beta-bp docker-beta-build docker-beta-push docker-beta-run flake8 gdev gprd grdev help install install-dev isort prd run-dev run-gdev run-gprd run-grdev run-local run-prod run-real run-test test
@@ -120,5 +120,6 @@ test:  # Run tests and generate coverage report
 	pre-commit run -a
 	PYTHONPATH=. pytest
 	sed -i 's|<source>/workspaces/dsg</source>|<source>/github/workspace/dsg</source>|' /workspaces/dsg/coverage.xml
-	coverage-badge -o coverage.svg -f
+	genbadge coverage -i /workspaces/dsg/coverage.xml
+# coverage-badge -o coverage.svg -f
 

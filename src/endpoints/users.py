@@ -41,7 +41,6 @@ async def login(request: Request, csrf_protect: CsrfProtect = Depends()):
 
 @router.post("/login")
 async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
-
     await asyncio.sleep(0.2)
     # Get the form data from the request
     form = await request.form()
@@ -68,9 +67,9 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
         )
 
         # Set the error message and return it in the response
-        request.session["error"] = (
-            "Account is locked due to too many failed login attempts"
-        )
+        request.session[
+            "error"
+        ] = "Account is locked due to too many failed login attempts"
         csrf_protect.unset_csrf_cookie(response)
         return templates.TemplateResponse(
             "users/error_message.html",
@@ -150,7 +149,6 @@ async def get_password_change_form(
     user_info: dict = Depends(check_login),
     error: str = None,
 ):
-
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
     context = {"csrf_token": csrf_token, "error": error}
     response = templates.TemplateResponse(
@@ -206,7 +204,6 @@ async def post_password_change_form(
 async def get_user_info(
     request: Request, message: dict = None, user_info: dict = Depends(check_login)
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     is_admin = user_info["is_admin"]
@@ -244,7 +241,6 @@ async def edit_user(
     csrf_protect: CsrfProtect = Depends(),
     user_info: dict = Depends(check_login),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     is_admin = user_info["is_admin"]

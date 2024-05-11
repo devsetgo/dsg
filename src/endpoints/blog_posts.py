@@ -49,7 +49,6 @@ async def list_of_posts(
     category: str = Query(None, description="Category to search by"),
     # user_info: dict = Depends(check_login),
 ):
-
     context = {"request": request}
     return templates.TemplateResponse(
         request=request, name="/posts/index.html", context=context
@@ -208,7 +207,6 @@ async def edit_post_form(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -253,7 +251,6 @@ async def update_post(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -301,7 +298,6 @@ async def delete_post_form(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     query = Select(Posts).where(
@@ -321,7 +317,6 @@ async def delete_note(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -349,7 +344,6 @@ async def new_post_form(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
@@ -365,7 +359,6 @@ async def create_post(
     user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     form = await request.form()

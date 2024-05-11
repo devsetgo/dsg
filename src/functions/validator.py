@@ -123,7 +123,6 @@ if __name__ == "__main__":
         t0 = time.time()
         res = validate_email_address(email)
         if res["valid"]:
-
             pprint.pprint(res, indent=4)
             print(f"Time taken: {time.time() - t0:.2f}")
 

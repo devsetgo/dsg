@@ -16,7 +16,6 @@ temperature = 0.2
 
 
 async def get_analysis(content: str) -> dict:
-
     tags = await get_tags(content=content)
     summary = await get_summary(content=content)
     mood_analysis = await get_mood_analysis(content=content)
