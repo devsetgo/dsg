@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from openai import AsyncOpenAI
-
 from src.settings import settings
 
 client = AsyncOpenAI(
