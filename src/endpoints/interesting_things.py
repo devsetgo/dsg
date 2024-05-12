@@ -1,30 +1,15 @@
 # -*- coding: utf-8 -*-
-import csv
-import io
-from datetime import UTC, datetime, timedelta
+from datetime import datetime
 
 # from pytz import timezone, UTC
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    Depends,
-    File,
-    Path,
-    Query,
-    Request,
-    UploadFile,
-)
-from fastapi.responses import RedirectResponse
-from fastapi_csrf_protect import CsrfProtect
+from fastapi import APIRouter, Depends, Query, Request
 from loguru import logger
-from pytz import timezone
-from sqlalchemy import Select, Text, and_, between, cast, extract, or_
+from sqlalchemy import Select, or_
 
 from ..db_tables import InterestingThings
-from ..functions import ai, date_functions
+from ..functions import date_functions
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
-from ..settings import settings
 
 router = APIRouter()
 

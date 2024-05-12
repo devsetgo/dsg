@@ -56,6 +56,26 @@
             <form action="/users/logout" method="GET">
                 <button class="dropdown-item btn btn-block btn-outline-primary" type="submit">Logout</button>
             </form>
+            {% if request.session.is_admin %}
+            <div class="dropdown-divider"></div>
+            <a href="/notes/bulk" class="dropdown-item">
+            <i class="fa-solid fa-circle-info"></i> Session Information
+            <ul>
+                {% for k, v in request.session.items() %}
+                {% if k == 'roles' %}
+                {% for k,v in request.session.roles.items() %}
+                <li>{% if v == true %}<span class="badge badge-success">{{k|replace("_", "
+                        ")|title}}</span>{%else%}<span class="badge badge-secondary">{{k|replace("_", "
+                        ")|title}}</span>{%endif%}</li>
+                {% endfor %}
+                {%else %}
+                <li>{{k}}: {{v}}</li>
+                {% endif %}
+                {% endfor %}
+            </ul></a>
+            {% endif %}
+
+
             <!-- <a href="/auth/logout" class="dropdown-item">
                 <i class="mr-2 fas fa-sign-in-alt"> </i>
                 Logout

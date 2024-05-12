@@ -31,6 +31,7 @@ router = APIRouter()
 
 @router.get("/")
 async def read_notes(
+    background_tasks: BackgroundTasks,
     request: Request,
     offset: int = Query(0, description="Offset for pagination"),
     limit: int = Query(100, description="Limit for pagination"),
@@ -61,9 +62,24 @@ async def read_notes(
         note_metrics = note_metrics.to_dict()
         note_metrics.pop("pkid")
         note_metrics.pop("date_created")
-        note_metrics.pop("date_updated")
+        # note_metrics.pop("date_updated")
         note_metrics.pop("user_id")
         metrics = note_metrics["metrics"]
+
+        # Get the current time in UTC
+        now = datetime.utcnow()
+
+        # Calculate the time one hour ago
+        one_hour_ago = now - timedelta(hours=1)
+
+        # Get date_updated from note_metrics
+        date_update = note_metrics["date_updated"]
+
+        # Check if date_update is older than one hour
+        if date_update < one_hour_ago:
+            background_tasks.add_task(
+                notes_metrics.update_notes_metrics, user_id=user_identifier
+            )
 
     context = {
         "user_identifier": user_identifier,
@@ -105,11 +121,6 @@ async def get_note_counts(
     )
 
 
-# get charting data mood
-# get charting data tags
-# get charting data notes by year, month week
-
-
 @router.get("/ai-resubmit/{note_id}")
 async def ai_update_note(
     request: Request, note_id: str, user_info: dict = Depends(check_login)
@@ -144,22 +155,31 @@ async def ai_fix_processing(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
     note = await db_ops.read_one_record(query=query)
+    
     note = note.to_dict()
-
+    mood=None
+    if note['mood'] not in ["postive", "negative", "neutral"]:
+        mood = note['mood']
     # Get the tags and summary from OpenAI
-    analysis = await ai.get_analysis(content=note["note"])
+    analysis = await ai.get_analysis(content=note["note"], mood_process=mood)
     logger.info(f"Received analysis from AI: {analysis}")
     # Create the note
     note_update = {
         "tags": analysis["tags"]["tags"],
         "summary": analysis["summary"],
         "mood_analysis": analysis["mood_analysis"],
-        # "ai_fix":False
     }
+    
+    # If mood is not None, add it to note_update
+    if analysis['mood'] is not None:
+        note_update['mood'] = analysis['mood']['mood']
+    
+    print(note_update)
 
     data = await db_ops.update_one(
         table=Notes, record_id=note["pkid"], new_values=note_update
     )
+    print(data)
     data = data.to_dict()
     logger.info(f"Resubmited note to AI with ID: {data['pkid']}")
     return RedirectResponse(url=f"/notes/view/{data['pkid']}?ai=true", status_code=302)
@@ -168,9 +188,10 @@ async def ai_fix_processing(
 @router.get("/bulk")
 async def bulk_note_form(
     request: Request,
-    user_info: dict = Depends(check_login),
+    # user_info: dict = Depends(check_login),
     csrf_protect: CsrfProtect = Depends(),
 ):
+
     return templates.TemplateResponse(
         request=request, name="notes/bulk.html", context={"demo_note": None}
     )
@@ -185,6 +206,7 @@ async def bulk_note(
     csrf_protect: CsrfProtect = Depends(),
 ):
     user_identifier = user_info["user_identifier"]
+    # user_identifier =  request.session.get("user_identifier")
     user_timezone = user_info["timezone"]
 
     # read the file content

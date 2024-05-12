@@ -19,7 +19,9 @@ else:
     db_name = settings.db_name.get_secret_value()
     db_port = settings.db_port
     # postgresql://username:password@localhost:5432/mydatabase
-    db_uri: str = f"{settings.db_driver.value}://{db_username}:{db_password}@{settings.db_host}:{settings.db_port}/{db_name}"
+    db_uri: str = (
+        f"{settings.db_driver.value}://{db_username}:{db_password}@{settings.db_host}:{settings.db_port}/{db_name}"
+    )
 logger.debug(f"{db_uri}")
 
 

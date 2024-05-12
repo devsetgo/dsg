@@ -8,10 +8,64 @@ from collections import Counter, defaultdict, deque
 
 from loguru import logger
 from sqlalchemy import Select
+from tqdm import tqdm
 
 from ..db_tables import NoteMetrics, Notes
 from ..resources import db_ops
 from ..settings import settings
+
+
+async def all_note_metrics():
+    # Log the start of the function
+    logger.info("Starting all_note_metrics function")
+
+    # Select all notes
+    query = Select(Notes)
+    notes = await db_ops.read_query(query=query)
+
+    # Convert each note to a dictionary
+    note_list = [note.to_dict() for note in notes]
+
+    # Initialize an empty list to store unique user IDs
+    user_list: list = []
+    for n in note_list:
+        # If the user ID is not already in the list, add it
+        if n["user_id"] not in user_list:
+            user_list.append(n["user_id"])
+
+    # Log the number of unique users found
+    logger.info(f"Found {len(user_list)} unique users")
+
+    # Process each user
+    for u in tqdm(user_list):
+        # Log the user ID of the user being processed
+        logger.info(f"Processing user {u}")
+
+        # Select the note metrics for the current user
+        query = Select(NoteMetrics).where(NoteMetrics.user_id == u)
+        nm = await db_ops.read_query(query=query)
+
+        # Convert each note metric to a dictionary
+        nm = [n.to_dict() for n in nm]
+
+        # Log the note metrics before updating them
+        logger.debug(f"Pre-note analysis: {nm}")
+
+        # Update the note metrics for the current user
+        await update_notes_metrics(user_id=u)
+
+        # Select the updated note metrics for the current user
+        query = Select(NoteMetrics).where(NoteMetrics.user_id == u)
+        nm = await db_ops.read_query(query=query)
+
+        # Convert each updated note metric to a dictionary
+        nm = [n.to_dict() for n in nm]
+
+        # Log the updated note metrics
+        logger.debug(f"Post-note analysis: {nm}")
+
+    # Log the end of the function
+    logger.info("Finished all_note_metrics function")
 
 
 async def update_notes_metrics(user_id: str):
@@ -24,9 +78,13 @@ async def update_notes_metrics(user_id: str):
     notes = [note.to_dict() for note in notes]
 
     mood_metric = await mood_metrics(notes=notes)
+
     total_unique_tag_count = await get_total_unique_tag_count(notes=notes)
+
     note_counts = await get_note_counts(notes=notes)
+
     metrics = await get_metrics(user_identifier=user_id, user_timezone="UTC")
+
     if metric_data is None:
         note_metrics = NoteMetrics(
             word_count=note_counts["word_count"],
@@ -50,7 +108,7 @@ async def update_notes_metrics(user_id: str):
         }
         # Update the database
         result = await db_ops.update_one(
-            table=NoteMetrics, record_id=user_id, new_values=note_metrics
+            table=NoteMetrics, record_id=metric_data.pkid, new_values=note_metrics
         )
     logger.critical(result)
 
@@ -234,8 +292,13 @@ async def mood_trend_by_mean_month(notes: list):
     mood_values = {"negative": -1, "neutral": 0, "positive": 1}
 
     for note in notes:
+
         month_year = note["date_created"].strftime("%Y-%m")
-        result[month_year] += mood_values[note["mood"].lower()]
+
+        mood = note["mood"].lower()
+        if mood not in mood_values:
+            mood = "neutral"
+        result[month_year] += mood_values[mood]
         count[month_year] += 1
 
     for month_year in result:
@@ -291,7 +354,10 @@ async def mood_trend_by_median_month(notes: list):
 
     for note in notes:
         month_year = note["date_created"].strftime("%Y-%m")
-        result[month_year].append(mood_values[note["mood"].lower()])
+        mood = note["mood"].lower()
+        if mood not in mood_values:
+            mood = "neutral"
+        result[month_year].append(mood_values[mood])
 
     for month_year in result:
         result[month_year] = round(statistics.median(result[month_year]), 3)
@@ -319,7 +385,11 @@ async def mood_trend_by_rolling_mean_month(notes: list):
 
     for note in notes:
         month_year = note["date_created"].strftime("%Y-%m")
-        result[month_year] += mood_values[note["mood"].lower()]
+        mood = note["mood"].lower()
+        if mood not in mood_values:
+            mood = "neutral"
+        result[month_year] += mood_values[mood]
+
         count[month_year] += 1
 
     for month_year in result:

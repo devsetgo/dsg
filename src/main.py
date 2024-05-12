@@ -9,6 +9,7 @@ from loguru import logger
 
 from .app_middleware import add_middleware
 from .app_routes import create_routes
+from .functions.notes_metrics import all_note_metrics
 from .resources import startup
 from .settings import settings
 
@@ -31,6 +32,8 @@ logging_config.config_log(
 async def lifespan(app: FastAPI):
     logger.info("starting up")
     await startup()
+
+    await all_note_metrics()
     yield
     logger.info("shutting down")
 
