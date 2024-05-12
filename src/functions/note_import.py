@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-import asyncio
 import csv
+import itertools
 from datetime import datetime
 
 from dateutil.parser import parse
 from loguru import logger
+from sqlalchemy import Select, and_
 from tqdm import tqdm
 
 from ..db_tables import Notes
 from ..functions import ai, notes_metrics
 from ..resources import db_ops
-from sqlalchemy import Select, Text, and_, between, cast, extract, or_
 
 
 async def read_notes_from_file(csv_file: list, user_id: str):
@@ -22,25 +22,25 @@ async def read_notes_from_file(csv_file: list, user_id: str):
         logger.error(validation_result)
         return {"error": csv_file}
 
-    csv_data = list(csv_file)
-    note_count = len(csv_data)
-    print(note_count)
-    
-    ai_ids = []
+    csv_file, csv_file_copy = itertools.tee(csv_file)
+    note_count = sum(1 for _ in csv_file_copy)
 
+    ai_ids = []
     count = 0
 
-    for c in tqdm(csv_file, desc="Importing notes"):
+    for c in tqdm(csv_file, desc="Importing notes", total=note_count):
         count += 1
-        
+
         logger.info(f"Processing note {count}")
         date_created = c["date_created"]
         # convert date_created to datetime
         date_created = parse_date(date_created)
         mood = c["mood"]
         if mood not in ["positive", "negative", "neutral"]:
-            mood = await ai.get_mood(content=c["my_note"])
-            mood = mood["mood"]
+            # mood = await ai.get_mood(content=c["my_note"])
+            # mood = mood["mood"]
+            mood = "processing"
+
         note = c["my_note"]
 
         analysis = {
@@ -59,17 +59,19 @@ async def read_notes_from_file(csv_file: list, user_id: str):
             date_created=date_created,
             date_updated=date_created,
             user_id=user_id,
+            ai_fix=True,
         )
         data = await db_ops.create_one(note)
         data = data.to_dict()
         logger.info(data)
         ai_ids.append(data["pkid"])
         # notes.append(data.to_dict())
-        # await notes_metrics.update_notes_metrics(user_identifier=user_id)
-
+    await notes_metrics.update_notes_metrics(user_identifier=user_id)
     await process_ai(list_of_ids=ai_ids, user_identifier=user_id)
+    await notes_metrics.update_notes_metrics(user_identifier=user_id)
 
-async def process_ai(list_of_ids: list,user_identifier:str):
+
+async def process_ai(list_of_ids: list, user_identifier: str):
 
     for note_id in tqdm(list_of_ids, desc="AI processing"):
         query = Select(Notes).where(
@@ -77,6 +79,10 @@ async def process_ai(list_of_ids: list,user_identifier:str):
         )
         note = await db_ops.read_one_record(query=query)
         note = note.to_dict()
+        mood = note["mood"]
+        if mood not in ["positive", "negative", "neutral"]:
+            mood = await ai.get_mood(content=note["note"])
+            mood = mood["mood"]
 
         # Get the tags and summary from OpenAI
         analysis = await ai.get_analysis(content=note["note"])
@@ -86,7 +92,7 @@ async def process_ai(list_of_ids: list,user_identifier:str):
             "tags": analysis["tags"]["tags"],
             "summary": analysis["summary"],
             "mood_analysis": analysis["mood_analysis"],
-            # "ai_fix":False
+            "ai_fix": False,
         }
 
         data = await db_ops.update_one(

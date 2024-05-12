@@ -9,7 +9,6 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
-    LargeBinary,
     String,
     Text,
     event,
@@ -98,7 +97,9 @@ class Posts(schema_base, async_db.Base):
     category = Column(String, unique=False, index=True)  # category of item
     tags = Column(JSON)
     word_count = Column(Integer)
-    user_id = Column(String, ForeignKey("users.pkid"), unique=True)  # Foreign key to the Users table
+    user_id = Column(
+        String, ForeignKey("users.pkid"), unique=True
+    )  # Foreign key to the Users table
     # Define the parent relationship to the Users class
     user = relationship("Users", back_populates="posts")
 
@@ -213,6 +214,11 @@ def on_change(mapper, connection, target):
 
     pattern = re.compile("[^a-zA-Z, ]")
     target.ai_fix = False  # Set ai_fix to False by default
+
+    # Check if mood_analysis is more than one word
+    if " " in target.mood_analysis:
+        target.ai_fix = True
+
     for tag in target.tags:
         if pattern.search(tag) or " " in tag:
             target.ai_fix = (

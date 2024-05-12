@@ -65,6 +65,7 @@ async def check_login(request: Request):
         "is_admin": request.session.get("is_admin", False) is True,
         "exp": request.session.get("exp", 0),
     }
+
     logger.debug(f"check login initial: {request.state.user_info}")
     url = request.url
 

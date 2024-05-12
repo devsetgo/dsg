@@ -67,9 +67,9 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
         )
 
         # Set the error message and return it in the response
-        request.session[
-            "error"
-        ] = "Account is locked due to too many failed login attempts"
+        request.session["error"] = (
+            "Account is locked due to too many failed login attempts"
+        )
         csrf_protect.unset_csrf_cookie(response)
         return templates.TemplateResponse(
             "users/error_message.html",

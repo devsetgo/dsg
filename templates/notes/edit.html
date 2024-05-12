@@ -2,10 +2,7 @@
 {% block page_title %}| Notes{% endblock %}
 {% block page_stylesheet %}
 <!-- page stylesheets-->
-<link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css"
-    />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css" />
 
 {% endblock %}
 {% block page_breadcrumb %} Notes / Edit{% endblock %}
@@ -26,7 +23,8 @@
                                 <input type="checkbox" class="custom-control-input" id="editSwitch">
                                 <label class="custom-control-label" for="editSwitch">Edit</label>
                             </div>
-                            <a href="/notes/view/{{ note.pkid }}" class="btn btn-success ml-2"><i class="fa-solid fa-file" style="color:black;"></i></a>
+                            <a href="/notes/view/{{ note.pkid }}" class="btn btn-success ml-2"><i
+                                    class="fa-solid fa-file" style="color:black;"></i></a>
                         </div>
                     </div>
                     <!-- /.card-header -->
@@ -140,19 +138,19 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 <script>
-  const easymde = new EasyMDE({
-    toolbar: ["bold", "italic","strikethrough", "heading", "|", "quote","code", "image","horizontal-rule","link","heading-2","heading-3","undo","redo","guide"],
-    sideBySideFullscreen: false,
-    placeholder: "Type here...",
-    element: document.getElementById('note'),
-  });
-  easymde.toggleSideBySide();
+    const easymde = new EasyMDE({
+        toolbar: ["bold", "italic", "strikethrough", "heading", "|", "quote", "code", "image", "horizontal-rule", "link", "heading-2", "heading-3", "undo", "redo", "guide"],
+        sideBySideFullscreen: false,
+        placeholder: "Type here...",
+        element: document.getElementById('note'),
+    });
+    easymde.toggleSideBySide();
 
-  document.querySelector('form').addEventListener('submit', function(e) {
-    if (easymde.value().trim() === '') {
-      e.preventDefault();
-      alert('Please enter a note.');
-    }
-  });
+    document.querySelector('form').addEventListener('submit', function (e) {
+        if (easymde.value().trim() === '') {
+            e.preventDefault();
+            alert('Please enter a note.');
+        }
+    });
 </script>
 {% endblock %}

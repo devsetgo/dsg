@@ -2,8 +2,7 @@
 
 # from pytz import timezone, UTC
 import secrets
-from datetime import datetime, timedelta
-from enum import Enum
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse

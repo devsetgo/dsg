@@ -22,7 +22,7 @@
         <p class="card-text"><small>{{ note.date_created }}</small>
           <br>
           <small><strong>Words:</strong> {{ note.word_count }} | <strong>Characters:</strong> {{ note.character_count
-            }}</small>
+            }} {% if note.ai_fix %} | <a href="/notes/ai-resubmit/{{note.pkid}}">AI Issue</a>{% endif %}</small>
         </p>
       </div>
     </div>
