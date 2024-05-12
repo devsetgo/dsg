@@ -62,7 +62,7 @@ ENV MAX_AGE=7200
 ENV OPENAI_KEY=<OpenAIKey>
 ENV GITHUB_ID=octocat
 ENV GITHUB_TOKEN=<githubToken>
-ENV GITHUB_REPO_LIMIT=2000
+ENV GITHUB_REPO_LIMIT=1000
 ENV HISTORY_RANGE=3
 # Set the port and workers as environment variables
 ENV PORT=5000
@@ -71,4 +71,4 @@ ENV WORKERS=1
 EXPOSE 5000
 
 # Run the command to start ASGI server
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "5000" "--workers", "4"]

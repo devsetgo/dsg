@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from sqlalchemy import Select

@@ -98,7 +98,7 @@ class Posts(schema_base, async_db.Base):
     category = Column(String, unique=False, index=True)  # category of item
     tags = Column(JSON)
     word_count = Column(Integer)
-    user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the Users table
+    user_id = Column(String, ForeignKey("users.pkid"), unique=True)  # Foreign key to the Users table
     # Define the parent relationship to the Users class
     user = relationship("Users", back_populates="posts")
 

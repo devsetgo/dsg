@@ -12,7 +12,7 @@ LOG_PATH = log
 DEV_SERVER = uvicorn ${SERVICE_PATH}.main:app
 PROD_SERVER = uvicorn ${SERVICE_PATH}.main:app
 PORT = 5000
-WORKERS = 4
+WORKERS = 6
 
 VENV_PATH = _venv
 REQUIREMENTS_PATH = requirements.txt
@@ -66,6 +66,10 @@ docker-beta-push:  # Push beta test image to docker hub
 	docker push mikeryan56/dsg:beta-$(shell date +'%y-%m-%d')
 
 docker-beta-bp: docker-beta-build docker-beta-push
+
+file-process:
+	cp 
+
 flake8:  # Run flake8 and output report
 	flake8 --tee . > _flake8Report.txt
 
@@ -85,21 +89,22 @@ isort:  # Sort imports using isort
 run-dev:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.dev .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+	
 
 run-local:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.local .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
 
 run-real:  # Run the FastAPI application in development mode with hot-reloading
-	cp env-files/.env.local .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+	cp env-files/.env.real .env
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
 
 
 run-test:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.test .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
 
-run-prod:  # Run the FastAPI application in production mode
+run-stage:  # Run the FastAPI application in production mode
 	cp env-files/.env.stage .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
 
