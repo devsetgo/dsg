@@ -95,6 +95,11 @@ run-local:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.local .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
 
+run-plocal:  # Run the FastAPI application in development mode with hot-reloading
+	cp env-files/.env.plocal .env
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+
+
 run-real:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.real .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
@@ -126,5 +131,5 @@ test:  # Run tests and generate coverage report
 	PYTHONPATH=. pytest
 	sed -i 's|<source>/workspaces/dsg</source>|<source>/github/workspace/dsg</source>|' /workspaces/dsg/coverage.xml
 	genbadge coverage -i /workspaces/dsg/coverage.xml
-# coverage-badge -o coverage.svg -f
+
 
