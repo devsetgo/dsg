@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-
-# from pytz import timezone, UTC
 import secrets
 from datetime import datetime
 
+from dsg_lib.common_functions.email_validation import validate_email_address
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
@@ -11,7 +10,7 @@ from loguru import logger
 from sqlalchemy import Select
 
 from ..db_tables import JobApplications, Notes, Users
-from ..functions import date_functions, validator
+from ..functions import date_functions
 from ..functions.hash_function import hash_password
 from ..functions.login_required import check_login
 from ..functions.models import RoleEnum
@@ -152,7 +151,10 @@ async def admin_update_user(
         new_values["password"] = hashed_password
 
     elif change_email_entry != "":
-        valid_email = validator.validate_email_address(change_email_entry)
+
+        valid_email = validate_email_address(
+            change_email_entry, check_deliverability=True
+        )
         if valid_email["valid"]:
             new_values["email"] = change_email_entry
         else:

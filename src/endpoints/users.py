@@ -2,6 +2,7 @@
 import asyncio
 from datetime import datetime, timedelta
 
+from dsg_lib.common_functions.email_validation import validate_email_address
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi_csrf_protect import CsrfProtect
@@ -11,7 +12,6 @@ from sqlalchemy import Select
 from ..db_tables import JobApplications, Notes, Users
 from ..functions.hash_function import hash_password, verify_password
 from ..functions.login_required import check_login
-from ..functions.validator import timezones, validate_email_address
 from ..resources import db_ops, templates
 from ..settings import settings
 
@@ -282,7 +282,9 @@ async def edit_user_post(
         errors.append("Last name is too short")
 
     email = form["email"]
-    email_validation = validate_email_address(email)
+
+    email_validation = validate_email_address(email, check_deliverability=True)
+
     if email_validation["valid"] == False:
         errors.append(email_validation["error"])
 
