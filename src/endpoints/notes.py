@@ -155,11 +155,11 @@ async def ai_fix_processing(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
     note = await db_ops.read_one_record(query=query)
-    
+
     note = note.to_dict()
-    mood=None
-    if note['mood'] not in ["postive", "negative", "neutral"]:
-        mood = note['mood']
+    mood = None
+    if note["mood"] not in ["postive", "negative", "neutral"]:
+        mood = note["mood"]
     # Get the tags and summary from OpenAI
     analysis = await ai.get_analysis(content=note["note"], mood_process=mood)
     logger.info(f"Received analysis from AI: {analysis}")
@@ -169,11 +169,11 @@ async def ai_fix_processing(
         "summary": analysis["summary"],
         "mood_analysis": analysis["mood_analysis"],
     }
-    
+
     # If mood is not None, add it to note_update
-    if analysis['mood'] is not None:
-        note_update['mood'] = analysis['mood']['mood']
-    
+    if analysis["mood"] is not None:
+        note_update["mood"] = analysis["mood"]["mood"]
+
     print(note_update)
 
     data = await db_ops.update_one(
