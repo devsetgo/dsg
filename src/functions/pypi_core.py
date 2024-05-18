@@ -50,7 +50,7 @@ async def check_packages(packages: list, request_group_id: str, request):
     ) as client:  # Increase timeout to 30 seconds
         tasks = [fetch_package_data(client, package) for package in cleaned_packages]
         results = []
-        for f in async_tqdm.as_completed(tasks, total=len(tasks)):
+        for f in async_tqdm.as_completed(tasks, total=len(tasks),desc="Fetching package data"):
             result = await f
             results.append(result)
 
