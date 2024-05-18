@@ -35,7 +35,7 @@ async def get_analysis(content: str, mood_process: str = None) -> dict:
 
 async def get_tags(content: str, temperature: float = temperature) -> dict:
     keyword_limit: int = 3
-    prompt = f"For the following text create a python style list between 1 to {keyword_limit} 'one word' keywords to be stored as a python list: {content}"
+    prompt = f"For the following text create a python style list between 1 to {keyword_limit} 'one word' keywords to be stored as a python list and cannot be a persons name: {content}"
 
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
@@ -79,9 +79,9 @@ async def get_tags(content: str, temperature: float = temperature) -> dict:
     return response_dict
 
 
-async def get_summary(content: str, temperature: float = temperature) -> dict:
-    sentance_length: int = 1
-    prompt = f"Provide a {sentance_length} sentance description. It cannot contain names of people or organizations: {content}"
+async def get_summary(content: str, sentance_length: int = 1, temperature: float = temperature) -> dict:
+
+    prompt = f"Provide a short summary that is no more than {sentance_length} sentence description or a max of 500 characters. It cannot contain names of people: {content}"
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
         messages=[
