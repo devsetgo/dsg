@@ -54,7 +54,7 @@ async def list_of_interesting_things(
 
 
 @router.get("/pagination")
-async def read_notes_pagination(
+async def read_things_pagination(
     request: Request,
     search_term: str = Query(None, description="Search term"),
     start_date: str = Query(None, description="Start date"),
@@ -78,26 +78,20 @@ async def read_notes_pagination(
         user_timezone = "America/New_York"
 
     logger.info(
-        f"Searching for term: {search_term}, start_date: {start_date}, end_date: {end_date}, mood: {mood}, user: {user_identifier}"
+        f"Searching for term: {search_term}, start_date: {start_date}, end_date: {end_date}"
     )
     # find search_term in columns: note, mood, tags, summary
     query = Select(InterestingThings).where(
-        (InterestingThings.user_id == user_identifier)
-        & (
-            or_(
-                InterestingThings.name.contains(search_term) if search_term else True,
-                (
-                    InterestingThings.description.contains(search_term)
-                    if search_term
-                    else True
-                ),
-            )
+        or_(
+            InterestingThings.name.contains(search_term) if search_term else True,
+            (
+                InterestingThings.description.contains(search_term)
+                if search_term
+                else True
+            ),
         )
     )
 
-    # filter by mood
-    if mood:
-        query = query.where(InterestingThings.mood == mood)
     # filter by date range
     if start_date and end_date:
         start_date = datetime.strptime(start_date, "%Y-%m-%d")
@@ -129,11 +123,11 @@ async def read_notes_pagination(
             friendly_string=True,
         )
     found = len(things)
-    note_count = await db_ops.count_query(query=query)
+    things_count = await db_ops.count_query(query=query)
 
     current_count = found
 
-    total_pages = -(-note_count // limit)  # Ceiling division
+    total_pages = -(-things_count // limit)  # Ceiling division
     # Generate the URLs for the previous and next pages
     prev_page_url = (
         f"/posts/pagination?page={page - 1}&"
@@ -147,15 +141,14 @@ async def read_notes_pagination(
         if page < total_pages
         else None
     )
-    logger.info(f"Found {found} notes for user {user_identifier}")
+    logger.info(f"Found {found} interesting things")
     return templates.TemplateResponse(
         request=request,
         name="/notes/pagination.html",
         context={
-            "user_identifier": user_identifier,
-            "notes": notes,
+            "things": things,
             "found": found,
-            "note_count": note_count,
+            "note_count": things_count,
             "total_pages": total_pages,
             "current_count": current_count,
             "current_page": page,
