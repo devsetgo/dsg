@@ -95,7 +95,7 @@ async def add_system_data():
     if settings.create_admin_user is True:
         logger.warning("Creating admin user")
         data = await add_admin()  # Create an admin user
-
+        
         if settings.create_demo_notes is True:
             await add_notes(user_id=data["pkid"])  # Create notes for the admin user
 
@@ -134,9 +134,10 @@ async def add_admin():
         hashed_password = hash_password(password)
         user = Users(
             first_name="Admin",
-            last_name="Users",
+            last_name="User",
             user_name=user_name,
             password=hashed_password,
+            email=settings.admin_email,
             is_active=True,
             is_admin=True,
             roles=add_roles,
@@ -152,6 +153,8 @@ async def add_admin():
             return user.to_dict()
         except Exception as e:
             logger.error(e)
+            print(e)
+
 
 
 async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qty):

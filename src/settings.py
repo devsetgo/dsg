@@ -18,6 +18,7 @@ from pydantic import (  # For validating data
     Field,
     SecretStr,
     root_validator,
+    EmailStr
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -113,6 +114,8 @@ class Settings(BaseSettings):
     create_admin_user: bool = False
     admin_user: SecretStr = None
     admin_password: SecretStr = None
+    admin_email:EmailStr=None
+    default_timezone:str='America/New_York'
     # create psuedo data
     create_demo_user: bool = False
     create_demo_users_qty: int = 20
