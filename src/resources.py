@@ -138,6 +138,7 @@ async def add_admin():
             user_name=user_name,
             password=hashed_password,
             email=settings.admin_email,
+            my_timezone=settings.default_timezone,
             is_active=True,
             is_admin=True,
             roles=add_roles,
