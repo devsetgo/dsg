@@ -18,16 +18,13 @@ Example:
 This module uses the `loguru` library for logging and the `pydantic` library for data validation and settings management.
 """
 import random
-import secrets
 from datetime import UTC, datetime, timedelta
 
 import silly
 from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
-from pydantic import BaseModel
 from sqlalchemy import Select, func
 from tqdm import tqdm
 
@@ -36,53 +33,6 @@ from .db_tables import Categories, InterestingThings, Notes, Posts, Users
 from .functions.hash_function import hash_password
 from .functions.models import RoleEnum
 from .settings import settings
-
-
-class CsrfSettings(BaseModel):
-    """
-    This class is a Pydantic model for CSRF settings.
-
-    It includes the following fields:
-    - secret_key: The secret key used for CSRF protection. It's generated using the secrets.token_hex function.
-    - cookie_samesite: The 'SameSite' attribute for the CSRF cookie. It's set to 'none' by default.
-    - cookie_secure: A boolean indicating whether the CSRF cookie should be secure. It's set to True by default.
-    - token_location: The location of the CSRF token in the request. It's set to 'body' by default.
-    - token_key: The key of the CSRF token in the request. It's set to 'csrf-token' by default.
-
-    This class is used by the `get_csrf_config` function to load the CSRF settings.
-    """
-
-    secret_key: str = secrets.token_hex(
-        128
-    )  # Generate a 128-byte secret key for CSRF protection
-    cookie_samesite: str = (
-        "none"  # Set the 'SameSite' attribute for the CSRF cookie to 'none'
-    )
-    cookie_secure: bool = True  # Set the CSRF cookie to be secure
-    token_location: str = (
-        "body"  # Set the location of the CSRF token in the request to 'body'
-    )
-    token_key: str = (
-        "csrf-token"  # Set the key of the CSRF token in the request to 'csrf-token'
-    )
-
-
-@CsrfProtect.load_config
-def get_csrf_config():
-    """
-    This function is used to load the CSRF settings for the application.
-
-    It's decorated with the `@CsrfProtect.load_config` decorator, which tells the `CsrfProtect` class to use this function to load the CSRF settings.
-
-    The function creates an instance of the `CsrfSettings` class, which is a Pydantic model that defines the CSRF settings. The `CsrfSettings` class includes fields for the secret key, the 'SameSite' attribute for the CSRF cookie, whether the CSRF cookie should be secure, the location of the CSRF token in the request, and the key of the CSRF token in the request.
-
-    Returns:
-        CsrfSettings: An instance of the `CsrfSettings` class with the CSRF settings for the application.
-    """
-    return (
-        CsrfSettings()
-    )  # Return an instance of the `CsrfSettings` class with the CSRF settings
-
 
 # templates and static files
 templates = Jinja2Templates(directory="templates")
@@ -151,7 +101,7 @@ async def add_system_data():
 
     if settings.create_demo_user == True:
         logger.warning("Creating demo user")
-        for _ in range(settings.create_demo_users_qty):
+        for _ in tqdm(range(settings.create_demo_users_qty), desc="creating demo users",leave=True):
             data = await add_user()  # Create a demo user
             await add_notes(
                 user_id=data["pkid"], qty_notes=random.randint(1, 5)
@@ -205,7 +155,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
     demo_notes = []
     mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
 
-    for i in tqdm(range(5), desc=f"same day notes for {user_id}"):
+    for i in tqdm(range(5), desc=f"same day notes for {user_id}",leave=False):
         mood = random.choice(moods)
         mood_analysis_choice = random.choice(mood_analysis)
 
@@ -230,7 +180,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         )
         data = await db_ops.create_one(note)
 
-    for _ in tqdm(range(qty_notes), desc=f"creating demo notes for {user_id}"):
+    for _ in tqdm(range(qty_notes), desc=f"creating demo notes for {user_id}", leave=False):
         mood = random.choice(moods)
         mood_analysis_choice = random.choice(mood_analysis)
 
@@ -459,23 +409,24 @@ async def add_posts():
     categories = await db_ops.read_query(Select(Categories))
     categories = [cat.to_dict() for cat in categories]
     cat_list = [cat["name"] for cat in categories]
-
-    for _ in tqdm(range(30)):
-        rand_cat = random.randint(0, len(cat_list) - 1)
-        tags = [silly.noun() for _ in range(random.randint(2, 5))]
-        date_created = datetime.now(UTC) - timedelta(days=random.randint(1, 700))
-        post = Posts(
-            title=silly.title(),
-            content=silly.markdown(),
-            user_id=user.pkid,
-            category=str(cat_list[rand_cat]).lower(),
-            tags=tags,
-            date_created=date_created,
-        )
-        # Try to add the new item to the database
-        try:
-            data = await db_ops.create_one(post)
-            logger.info(f"adding demo posts {data}")
-        except Exception as e:
-            # If there's an error while adding the item, log the error
-            logger.error(e)
+    posts = await db_ops.read_query(Select(Posts))
+    if len(posts) == 0:
+        for _ in tqdm(range(30), desc="creating demo posts",leave=False):
+            rand_cat = random.randint(0, len(cat_list) - 1)
+            tags = [silly.noun() for _ in range(random.randint(2, 5))]
+            date_created = datetime.now(UTC) - timedelta(days=random.randint(1, 700))
+            post = Posts(
+                title=silly.title(),
+                content=silly.markdown(),
+                user_id=user.pkid,
+                category=str(cat_list[rand_cat]).lower(),
+                tags=tags,
+                date_created=date_created,
+            )
+            # Try to add the new item to the database
+            try:
+                data = await db_ops.create_one(post)
+                logger.info(f"adding demo posts {data}")
+            except Exception as e:
+                # If there's an error while adding the item, log the error
+                logger.error(e)
