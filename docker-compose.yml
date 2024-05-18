@@ -23,10 +23,10 @@ services:
           - "traefik.http.routers.dsg-web-test.rule=Host(`test.devsetgo.com`)" # <== Your Domain Name goes here for the http rule
           - "traefik.http.routers.dsg-web-test.entrypoints=web" # <== Defining the entrypoint for http, **ref: line 30
           - "traefik.http.routers.dsg-web-test.middlewares=redirect@file" # <== This is a middleware to redirect to https
-          - "traefik.http.routers.dsg-test-secured.rule=Host(`test.devsetgo.com`)" # <== Your Domain Name for the https rule 
+          - "traefik.http.routers.dsg-test-secured.rule=Host(`test.devsetgo.com`)" # <== Your Domain Name for the https rule
           - "traefik.http.routers.dsg-test-secured.entrypoints=web-secured" # <== Defining entrypoint for https, **ref: line 31
           - "traefik.http.routers.dsg-test-secured.tls.certresolver=mytlschallenge" # <== Defining certsresolvers for https
-    
+
 networks:
   web:
     external: true
@@ -34,6 +34,6 @@ networks:
     external: true
   postgres_db_network:
     external: true
-      
+
 
 

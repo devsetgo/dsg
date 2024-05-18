@@ -53,7 +53,7 @@ def get_pypi_demo_list(max_range=20):
         logger.info(f"Generated {data_sample} random items.")
         # Create a weight list that gives higher probability to the more popular
         # libraries
-        weights = [x for x in range(len(data), 0, -1)]
+        weights = list(range(len(data), 0, -1))
         # Select data_sample number of elements from data list with the given
         # weights
         data = random.choices(data, weights=weights, k=data_sample)

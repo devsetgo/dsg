@@ -64,5 +64,5 @@ create_routes(app)
 @app.get("/")
 async def root(request: Request):
     # get user_identifier from session
-    user_identifier = request.session.get("user_identifier", None)
+    request.session.get("user_identifier", None)
     return RedirectResponse(url="/pages/index")

@@ -14,7 +14,6 @@ from ..resources import db_ops
 
 
 async def read_notes_from_file(csv_file: list, user_id: str):
-
     print("Beging processing")
     validation_result = validate_csv_headers(csv_file)
 
@@ -72,7 +71,6 @@ async def read_notes_from_file(csv_file: list, user_id: str):
 
 
 async def process_ai(list_of_ids: list, user_identifier: str):
-
     for note_id in tqdm(list_of_ids, desc="AI processing"):
         query = Select(Notes).where(
             and_(Notes.user_id == user_identifier, Notes.pkid == note_id)

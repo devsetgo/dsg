@@ -82,7 +82,6 @@ async def get_tags(content: str, temperature: float = temperature) -> dict:
 async def get_summary(
     content: str, sentance_length: int = 1, temperature: float = temperature
 ) -> dict:
-
     prompt = f"Provide a short summary that is no more than {sentance_length} sentence description or a max of 500 characters. It cannot contain names of people: {content}"
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",

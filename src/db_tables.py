@@ -111,7 +111,7 @@ class Posts(schema_base, async_db.Base):
 
 @event.listens_for(Posts, "before_insert")
 @event.listens_for(Posts, "before_update")
-def on_change(mapper, connection, target):
+def posts_on_change(mapper, connection, target):
     target.word_count = len(target.content.split())
 
     pattern = re.compile("[^a-zA-Z, ]")
@@ -210,7 +210,7 @@ class Notes(schema_base, async_db.Base):
 
 @event.listens_for(Notes, "before_insert")
 @event.listens_for(Notes, "before_update")
-def on_change(mapper, connection, target):
+def note_on_change(mapper, connection, target):
     target.word_count = len(target.note.split())
     target.character_count = len(target.note)
 
@@ -228,23 +228,6 @@ def on_change(mapper, connection, target):
             )
             break
 
-
-# @event.listens_for(Notes, "after_insert")
-# @event.listens_for(Notes, "after_update")
-# def on_change(mapper, connection, target):
-#     note_metrics = connection.execute(select(NoteMetrics)).first()
-#     if note_metrics is None:
-#         note_metrics = NoteMetrics()
-#         connection.execute(insert(NoteMetrics))
-
-#     connection.execute(
-#         update(NoteMetrics).
-#         where(NoteMetrics.id == note_metrics.id).
-#         values(
-#             total_word_count=NoteMetrics.total_word_count + target.word_count,
-#             total_character_count=NoteMetrics.total_character_count + target.character_count
-#         )
-#     )
 
 
 class LibraryName(async_db.Base):

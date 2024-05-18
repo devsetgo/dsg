@@ -19,7 +19,6 @@ router = APIRouter()
 
 @router.get("/login", response_class=HTMLResponse)
 async def login(request: Request):
-
     context = {}
     return templates.TemplateResponse(
         request=request, name="users/login.html", context=context
@@ -28,7 +27,6 @@ async def login(request: Request):
 
 @router.post("/login")
 async def login_user(request: Request):
-
     # Get the form data from the request
     form = await request.form()
     user_name = form["username"]
@@ -52,9 +50,9 @@ async def login_user(request: Request):
         )
 
         # Set the error message and return it in the response
-        request.session["error"] = (
-            "Account is locked due to too many failed login attempts"
-        )
+        request.session[
+            "error"
+        ] = "Account is locked due to too many failed login attempts"
         response = templates.TemplateResponse(
             request=request,
             name="users/error_message.html",
@@ -97,7 +95,7 @@ async def login_user(request: Request):
         request.session["user_identifier"] = user.pkid
         request.session["roles"] = user.roles
 
-        if user.is_admin == True:
+        if user.is_admin is True:
             request.session["is_admin"] = True
         request.session["timezone"] = user.my_timezone
 
@@ -130,8 +128,8 @@ async def edit_user(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
-    is_admin = user_info["is_admin"]
+    user_info["timezone"]
+    user_info["is_admin"]
 
     query = Select(Users).where(Users.pkid == user_identifier)
     user = await db_ops.read_one_record(query=query)
@@ -155,7 +153,6 @@ async def edit_user_post(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
-
     form = await request.form()
 
     user_identifier = user_info["user_identifier"]
@@ -174,7 +171,7 @@ async def edit_user_post(
 
     email_validation = validate_email_address(email, check_deliverability=True)
 
-    if email_validation["valid"] == False:
+    if email_validation["valid"] is False:
         errors.append(email_validation["error"])
 
     user_timezone = form["my_timezone"]
@@ -218,7 +215,6 @@ async def get_password_change_form(
     user_info: dict = Depends(check_login),
     error: str = None,
 ):
-
     context = {"error": error}
     response = templates.TemplateResponse(
         request=request, name="users/password_change.html", context=context
@@ -231,7 +227,6 @@ async def post_password_change_form(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
-
     form = await request.form()
     old_password = form["old_password"]
     new_password = form["new_password"]
@@ -275,8 +270,8 @@ async def get_user_info(
     request: Request, message: dict = None, user_info: dict = Depends(check_login)
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
-    is_admin = user_info["is_admin"]
+    user_info["timezone"]
+    user_info["is_admin"]
 
     query = Select(Users).where(Users.pkid == user_identifier)
     user = await db_ops.read_one_record(query=query)

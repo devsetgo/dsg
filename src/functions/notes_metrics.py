@@ -165,7 +165,7 @@ async def get_note_counts(notes: list):
 async def mood_metrics(notes: list):
     logger.info("Calculating mood metrics")
     mood_count = Counter([note["mood"] for note in notes])
-    mood_count = {k: v for k, v in mood_count.items()}
+    mood_count = dict(mood_count.items())
     logger.info("Mood metrics calculated successfully")
     return mood_count
 
@@ -291,7 +291,6 @@ async def mood_trend_by_mean_month(notes: list):
     mood_values = {"negative": -1, "neutral": 0, "positive": 1}
 
     for note in notes:
-
         month_year = note["date_created"].strftime("%Y-%m")
 
         mood = note["mood"].lower()
