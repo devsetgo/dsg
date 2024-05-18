@@ -14,14 +14,9 @@ from typing import Optional
 
 from loguru import logger  # For logging
 from pydantic import (  # For validating data
-    BaseModel,
     ConfigDict,
     Field,
     SecretStr,
-    ValidationError,
-    ValidationInfo,
-    field_validator,
-    model_validator,
     root_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict

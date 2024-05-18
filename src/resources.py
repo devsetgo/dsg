@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-This module, `resources.py`, is responsible for managing and handling resources in the application. 
+This module, `resources.py`, is responsible for managing and handling resources in the application.
 
-It includes functions and classes for loading, manipulating, and saving resources. The specific resources it handles can vary, 
+It includes functions and classes for loading, manipulating, and saving resources. The specific resources it handles can vary,
 but they might include things like images, audio files, configuration files, or other data files used by the application.
 
 The module also includes setup for database operations and static files.
@@ -99,7 +99,7 @@ async def add_system_data():
         if settings.create_demo_notes is True:
             await add_notes(user_id=data["pkid"])  # Create notes for the admin user
 
-    if settings.create_demo_user == True:
+    if settings.create_demo_user is True:
         logger.warning("Creating demo user")
         for _ in tqdm(
             range(settings.create_demo_users_qty),
@@ -156,7 +156,6 @@ async def add_admin():
 
 async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qty):
     moods = ["positive", "neutral", "negative"]
-    demo_notes = []
     mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
 
     for i in tqdm(range(5), desc=f"same day notes for {user_id}", leave=False):
@@ -166,7 +165,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         length = random.randint(5, 20)
         note = silly.paragraph(length=length)
         summary = note[:50]
-        tags = list(set([silly.adjective() for x in range(1, 4)]))
+        tags = list({silly.adjective() for x in range(1, 4)})
 
         # Make date_updated the same as date_created or 3-15 days later
         date_created = datetime.now(UTC) - timedelta(days=365 * i)
@@ -176,13 +175,13 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
             mood="positive",
             note=f"{user_id} This is a note that was created in the past",
             summary="Past Note",
-            tags=list(set([silly.adjective() for x in range(1, 4)])),
+            tags=list({silly.adjective() for x in range(1, 4)}),
             mood_analysis="positive",
             user_id=user_id,
             date_created=date_created,
             date_updated=date_updated,
         )
-        data = await db_ops.create_one(note)
+        await db_ops.create_one(note)
 
     for _ in tqdm(
         range(qty_notes), desc=f"creating demo notes for {user_id}", leave=False
@@ -193,7 +192,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         length = random.randint(5, 20)
         note = silly.paragraph(length=length)
         summary = note[:50]
-        tags = list(set([silly.adjective() for x in range(1, 4)]))
+        tags = list({silly.adjective() for x in range(1, 4)})
 
         # Generate a random date within the last X years
         days_in_three_years = 365 * 12
@@ -220,7 +219,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
             date_updated=date_updated,
         )
         # demo_notes.append(note)
-        data = await db_ops.create_one(note)
+        await db_ops.create_one(note)
 
 
 async def add_user():

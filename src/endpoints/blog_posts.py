@@ -54,7 +54,7 @@ async def delete_post_form(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
     query = Select(Posts).where(
         and_(Posts.user_id == user_identifier, Posts.pkid == post_id)
     )
@@ -72,7 +72,7 @@ async def delete_note(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
 
     query = Select(Posts).where(
         and_(Posts.user_id == user_identifier, Posts.pkid == post_id)
@@ -141,8 +141,8 @@ async def update_post(
     post_id: str = Path(...),
     user_info: dict = Depends(check_login),
 ):
-    user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["user_identifier"]
+    user_info["timezone"]
 
     # Fetch the old data
     old_data = await db_ops.read_one_record(
@@ -186,8 +186,8 @@ async def new_post_form(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
-    user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["user_identifier"]
+    user_info["timezone"]
 
     return templates.TemplateResponse(
         request=request, name="posts/new.html", context={}
@@ -201,7 +201,7 @@ async def create_post(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
     form = await request.form()
     category = form["category"]
     content = form["content"]

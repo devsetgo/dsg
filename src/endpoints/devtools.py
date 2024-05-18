@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.post("/pypi/check-list")
-async def check_pypi_packages(packages: List[str] = Body(...)):
+async def post_check_pypi_packages(packages: List[str] = Body(...)):
     logger.info(f"Checking packages: {packages}")
     try:
         data = await check_packages(packages)
@@ -23,7 +23,7 @@ async def check_pypi_packages(packages: List[str] = Body(...)):
 
 
 @router.get("/pypi/check-one")
-async def check_pypi_packages(package: str):
+async def get_check_pypi_packages(package: str):
     logger.info(f"Checking package: {package}")
     try:
         packages = [package]

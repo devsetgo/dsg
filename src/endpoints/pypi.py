@@ -38,7 +38,6 @@ async def index(request: Request):
 
 @router.get("/check")
 async def get_check_form(request: Request):
-
     context = {
         "request_group_id": str(uuid.uuid4()),
     }
@@ -64,7 +63,7 @@ async def post_check_form(
     data = [x.strip() for x in data]
     data = [x for x in data if x != ""]
     # check packages
-    pypi_response = await check_packages(
+    await check_packages(
         packages=data, request_group_id=request_group_id, request=request
     )
 

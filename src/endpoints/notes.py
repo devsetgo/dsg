@@ -37,7 +37,7 @@ async def read_notes(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
 
     if user_identifier is None:
         logger.debug("User identifier is None, redirecting to login")
@@ -94,7 +94,7 @@ async def get_note_counts(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
 
     note_metrics = await db_ops.read_one_record(
         query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
@@ -123,7 +123,7 @@ async def ai_update_note(
     request: Request, note_id: str, user_info: dict = Depends(check_login)
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
 
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
@@ -146,7 +146,7 @@ async def ai_fix_processing(
     request: Request, note_id: str, user_info: dict = Depends(check_login)
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
 
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
@@ -185,7 +185,6 @@ async def bulk_note_form(
     request: Request,
     # user_info: dict = Depends(check_login),
 ):
-
     return templates.TemplateResponse(
         request=request, name="notes/bulk.html", context={"demo_note": None}
     )
@@ -200,7 +199,7 @@ async def bulk_note(
 ):
     user_identifier = user_info["user_identifier"]
     # user_identifier =  request.session.get("user_identifier")
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
 
     # read the file content
     file_content = await csv_file.read()
@@ -267,7 +266,7 @@ async def update_note(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
 
     # Fetch the old data
     old_data = await db_ops.read_one_record(
@@ -313,7 +312,7 @@ async def delete_note_form(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
@@ -326,12 +325,13 @@ async def delete_note_form(
 
 @router.post("/delete/{note_id}")
 async def delete_note(
+    background_tasks: BackgroundTasks,
     request: Request,
     note_id: str = Path(...),
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
 
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
@@ -364,7 +364,7 @@ async def get_note_issue(
         return RedirectResponse(url="/users/login", status_code=302)
 
     query = Select(Notes).where(
-        and_(Notes.user_id == user_identifier, Notes.ai_fix == True)
+        and_(Notes.user_id == user_identifier, Notes.ai_fix is True)
     )
     notes = await db_ops.read_query(query=query, limit=20)
     # offset date_created and date_updated to user's timezone
@@ -397,8 +397,8 @@ async def new_note_form(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
-    user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["user_identifier"]
+    user_info["timezone"]
 
     return templates.TemplateResponse(
         request=request, name="notes/new.html", context={}
@@ -412,7 +412,7 @@ async def create_note(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
     form = await request.form()
     mood = form["mood"]
     note = form["note"]
@@ -437,7 +437,7 @@ async def create_note(
     background_tasks.add_task(
         notes_metrics.update_notes_metrics, user_id=user_identifier
     )
-    logger.debug(f"Created Note: data")
+    logger.debug("Created Note: data")
     logger.info(f"Created note with ID: {data.pkid}")
 
     return RedirectResponse(url=f"/notes/view/{data.pkid}", status_code=302)

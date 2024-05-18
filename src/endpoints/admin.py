@@ -25,7 +25,7 @@ async def admin_dashboard(
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
-    is_admin = user_info["is_admin"]
+    user_info["is_admin"]
 
     user_list = await get_list_of_users(user_timezone=user_timezone)
 
@@ -41,7 +41,7 @@ async def get_list_of_users(user_timezone: str):
     users = [user.to_dict() for user in users]
 
     for user in users:
-        for k, v in user.items():
+        for k, _v in user.items():
             if k.startswith("date_"):
                 user[k] = await date_functions.timezone_update(
                     user_timezone=user_timezone,
@@ -58,9 +58,9 @@ async def admin_user(
     user_id: str,
     user_info: dict = Depends(check_login),
 ):
-    user_identifier = user_info["user_identifier"]
+    user_info["user_identifier"]
     user_timezone = user_info["timezone"]
-    is_admin = user_info["is_admin"]
+    user_info["is_admin"]
 
     query = Select(Users).where(Users.pkid == user_id)
     user = await db_ops.read_one_record(query=query)
@@ -69,7 +69,7 @@ async def admin_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     user = user.to_dict()
-    for k, v in user.items():
+    for k, _v in user.items():
         if k.startswith("date_"):
             user[k] = await date_functions.timezone_update(
                 user_timezone=user_timezone,
@@ -105,13 +105,12 @@ async def admin_update_user(
     update_user_id: str,
     user_info: dict = Depends(check_login),
 ):
-
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
-    is_admin = user_info["is_admin"]
+    user_info["timezone"]
+    user_info["is_admin"]
 
     if update_user_id == user_identifier:
-        return Response(headers={"HX-Redirect": f"/error/422"}, status_code=200)
+        return Response(headers={"HX-Redirect": "/error/422"}, status_code=200)
 
     form = await request.form()
 
@@ -128,7 +127,7 @@ async def admin_update_user(
             logger.warning(f"No post found with ID: {update_user_id}")
             return RedirectResponse(url="/error/404", status_code=303)
         response = Response(
-            headers={"HX-Redirect": f"/admin/#access-tab"}, status_code=200
+            headers={"HX-Redirect": "/admin/#access-tab"}, status_code=200
         )
 
         return response
@@ -146,14 +145,13 @@ async def admin_update_user(
         new_values["password"] = hashed_password
 
     elif change_email_entry != "":
-
         valid_email = validate_email_address(
             change_email_entry, check_deliverability=True
         )
         if valid_email["valid"]:
             new_values["email"] = change_email_entry
         else:
-            return Response(headers={"HX-Redirect": f"/error/400"}, status_code=200)
+            return Response(headers={"HX-Redirect": "/error/400"}, status_code=200)
 
     data = await db_ops.update_one(
         table=Users, record_id=update_user_id, new_values=new_values
@@ -180,9 +178,8 @@ async def admin_update_user_access(
     update_user_id: str,
     user_info: dict = Depends(check_login),
 ):
-
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
     is_admin = user_info["is_admin"]
 
     logger.debug(f"User {user_identifier} is admin: {is_admin}")
@@ -214,4 +211,4 @@ async def admin_update_user_access(
 
         return response
     else:
-        return Response(headers={"HX-Redirect": f"/error/403"}, status_code=200)
+        return Response(headers={"HX-Redirect": "/error/403"}, status_code=200)
