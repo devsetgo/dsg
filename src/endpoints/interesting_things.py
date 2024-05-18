@@ -63,7 +63,6 @@ async def read_things_pagination(
     page: int = Query(1, description="Page number"),
     limit: int = Query(20, description="Number of notes per page"),
     user_info: dict = Depends(check_login),
-    # csrf_protect: CsrfProtect = Depends(),
 ):
     query_params = {
         "search_term": search_term,

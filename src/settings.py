@@ -63,8 +63,6 @@ class Settings(BaseSettings):
     pool_recycle: int = Field(3600, description="Set pool_recycle")
     pool_timeout: Optional[int] = Field(None, description="Set pool_timeout")
 
-    # Generate a random secret key
-    csrf_secret: str = secrets.token_hex(32)
     # Set the current date and time when the application is run
     date_run: datetime = datetime.utcnow()
     # application settings

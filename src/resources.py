@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-This module, `resources.py`, is responsible for setting up and managing resources for the application.
+This module, `resources.py`, is responsible for managing and handling resources in the application. 
 
-It includes the following functionalities:
+It includes functions and classes for loading, manipulating, and saving resources. The specific resources it handles can vary, 
+but they might include things like images, audio files, configuration files, or other data files used by the application.
 
-1. Setting up CSRF protection using the `CsrfProtect` class from the `fastapi_csrf_protect` package.
-2. Setting up templates and static files using the `Jinja2Templates` and `StaticFiles` classes from the `fastapi` package.
-3. Setting up database operations using the `DatabaseOperations` class from the `dsg_lib` package.
-4. Defining startup and shutdown routines for the application.
-5. Adding system data to the database with `add_system_data` function, which includes adding an admin user, a default user, categories, and interesting things.
+The module also includes setup for database operations and static files.
 
-Each function in the module includes its own docstring explaining what it does.
+Module Attributes:
+    templates (Jinja2Templates): An instance of `Jinja2Templates` for rendering templates.
+    statics (StaticFiles): An instance of `StaticFiles` for serving static files.
+    db_ops (DatabaseOperations): An instance of `DatabaseOperations` for performing database operations.
 
-Example:
-    from resources import get_csrf_config, templates, statics, db_ops
+Functions:
+    startup: An asynchronous function that is used to start up the application.
 
-This module uses the `loguru` library for logging and the `pydantic` library for data validation and settings management.
+Please refer to the individual function or class docstrings for more specific information about what each part of the module does.
 """
 import random
 from datetime import UTC, datetime, timedelta
