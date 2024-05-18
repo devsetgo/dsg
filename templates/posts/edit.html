@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block page_title %}| Notes{% endblock %}
+{% block page_title %}| Posts{% endblock %}
 {% block page_stylesheet %}
 <!-- page stylesheets-->
 <link
@@ -8,8 +8,8 @@
     />
 
 {% endblock %}
-{% block page_breadcrumb %} Notes / Edit{% endblock %}
-{% block page_head_title %}Edit Note{% endblock %}
+{% block page_breadcrumb %} Post / Edit{% endblock %}
+{% block page_head_title %}Edit Post{% endblock %}
 {% block body %}
 <!-- Main content -->
 <section class="content">
@@ -20,7 +20,7 @@
                 <!-- general form elements -->
                 <div class="card card-primary" style="margin: 20px;">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="card-title mb-0">Edit Note</h3>
+                        <h3 class="card-title mb-0">Edit Post</h3>
                         <div class="d-flex align-items-center ml-auto">
                             <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
                                 <input type="checkbox" class="custom-control-input" id="editSwitch">
@@ -90,8 +90,8 @@
                                     <textarea id="note" name="note" maxlength="20000">{{note.note|safe}}</textarea>
                                 </div>
                                 <div class="input-group mb-5">
-                                    <button type="submit" class="btn btn-primary btn-block" title="Update Note">Update
-                                        Note</button>
+                                    <button type="submit" class="btn btn-primary btn-block" title="Update Post">Update
+                                        Post</button>
                                     <!-- CSRF token -->
                                     <input type='hidden' name='csrf-token' value="{{ csrf_token }}" />
                                     <input type="hidden" name="pkid" value="{{ note.pkid }}">
