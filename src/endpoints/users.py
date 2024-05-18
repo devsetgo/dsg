@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-import asyncio
 from datetime import datetime, timedelta
 
 from dsg_lib.common_functions.email_validation import validate_email_address
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from sqlalchemy import Select
 
 from ..db_tables import JobApplications, Notes, Users
+from ..functions.date_functions import TIMEZONES as timezones
 from ..functions.hash_function import hash_password, verify_password
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
@@ -19,32 +18,19 @@ router = APIRouter()
 
 
 @router.get("/login", response_class=HTMLResponse)
-async def login(request: Request, csrf_protect: CsrfProtect = Depends()):
-    # Generate CSRF tokens
-    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+async def login(request: Request):
 
-    # Create template response with the generated CSRF token
-    context = {"csrf_token": csrf_token}
-    response = templates.TemplateResponse(
+    context = {}
+    return templates.TemplateResponse(
         request=request, name="users/login.html", context=context
     )
 
-    # Set the signed CSRF token in the cookie
-    csrf_protect.set_csrf_cookie(signed_token, response)
-
-    logger.info(
-        "Generated CSRF tokens, created template response, set CSRF cookie, and returning response."
-    )
-
-    return response
-
 
 @router.post("/login")
-async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
-    await asyncio.sleep(0.2)
+async def login_user(request: Request):
+
     # Get the form data from the request
     form = await request.form()
-    await csrf_protect.validate_csrf(request)
     user_name = form["username"]
     password = form["password"]
 
@@ -54,7 +40,6 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
     user = await db_ops.read_one_record(
         Select(Users).where(Users.user_name == user_name)
     )
-
     logger.debug(f"Users: {user}")
     # Check if the user exists and if they have made too many failed login attempts
     if (
@@ -70,11 +55,13 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
         request.session["error"] = (
             "Account is locked due to too many failed login attempts"
         )
-        csrf_protect.unset_csrf_cookie(response)
-        return templates.TemplateResponse(
-            "users/error_message.html",
-            {"request": request, "error": request.session["error"]},
+        response = templates.TemplateResponse(
+            request=request,
+            name="users/error_message.html",
+            context={"error": request.session["error"]},
         )
+
+        return response
 
     # Check if the user exists and if the password is correct
     if user is None or not verify_password(hash=user.password, password=password):
@@ -92,11 +79,14 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
 
         # Set the error message and return it in the response
         request.session["error"] = "Username and/or Password is incorrect"
-        csrf_protect.unset_csrf_cookie(response)
-        return templates.TemplateResponse(
-            "users/error_message.html",
-            {"request": request, "error": request.session["error"]},
+
+        response = templates.TemplateResponse(
+            request=request,
+            name="users/error_message.html",
+            context={"error": request.session["error"]},
         )
+
+        return response
 
     # If the login is successful
     else:
@@ -129,116 +119,14 @@ async def login_user(request: Request, csrf_protect: CsrfProtect = Depends()):
             record_id=user.pkid,
         )
         logger.debug(f"Login update: {login_update}")
-        csrf_protect.unset_csrf_cookie(response)
+
         # Return the response
         return response
-
-
-@router.get("/logout")
-async def logout(request: Request):
-    user_identifier = request.session.get("user_identifier", None)
-    request.session.clear()
-    logger.info(f"Users {user_identifier} logged out")
-    return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-
-
-@router.get("/password-change", response_class=HTMLResponse)
-async def get_password_change_form(
-    request: Request,
-    csrf_protect: CsrfProtect = Depends(),
-    user_info: dict = Depends(check_login),
-    error: str = None,
-):
-    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
-    context = {"csrf_token": csrf_token, "error": error}
-    response = templates.TemplateResponse(
-        request=request, name="users/password_change.html", context=context
-    )
-    csrf_protect.set_csrf_cookie(signed_token, response)
-    return response
-
-
-@router.post("/password-change")
-async def post_password_change_form(
-    request: Request,
-    csrf_protect: CsrfProtect = Depends(),
-    user_info: dict = Depends(check_login),
-):
-    await csrf_protect.validate_csrf(request)
-    form = await request.form()
-    old_password = form["old_password"]
-    new_password = form["new_password"]
-    new_password_confirm = form["new_password_confirm"]
-    user_identifier = request.session.get("user_identifier", None)
-    user = await db_ops.read_one_record(
-        Select(Users).where(Users.pkid == user_identifier)
-    )
-    if not verify_password(hash=user.password, password=old_password):
-        request.session["error"] = "Old password is incorrect"
-        return templates.TemplateResponse(
-            "users/error_message.html",
-            {"request": request, "error": request.session["error"]},
-        )
-    if new_password != new_password_confirm:
-        request.session["error"] = "New passwords do not match"
-        return templates.TemplateResponse(
-            "users/error_message.html",
-            {"request": request, "error": request.session["error"]},
-        )
-    new_password_hash = hash_password(new_password)
-    update = await db_ops.update_one(
-        table=Users,
-        new_values={"password": new_password_hash},
-        record_id=user_identifier,
-    )
-    logger.debug(f"Password update: {update}")
-    request.session["message"] = "Password updated successfully"
-    return templates.TemplateResponse(
-        "users/message.html",
-        {"request": request, "message": request.session["message"]},
-    )
-
-
-# get user information endpoint
-@router.get("/user-info", response_class=HTMLResponse)
-async def get_user_info(
-    request: Request, message: dict = None, user_info: dict = Depends(check_login)
-):
-    user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
-    is_admin = user_info["is_admin"]
-
-    query = Select(Users).where(Users.pkid == user_identifier)
-    user = await db_ops.read_one_record(query=query)
-
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    user = user.to_dict()
-
-    notes_query = Select(Notes).where(Notes.user_id == user_identifier)
-    notes_count = await db_ops.count_query(query=notes_query)
-
-    job_app_query = Select(JobApplications).where(
-        JobApplications.user_id == user_identifier
-    )
-    job_app_count = await db_ops.count_query(query=job_app_query)
-
-    context = {
-        "user": user,
-        "notes_count": notes_count,
-        "job_app_count": job_app_count,
-        "message": message,
-    }
-    return templates.TemplateResponse(
-        request=request, name="/users/user_info.html", context=context
-    )
 
 
 @router.get("/edit-user", response_class=HTMLResponse)
 async def edit_user(
     request: Request,
-    csrf_protect: CsrfProtect = Depends(),
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
@@ -252,25 +140,26 @@ async def edit_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     user = user.to_dict()
-    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
-    context = {"user": user, "csrf_token": csrf_token, "timezones": timezones}
-    return templates.TemplateResponse(
+
+    context = {"user": user, "timezones": timezones}
+
+    response = templates.TemplateResponse(
         request=request, name="/users/user_edit.html", context=context
     )
+
+    return response
 
 
 @router.post("/edit-user")
 async def edit_user_post(
     request: Request,
-    csrf_protect: CsrfProtect = Depends(),
     user_info: dict = Depends(check_login),
 ):
+
     form = await request.form()
-    await csrf_protect.validate_csrf(request)
 
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
-
     errors = []
 
     first_name = form["first_name"]
@@ -310,7 +199,112 @@ async def edit_user_post(
 
     logger.debug(f"User update: {update}")
     request.session["message"] = message
-    return RedirectResponse(url="/users/user-info", status_code=303)
+
+    response = RedirectResponse(url="/users/user-info", status_code=303)
+    return response
+
+
+@router.get("/logout")
+async def logout(request: Request):
+    user_identifier = request.session.get("user_identifier", None)
+    request.session.clear()
+    logger.info(f"Users {user_identifier} logged out")
+    return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.get("/password-change", response_class=HTMLResponse)
+async def get_password_change_form(
+    request: Request,
+    user_info: dict = Depends(check_login),
+    error: str = None,
+):
+
+    context = {"error": error}
+    response = templates.TemplateResponse(
+        request=request, name="users/password_change.html", context=context
+    )
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
+
+
+@router.post("/password-change")
+async def post_password_change_form(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+
+    form = await request.form()
+    old_password = form["old_password"]
+    new_password = form["new_password"]
+    new_password_confirm = form["new_password_confirm"]
+    user_identifier = request.session.get("user_identifier", None)
+    user = await db_ops.read_one_record(
+        Select(Users).where(Users.pkid == user_identifier)
+    )
+    if not verify_password(hash=user.password, password=old_password):
+        request.session["error"] = "Old password is incorrect"
+        return templates.TemplateResponse(
+            request=request,
+            name="users/error_message.html",
+            context={"error": request.session["error"]},
+        )
+    if new_password != new_password_confirm:
+        request.session["error"] = "New passwords do not match"
+        return templates.TemplateResponse(
+            request=request,
+            name="users/error_message.html",
+            context={"error": request.session["error"]},
+        )
+    new_password_hash = hash_password(new_password)
+    update = await db_ops.update_one(
+        table=Users,
+        new_values={"password": new_password_hash},
+        record_id=user_identifier,
+    )
+    logger.debug(f"Password update: {update}")
+    request.session["message"] = "Password updated successfully"
+    return templates.TemplateResponse(
+        request=request,
+        name="users/message.html",
+        context={"message": request.session["message"]},
+    )
+
+
+# get user information endpoint
+@router.get("/user-info", response_class=HTMLResponse)
+async def get_user_info(
+    request: Request, message: dict = None, user_info: dict = Depends(check_login)
+):
+    user_identifier = user_info["user_identifier"]
+    user_timezone = user_info["timezone"]
+    is_admin = user_info["is_admin"]
+
+    query = Select(Users).where(Users.pkid == user_identifier)
+    user = await db_ops.read_one_record(query=query)
+
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user = user.to_dict()
+
+    notes_query = Select(Notes).where(Notes.user_id == user_identifier)
+    notes_count = await db_ops.count_query(query=notes_query)
+
+    job_app_query = Select(JobApplications).where(
+        JobApplications.user_id == user_identifier
+    )
+    job_app_count = await db_ops.count_query(query=job_app_query)
+
+    context = {
+        "user": user,
+        "notes_count": notes_count,
+        "job_app_count": job_app_count,
+        "message": message,
+    }
+
+    return templates.TemplateResponse(
+        request=request, name="/users/user_info.html", context=context
+    )
 
 
 # deactivate user endpoint

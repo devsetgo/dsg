@@ -2,9 +2,8 @@
 
 import uuid
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Request, Response
 from fastapi.responses import RedirectResponse
-from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from sqlalchemy import Select
 
@@ -38,36 +37,26 @@ async def index(request: Request):
 
 
 @router.get("/check")
-async def get_check_form(request: Request, csrf_protect: CsrfProtect = Depends()):
-    logger.info("Generating CSRF tokens.")
-    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+async def get_check_form(request: Request):
 
     context = {
-        "csrf_token": csrf_token,
         "request_group_id": str(uuid.uuid4()),
-    }  # Use the generated CSRF token
+    }
     logger.info("Creating template response.")
     response = templates.TemplateResponse(
         request=request, name="pypi/new.html", context=context
     )
-    logger.info("Setting CSRF cookie.")
-    csrf_protect.set_csrf_cookie(
-        signed_token, response
-    )  # Set the signed CSRF token in the cookie
+
     logger.info("Returning response.")
     return response
 
 
 @router.post("/check", response_class=RedirectResponse)
 async def post_check_form(
-    request: Request, request_group_id: str, csrf_protect: CsrfProtect = Depends()
+    request: Request,
+    request_group_id: str,
 ):
     form = await request.form()
-    # Validate the CSRF token
-    await csrf_protect.validate_csrf(
-        request
-    )  # Pass the request object, not the csrf_token string
-    # get form data from request
 
     # convert this to a list
     data = form["requirements"]
@@ -82,12 +71,12 @@ async def post_check_form(
     return Response(
         headers={"HX-Redirect": f"/pypi/check/{request_group_id}"}, status_code=303
     )
-    # return RedirectResponse(url=f"/pypi/check/{request_group_id}", status_code=303)
 
 
 @router.get("/check/{request_group_id}")
 async def get_response(
-    request: Request, request_group_id: str, csrf_protect: CsrfProtect = Depends()
+    request: Request,
+    request_group_id: str,
 ):
     db_data = await db_ops.read_query(
         Select(Requirement).where(Requirement.request_group_id == request_group_id)
@@ -105,7 +94,6 @@ async def get_response(
     }
 
     response = templates.TemplateResponse(request, "pypi/result.html", context=context)
-    csrf_protect.unset_csrf_cookie(response)  # prevent token reuse
     return response
 
 
@@ -124,5 +112,4 @@ async def get_all(request: Request):
         "db_data": db_data_dict,
         "count_data": count_data,
     }
-
     return templates.TemplateResponse(request, "pypi/simple-list.html", context=context)

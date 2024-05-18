@@ -5,7 +5,6 @@ from datetime import datetime
 from dsg_lib.common_functions.email_validation import validate_email_address
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from sqlalchemy import Select
 
@@ -58,7 +57,6 @@ async def admin_user(
     request: Request,
     user_id: str,
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
@@ -85,12 +83,11 @@ async def admin_user(
     job_app_query = Select(JobApplications).where(JobApplications.user_id == user_id)
     job_app_count = await db_ops.count_query(query=job_app_query)
     # Generate CSRF tokens
-    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+
     context = {
         "user": user,
         "notes_count": notes_count,
         "job_app_count": job_app_count,
-        "csrf_token": csrf_token,
         "random_pass": secrets.token_urlsafe(10),
         "roles": [
             role.value for role in sorted(RoleEnum, key=lambda x: x.name)
@@ -99,7 +96,7 @@ async def admin_user(
     response = templates.TemplateResponse(
         request=request, name="/admin/user.html", context=context
     )
-    csrf_protect.set_csrf_cookie(signed_token, response)
+
     return response
 
 
@@ -108,9 +105,8 @@ async def admin_update_user(
     request: Request,
     update_user_id: str,
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
-    await csrf_protect.validate_csrf(request)
+
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
     is_admin = user_info["is_admin"]
@@ -135,7 +131,7 @@ async def admin_update_user(
         response = Response(
             headers={"HX-Redirect": f"/admin/#access-tab"}, status_code=200
         )
-        csrf_protect.unset_csrf_cookie(response)
+
         return response
 
     new_values = {}
@@ -175,7 +171,7 @@ async def admin_update_user(
     response = Response(
         headers={"HX-Redirect": f"/admin/user/{update_user_id}"}, status_code=200
     )
-    csrf_protect.unset_csrf_cookie(response)
+
     return response
 
 
@@ -184,11 +180,7 @@ async def admin_update_user_access(
     request: Request,
     update_user_id: str,
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
-    logger.debug("Validating CSRF token.")
-    await csrf_protect.validate_csrf(request)
-    logger.debug("CSRF token validated.")
 
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
@@ -200,9 +192,8 @@ async def admin_update_user_access(
         form = await request.form()
         new_data = {}
         for key, value in form.items():
-            if key != "csrf-token":
-                role = key
-                new_data[role] = value == "true"
+            role = key
+            new_data[role] = value == "true"
 
         logger.debug(f"Form data: {new_data}")
 
@@ -221,7 +212,7 @@ async def admin_update_user_access(
         response = Response(
             headers={"HX-Redirect": f"/admin/user/{update_user_id}"}, status_code=200
         )
-        csrf_protect.unset_csrf_cookie(response)
+
         return response
     else:
         return Response(headers={"HX-Redirect": f"/error/403"}, status_code=200)

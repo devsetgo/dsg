@@ -5,9 +5,8 @@ from dsg_lib.fastapi_functions import http_codes, system_health_endpoints
 
 # from fastapi import FastAPI, Request, HTTPException, status
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi_csrf_protect.exceptions import CsrfProtectError
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -70,12 +69,6 @@ def create_routes(app: FastAPI):
         511,
     ]
     ALL_HTTP_CODES = http_codes.generate_code_dict(site_error_routing_codes)
-
-    @app.exception_handler(CsrfProtectError)
-    def csrf_protect_exception_handler(_: Request, exc: CsrfProtectError):
-        return JSONResponse(
-            status_code=exc.status_code, content={"detail": exc.message}
-        )
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(request: Request, exc: StarletteHTTPException):
