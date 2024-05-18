@@ -4,6 +4,8 @@ from datetime import datetime
 import pytz
 from loguru import logger
 
+TIMEZONES = pytz.all_timezones
+
 
 async def timezone_update(user_timezone: str, date_time, friendly_string=False):
     """
