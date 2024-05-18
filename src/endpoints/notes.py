@@ -43,7 +43,6 @@ async def read_notes(
         logger.debug("User identifier is None, redirecting to login")
         return RedirectResponse(url="/users/login", status_code=302)
 
-    
     note_metrics = await db_ops.read_one_record(
         query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
     )
@@ -78,7 +77,6 @@ async def read_notes(
             background_tasks.add_task(
                 notes_metrics.update_notes_metrics, user_id=user_identifier
             )
-
 
     context = {
         "user_identifier": user_identifier,
@@ -625,7 +623,12 @@ async def read_today_notes(
     return templates.TemplateResponse(
         request=request,
         name="/notes/today.html",
-        context={"notes": notes, "metrics": metrics, "today": formatted_today},
+        context={
+            "notes": notes,
+            "metrics": metrics,
+            "today": formatted_today,
+            "range": settings.history_range,
+        },
     )
 
 

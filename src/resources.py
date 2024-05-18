@@ -101,7 +101,11 @@ async def add_system_data():
 
     if settings.create_demo_user == True:
         logger.warning("Creating demo user")
-        for _ in tqdm(range(settings.create_demo_users_qty), desc="creating demo users",leave=True):
+        for _ in tqdm(
+            range(settings.create_demo_users_qty),
+            desc="creating demo users",
+            leave=True,
+        ):
             data = await add_user()  # Create a demo user
             await add_notes(
                 user_id=data["pkid"], qty_notes=random.randint(1, 5)
@@ -155,7 +159,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
     demo_notes = []
     mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
 
-    for i in tqdm(range(5), desc=f"same day notes for {user_id}",leave=False):
+    for i in tqdm(range(5), desc=f"same day notes for {user_id}", leave=False):
         mood = random.choice(moods)
         mood_analysis_choice = random.choice(mood_analysis)
 
@@ -180,7 +184,9 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         )
         data = await db_ops.create_one(note)
 
-    for _ in tqdm(range(qty_notes), desc=f"creating demo notes for {user_id}", leave=False):
+    for _ in tqdm(
+        range(qty_notes), desc=f"creating demo notes for {user_id}", leave=False
+    ):
         mood = random.choice(moods)
         mood_analysis_choice = random.choice(mood_analysis)
 
@@ -411,7 +417,7 @@ async def add_posts():
     cat_list = [cat["name"] for cat in categories]
     posts = await db_ops.read_query(Select(Posts))
     if len(posts) == 0:
-        for _ in tqdm(range(30), desc="creating demo posts",leave=False):
+        for _ in tqdm(range(30), desc="creating demo posts", leave=False):
             rand_cat = random.randint(0, len(cat_list) - 1)
             tags = [silly.noun() for _ in range(random.randint(2, 5))]
             date_created = datetime.now(UTC) - timedelta(days=random.randint(1, 700))

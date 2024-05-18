@@ -37,7 +37,7 @@ async def all_note_metrics():
     logger.info(f"Found {len(user_list)} unique users")
 
     # Process each user
-    for u in tqdm(user_list,desc="Processing users for note metrics",leave=False):
+    for u in tqdm(user_list, desc="Processing users for note metrics", leave=False):
         # Log the user ID of the user being processed
         logger.info(f"Processing user {u}")
 

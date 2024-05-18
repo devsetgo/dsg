@@ -167,7 +167,9 @@ class Categories(schema_base, async_db.Base):
 class NoteMetrics(schema_base, async_db.Base):
     __tablename__ = "note_metrics"
 
-    user_id = Column(String, ForeignKey("users.pkid"), nullable=False, index=True, unique=True)
+    user_id = Column(
+        String, ForeignKey("users.pkid"), nullable=False, index=True, unique=True
+    )
     word_count = Column(Integer, default=0)
     character_count = Column(Integer, default=0)
     note_count = Column(Integer, default=0)
