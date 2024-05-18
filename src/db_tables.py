@@ -92,13 +92,13 @@ class Posts(schema_base, async_db.Base):
     __tablename__ = "posts"
 
     title = Column(String(200), nullable=False)
-    summary = Column(String(500), index=True)
+    summary = Column(String(1000), index=True)
     content = Column(Text, nullable=False)  # Stores the HTML or Markdown text
     category = Column(String, unique=False, index=True)  # category of item
     tags = Column(JSON)
     word_count = Column(Integer)
     user_id = Column(
-        String, ForeignKey("users.pkid"), unique=True
+        String, ForeignKey("users.pkid"), unique=False, index=True
     )  # Foreign key to the Users table
     # Define the parent relationship to the Users class
     user = relationship("Users", back_populates="posts")
@@ -167,7 +167,7 @@ class Categories(schema_base, async_db.Base):
 class NoteMetrics(schema_base, async_db.Base):
     __tablename__ = "note_metrics"
 
-    user_id = Column(String, ForeignKey("users.pkid"), nullable=False, index=True)
+    user_id = Column(String, ForeignKey("users.pkid"), nullable=False, index=True, unique=True)
     word_count = Column(Integer, default=0)
     character_count = Column(Integer, default=0)
     note_count = Column(Integer, default=0)
@@ -192,7 +192,7 @@ class Notes(schema_base, async_db.Base):
     mood_analysis = Column(String(50), unique=False, index=True)
     note = Column(Text, unique=False, index=True, nullable=False)
     tags = Column(JSON)
-    summary = Column(String(100), unique=False, index=True)
+    summary = Column(String(500), unique=False, index=True)
     word_count = Column(Integer)
     character_count = Column(Integer)
     ai_fix = Column(Boolean, default=False)
