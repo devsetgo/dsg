@@ -68,7 +68,7 @@ docker-beta-push:  # Push beta test image to docker hub
 docker-beta-bp: docker-beta-build docker-beta-push
 
 file-process:
-	cp 
+	cp
 
 flake8:  # Run flake8 and output report
 	flake8 --tee . > _flake8Report.txt
@@ -89,7 +89,7 @@ isort:  # Sort imports using isort
 run-dev:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.dev .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
-	
+
 
 run-local:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.local .env
@@ -133,3 +133,6 @@ test:  # Run tests and generate coverage report
 	genbadge coverage -i /workspaces/dsg/coverage.xml
 
 
+ruff: ## Format Python code with Ruff
+	ruff check --fix --exit-non-zero-on-fix --show-fixes $(SERVICE_PATH)
+	ruff check --fix --exit-non-zero-on-fix --show-fixes $(TESTS_PATH)
