@@ -223,7 +223,6 @@ async def get_password_change_form(
     response = templates.TemplateResponse(
         request=request, name="users/password_change.html", context=context
     )
-    csrf_protect.set_csrf_cookie(signed_token, response)
     return response
 
 
