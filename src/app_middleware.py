@@ -25,7 +25,7 @@ def add_middleware(app):
     app.add_middleware(
         SessionMiddleware,
         secret_key=settings.session_secret_key,
-        same_site=settings.same_site,
+        same_site="Strict",  # can be Lax or None, but CSRF will be needed
         https_only=settings.https_only,
         max_age=settings.max_age,
     )

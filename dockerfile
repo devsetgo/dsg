@@ -71,4 +71,4 @@ ENV WORKERS=1
 EXPOSE 5000
 
 # Run the command to start ASGI server
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "5000" "--workers", "4"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "5000", "--workers", "4"]
