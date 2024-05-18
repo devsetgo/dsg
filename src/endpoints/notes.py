@@ -15,7 +15,6 @@ from fastapi import (
     UploadFile,
 )
 from fastapi.responses import RedirectResponse
-from fastapi_csrf_protect import CsrfProtect
 from loguru import logger
 from pytz import timezone
 from sqlalchemy import Select, Text, and_, between, cast, extract, or_
@@ -36,7 +35,6 @@ async def read_notes(
     offset: int = Query(0, description="Offset for pagination"),
     limit: int = Query(100, description="Limit for pagination"),
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
@@ -45,9 +43,7 @@ async def read_notes(
         logger.debug("User identifier is None, redirecting to login")
         return RedirectResponse(url="/users/login", status_code=302)
 
-    # metrics = await notes_metrics.get_metrics(
-    #     user_identifier=user_identifier, user_timezone=user_timezone
-    # )
+    
     note_metrics = await db_ops.read_one_record(
         query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
     )
@@ -57,6 +53,8 @@ async def read_notes(
         note_metrics = await db_ops.read_one_record(
             query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
         )
+
+    metrics = None
 
     if note_metrics is not None:
         note_metrics = note_metrics.to_dict()
@@ -81,10 +79,11 @@ async def read_notes(
                 notes_metrics.update_notes_metrics, user_id=user_identifier
             )
 
+
     context = {
         "user_identifier": user_identifier,
         "metrics": metrics,
-        "note_metrics": note_metrics,
+        # "note_metrics": note_metrics,
     }
     return templates.TemplateResponse(
         request=request, name="/notes/dashboard.html", context=context
@@ -174,12 +173,10 @@ async def ai_fix_processing(
     if analysis["mood"] is not None:
         note_update["mood"] = analysis["mood"]["mood"]
 
-    print(note_update)
-
     data = await db_ops.update_one(
         table=Notes, record_id=note["pkid"], new_values=note_update
     )
-    print(data)
+
     data = data.to_dict()
     logger.info(f"Resubmited note to AI with ID: {data['pkid']}")
     return RedirectResponse(url=f"/notes/view/{data['pkid']}?ai=true", status_code=302)
@@ -189,7 +186,6 @@ async def ai_fix_processing(
 async def bulk_note_form(
     request: Request,
     # user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
 
     return templates.TemplateResponse(
@@ -203,7 +199,6 @@ async def bulk_note(
     request: Request,
     csv_file: UploadFile = File(...),
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
     user_identifier = user_info["user_identifier"]
     # user_identifier =  request.session.get("user_identifier")
@@ -229,7 +224,6 @@ async def edit_note_form(
     request: Request,
     note_id: str = Path(...),
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
@@ -273,7 +267,6 @@ async def update_note(
     request: Request,
     note_id: str = Path(...),
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
@@ -320,7 +313,6 @@ async def delete_note_form(
     request: Request,
     note_id: str = Path(...),
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
@@ -339,7 +331,6 @@ async def delete_note(
     request: Request,
     note_id: str = Path(...),
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
@@ -366,7 +357,6 @@ async def delete_note(
 async def get_note_issue(
     request: Request,
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
@@ -408,7 +398,6 @@ async def get_note_issue(
 async def new_note_form(
     request: Request,
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
@@ -423,7 +412,6 @@ async def create_note(
     background_tasks: BackgroundTasks,
     request: Request,
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
@@ -448,8 +436,6 @@ async def create_note(
     )
     data = await db_ops.create_one(note)
 
-    # add the task to background tasks
-    # await notes_metrics.update_notes_metrics(user_id=user_identifier)
     background_tasks.add_task(
         notes_metrics.update_notes_metrics, user_id=user_identifier
     )
@@ -469,7 +455,7 @@ async def read_notes_pagination(
     page: int = Query(1, description="Page number"),
     limit: int = Query(20, description="Number of notes per page"),
     user_info: dict = Depends(check_login),
-    # csrf_protect: CsrfProtect = Depends(),
+    #
 ):
     query_params = {
         "search_term": search_term,
@@ -532,7 +518,7 @@ async def read_notes_pagination(
     found = len(notes)
     note_count = await db_ops.count_query(query=query)
 
-    current_count = found
+    current_count = found + offset
 
     total_pages = -(-note_count // limit)  # Ceiling division
     # Generate the URLs for the previous and next pages
@@ -571,7 +557,6 @@ async def read_notes_pagination(
 async def read_today_notes(
     request: Request,
     user_info: dict = Depends(check_login),
-    csrf_protect: CsrfProtect = Depends(),
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
