@@ -37,7 +37,7 @@ async def all_note_metrics():
     logger.info(f"Found {len(user_list)} unique users")
 
     # Process each user
-    for u in tqdm(user_list):
+    for u in tqdm(user_list,desc="Processing users for note metrics",leave=False):
         # Log the user ID of the user being processed
         logger.info(f"Processing user {u}")
 
@@ -60,7 +60,6 @@ async def all_note_metrics():
 
         # Convert each updated note metric to a dictionary
         nm = [n.to_dict() for n in nm]
-
         # Log the updated note metrics
         logger.debug(f"Post-note analysis: {nm}")
 
