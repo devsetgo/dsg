@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block page_title %}| Notes{% endblock %}
+{% block page_title %}| Posts{% endblock %}
 {% block page_stylesheet %}
 <!-- page stylesheets-->
 
@@ -98,7 +98,7 @@
                             </div>
                         </div>
                         <div class="col-12">
-                            <!-- Begin Note Section -->
+                            <!-- Begin Post Section -->
                             <div class="row" style="padding: 20px; margin: 10px;background-color: #f8f9fa;">
                                 {% include "posts/note_view_md.html" %}
                                 <hr>
@@ -108,7 +108,7 @@
                                     {% endfor %}
                                 </ul>
                             </div>
-                            <!-- End Note Section -->
+                            <!-- End Post Section -->
                         </div>
                         <!-- /.col -->
                     </div>
