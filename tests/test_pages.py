@@ -18,5 +18,3 @@ def test_index():
     response = client.get("/pages/index")
     assert response.status_code == 200
     assert "<!DOCTYPE html >" in response.text
-
-

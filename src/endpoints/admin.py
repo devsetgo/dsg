@@ -82,7 +82,6 @@ async def admin_user(
 
     job_app_query = Select(JobApplications).where(JobApplications.user_id == user_id)
     job_app_count = await db_ops.count_query(query=job_app_query)
-    \
 
     context = {
         "user": user,

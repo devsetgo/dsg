@@ -21,7 +21,6 @@ If run as a script, the module will hash a test password, verify it against the 
 from argon2 import PasswordHasher, exceptions
 from loguru import logger
 
-
 ph = PasswordHasher(
     time_cost=3,
     memory_cost=65536,
@@ -103,6 +102,7 @@ config = {
     "min_symbols": 1,
 }
 
+
 def check_password_complexity(password, config):
     if len(password) < config.get("min_length", 0):
         return "Password is too short"
@@ -125,7 +125,6 @@ def check_password_complexity(password, config):
         return "Password contains disallowed characters"
 
     return True
-
 
 
 # run through each function above for a quick test
