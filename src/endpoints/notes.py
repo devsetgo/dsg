@@ -57,10 +57,10 @@ async def read_notes(
 
     if note_metrics is not None:
         note_metrics = note_metrics.to_dict()
-        note_metrics.pop("pkid")
-        note_metrics.pop("date_created")
-        # note_metrics.pop("date_updated")
-        note_metrics.pop("user_id")
+        # note_metrics.pop("pkid")
+        # note_metrics.pop("date_created")
+        # # note_metrics.pop("date_updated")
+        # note_metrics.pop("user_id")
         metrics = note_metrics["metrics"]
 
         # Get the current time in UTC

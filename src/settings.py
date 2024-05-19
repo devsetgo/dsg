@@ -15,10 +15,10 @@ from typing import Optional
 from loguru import logger  # For logging
 from pydantic import (  # For validating data
     ConfigDict,
+    EmailStr,
     Field,
     SecretStr,
     root_validator,
-    EmailStr,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
