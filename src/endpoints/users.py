@@ -50,9 +50,9 @@ async def login_user(request: Request):
         )
 
         # Set the error message and return it in the response
-        request.session[
-            "error"
-        ] = "Account is locked due to too many failed login attempts"
+        request.session["error"] = (
+            "Account is locked due to too many failed login attempts"
+        )
         response = templates.TemplateResponse(
             request=request,
             name="users/error_message.html",

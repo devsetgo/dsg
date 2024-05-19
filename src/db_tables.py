@@ -229,7 +229,6 @@ def note_on_change(mapper, connection, target):
             break
 
 
-
 class LibraryName(async_db.Base):
     __tablename__ = "library_names"
     __tableargs__ = {"comment": "Stores unique library names"}

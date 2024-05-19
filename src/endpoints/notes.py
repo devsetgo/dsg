@@ -165,7 +165,7 @@ async def ai_fix_processing(
     logger.info(f"Received analysis from AI: {analysis}")
     # Create the note
     note_update = {
-        "tags": analysis["tags"]['tags'],
+        "tags": analysis["tags"]["tags"],
         "summary": analysis["summary"],
         "mood_analysis": analysis["mood_analysis"],
         "ai_fix": False,
@@ -174,7 +174,7 @@ async def ai_fix_processing(
     # If mood is not None, add it to note_update
     if analysis["mood"] is not None:
         note_update["mood"] = analysis["mood"]["mood"]
-    for k,v in note_update.items():
+    for k, v in note_update.items():
         print(f"{k}: {v}")
     data = await db_ops.update_one(
         table=Notes, record_id=note["pkid"], new_values=note_update
@@ -369,7 +369,7 @@ async def get_note_issue(
         return RedirectResponse(url="/users/login", status_code=302)
 
     query = Select(Notes).where(
-        and_(Notes.user_id == user_identifier, Notes.ai_fix == True)
+        and_(Notes.user_id == user_identifier, Notes.ai_fix is True)
     )
     notes = await db_ops.read_query(query=query, limit=20)
     print(notes)

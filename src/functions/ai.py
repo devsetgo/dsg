@@ -20,17 +20,20 @@ temperature = 0.2
 async def get_analysis(content: str, mood_process: str = None) -> dict:
     logger.info("Starting get_analysis function")
     tags = await get_tags(content=content)
-    summary = await get_summary(content=content,sentenace_length=1)
-    mood_analysis = await get_mood_analysis(content=content,)
+    summary = await get_summary(content=content, sentence_length=1)
+    mood_analysis = await get_mood_analysis(
+        content=content,
+    )
+
     mood = None
     if mood_process not in ["postive", "negative", "neutral"]:
         mood = await get_mood(content=content)
-        mood_analysis = mood.get("mood")
+        # mood_analysis = mood.get("mood")
         logger.info("processing mood")
     data = {
         "tags": tags,
         "summary": summary,
-        "mood_analysis": mood_analysis,
+        "mood_analysis": mood_analysis["mood_analysis"],
         "mood": mood,
     }
     logger.info("openai request completed")
@@ -39,8 +42,9 @@ async def get_analysis(content: str, mood_process: str = None) -> dict:
     return data
 
 
-
-async def get_tags(content: str, temperature: float = temperature,keyword_limit: int = 3) -> dict:
+async def get_tags(
+    content: str, temperature: float = temperature, keyword_limit: int = 3
+) -> dict:
     logger.info("Starting get_tags function")
     prompt = f"For the following text create a python style list between 1 to {keyword_limit} 'one word' keywords to be stored as a python list and cannot be a persons name: {content}"
 
@@ -48,7 +52,7 @@ async def get_tags(content: str, temperature: float = temperature,keyword_limit:
         model="gpt-3.5-turbo-1106",
         messages=[
             {
-                "role": 'system',
+                "role": "system",
                 "content": prompt,
             },
             {"role": "user", "content": content},
@@ -87,15 +91,17 @@ async def get_tags(content: str, temperature: float = temperature,keyword_limit:
     return response_dict
 
 
-async def get_summary(content: str, temperature: float = temperature, sentenace_length:int=1) -> dict:
+async def get_summary(
+    content: str, temperature: float = temperature, sentence_length: int = 1
+) -> dict:
     logger.info("Starting get_summary function")
-    prompt = f"Please summarize the following text that is {sentenace_length} sentenance in length and no longer than 500 characters max and cannot contain any persons name: {content}"
+    prompt = f"Please summarize the content and provide {sentence_length} concise sentence in length as a title and it cannot contain any persons name"
 
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
         messages=[
             {
-                "role": 'system',
+                "role": "system",
                 "content": prompt,
             },
             {"role": "user", "content": content},
@@ -111,16 +117,17 @@ async def get_summary(content: str, temperature: float = temperature, sentenace_
     logger.info("Finished get_summary function")
     return response_dict
 
+
 async def get_mood_analysis(content: str, temperature: float = temperature) -> dict:
     logger.info("Starting get_mood_analysis function")
     # prompt = f"Please analyze the mood of the following text and provide a single word to describe the content: {content}"
-    prompt = f"For the following text provide a single word response - like 'happy', 'sad', 'frustrated', 'perplexed' - that expresses the mood content"
+    prompt = "For the following text provide a single expressive word response that expresses the general mood of the content. It will be stored in a python variable with a max character length of 25."
 
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
         messages=[
             {
-                "role": 'system',
+                "role": "system",
                 "content": prompt,
             },
             {"role": "user", "content": content},
@@ -136,16 +143,17 @@ async def get_mood_analysis(content: str, temperature: float = temperature) -> d
     logger.info("Finished get_mood_analysis function")
     return response_dict
 
+
 async def get_mood(content: str, temperature: float = temperature) -> dict:
-    moods:list = ['positive','negative','neutral']
+    moods: list = ["positive", "negative", "neutral"]
     logger.info("Starting get_mood function")
-    prompt = f"Please determine the mood of the following text using only one of these moods {moods} for the content: {content}"
+    prompt = f"Please determine the mood of the following text using only one of these moods {moods} for the content. It will be stored in a python variable with a max character length of 25."
 
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
         messages=[
             {
-                "role": 'system',
+                "role": "system",
                 "content": prompt,
             },
             {"role": "user", "content": content},
@@ -162,10 +170,11 @@ async def get_mood(content: str, temperature: float = temperature) -> dict:
     logger.info("Finished get_mood function")
     return response_dict
 
+
 async def analyze_post(content: str, temperature: float = temperature) -> dict:
     logger.info("Starting analyze_post function")
     tags = await get_tags(content=content)
-    summary = await get_summary(content=content, sentenace_length=2)
+    summary = await get_summary(content=content, sentence_length=2)
     mood_analysis = await get_mood_analysis(content=content)
     mood = await get_mood(content=content)
     data = {
