@@ -157,7 +157,6 @@ async def add_admin():
             print(e)
 
 
-
 async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qty):
     moods = ["positive", "neutral", "negative"]
     mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
@@ -282,7 +281,9 @@ async def add_categories():
 
     cat: list = ["technology", "news", "sites", "programming", "woodworking", "other"]
     user_name = settings.admin_user.get_secret_value()
-    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == user_name))
+    user = await db_ops.read_one_record(
+        Select(Users).where(Users.user_name == user_name)
+    )
 
     for c in cat:
         logger.info(f"adding system category {c}")
@@ -378,7 +379,9 @@ async def add_interesting_things():
             return
     user_name = settings.admin_user.get_secret_value()
     # Get the user record for 'admin'
-    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == user_name))
+    user = await db_ops.read_one_record(
+        Select(Users).where(Users.user_name == user_name)
+    )
 
     # Loop through the list of items
     for item in my_stuff:
@@ -415,7 +418,9 @@ async def add_interesting_things():
 async def add_posts():
     user_name = settings.admin_user.get_secret_value()
     # Get the user record for 'admin'
-    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == user_name))
+    user = await db_ops.read_one_record(
+        Select(Users).where(Users.user_name == user_name)
+    )
     categories = await db_ops.read_query(Select(Categories))
     categories = [cat.to_dict() for cat in categories]
     cat_list = [cat["name"] for cat in categories]

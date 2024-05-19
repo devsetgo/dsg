@@ -12,7 +12,7 @@ LOG_PATH = log
 DEV_SERVER = uvicorn ${SERVICE_PATH}.main:app
 PROD_SERVER = uvicorn ${SERVICE_PATH}.main:app
 PORT = 5000
-WORKERS = 6
+WORKERS = 2
 
 VENV_PATH = _venv
 REQUIREMENTS_PATH = requirements.txt
@@ -102,7 +102,8 @@ run-plocal:  # Run the FastAPI application in development mode with hot-reloadin
 
 run-real:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.real .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
+	# uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
 
 
 run-test:  # Run the FastAPI application in development mode with hot-reloading

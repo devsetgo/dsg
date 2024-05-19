@@ -18,7 +18,7 @@ from pydantic import (  # For validating data
     Field,
     SecretStr,
     root_validator,
-    EmailStr
+    EmailStr,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -84,7 +84,7 @@ class Settings(BaseSettings):
     # OpenAI Settings
     open_ai_disabled: bool = False
     openai_key: SecretStr = None  # OpenAI API Key
-    openai_model:str ='gpt-3.5-turbo-1106'
+    openai_model: str = "gpt-3.5-turbo-1106"
     mood_analysis_weights: list = [
         ("ecstatic", 1),
         ("joyful", 0.875),
@@ -115,8 +115,8 @@ class Settings(BaseSettings):
     create_admin_user: bool = False
     admin_user: SecretStr = None
     admin_password: SecretStr = None
-    admin_email:EmailStr=None
-    default_timezone:str='America/New_York'
+    admin_email: EmailStr = None
+    default_timezone: str = "America/New_York"
     # create psuedo data
     create_demo_user: bool = False
     create_demo_users_qty: int = 20
