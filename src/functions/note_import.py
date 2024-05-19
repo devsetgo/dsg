@@ -29,42 +29,42 @@ async def read_notes_from_file(csv_file: list, user_id: str):
 
     for c in tqdm(csv_file, desc="Importing notes", total=note_count):
         count += 1
-        if count <= 100:
-            logger.info(f"Processing note {count}")
-            date_created = c["date_created"]
-            # convert date_created to datetime
-            date_created = parse_date(date_created)
-            mood = c["mood"]
-            if mood not in ["positive", "negative", "neutral"]:
-                # mood = await ai.get_mood(content=c["my_note"])
-                # mood = mood["mood"]
-                mood = "processing"
+        
+        date_created = c["date_created"]
+        # convert date_created to datetime
+        date_created = parse_date(date_created)
+        mood = c["mood"]
+        logger.info(f"Processing note {count} for {date_created}")
+        if mood not in ["positive", "negative", "neutral"]:
+            # mood = await ai.get_mood(content=c["my_note"])
+            # mood = mood["mood"]
+            mood = "processing"
 
-            note = c["my_note"]
+        note = c["my_note"]
 
-            analysis = {
-                "tags": {"tags": ["processing"]},
-                "summary": "processing",
-                "mood_analysis": "processing",
-            }
+        analysis = {
+            "tags": {"tags": ["processing"]},
+            "summary": "processing",
+            "mood_analysis": "processing",
+        }
 
-            # Create the note
-            note = Notes(
-                mood=mood,
-                note=note,
-                tags=analysis["tags"]["tags"],
-                summary=analysis["summary"],
-                mood_analysis=analysis["mood_analysis"],
-                date_created=date_created,
-                date_updated=date_created,
-                user_id=user_id,
-                ai_fix=True,
-            )
-            data = await db_ops.create_one(note)
-            data = data.to_dict()
-            logger.info(data)
-            ai_ids.append(data["pkid"])
-            # notes.append(data.to_dict())
+        # Create the note
+        note = Notes(
+            mood=mood,
+            note=note,
+            tags=analysis["tags"]["tags"],
+            summary=analysis["summary"],
+            mood_analysis=analysis["mood_analysis"],
+            date_created=date_created,
+            date_updated=date_created,
+            user_id=user_id,
+            ai_fix=True,
+        )
+        data = await db_ops.create_one(note)
+        data = data.to_dict()
+        logger.info(data)
+        ai_ids.append(data["pkid"])
+        # notes.append(data.to_dict())
     # await notes_metrics.update_notes_metrics(user_id=user_id)
     await process_ai(list_of_ids=ai_ids, user_identifier=user_id)
     # await notes_metrics.update_notes_metrics(user_id=user_id)
