@@ -154,7 +154,7 @@ async def ai_fix_processing(
     note = await db_ops.read_one_record(query=query)
 
     note = note.to_dict()
-    print(note)
+
     mood = None
 
     if note["mood"] not in ["postive", "negative", "neutral"]:
@@ -174,12 +174,11 @@ async def ai_fix_processing(
     # If mood is not None, add it to note_update
     if analysis["mood"] is not None:
         note_update["mood"] = analysis["mood"]["mood"]
-    for k, v in note_update.items():
-        print(f"{k}: {v}")
+
     data = await db_ops.update_one(
         table=Notes, record_id=note["pkid"], new_values=note_update
     )
-    print(data)
+
     data = data.to_dict()
     logger.info(f"Resubmited note to AI with ID: {data['pkid']}")
     return RedirectResponse(url=f"/notes/view/{data['pkid']}?ai=true", status_code=302)
