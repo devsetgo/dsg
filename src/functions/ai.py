@@ -2,9 +2,9 @@
 import ast
 import re
 
+from loguru import logger
 from openai import AsyncOpenAI
 from src.settings import settings
-from loguru import logger
 
 client = AsyncOpenAI(
     # This is the default and can be omitted
