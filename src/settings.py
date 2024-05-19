@@ -84,6 +84,7 @@ class Settings(BaseSettings):
     # OpenAI Settings
     open_ai_disabled: bool = False
     openai_key: SecretStr = None  # OpenAI API Key
+    openai_model:str ='gpt-3.5-turbo-1106'
     mood_analysis_weights: list = [
         ("ecstatic", 1),
         ("joyful", 0.875),

@@ -77,11 +77,11 @@ async def read_notes(
             background_tasks.add_task(
                 notes_metrics.update_notes_metrics, user_id=user_identifier
             )
-
+    logger.info(f"User {user_identifier} dashboard retrieved")
     context = {
         "user_identifier": user_identifier,
         "metrics": metrics,
-        # "note_metrics": note_metrics,
+        "note_metrics": note_metrics,
     }
     return templates.TemplateResponse(
         request=request, name="/notes/dashboard.html", context=context
@@ -109,8 +109,8 @@ async def get_note_counts(
     for field in ["pkid", "date_created", "date_updated", "user_id"]:
         note_metrics.pop(field, None)
 
-    logger.info(f"User {user_identifier} fetched note counts: {note_metrics}")
-
+    logger.debug(f"User {user_identifier} fetched note counts: {note_metrics}")
+    logger.info(f"User {user_identifier} metrics retrieved")
     return templates.TemplateResponse(
         request=request,
         name="/notes/metrics.html",
@@ -154,27 +154,32 @@ async def ai_fix_processing(
     note = await db_ops.read_one_record(query=query)
 
     note = note.to_dict()
+    print(note)
     mood = None
+
     if note["mood"] not in ["postive", "negative", "neutral"]:
         mood = note["mood"]
     # Get the tags and summary from OpenAI
     analysis = await ai.get_analysis(content=note["note"], mood_process=mood)
+
     logger.info(f"Received analysis from AI: {analysis}")
     # Create the note
     note_update = {
-        "tags": analysis["tags"]["tags"],
+        "tags": analysis["tags"]['tags'],
         "summary": analysis["summary"],
         "mood_analysis": analysis["mood_analysis"],
+        "ai_fix": False,
     }
 
     # If mood is not None, add it to note_update
     if analysis["mood"] is not None:
         note_update["mood"] = analysis["mood"]["mood"]
-
+    for k,v in note_update.items():
+        print(f"{k}: {v}")
     data = await db_ops.update_one(
         table=Notes, record_id=note["pkid"], new_values=note_update
     )
-
+    print(data)
     data = data.to_dict()
     logger.info(f"Resubmited note to AI with ID: {data['pkid']}")
     return RedirectResponse(url=f"/notes/view/{data['pkid']}?ai=true", status_code=302)
@@ -358,15 +363,16 @@ async def get_note_issue(
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
-
+    print(user_identifier)
     if user_identifier is None:
         logger.debug("User identifier is None, redirecting to login")
         return RedirectResponse(url="/users/login", status_code=302)
 
     query = Select(Notes).where(
-        and_(Notes.user_id == user_identifier, Notes.ai_fix is True)
+        and_(Notes.user_id == user_identifier, Notes.ai_fix == True)
     )
     notes = await db_ops.read_query(query=query, limit=20)
+    print(notes)
     # offset date_created and date_updated to user's timezone
     notes = [note.to_dict() for note in notes]
     metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}

@@ -65,9 +65,9 @@ async def read_notes_from_file(csv_file: list, user_id: str):
         logger.info(data)
         ai_ids.append(data["pkid"])
         # notes.append(data.to_dict())
-    await notes_metrics.update_notes_metrics(user_identifier=user_id)
+    # await notes_metrics.update_notes_metrics(user_id=user_id)
     await process_ai(list_of_ids=ai_ids, user_identifier=user_id)
-    await notes_metrics.update_notes_metrics(user_identifier=user_id)
+    # await notes_metrics.update_notes_metrics(user_id=user_id)
 
 
 async def process_ai(list_of_ids: list, user_identifier: str):
