@@ -95,7 +95,7 @@ async def add_system_data():
     if settings.create_admin_user is True:
         logger.warning("Creating admin user")
         data = await add_admin()  # Create an admin user
-        
+
         if settings.create_demo_notes is True:
             await add_notes(user_id=data["pkid"])  # Create notes for the admin user
 
@@ -281,8 +281,8 @@ async def add_categories():
         return
 
     cat: list = ["technology", "news", "sites", "programming", "woodworking", "other"]
-
-    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == "admin"))
+    user_name = settings.admin_user.get_secret_value()
+    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == user_name))
 
     for c in cat:
         logger.info(f"adding system category {c}")
@@ -376,9 +376,9 @@ async def add_interesting_things():
         if len(data) > 0:
             logger.info(f"system item {item['title']} already added")
             return
-
+    user_name = settings.admin_user.get_secret_value()
     # Get the user record for 'admin'
-    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == "admin"))
+    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == user_name))
 
     # Loop through the list of items
     for item in my_stuff:
@@ -413,8 +413,9 @@ async def add_interesting_things():
 
 
 async def add_posts():
+    user_name = settings.admin_user.get_secret_value()
     # Get the user record for 'admin'
-    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == "admin"))
+    user = await db_ops.read_one_record(Select(Users).where(Users.user_name == user_name))
     categories = await db_ops.read_query(Select(Categories))
     categories = [cat.to_dict() for cat in categories]
     cat_list = [cat["name"] for cat in categories]

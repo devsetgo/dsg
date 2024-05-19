@@ -32,7 +32,6 @@ logging_config.config_log(
 async def lifespan(app: FastAPI):
     logger.info("starting up")
     await startup()
-
     await all_note_metrics()
     yield
     logger.info("shutting down")
