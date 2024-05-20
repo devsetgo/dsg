@@ -86,12 +86,14 @@ def create_routes(app: FastAPI):
         admin.router,
         prefix="/admin",
         tags=["admin"],
+        include_in_schema=False,
     )
 
     app.include_router(
         devtools.router,
         prefix="/devtools",
         tags=["devtools"],
+        include_in_schema=False,
     )
 
     @app.get("/error/{error_code}")
@@ -109,33 +111,39 @@ def create_routes(app: FastAPI):
         interesting_things.router,
         prefix="/interesting-things",
         tags=["interesting things"],
+        include_in_schema=False,
     )
 
     app.include_router(
         blog_posts.router,
         prefix="/posts",
         tags=["posts"],
+        include_in_schema=False,
     )
     app.include_router(
         notes.router,
         prefix="/notes",
         tags=["notes"],
+        include_in_schema=False,
     )
     app.include_router(
         pages.router,
         prefix="/pages",
         tags=["html-pages"],
+        include_in_schema=False,
     )
 
     app.include_router(
         pypi.router,
         prefix="/pypi",
         tags=["pypi"],
+        include_in_schema=False,
     )
     app.include_router(
         users.router,
         prefix="/users",
         tags=["users"],
+        include_in_schema=False,
     )
 
     # This should always be the last route added to keep it at the bottom of the OpenAPI docs
@@ -149,6 +157,7 @@ def create_routes(app: FastAPI):
         system_health_endpoints.create_health_router(config=config_health),
         prefix="/api/health",
         tags=["system-health"],
+        include_in_schema=True,
     )
 
     logger.info(f"Routes created in {time.time()-t0:.4f} seconds")
