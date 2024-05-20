@@ -211,7 +211,7 @@ async def create_post(
 
     # Get the tags and summary from OpenAI
     analysis = await ai.get_tags(content=content)
-    summary = await ai.get_summary(content=content, sentance_length=3)
+    summary = await ai.get_summary(content=content, sentence_length=3)
     logger.info(f"Received analysis from AI: {analysis}")
     # Create the post
     post = Posts(
