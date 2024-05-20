@@ -362,19 +362,20 @@ async def get_note_issue(
 ):
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
-    print(user_identifier)
+
     if user_identifier is None:
         logger.debug("User identifier is None, redirecting to login")
         return RedirectResponse(url="/users/login", status_code=302)
 
     query = Select(Notes).where(
-        and_(Notes.user_id == user_identifier, Notes.ai_fix is True)
+        and_(Notes.user_id == user_identifier, Notes.ai_fix == True)
     )
     notes = await db_ops.read_query(query=query, limit=20)
-    print(notes)
+
     # offset date_created and date_updated to user's timezone
     notes = [note.to_dict() for note in notes]
     metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
+    
     for note in notes:
         note["date_created"] = await date_functions.timezone_update(
             user_timezone=user_timezone,
@@ -388,6 +389,7 @@ async def get_note_issue(
         )
         metrics["word_count"] += len(note["note"].split())
         metrics["character_count"] += len(note["note"])
+    
     logger.info(f"Found {len(notes)} notes for user {user_identifier}")
 
     return templates.TemplateResponse(
