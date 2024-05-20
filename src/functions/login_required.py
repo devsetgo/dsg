@@ -44,12 +44,13 @@ async def check_user_identifier(request):
         )
         raise HTTPException(status_code=401, detail="Unauthorized")
     else:
-        # verify user_id
         query = Select(Users).where(Users.pkid == user_identifier)
         user = await db_ops.read_one_record(query=query)
         if user is None:
             logger.error(f"User not found with ID: {user_identifier}")
-            HTTPException(status_code=401, detail="Unauthorized")
+            
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
 
 
 async def check_session_expiry(request):
