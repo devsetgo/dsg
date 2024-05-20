@@ -29,19 +29,30 @@ from datetime import datetime, timedelta
 
 from fastapi import HTTPException, Request
 from loguru import logger
-
+from ..resources import db_ops
+from ..db_tables import Categories, Posts, Users
+from sqlalchemy import Select, Text, and_, asc, cast, or_
 from ..settings import settings
 
 
-def check_user_identifier(request):
-    if request.session.get("user_identifier") is None:
+async def check_user_identifier(request):
+    user_identifier = request.session.get("user_identifier")
+    
+    if user_identifier is None:
         logger.error(
             f"user page access without being logged in from {request.client.host}"
         )
         raise HTTPException(status_code=401, detail="Unauthorized")
+    else:
+        # verify user_id
+        query = Select(Users).where(Users.pkid == user_identifier)
+        user = await db_ops.read_one_record(query=query)
+        if user is None:
+            logger.error(f"User not found with ID: {user_identifier}")
+            HTTPException(status_code=401, detail="Unauthorized")
 
 
-def check_session_expiry(request):
+async def check_session_expiry(request):
     session_expiry_time = datetime.now() - timedelta(minutes=settings.max_age)
     try:
         last_updated = datetime.fromtimestamp(request.session.get("exp", 0))
@@ -79,8 +90,8 @@ async def check_login(request: Request):
         else:
             check_session_expiry(request)
 
-    check_user_identifier(request)
-    check_session_expiry(request)
+    await check_user_identifier(request)
+    await check_session_expiry(request)
 
     logger.debug(f"check login return: {request.state.user_info}")
     return request.state.user_info
