@@ -9,7 +9,7 @@ from sqlalchemy import Select, and_
 from tqdm import tqdm
 
 from ..db_tables import Notes
-from ..functions import ai
+from ..functions import ai,notes_metrics
 from ..resources import db_ops
 
 
@@ -29,7 +29,6 @@ async def read_notes_from_file(csv_file: list, user_id: str):
 
     for c in tqdm(csv_file, desc="Importing notes", total=note_count):
         count += 1
-        
         date_created = c["date_created"]
         # convert date_created to datetime
         date_created = parse_date(date_created)
@@ -67,7 +66,7 @@ async def read_notes_from_file(csv_file: list, user_id: str):
         # notes.append(data.to_dict())
     # await notes_metrics.update_notes_metrics(user_id=user_id)
     await process_ai(list_of_ids=ai_ids, user_identifier=user_id)
-    # await notes_metrics.update_notes_metrics(user_id=user_id)
+    await notes_metrics.update_notes_metrics(user_id=user_id)
 
 
 async def process_ai(list_of_ids: list, user_identifier: str):

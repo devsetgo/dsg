@@ -29,7 +29,9 @@ async def root():
 @router.get("/index")
 async def index(request: Request):
     cool_stuff = await db_ops.read_query(Select(InterestingThings))
+    cool_stuff = [thing.to_dict() for thing in cool_stuff]
     context = {"data": {"my_stuff": {}, "cool_stuff": cool_stuff}}
+
     return templates.TemplateResponse(
         request=request, name="index2.html", context=context
     )
