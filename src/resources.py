@@ -61,7 +61,7 @@ async def startup():
     logger.info("starting up services")
     logger.info("checking database for tables")
     tables = await db_ops.get_table_names()
-    logger.info("creating database tables")
+    logger.info(f"creating database tables {tables}")
 
     # if tables.__len__() == 0:
     await async_db.create_tables()
@@ -310,63 +310,187 @@ async def add_interesting_things():
 
     # Define the list of items to be added
     my_stuff = [
-        {
-            "title": "Test API",
-            "summary": "An example API built with FastAPI",
-            "url": "https://test-api.devsetgo.com/",
-            "category": "programming",
-        },
-        {
-            "title": "Starlette Dashboard",
-            "summary": "A Starlette based version of the AdminLTE template.",
-            "url": "https://stardash.devsetgo.com/",
-            "category": "programming",
-        },
-        {
-            "title": "DevSetGo Library",
-            "summary": "A helper library I use for my Python projects",
-            "url": "https://devsetgo.github.io/devsetgo_lib/",
-            "category": "programming",
-        },
-        {
-            "title": "Pypi Checker",
-            "summary": "Get the latest version of python libraries",
-            "url": "/pypi",
-            "category": "programming",
-        },
-        {
-            "title": "FastAPI",
-            "summary": "An async Python framework for building great APIs",
-            "category": "programming",
-            "url": "https://fastapi.tiangolo.com/",
-        },
-        {
-            "title": "Starlette",
-            "summary": "An async Python framework for building sites and is what\
-                 FastAPI is built on top of.",
-            "category": "programming",
-            "url": "https://fastapi.tiangolo.com/",
-        },
-        {
-            "title": "Portainer",
-            "summary": "How to manage containers for Docker or Kubernetes",
-            "url": "https://www.portainer.io/",
-            "category": "technology",
-        },
-        {
-            "title": "Digital Ocean",
-            "summary": "Great hosting option for servers, apps, and K8s. Plus great\
-                 documentation and tutorials. (referral link) ",
-            "url": "https://m.do.co/c/9a3b3c4fbc90",
-            "category": "technology",
-        },
-        {
-            "title": "Kubernetes",
-            "summary": "Run containers at scale.",
-            "url": "https://m.do.co/c/9a3b3c4fbc90",
-            "category": "programming",
-        },
-    ]
+    {
+        "title": "DevSetGo Library",
+        "summary": "A helper library I use for my Python projects.",
+        "url": "https://devsetgo.github.io/devsetgo_lib/",
+        "category": "programming"
+    },
+    {
+        "title": "Pypi Checker",
+        "summary": "Get the latest version of Python libraries.",
+        "url": "/pypi",
+        "category": "programming"
+    },
+    {
+        "title": "FastAPI",
+        "summary": "An async Python framework for building great APIs.",
+        "url": "https://fastapi.tiangolo.com/",
+        "category": "programming"
+    },
+    {
+        "title": "Starlette",
+        "summary": "An async Python framework for building sites and is what FastAPI is built on top of.",
+        "url": "https://fastapi.tiangolo.com/",
+        "category": "programming"
+    },
+    {
+        "title": "Portainer",
+        "summary": "How to manage containers for Docker or Kubernetes.",
+        "url": "https://www.portainer.io/",
+        "category": "technology"
+    },
+    {
+        "title": "Digital Ocean",
+        "summary": "Digital Ocean is a great hosting option for servers, apps, and Kubernetes (K8s), offering excellent documentation and tutorials. (referral link)",
+        "url": "https://m.do.co/c/9a3b3c4fbc90",
+        "category": "technology"
+    },
+    {
+        "title": "Kubernetes",
+        "summary": "Kubernetes is an open-source platform for automating the deployment, scaling, and management of containerized applications.",
+        "url": "https://m.do.co/c/9a3b3c4fbc90",
+        "category": "programming"
+    },
+    {
+        "title": "Run your GitHub Actions locally",
+        "summary": "Act is an open-source tool that allows you to run your GitHub Actions locally, enabling easier debugging and development of workflows before deploying them on GitHub.",
+        "url": "https://github.com/nektos/act",
+        "category": "programming"
+    },
+    {
+        "title": "Testcontainers",
+        "summary": "",
+        "url": "https://youtu.be/sNg0bnMF_qY?si=nfZVvABhCbWPqJtu",
+        "category": "programming"
+    },
+    {
+        "title": "authentik Docker Compose Installation",
+        "summary": "This guide provides step-by-step instructions for installing authentik, an open-source identity provider, using Docker Compose, simplifying the deployment and management of authentication services.",
+        "url": "https://docs.goauthentik.io/docs/installation/docker-compose",
+        "category": "programming"
+    },
+    {
+        "title": "10 Free Software You Probably Didn't Know Existed!",
+        "summary": "This video showcases 10 free software tools that are lesser-known but highly useful, covering a range of applications from productivity to creative work.",
+        "url": "https://youtu.be/guIZLZVqEgQ?si=n-oUEEY-Q2hkImni",
+        "category": "technology"
+    },
+    {
+        "title": "Actionforge is a VS Code Extension to Build GitHub Workflows Visually",
+        "summary": "",
+        "url": "https://www.infoq.com/news/2024/03/actionforge-github-action-gui/",
+        "category": "programming"
+    },
+    {
+        "title": "Meet Netron: A Visualizer for Neural Network, Deep Learning and Machine Learning Models",
+        "summary": "Netron is a tool for visualizing neural networks, deep learning, and machine learning models, providing an interactive interface to understand and analyze model architectures and parameters.",
+        "url": "https://www.marktechpost.com/2024/01/02/meet-netron-a-visualizer-for-neural-network-deep-learning-and-machine-learning-models/",
+        "category": "programming"
+    },
+    {
+        "title": "Pandas AI",
+        "summary": "Pandas AI is an open-source library that enhances the capabilities of the Pandas library by integrating AI features, making data analysis more intuitive and powerful.",
+        "url": "https://github.com/gventuri/pandas-ai",
+        "category": "programming"
+    },
+    {
+        "title": "Meet PostgresML",
+        "summary": "PostgresML is an open-source Python library that integrates with PostgreSQL, enabling the training and deployment of machine learning models directly within the database using SQL queries.",
+        "url": "https://www.marktechpost.com/2023/12/27/meet-postgresml-an-open-source-python-library-that-integrates-with-postgresql-and-has-the-ability-to-train-and-deploy-machine-learning-ml-models-directly-within-the-database-using-sql-queries/",
+        "category": "programming"
+    },
+    {
+        "title": "AWS Well Architected",
+        "summary": "This article reviews the AWS Well-Architected Framework, providing insights and best practices for designing and operating reliable, secure, efficient, and cost-effective cloud applications.",
+        "url": "https://dev.to/aws-heroes/aws-well-architected-review-in-action-15a9",
+        "category": "technology"
+    },
+    {
+        "title": "COMPASS RG-1/RG-2 Universal Roller Guides",
+        "summary": "The COMPASS RG-1/RG-2 Universal Roller Guides are woodworking accessories designed to provide smooth and precise material feed, enhancing safety and accuracy in various woodworking tasks.",
+        "url": "https://www.harveywoodworking.com/products/universal-roller-guide",
+        "category": "woodworking"
+    },
+    {
+        "title": "isotunes.com/collections/earmuffs",
+        "summary": "This webpage offers a collection of high-quality earmuffs from ISOtunes, designed to provide hearing protection with features like Bluetooth connectivity and noise cancellation.",
+        "url": "https://isotunes.com/collections/earmuffs",
+        "category": "woodworking"
+    },
+    {
+        "title": "Custom GPT That Extracts Data from Websites",
+        "summary": "This video tutorial demonstrates how to create a custom GPT model that extracts data from websites, showcasing techniques for web scraping and data processing using GPT technology.",
+        "url": "https://youtu.be/pGHtjqvnSAQ?si=WJiyV2C6YGU-VrnS",
+        "category": "programming"
+    },
+    {
+        "title": "Ridgid R4222 Miter Saw Dust Collection Chute",
+        "summary": "The Ridgid R4222 Miter Saw Dust Collection Chute is an accessory designed to enhance dust management for the Ridgid R4222 miter saw, improving cleanliness and visibility during cutting tasks.",
+        "url": "https://shopnationstore.com/products/ridgid-r4222-miter-saw-dust-collection-chute",
+        "category": "woodworking"
+    },
+    {
+        "title": "19.5x14\" Round Charcuterie Board With Handle Acrylic Router Template",
+        "summary": "This acrylic router template is designed for creating a 19.5x14\" round charcuterie board with a handle, providing precise and repeatable cuts for woodworking projects.",
+        "url": "https://craftedelements.com/products/19-5x14-round-charcuterie-board-with-handle-acrylic-router-template",
+        "category": "woodworking"
+    },
+    {
+        "title": "Kreg(R) Pocket-Hole Jig 720PRO",
+        "summary": "The Kreg Pocket-Hole Jig 720PRO is a versatile and efficient tool designed for creating strong, precise pocket-hole joints in woodworking projects. It features advanced clamping and material support for ease of use.",
+        "url": "https://www.kregtool.com/shop/pocket-hole-joinery/pocket-hole-jigs/kreg-pocket-hole-jig-720pro/KPHJ720PRO.html",
+        "category": "woodworking"
+    },
+    {
+        "title": "Use cases with Langchain",
+        "summary": "This article discusses various use cases of Langchain, highlighting its applications in building complex, chainable workflows for data processing, machine learning, and automation.",
+        "url": "https://medium.com/@ebruboyaci35/use-cases-with-langchain-e0fd5b0587f1",
+        "category": "programming"
+    },
+    {
+        "title": "Code Understanding",
+        "summary": "This resource explores tools and techniques for understanding and analyzing code, focusing on improving code readability, maintainability, and debugging efficiency.",
+        "url": "https://python.langchain.com/docs/use_cases/code_understanding",
+        "category": "programming"
+    },
+    {
+        "title": "What is ChatGPT Code Interpreter and how do you use it?",
+        "summary": "The ChatGPT Code Interpreter is a tool that allows ChatGPT to run and interpret code, enabling users to execute scripts, analyze data, and automate tasks within a conversational interface.",
+        "url": "https://www.geeky-gadgets.com/chatgpt-code-interpreter/",
+        "category": "programming"
+    },
+    {
+        "title": "Awesome List of the Best Developer Tools",
+        "summary": "This article provides a curated list of the best tools for developers, including code editors, version control systems, and productivity tools, aimed at enhancing development workflows.",
+        "url": "https://dev.to/surajondev/awesome-list-of-the-best-developer-tools-12fp",
+        "category": "programming"
+    },
+    {
+        "title": "Using \"any\" and \"all\" in Python",
+        "summary": "\"Any\" and \"all\" are built-in Python functions used to evaluate iterables. \"Any\" returns True if at least one element is True, while \"all\" returns True only if all elements are True.",
+        "url": "https://www.pythonmorsels.com/any-and-all/",
+        "category": "programming"
+    },
+    {
+        "title": "What is a context manager",
+        "summary": "A context manager in Python is a construct that allows for the setup and cleanup of resources, ensuring proper management through the use of 'with' statements. It is commonly used for handling file operations, network connections, and locks.",
+        "url": "https://www.pythonmorsels.com/what-is-a-context-manager/",
+        "category": "programming"
+    },
+    {
+        "title": "zipapp — Manage executable Python zip archives",
+        "summary": "Zipapp is a Python module for creating and managing executable zip archives. It allows bundling Python applications into single-file executables for easier distribution and deployment.",
+        "url": "https://docs.python.org/3/library/zipapp.html",
+        "category": "programming"
+    },
+    {
+        "title": "pytest-benchmark",
+        "summary": "Pytest-benchmark is a plugin for pytest that helps measure and compare code performance, aiding in identifying bottlenecks and optimizing applications.",
+        "url": "https://pypi.org/project/pytest-benchmark/",
+        "category": "programming"
+    }
+]
     # Check to see if the items are already in the database
     for item in my_stuff:
         # Query the database for each item by name
@@ -404,9 +528,10 @@ async def add_interesting_things():
         # Try to add the new item to the database
         try:
             await db_ops.create_one(thing)
+            logger.critical(thing)
         except Exception as e:
             # If there's an error while adding the item, log the error
-            logger.error(e)
+            logger.error(f"thing error: {e}")
 
     # Get all items from the InterestingThings table
     all_things = await db_ops.read_query(Select(InterestingThings))
