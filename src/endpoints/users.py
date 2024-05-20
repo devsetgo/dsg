@@ -192,6 +192,8 @@ async def edit_user_post(
         },
         record_id=user_identifier,
     )
+    if user_timezone != user_info["timezone"]:
+        request.session["timezone"] = user_timezone
     message = "User updated successfully"
 
     logger.debug(f"User update: {update}")
