@@ -39,10 +39,9 @@ async def lifespan(app: FastAPI):
 
 # Create an instance of the FastAPI class
 app = FastAPI(
-    title="FastAPI Example",  # The title of the API
-    description="This is an example of a FastAPI application using the DevSetGo\
-         Toolkit.",  # A brief description of the API
-    version="0.1.0",  # The version of the API
+    title="DevSetGo.com",  # The title of the API
+    description="Website for devsetgo.com",  # A brief description of the API
+    version="2.0",  # The version of the API
     docs_url="/docs",  # The URL where the API documentation will be served
     redoc_url="/redoc",  # The URL where the ReDoc documentation will be served
     openapi_url="/openapi.json",  # The URL where the OpenAPI schema will be served
