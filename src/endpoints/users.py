@@ -153,6 +153,7 @@ async def edit_user_post(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
+    request.session.pop('error-message', None)
     form = await request.form()
 
     user_identifier = user_info["user_identifier"]
