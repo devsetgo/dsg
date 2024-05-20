@@ -96,6 +96,7 @@ class Posts(schema_base, async_db.Base):
     content = Column(Text, nullable=False)  # Stores the HTML or Markdown text
     category = Column(String, unique=False, index=True)  # category of item
     tags = Column(JSON)
+    ai_fix = Column(Boolean, default=False)
     word_count = Column(Integer)
     user_id = Column(
         String, ForeignKey("users.pkid"), unique=False, index=True
