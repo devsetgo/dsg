@@ -186,8 +186,13 @@ async def new_post_form(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
-    user_info["user_identifier"]
-    user_info["timezone"]
+    user_identifier = user_info["user_identifier"]
+
+    # query = Select(Users).where(Users.pkid == user_identifier)
+    # user = await db_ops.read_one_record(query=query)
+    # if user is None:
+    #     logger.error(f"User not found with ID: {user_identifier}")
+    #     HTTPException(status_code=401, detail="Unauthorized")
 
     return templates.TemplateResponse(
         request=request, name="posts/new.html", context={}
@@ -201,7 +206,7 @@ async def create_post(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_info["timezone"]
+
     form = await request.form()
     category = form["category"]
     content = form["content"]
