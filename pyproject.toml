@@ -77,6 +77,7 @@ ignore = [
     "B017",
     "B904",
     "B008",
+    "E712",
     "I",    # isort rules
 ]
 
