@@ -186,7 +186,7 @@ async def new_post_form(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
-    user_identifier = user_info["user_identifier"]
+    user_info["user_identifier"]
 
     # query = Select(Users).where(Users.pkid == user_identifier)
     # user = await db_ops.read_one_record(query=query)

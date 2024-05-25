@@ -40,7 +40,9 @@
               <div class="tab-pane fade show active" id="custom-tabs-four-dash" role="tabpanel"
                 aria-labelledby="custom-tabs-four-dash-tab">
                 <div class="container-fluid">
-                  Metrics
+                  <div hx-get="/admin/failed-login-attempts" hx-trigger="load">
+                    <!-- Content will be loaded here -->
+                  </div>
                 </div>
               </div>
               <div class="tab-pane fade" id="custom-tabs-four-access" role="tabpanel"

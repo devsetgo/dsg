@@ -375,7 +375,7 @@ async def get_note_issue(
     # offset date_created and date_updated to user's timezone
     notes = [note.to_dict() for note in notes]
     metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
-    
+
     for note in notes:
         note["date_created"] = await date_functions.timezone_update(
             user_timezone=user_timezone,
@@ -389,7 +389,7 @@ async def get_note_issue(
         )
         metrics["word_count"] += len(note["note"].split())
         metrics["character_count"] += len(note["note"])
-    
+
     logger.info(f"Found {len(notes)} notes for user {user_identifier}")
 
     return templates.TemplateResponse(

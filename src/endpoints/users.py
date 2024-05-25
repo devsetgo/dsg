@@ -2,12 +2,19 @@
 from datetime import datetime, timedelta
 
 from dsg_lib.common_functions.email_validation import validate_email_address
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Request,
+    Response,
+    status,
+)
 from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import JobApplications, Notes, Users
+from ..db_tables import JobApplications, Notes, Users, FailedLoginAttempts
 from ..functions.date_functions import TIMEZONES as timezones
 from ..functions.hash_function import hash_password, verify_password
 from ..functions.login_required import check_login
@@ -31,6 +38,7 @@ async def login_user(request: Request):
     form = await request.form()
     user_name = form["username"]
     password = form["password"]
+    meta_data = dict(request.headers)
 
     # Log the login attempt
     logger.debug(f"Attempting to log in user: {user_name}")
@@ -47,6 +55,9 @@ async def login_user(request: Request):
         # Log the account lock
         logger.warning(
             f"Account for user: {user_name} is locked due to too many failed login attempts"
+        )
+        await fail_loging(
+            user_name=user_name, password=password, meta_data=meta_data, real_id=True
         )
 
         # Set the error message and return it in the response
@@ -72,6 +83,9 @@ async def login_user(request: Request):
                 record_id=user.pkid,
             )
 
+        await fail_loging(
+            user_name=user_name, password=password, meta_data=meta_data, real_id=True
+        )
         # Log the failed login attempt
         logger.debug(f"Failed login attempt for user: {user_name}")
 
@@ -122,6 +136,38 @@ async def login_user(request: Request):
         return response
 
 
+async def fail_loging(user_name: str, password: str, meta_data: dict, real_id: bool):
+    """
+    Logs a failed login attempt.
+
+    Args:
+        user_name (str): The username used in the failed login attempt.
+        password (str): The password used in the failed login attempt.
+        meta_data: Additional metadata about the failed login attempt.
+
+    This function hashes the password, creates a FailedLoginAttempts object,
+    saves it to the database, and logs the failed attempt.
+    """
+    # Hash the password
+    pwd = hash_password(password)
+
+    # Create a FailedLoginAttempts object
+    fail_data = FailedLoginAttempts(
+        user_name=user_name, password=pwd, meta_data=meta_data, real_id=real_id
+    )
+
+    # Save the FailedLoginAttempts object to the database
+    fail_data = await db_ops.create_one(fail_data)
+
+    # If the returned object has a to_dict method, convert it to a dictionary
+    if hasattr(fail_data, "to_dict"):
+        fail_data = fail_data.to_dict()
+
+    # Log the details of the failed login attempt
+    logger.debug(f"Failed login data: {fail_data}")
+    logger.info(f"failed login attempt with user name: {user_name}")
+
+
 @router.get("/edit-user", response_class=HTMLResponse)
 async def edit_user(
     request: Request,
@@ -153,7 +199,7 @@ async def edit_user_post(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
-    request.session.pop('error-message', None)
+    request.session.pop("error-message", None)
     form = await request.form()
 
     user_identifier = user_info["user_identifier"]
