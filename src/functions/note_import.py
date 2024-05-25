@@ -9,7 +9,7 @@ from sqlalchemy import Select, and_
 from tqdm import tqdm
 
 from ..db_tables import Notes
-from ..functions import ai,notes_metrics
+from ..functions import ai, notes_metrics
 from ..resources import db_ops
 
 

@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import JobApplications, Notes, Users
+from ..db_tables import JobApplications, Notes, Users, FailedLoginAttempts
 from ..functions import date_functions
 from ..functions.hash_function import hash_password
 from ..functions.login_required import check_login
@@ -212,3 +212,22 @@ async def admin_update_user_access(
         return response
     else:
         return Response(headers={"HX-Redirect": "/error/403"}, status_code=200)
+
+
+@router.get("/failed-login-attempts", response_class=HTMLResponse)
+async def admin_failed_login_attempts(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    user_identifier = user_info["user_identifier"]
+    user_info["timezone"]
+    user_info["is_admin"]
+
+    query = Select(FailedLoginAttempts)
+    failures = await db_ops.read_query(query=query)
+    failures = [fail.to_dict() for fail in failures]
+
+    context = {"user_identifier": user_identifier, "failures": failures}
+    return templates.TemplateResponse(
+        request=request, name="/admin/failed_login_attempts.html", context=context
+    )
