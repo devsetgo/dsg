@@ -2,10 +2,21 @@
 
 from enum import Enum
 
-
 class RoleEnum(str, Enum):
-    developer = "developer"
-    interesting_things = "interesting_things"
-    job_applications = "job_applications"
-    notes = "notes"
-    posts = "posts"
+    """
+    Enum representing different roles in the system.
+
+    Each role corresponds to a different set of permissions or capabilities within the system.
+
+    Attributes:
+        developer: Represents a developer role.
+        interesting_things: Represents a role related to interesting things.
+        job_applications: Represents a role related to job applications.
+        notes: Represents a role related to notes.
+        posts: Represents a role related to posts.
+    """
+    developer = "developer"  # Developer role
+    interesting_things = "interesting_things"  # Role for handling interesting things
+    job_applications = "job_applications"  # Role for handling job applications
+    notes = "notes"  # Role for handling notes
+    posts = "posts"  # Role for handling posts
