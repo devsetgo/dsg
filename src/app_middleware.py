@@ -1,8 +1,22 @@
 # -*- coding: utf-8 -*-
+"""
+app_middleware.py
+
+This module contains the middleware configuration for the FastAPI application.
+
+It includes the addition of GZipMiddleware for response compression, SessionMiddleware for managing user sessions,
+and a conditional AccessLoggerMiddleware for logging user access when the application is run with uvicorn.
+
+The settings for the middleware components are fetched from the settings module.
+
+Functions:
+    add_middleware(app): Adds middleware to the provided FastAPI application instance.
+"""
 import sys
 import time
+from typing import NoReturn
 
-# from debug_toolbar.middleware import DebugToolbarMiddleware
+from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -10,18 +24,30 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from .settings import settings
 
-# from starlette_authlib.middleware import AuthlibMiddleware as SessionMiddleware
 
+def add_middleware(app: FastAPI) -> NoReturn:
+    """
+    Adds middleware to the provided FastAPI application instance.
 
-def add_middleware(app):
-    # app.add_middleware(
-    #     DebugToolbarMiddleware,
-    #     # panels=["debug_toolbar.panels.sqlalchemy.SQLAlchemyPanel"], # appears incompatible
-    #     settings=[Settings()],
-    # )
-    # app.add_middleware(HTTPSRedirectMiddleware)
+    This function adds GZipMiddleware for response compression, SessionMiddleware for managing user sessions,
+    and a conditional AccessLoggerMiddleware for logging user access when the application is run with uvicorn.
+
+    Args:
+        app (FastAPI): The FastAPI application instance to which the middleware will be added.
+
+    Returns:
+        NoReturn
+    """
+    # Add GZipMiddleware for response compression
+    # This middleware will compress responses for all requests that can handle it
+    # The minimum_size argument specifies the minimum size a response must be before it can be compressed
     app.add_middleware(GZipMiddleware, minimum_size=1000)
 
+    # Add SessionMiddleware for managing user sessions
+    # The secret_key argument is used to sign the session cookie
+    # The same_site argument specifies that the session cookie should only be sent in requests from the same site
+    # The https_only argument specifies that the session cookie should only be sent over HTTPS
+    # The max_age argument specifies the maximum age of the session cookie in seconds
     app.add_middleware(
         SessionMiddleware,
         secret_key=settings.session_secret_key,
@@ -29,8 +55,10 @@ def add_middleware(app):
         https_only=settings.https_only,
         max_age=settings.max_age,
     )
-    # Check if the application is being run with uvicorn
 
+    # Check if the application is being run with uvicorn
+    # If it is, add AccessLoggerMiddleware for logging user access
+    # The user_identifier argument specifies the identifier to use for the user in the access logs
     if "uvicorn" in sys.argv[0]:
         app.add_middleware(
             AccessLoggerMiddleware, user_identifier=settings.session_user_identifier
