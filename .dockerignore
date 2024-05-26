@@ -3,7 +3,7 @@
 __archive
 .devcontainer
 csv/
-data/
+
 htmlcov
 log/
 logs/
