@@ -180,4 +180,3 @@ async def store_package_data(package_data: dict, request_group_id: str):
     )
 
 
-# store incoming requirements and the updated data
