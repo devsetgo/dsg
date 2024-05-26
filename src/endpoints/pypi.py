@@ -98,8 +98,8 @@ async def get_response(
 
 @router.get("/list")
 async def get_all(request: Request):
-    query = Select(Requirement)
-    db_data = await db_ops.read_query(query=query, limit=100)
+    query = Select(Requirement).limit(limit)
+    db_data = await db_ops.read_query(query=query)
     count_data = await db_ops.count_query(query=query)
 
     db_data_dict = [
