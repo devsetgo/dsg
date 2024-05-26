@@ -1,65 +1,24 @@
 # -*- coding: utf-8 -*-
-"""
-pypi_core.py
 
-This module contains functions for fetching and storing package data from PyPI (Python Package Index).
-
-It includes the following functions:
-- fetch_package_data: Fetches package data from PyPI for a specific package.
-- check_packages: Checks a list of packages for updates and vulnerabilities.
-- store_package_data: Stores package data in the database.
-
-The package data includes the package name, current version, latest version, package URL, package description,
-vulnerabilities, home page, author, author email, license, and bracket-related info.
-
-This module uses the httpx library for sending HTTP requests, the loguru library for logging, and the sqlalchemy library
-for interacting with the database. It also uses the tqdm library for displaying progress bars when fetching package data.
-"""
 import re
-from typing import Dict, List, Union
 
 import httpx
 from loguru import logger
 from sqlalchemy import Select
+from tqdm.asyncio import tqdm as async_tqdm
 
-from ..db_tables import Library, LibraryName
+from ..db_tables import Library, LibraryName, Requirement
 from ..resources import db_ops
 
 
-async def fetch_package_data(client: httpx.Client, package: Dict[str, Union[str, bool]]) -> Dict[str, Union[str, bool, List[Dict[str, str]]]]:
-    """
-    Fetches package data from PyPI.
-
-    This function sends a GET request to the PyPI API for a specific package and extracts relevant information
-    from the response. The extracted information includes the package name, current version, latest version,
-    package URL, package description, vulnerabilities, home page, author, author email, license, and bracket-related info.
-
-    Args:
-        client (httpx.Client): The HTTP client used to send the request.
-        package (Dict[str, Union[str, bool]]): A dictionary containing the package name and current version.
-
-    Returns:
-        Dict[str, Union[str, bool, List[Dict[str, str]]]]: A dictionary containing the fetched package data.
-    """
-    # Construct the URL for the PyPI API
+async def fetch_package_data(client, package):
     url = f"https://pypi.org/pypi/{package['package_name']}/json"
-
-    # Log the URL being fetched
     logger.info(f"Fetching data from {url}")
-
-    # Send a GET request to the PyPI API
     response = await client.get(url)
-
-    # If the response status code is 200, extract the package data
     if response.status_code == 200:
-        # Parse the response JSON
         data = response.json()
-
-        # Extract the package info and vulnerabilities
         info = data["info"]
         vulnerabilities = data["vulnerabilities"]
-
-        # Construct the package data dictionary
         package_data = {
             "package_name": info["name"],
             "current_version": package["current_version"],
@@ -74,50 +33,59 @@ async def fetch_package_data(client: httpx.Client, package: Dict[str, Union[str,
             "has_bracket": package["has_bracket"],
             "bracket_content": package["bracket_content"],
         }
-
-        # Log the fetched package data
         logger.debug(f"Fetched data for package {package_data}")
-
-        # Return the package data
         return package_data
+    else:
+        logger.error(f"Failed to fetch data for package {package['package_name']}")
 
 
-async def check_packages(packages: List[Dict[str, Union[str, bool]]]) -> List[Dict[str, Union[str, bool, List[Dict[str, str]]]]]:
-    """
-    Checks a list of packages for updates and vulnerabilities.
+async def check_packages(packages: list, request_group_id: str, request):
+    logger.debug(
+        f"Starting check_packages with packages: {packages} and request_group_id:\
+             {request_group_id}"
+    )
+    cleaned_packages = clean_packages(packages)
+    async with httpx.AsyncClient(
+        timeout=90.0
+    ) as client:  # Increase timeout to 30 seconds
+        tasks = [fetch_package_data(client, package) for package in cleaned_packages]
+        results = []
+        for f in async_tqdm.as_completed(
+            tasks, total=len(tasks), desc="Fetching package data"
+        ):
+            result = await f
+            results.append(result)
 
-    This function iterates over each package in the list, fetching the package data from PyPI and checking for updates
-    and vulnerabilities. The fetched package data includes the package name, current version, latest version,
-    package URL, package description, vulnerabilities, home page, author, author email, license, and bracket-related info.
+    # store package data in the database after all calls are complete
+    for package_data in results:
+        if package_data is not None:
+            await store_package_data(package_data, request_group_id)
 
-    Args:
-        packages (List[Dict[str, Union[str, bool]]]): A list of packages, where each package is represented
-        as a dictionary containing the package name, current version, and bracket-related info.
+    # Extract host and header data from the request
+    host_ip = request.client.host
+    header_data = dict(request.headers)
 
-    Returns:
-        List[Dict[str, Union[str, bool, List[Dict[str, str]]]]]: A list of dictionaries containing the fetched package data.
-    """
-    # Log the start of the function
-    logger.info("Checking packages for updates and vulnerabilities")
+    # Create a new Requirement record
+    requirement = Requirement(
+        request_group_id=request_group_id,
+        text_in="\n".join(packages),
+        json_data_in=cleaned_packages,
+        json_data_out=results,
+        lib_out_count=len(results),
+        lib_in_count=len(packages),
+        host_ip=host_ip,
+        header_data=header_data,
+    )
 
-    # Initialize the list of package data
-    package_data_list = []
+    # Store the Requirement record in the database
+    await db_ops.create_one(requirement)
 
-    # Create an HTTP client
-    async with httpx.AsyncClient() as client:
-        # Iterate over each package
-        for package in packages:
-            # Fetch the package data from PyPI
-            package_data = await fetch_package_data(client, package)
+    logger.debug(
+        f"Finished check_packages with packages: {packages} and request_group_id:\
+             {request_group_id}"
+    )
+    return [result for result in results if result is not None]
 
-            # Append the package data to the list
-            package_data_list.append(package_data)
-
-    # Log the successful check of packages
-    logger.info("Packages checked successfully")
-
-    # Return the list of package data
-    return package_data_list
 
 def clean_packages(packages):
     logger.debug(f"Starting clean_packages with packages: {packages}")
@@ -168,33 +136,23 @@ def clean_packages(packages):
     return cleaned_packages
 
 
-async def store_package_data(package_data: Dict[str, Union[str, bool, List[Dict[str, str]]]], request_group_id: str) -> None:
-    """
-    Stores package data in the database.
-
-    This function checks if the library name already exists in the database. If it does not exist, a new LibraryName record
-    is created. Then, a new Library record is created with the package data. The package data includes the package name,
-    current version, latest version, package URL, package description, vulnerabilities, home page, author, author email,
-    license, and bracket-related info.
-
-    Args:
-        package_data (Dict[str, Union[str, bool, List[Dict[str, str]]]]): A dictionary containing the package data.
-        request_group_id (str): The ID of the request group.
-
-    Returns:
-        None
-    """
-    # Log the start of the function
-    logger.debug(f"Starting store_package_data with package_data: {package_data} and request_group_id: {request_group_id}")
-
+async def store_package_data(package_data: dict, request_group_id: str):
+    logger.debug(
+        f"Starting store_package_data with package_data: {package_data} and\
+             request_group_id: {request_group_id}"
+    )
     # Check if the library name already exists in the database
-    library_name_results = await db_ops.read_query(Select(LibraryName).where(LibraryName.name == package_data["package_name"]))
+    library_name_results = await db_ops.read_query(
+        Select(LibraryName).where(LibraryName.name == package_data["package_name"])
+    )
 
     if len(library_name_results) == 0:
         # If the library name does not exist, create a new LibraryName record
         library_name = LibraryName(name=package_data["package_name"])
         await db_ops.create_one(library_name)
-        library_name_results = await db_ops.read_query(Select(LibraryName).where(LibraryName.name == package_data["package_name"]))
+        library_name_results = await db_ops.read_query(
+            Select(LibraryName).where(LibraryName.name == package_data["package_name"])
+        )
 
     # Extract the LibraryName object from the list
     library_name = library_name_results[0]
@@ -205,19 +163,21 @@ async def store_package_data(package_data: Dict[str, Union[str, bool, List[Dict[
         library_id=library_name.pkid,
         current_version=package_data["current_version"],
         new_version=package_data["latest_version"],
-        new_version_vulnerability=bool(package_data["vulnerabilities"]),  # Set to True if vulnerabilities exist
+        new_version_vulnerability=bool(
+            package_data["vulnerabilities"]
+        ),  # Set to True if vulnerabilities exist
         vulnerability=package_data["vulnerabilities"],
     )
 
     try:
-        # Attempt to create the new Library record
         await db_ops.create_one(library)
         logger.debug(f"Successfully stored package data: {package_data}")
     except Exception as e:
-        # Log any exceptions that occur
         logger.error(f"Failed to store package data: {package_data}. Error: {e}")
+    logger.debug(
+        f"Finished store_package_data with package_data: {package_data} and\
+             request_group_id: {request_group_id}"
+    )
 
-    # Log the end of the function
-    logger.debug(f"Finished store_package_data with package_data: {package_data} and request_group_id: {request_group_id}")
 
-
+# store incoming requirements and the updated data
