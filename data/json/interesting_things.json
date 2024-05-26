@@ -49,7 +49,7 @@
     },
     {
         "title": "Testcontainers",
-        "summary": "",
+        "summary": "The video titled 'Testcontainers' on YouTube likely covers the usage and benefits of Testcontainers, a Java library designed for JUnit tests. Testcontainers provide lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container. It helps developers write reliable integration tests by leveraging Docker containers.",
         "url": "https://youtu.be/sNg0bnMF_qY?si=nfZVvABhCbWPqJtu",
         "category": "programming"
     },
@@ -117,19 +117,19 @@
         "title": "Ridgid R4222 Miter Saw Dust Collection Chute",
         "summary": "The Ridgid R4222 Miter Saw Dust Collection Chute is an accessory designed to enhance dust management for the Ridgid R4222 miter saw, improving cleanliness and visibility during cutting tasks.",
         "url": "https://shopnationstore.com/products/ridgid-r4222-miter-saw-dust-collection-chute",
-        "category": "technology"
+        "category": "woodworking"
     },
     {
         "title": "19.5x14\" Round Charcuterie Board With Handle Acrylic Router Template",
         "summary": "This acrylic router template is designed for creating a 19.5x14\" round charcuterie board with a handle, providing precise and repeatable cuts for woodworking projects.",
         "url": "https://craftedelements.com/products/19-5x14-round-charcuterie-board-with-handle-acrylic-router-template",
-        "category": "technology"
+        "category": "woodworking"
     },
     {
         "title": "Kreg(R) Pocket-Hole Jig 720PRO",
         "summary": "The Kreg Pocket-Hole Jig 720PRO is a versatile and efficient tool designed for creating strong, precise pocket-hole joints in woodworking projects. It features advanced clamping and material support for ease of use.",
         "url": "https://www.kregtool.com/shop/pocket-hole-joinery/pocket-hole-jigs/kreg-pocket-hole-jig-720pro/KPHJ720PRO.html",
-        "category": "technology"
+        "category": "woodworking"
     },
     {
         "title": "Use cases with Langchain",
@@ -156,8 +156,8 @@
         "category": "programming"
     },
     {
-        "title": "Using \"any\" and \"all\" in Python",
-        "summary": "\"Any\" and \"all\" are built-in Python functions used to evaluate iterables. \"Any\" returns True if at least one element is True, while \"all\" returns True only if all elements are True.",
+        "title": "Using 'any' and 'all' in Python",
+        "summary": "'Any' and 'all' are built-in Python functions used to evaluate iterables. 'Any' returns True if at least one element is True, while 'all' returns True only if all elements are True.",
         "url": "https://www.pythonmorsels.com/any-and-all/",
         "category": "programming"
     },
@@ -177,6 +177,18 @@
         "title": "pytest-benchmark",
         "summary": "Pytest-benchmark is a plugin for pytest that helps measure and compare code performance, aiding in identifying bottlenecks and optimizing applications.",
         "url": "https://pypi.org/project/pytest-benchmark/",
+        "category": "programming"
+    },
+    {
+        "title": "Github Copilot Extensions",
+        "summary": "GitHub introduces Copilot Extensions, enhancing the AI developer tool by integrating partner services like DataStax, Docker, and Azure. These extensions allow developers to stay in their flow by accessing tools and services directly within their IDE or GitHub.com. They support natural language interactions for tasks like troubleshooting and deployment. The marketplace offers both public and private extensions, enabling customized developer workflows.",
+        "url": "https://github.blog/2024-05-21-introducing-github-copilot-extensions/",
+        "category": "programming"
+    },
+    {
+        "title": "Devfile devcontainer vs. Dockerfile Docker-Compose",
+        "summary": "The article on Cloudomation compares Devfile/devcontainer with Dockerfile/Docker-compose. It explains that while Dockerfiles are used to build single containers and Docker-compose manages multi-container applications, Devfile and devcontainer provide additional functionality for creating comprehensive development environments. These include referencing container images, IDE plugins, source code repositories, and running specific commands. Despite the added convenience, the article highlights the complexity and potential issues arising from multiple overlapping configuration standards.",
+        "url": "https://cloudomation.com/en/cloudomation-blog/devfile-devcontainer-vs-dockerfile-docker-compose/",
         "category": "programming"
     }
 ]
