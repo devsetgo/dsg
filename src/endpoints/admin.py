@@ -219,15 +219,47 @@ async def admin_failed_login_attempts(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
+    """
+    Handles the GET request for the "/failed-login-attempts" route.
+
+    Args:
+        request (Request): The incoming request.
+        user_info (dict): The user information, obtained from the check_login dependency.
+
+    Returns:
+        TemplateResponse: The response, rendered using a template.
+    """
+
+    # Log the start of the process
+    logger.info("Processing failed login attempts for admin")
+
+    # Extract user identifier from user_info
     user_identifier = user_info["user_identifier"]
+
+    # These lines don't seem to do anything. Consider removing them or using the values.
     user_info["timezone"]
     user_info["is_admin"]
 
-    query = Select(FailedLoginAttempts)
+    # Log the user identifier
+    logger.debug(f"User identifier: {user_identifier}")
+
+    # Create a query to select failed login attempts, limited to 1000
+    query = Select(FailedLoginAttempts).limit(1000)
+
+    # Execute the query and get the results
     failures = await db_ops.read_query(query=query)
+
+    # Convert each failure to a dictionary
     failures = [fail.to_dict() for fail in failures]
 
+    # Log the number of retrieved failed login attempts
+    logger.debug(f"Retrieved {len(failures)} failed login attempts")
+
+    # Create the context for the template
     context = {"user_identifier": user_identifier, "failures": failures}
+    # Log the end of the process
+    logger.info("Finished processing failed login attempts for admin")
+    # Render the template and return the response
     return templates.TemplateResponse(
         request=request, name="/admin/failed_login_attempts.html", context=context
     )
