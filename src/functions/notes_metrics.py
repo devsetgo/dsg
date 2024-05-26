@@ -10,7 +10,6 @@ from loguru import logger
 from sqlalchemy import Select
 
 from ..db_tables import NoteMetrics, Notes
-from ..functions.notes_metrics import analyze_mood
 from ..resources import db_ops
 from ..settings import settings
 
