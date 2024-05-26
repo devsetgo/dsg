@@ -409,7 +409,7 @@ async def add_posts():
             date_created = datetime.now(UTC) - timedelta(days=random.randint(1, 700))
             post = Posts(
                 title=silly.sentence(),
-                content=silly.markdown(),
+                content=silly.markdown(length=random.randint(30, 60)),
                 user_id=user.pkid,
                 category=str(cat_list[rand_cat]).lower(),
                 tags=tags,
