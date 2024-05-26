@@ -142,7 +142,7 @@ async def fail_logging(user_name: str, password: str, meta_data: dict):
     saves it to the database, and logs the failed attempt.
     """
     real_id = False
-    print(meta_data)
+
     user_query = Select(Users).where(Users.user_name ==user_name)
     user = await db_ops.read_one_record(query=user_query)
 
