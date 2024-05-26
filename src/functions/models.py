@@ -30,4 +30,3 @@ class RoleEnum(str, Enum):
     job_applications = "job_applications"  # Role for handling job applications
     notes = "notes"  # Role for handling notes
     posts = "posts"  # Role for handling posts
-
