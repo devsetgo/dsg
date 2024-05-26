@@ -1,3 +1,13 @@
+"""
+models.py
+
+This module defines the data models used in the application.
+It includes an enumeration for user roles.
+
+Classes:
+    RoleEnum: An enumeration representing different roles in the system.
+"""
+
 # -*- coding: utf-8 -*-
 
 from enum import Enum
@@ -20,3 +30,4 @@ class RoleEnum(str, Enum):
     job_applications = "job_applications"  # Role for handling job applications
     notes = "notes"  # Role for handling notes
     posts = "posts"  # Role for handling posts
+

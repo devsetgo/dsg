@@ -2,7 +2,7 @@
 """
 login_required.py
 
-This module provides functions for checking user identifiers and session expiry times. 
+This module provides functions for checking user identifiers and session expiry times.
 It uses the SQLAlchemy library for database operations and the settings module for configuration.
 
 Functions:
