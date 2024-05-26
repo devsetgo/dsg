@@ -283,8 +283,9 @@ async def read_posts_pagination(
             (Posts.date_created >= start_date) & (Posts.date_created <= end_date)
         )
     # order and limit the results
+    
+    offset=(page - 1) * limit
     query = query.order_by(Posts.date_created.desc()).limit(limit).offset(offset)
-    (page - 1) * limit
     posts = await db_ops.read_query(query=query)
     logger.debug(f"posts returned from pagination query {posts}")
     if isinstance(posts, str):

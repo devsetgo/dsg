@@ -28,9 +28,9 @@ async def root():
 
 @router.get("/index")
 async def index(request: Request):
-    cool_stuff = await db_ops.read_query(Select(InterestingThings).limit(10))
+    cool_stuff = await db_ops.read_query(Select(InterestingThings).limit(8).order_by(InterestingThings.date_created.desc()))
     cool_stuff = [thing.to_dict() for thing in cool_stuff]
-    posts = await db_ops.read_query(Select(Posts).limit(5))
+    posts = await db_ops.read_query(Select(Posts).limit(5).order_by(Posts.date_created.desc()))
     posts = [post.to_dict() for post in posts]
     context = {"data": {"my_stuff": {}, "cool_stuff": cool_stuff}, "posts": posts}
 
