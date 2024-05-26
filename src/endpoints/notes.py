@@ -369,8 +369,8 @@ async def get_note_issue(
 
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.ai_fix == True)
-    )
-    notes = await db_ops.read_query(query=query, limit=20)
+    ).limit(20)
+    notes = await db_ops.read_query(query=query)
 
     # offset date_created and date_updated to user's timezone
     notes = [note.to_dict() for note in notes]
@@ -499,9 +499,9 @@ async def read_notes_pagination(
             (Notes.date_created >= start_date) & (Notes.date_created <= end_date)
         )
     # order and limit the results
-    query = query.order_by(Notes.date_created.desc())
     offset = (page - 1) * limit
-    notes = await db_ops.read_query(query=query, limit=limit, offset=offset)
+    query = query.order_by(Notes.date_created.desc()).limit(limit).offset(offset)
+    notes = await db_ops.read_query(query=query)
     logger.debug(f"notes returned from pagination query {notes}")
     if isinstance(notes, str):
         logger.error(f"Unexpected result from read_query: {notes}")

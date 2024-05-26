@@ -100,9 +100,9 @@ async def read_things_pagination(
             & (InterestingThings.date_created <= end_date)
         )
     # order and limit the results
-    query = query.order_by(InterestingThings.date_created.desc())
-    offset = (page - 1) * limit
-    things = await db_ops.read_query(query=query, limit=limit, offset=offset)
+    query = query.order_by(InterestingThings.date_created.desc()).limit(limit).offset(offset)
+    (page - 1) * limit
+    things = await db_ops.read_query(query=query)
     logger.debug(f"notes returned from pagination query {things}")
     if isinstance(things, str):
         logger.error(f"Unexpected result from read_query: {things}")

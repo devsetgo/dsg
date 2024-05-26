@@ -283,9 +283,9 @@ async def read_posts_pagination(
             (Posts.date_created >= start_date) & (Posts.date_created <= end_date)
         )
     # order and limit the results
-    query = query.order_by(Posts.date_created.desc())
-    offset = (page - 1) * limit
-    posts = await db_ops.read_query(query=query, limit=limit, offset=offset)
+    query = query.order_by(Posts.date_created.desc()).limit(limit).offset(offset)
+    (page - 1) * limit
+    posts = await db_ops.read_query(query=query)
     logger.debug(f"posts returned from pagination query {posts}")
     if isinstance(posts, str):
         logger.error(f"Unexpected result from read_query: {posts}")

@@ -72,8 +72,8 @@ async def update_notes_metrics(user_id: str):
 
     query_metric = Select(NoteMetrics).where(NoteMetrics.user_id == user_id)
     metric_data = await db_ops.read_one_record(query=query_metric)
-    query = Select(Notes).where((Notes.user_id == user_id))
-    notes = await db_ops.read_query(query=query, limit=100000, offset=0)
+    query = Select(Notes).where((Notes.user_id == user_id)).limit(100000)
+    notes = await db_ops.read_query(query=query)
     notes = [note.to_dict() for note in notes]
 
     mood_metric = await mood_metrics(notes=notes)
@@ -114,8 +114,8 @@ async def update_notes_metrics(user_id: str):
 
 async def get_metrics(user_identifier: str, user_timezone: str):
     logger.info("Getting metrics for user: {}", user_identifier)
-    query = Select(Notes).where((Notes.user_id == user_identifier))
-    notes = await db_ops.read_query(query=query, limit=10000, offset=0)
+    query = Select(Notes).where((Notes.user_id == user_identifier)).limit(10000).offset(0)
+    notes = await db_ops.read_query(query=query)
     notes = [note.to_dict() for note in notes]
     metrics = {
         # "counts": {

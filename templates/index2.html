@@ -8,56 +8,79 @@
 <section class="content">
   <div class="row">
     <div class="col-md-12">
-      <!-- Widget: user widget style 1 -->
-      <div class="card card-widget widget-user">
-        <!-- Add the bg color to the header using any of the bg-* classes -->
-        <div class="widget-user-header bg-info">
-          <h3 class="widget-user-desc">A few things I've built to go play with</h5>
-        </div>
-      </div>
-      <!-- /.widget-user -->
+      
     </div>
     <!-- /.col -->
   </div>
   <div class="row">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">
-          <i class="fas fa-fan"> </i> Things I am a fan of...
-        </h3>
-      </div>
-      <!-- /.card-header -->
-      <div class="card-body">
-        <div class="row d-flex align-items-stretch">
-          {% for d in data.cool_stuff %}
-            <div class="col-4 col-sm-6 col-md-4 align-items-stretch">
-              <div class="card bg-light">
-                <div class="card-header text-muted border-bottom-0">
-                  Project: {{d.name|upper}}
-                </div>
-                <div class="card-body pt-0">
-                  <div class="row">
-                    <div class="col-12">
-                      <ul>
-                        <li>Title: {{d.title|title}}</li>
-                        <li>Summary:{{d.summary|capitalize}} </li>
-                        <li>Category: {{d.category|capitalize}}</li>
-                        <li>Site: <a href="{{d.html_url}}">Link</a></li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
+    <div class="col-md-8">
+      <!-- Posts Column -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Posts</h3>
+        </div>
+        <div class="card-body">
+          {% for post in posts %}
+          <div class="col-md-12 mb-4 p-2">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title"><a href="/posts/view/{{post.pkid}}" class="card-link"><strong>{{ post.title|title
+                      }}</strong></a></h5>
+                <p class="card-text">
+                  {{ post.content|truncate(500, end='...') }}
+                  {% if post.content|length > 500 %}
+                  <a href="/posts/view/{{post.pkid}}">Read more</a>
+                  {% endif %}
+                </p>
+              </div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">Tags: {% for tag in post.tags %}<a href="/posts/?search_term={{tag}}">{{
+                    tag|capitalize }}</a>{% if not loop.last %}, {%
+                  endif %}{%
+                  endfor %}</li>
+              </ul>
+              <div class="card-body">
+                <p class="card-text"><small>{{ post.date_created }}</small>
+                  <br>
+                  <small><strong>Words:</strong> {{ post.word_count }}</small>
+                </p>
               </div>
             </div>
+          </div>
           {% endfor %}
         </div>
       </div>
-      <!-- /.card-body -->
     </div>
-    <!-- /.card -->
-
+    <div class="col-md-4">
+      <!-- Links Column -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Links</h3>
+        </div>
+        <div class="card-body">
+          {% for d in data.cool_stuff %}
+          <div class="card bg-light">
+            <div class="card-header text-muted border-bottom-0">
+              Project: {{d.name|upper}}
+            </div>
+            <div class="card-body pt-0">
+              <div class="row">
+                <div class="col-12">
+                  <ul>
+                    <li>Title: {{d.title|title}}</li>
+                    <li>Summary:{{d.summary|capitalize}} </li>
+                    <li>Category: {{d.category|capitalize}}</li>
+                    <li>Site: <a href="{{d.html_url}}">Link</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
   </div>
-
 </section>
 <!-- /.content-wrapper -->
 </div>
