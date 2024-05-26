@@ -56,8 +56,8 @@ async def login_user(request: Request):
         logger.warning(
             f"Account for user: {user_name} is locked due to too many failed login attempts"
         )
-        await fail_loging(
-            user_name=user_name, password=password, meta_data=meta_data, real_id=True
+        await fail_logging(
+            user_name=user_name, password=password, meta_data=meta_data
         )
 
         # Set the error message and return it in the response
@@ -83,8 +83,8 @@ async def login_user(request: Request):
                 record_id=user.pkid,
             )
 
-        await fail_loging(
-            user_name=user_name, password=password, meta_data=meta_data, real_id=True
+        await fail_logging(
+            user_name=user_name, password=password, meta_data=meta_data
         )
         # Log the failed login attempt
         logger.debug(f"Failed login attempt for user: {user_name}")
@@ -136,7 +136,7 @@ async def login_user(request: Request):
         return response
 
 
-async def fail_loging(user_name: str, password: str, meta_data: dict, real_id: bool):
+async def fail_logging(user_name: str, password: str, meta_data: dict):
     """
     Logs a failed login attempt.
 
@@ -148,12 +148,18 @@ async def fail_loging(user_name: str, password: str, meta_data: dict, real_id: b
     This function hashes the password, creates a FailedLoginAttempts object,
     saves it to the database, and logs the failed attempt.
     """
-    # Hash the password
-    pwd = hash_password(password)
+    real_id = False
+    user_query = Select(Users).where(Users.user_name ==user_name)
+    user = await db_ops.read_one_record(query=user_query)
 
+    if user is not None:
+        logger.debug("Real User with bad password. Hashing for safety.")
+        # hash password to protect real users
+        password = hash_password(password)
+        real_id = True
     # Create a FailedLoginAttempts object
     fail_data = FailedLoginAttempts(
-        user_name=user_name, password=pwd, meta_data=meta_data, real_id=real_id
+        user_name=user_name, password=password, meta_data=meta_data, real_id=real_id
     )
 
     # Save the FailedLoginAttempts object to the database

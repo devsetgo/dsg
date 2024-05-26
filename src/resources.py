@@ -119,6 +119,19 @@ async def add_system_data():
         logger.warning("Creating demo data")
         await add_interesting_things()  # Create demo data
         await add_posts()
+        await fake_login_attempts()
+
+
+async def fake_login_attempts():
+    from .endpoints.users import fail_logging
+
+    for _ in tqdm(range(100),desc="fake login attempts",leave=True):
+        await fail_logging(
+            user_name=silly.noun(),
+            password=silly.thing(),
+            meta_data={},
+            real_id=False,
+        )
 
 
 async def add_admin():
