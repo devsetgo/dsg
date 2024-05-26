@@ -2,19 +2,12 @@
 from datetime import datetime, timedelta
 
 from dsg_lib.common_functions.email_validation import validate_email_address
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException,
-    Request,
-    Response,
-    status,
-)
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import JobApplications, Notes, Users, FailedLoginAttempts
+from ..db_tables import FailedLoginAttempts, JobApplications, Notes, Users
 from ..functions.date_functions import TIMEZONES as timezones
 from ..functions.hash_function import hash_password, verify_password
 from ..functions.login_required import check_login

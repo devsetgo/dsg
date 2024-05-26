@@ -103,7 +103,7 @@ config = {
 }
 
 
-def check_password_complexity(password, config):
+def check_password_complexity(password):
     if len(password) < config.get("min_length", 0):
         return "Password is too short"
 

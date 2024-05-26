@@ -27,11 +27,6 @@ client = httpx.AsyncClient()
 api_key = Basic(settings.github_id, settings.github_token.get_secret_value())
 
 
-# async def get_rate_limit(): url = "https://api.github.com/rate_limit" r =
-#     await client.get(url, auth=api_key) data = r.json() logger.info(f"Rate
-#     Limit Data from Call: {data}")
-
-
 # This function is used to fetch the most recent repositories of a user from the
 # GitHub API It is cached for an hour to avoid hitting the rate limit
 @alru_cache(ttl=3600, maxsize=32)
