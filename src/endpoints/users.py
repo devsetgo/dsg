@@ -149,6 +149,7 @@ async def fail_logging(user_name: str, password: str, meta_data: dict):
     saves it to the database, and logs the failed attempt.
     """
     real_id = False
+    print(meta_data)
     user_query = Select(Users).where(Users.user_name ==user_name)
     user = await db_ops.read_one_record(query=user_query)
 
@@ -172,7 +173,7 @@ async def fail_logging(user_name: str, password: str, meta_data: dict):
     # Log the details of the failed login attempt
     logger.debug(f"Failed login data: {fail_data}")
     logger.info(f"failed login attempt with user name: {user_name}")
-
+    
 
 @router.get("/edit-user", response_class=HTMLResponse)
 async def edit_user(
