@@ -1,67 +1,80 @@
 # -*- coding: utf-8 -*-
 """
-This module contains the `require_login` decorator function.
+login_required.py
 
-The `require_login` function is a decorator that checks if a user is logged in and if the session is still valid before allowing access to an endpoint. If the user is not logged in or the session is not valid, it redirects to the login page.
+This module provides functions for checking user identifiers and session expiry times. 
+It uses the SQLAlchemy library for database operations and the settings module for configuration.
 
-This decorator should be used on all endpoints that require the user to be logged in.
-
-Example:
-    @require_login
-    @app.get("/protected-endpoint")
-    async def protected_endpoint(request: Request):
-        user_info = request.state.user_info
-        return {"message": f"You are viewing a protected endpoint, {user_info['user_identifier']}"}
-
-This module depends on the `settings` module for configuration settings like the session user identifier and the login timeout.
-
-This module uses the `loguru` library for logging.
-
-The order of decorators matters. The decorator closest to the function (i.e., the one at the bottom) is applied first, then the one above it, and so on. Therefore, when using this decorator with others (like route decorators), make sure to place it above the route decorator to ensure the `require_login` function is called after the routing function, allowing any dependencies injected by the routing function to be available within `require_login`.
-
-Example:
-    @require_login
-    @app.get("/protected-endpoint")
-    async def protected_endpoint():
-        return {"message": "You are viewing a protected endpoint"}
+Functions:
+    check_user_identifier(request): Checks if the user identifier in the session is valid.
+    check_session_expiry(request): Checks if the session has expired.
 """
 from datetime import datetime, timedelta
 
 from fastapi import HTTPException, Request
 from loguru import logger
-from ..resources import db_ops
-from ..db_tables import Users
 from sqlalchemy import Select
+
+from ..db_tables import Users
+from ..resources import db_ops
 from ..settings import settings
 
 
 async def check_user_identifier(request):
+    """
+    Checks if the user identifier in the session is valid.
+
+    Args:
+        request: The request object containing the session data.
+
+    Raises:
+        HTTPException: If the user identifier is not found in the session or the user does not exist in the database.
+    """
+    # Get the user identifier from the session
     user_identifier = request.session.get("user_identifier")
 
+    # If the user identifier is not found in the session, log an error and raise an exception
     if user_identifier is None:
         logger.error(
             f"user page access without being logged in from {request.client.host}"
         )
         raise HTTPException(status_code=401, detail="Unauthorized")
     else:
+        # If the user identifier is found in the session, check if the user exists in the database
         query = Select(Users).where(Users.pkid == user_identifier)
         user = await db_ops.read_one_record(query=query)
+
+        # If the user does not exist in the database, log an error and raise an exception
         if user is None:
             logger.error(f"User not found with ID: {user_identifier}")
-
             raise HTTPException(status_code=401, detail="Unauthorized")
 
 
 async def check_session_expiry(request):
+    """
+    Checks if the session has expired.
+
+    Args:
+        request: The request object containing the session data.
+
+    Raises:
+        HTTPException: If the session has expired or the session update time is invalid.
+    """
+    # Calculate the session expiry time
     session_expiry_time = datetime.now() - timedelta(minutes=settings.max_age)
+
+    # Try to get the session update time from the session
     try:
         last_updated = datetime.fromtimestamp(request.session.get("exp", 0))
     except ValueError:
+        # If the session update time is invalid, log an error and raise an exception
         logger.error("Invalid session update time")
         raise HTTPException(status_code=401, detail="Unauthorized")
 
+    # Check if the session has expired
     current = session_expiry_time < last_updated
 
+    # If the session has expired, log an error and raise an exception
     if not current:
         logger.error(
             f"user {request.session.get('user_identifier')} outside window: {current}"
@@ -70,6 +83,19 @@ async def check_session_expiry(request):
 
 
 async def check_login(request: Request):
+    """
+    Checks if the user is logged in and if the session is valid.
+
+    Args:
+        request (Request): The request object containing the session data.
+
+    Raises:
+        HTTPException: If the user is not logged in or the session has expired.
+
+    Returns:
+        dict: A dictionary containing the user's information.
+    """
+    # Get the user's information from the session
     request.state.user_info = {
         "user_identifier": request.session.get("user_identifier", None),
         "timezone": request.session.get("timezone", None),
@@ -80,18 +106,23 @@ async def check_login(request: Request):
     logger.debug(f"check login initial: {request.state.user_info}")
     url = request.url
 
-    # if url contains "/admin" then check if user is admin
+    # If the URL contains "/admin", check if the user is an admin
     if "/admin" in url.path:
         if not request.session.get("is_admin"):
+            # If the user is not an admin, log an error and raise an exception
             logger.error(
                 f"user page access without being logged in from {request.client.host}"
             )
             raise HTTPException(status_code=401, detail="Unauthorized")
         else:
+            # If the user is an admin, check if the session has expired
             await check_session_expiry(request)
 
+    # Check if the user identifier is valid and if the session has expired
     await check_user_identifier(request)
     await check_session_expiry(request)
 
     logger.debug(f"check login return: {request.state.user_info}")
+
+    # Return the user's information
     return request.state.user_info
