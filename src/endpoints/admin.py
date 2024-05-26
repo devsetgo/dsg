@@ -8,9 +8,9 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import JobApplications, Notes, Users, FailedLoginAttempts
+from ..db_tables import FailedLoginAttempts, JobApplications, Notes, Users
 from ..functions import date_functions
-from ..functions.hash_function import hash_password
+from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
 from ..functions.models import RoleEnum
 from ..resources import db_ops, templates
@@ -135,6 +135,12 @@ async def admin_update_user(
     new_values = {}
 
     new_password = form.get("new-password-entry")
+
+    is_complex = check_password_complexity(password=new_password)
+    if is_complex == False:
+        return Response(headers={"HX-Redirect": "/error/400"}, status_code=200)
+
+
     change_email_entry = form.get("change-email-entry")
 
     if account_action == "lock":

@@ -255,7 +255,7 @@ async def get_mood(content: str, temperature: float = temperature) -> dict:
 
     # Store the mood in a dictionary
     response_dict = {"mood": response_content}
-    
+
     logger.info("Finished get_mood function")
 
     return response_dict
