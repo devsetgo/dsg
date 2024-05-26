@@ -4,12 +4,13 @@ import datetime
 import json
 import statistics
 from collections import Counter, defaultdict
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from loguru import logger
 from sqlalchemy import Select
 
 from ..db_tables import NoteMetrics, Notes
+from ..functions.notes_metrics import analyze_mood
 from ..resources import db_ops
 from ..settings import settings
 
