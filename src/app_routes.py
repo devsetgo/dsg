@@ -1,5 +1,18 @@
 # -*- coding: utf-8 -*-
+"""
+app_routes.py
+
+This module is responsible for setting up the routes for the FastAPI application.
+
+It includes the creation of routes for static files and various endpoints such as admin, blog_posts, devtools, interesting_things, notes, pages, pypi, and users.
+
+The function `create_routes(app)` is used to mount these routes to the provided FastAPI application instance.
+
+Functions:
+    create_routes(app): Mounts routes to the provided FastAPI application instance.
+"""
 import time
+from typing import Any, Dict, NoReturn
 
 from dsg_lib.fastapi_functions import http_codes, system_health_endpoints
 # from fastapi import FastAPI, Request, HTTPException, status
@@ -22,10 +35,25 @@ from .endpoints import (
 from .resources import templates
 
 
-def create_routes(app: FastAPI):
+def create_routes(app: FastAPI) -> NoReturn:
+    """
+    Mounts routes to the provided FastAPI application instance.
+
+    This function mounts routes for static files and various endpoints such as admin, blog_posts, devtools, interesting_things, notes, pages, pypi, and users.
+
+    Args:
+        app (FastAPI): The FastAPI application instance to which the routes will be mounted.
+
+    Returns:
+        NoReturn
+    """
+    # Mount the static files directory at the path "/static"
+    # This will make the files in the "static" directory available at URLs that start with "/static"
     app.mount("/static", StaticFiles(directory="static"), name="static")
+
+    # Record the start time for route creation
     t0 = time.time()
-    site_error_routing_codes = [
+    site_error_routing_codes:list = [
         400,
         401,
         402,
@@ -67,21 +95,40 @@ def create_routes(app: FastAPI):
         510,
         511,
     ]
-    ALL_HTTP_CODES = http_codes.generate_code_dict(site_error_routing_codes)
+    # Generate a dictionary of all HTTP codes
+    ALL_HTTP_CODES: Dict[int, Dict[str, Any]] = http_codes.generate_code_dict(site_error_routing_codes)
 
     @app.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> RedirectResponse:
+        """
+        Handles HTTP exceptions by redirecting to an error page.
+
+        Args:
+            request (Request): The request that caused the exception.
+            exc (StarletteHTTPException): The exception that was raised.
+
+        Returns:
+            RedirectResponse: A response that redirects to an error page.
+        """
+        # Get the status code of the exception
         error_code = exc.status_code
+
+        # If the status code is not in the dictionary of all HTTP codes, default to 500
         if error_code not in ALL_HTTP_CODES:
             error_code = 500  # default to Internal Server Error
+
+        # Log the error
         logger.error(f"{error_code} error: {exc}")
+
+        # Redirect to the error page for the status code
         return RedirectResponse(url=f"/error/{error_code}")
 
-    # @app.exception_handler(status.HTTP_404_NOT_FOUND)
-    # async def not_found_exception_handler(request: Request, exc: HTTPException):
-    #     logger.error(f"404 error: {exc}")
-    #     return RedirectResponse(url=f"/error/{exc.status_code}")
+    # Include the routers for the admin, devtools, interesting things, blog posts, notes, pages, pypi, and users endpoints
+    # The prefix argument specifies the path that the routes will be mounted at
+    # The tags argument specifies the tags for the routes
+    # The include_in_schema argument specifies whether the routes should be included in the OpenAPI schema
 
+    # Make sure these are in route alphabetical order
     app.include_router(
         admin.router,
         prefix="/admin",
@@ -97,7 +144,18 @@ def create_routes(app: FastAPI):
     )
 
     @app.get("/error/{error_code}")
-    async def error_page(request: Request, error_code: int):
+    async def error_page(request: Request, error_code: int) -> Dict[str, Any]:
+        """
+        Returns an error page for the specified error code.
+
+        Args:
+            request (Request): The request that caused the error.
+            error_code (int): The error code.
+
+        Returns:
+            Dict[str, Any]: A dictionary that represents the context of the error page.
+        """
+        # Create the context for the error page
         context = {
             "request": request,
             "error_code": error_code,
@@ -105,7 +163,10 @@ def create_routes(app: FastAPI):
             "extended_description": ALL_HTTP_CODES[error_code]["extended_description"],
             "link": ALL_HTTP_CODES[error_code]["link"],
         }
+
+        # Return a template response with the error page and the context
         return templates.TemplateResponse("error/error-page.html", context)
+
 
     app.include_router(
         interesting_things.router,
@@ -114,12 +175,7 @@ def create_routes(app: FastAPI):
         include_in_schema=False,
     )
 
-    app.include_router(
-        blog_posts.router,
-        prefix="/posts",
-        tags=["posts"],
-        include_in_schema=False,
-    )
+
     app.include_router(
         notes.router,
         prefix="/notes",
@@ -130,6 +186,13 @@ def create_routes(app: FastAPI):
         pages.router,
         prefix="/pages",
         tags=["html-pages"],
+        include_in_schema=False,
+    )
+
+    app.include_router(
+        blog_posts.router,
+        prefix="/posts",
+        tags=["posts"],
         include_in_schema=False,
     )
 
@@ -160,4 +223,5 @@ def create_routes(app: FastAPI):
         include_in_schema=True,
     )
 
+    # Log the time it took to create the routes
     logger.info(f"Routes created in {time.time()-t0:.4f} seconds")
