@@ -173,7 +173,7 @@ async def fail_logging(user_name: str, password: str, meta_data: dict):
     # Log the details of the failed login attempt
     logger.debug(f"Failed login data: {fail_data}")
     logger.info(f"failed login attempt with user name: {user_name}")
-    
+
 
 @router.get("/edit-user", response_class=HTMLResponse)
 async def edit_user(
