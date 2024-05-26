@@ -12,6 +12,7 @@ Classes:
 
 from enum import Enum
 
+
 class RoleEnum(str, Enum):
     """
     Enum representing different roles in the system.
