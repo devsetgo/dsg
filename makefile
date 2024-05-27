@@ -54,7 +54,7 @@ cleanup: isort black autoflake  # Run isort, black, and autoflake
 compile:  # Compile http_request.c into a shared library
 	gcc -shared -o http_request.so http_request.c -lcurl -fPIC
 
-TIMESTAMP := $(shell date +'%y-%m-%d-%H-%M')
+TIMESTAMP := $(shell date +'%y-%m-%d-%H%M')
 
 docker-beta-run:  # Run docker container
 	docker run -p 5000:5000 dsg:beta-$(TIMESTAMP)
