@@ -190,9 +190,9 @@ async def get_mood_analysis(content: str, temperature: float = temperature) -> d
         dict: A dictionary containing the mood analysis.
     """
     logger.info("Starting get_mood_analysis function")
-
+    moods = [mood[0] for mood in settings.mood_analysis_weights]
     # Create the prompt for the OpenAI API
-    prompt = "For the following text provide a single expressive word response that expresses the general mood of the content. It will be stored in a python variable with a max character length of 25."
+    prompt = f"For the following text provide a single expressive word response that expresses the general mood of the content from these options {moods}. It will be stored in a python variable with a max character length of 25."
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
