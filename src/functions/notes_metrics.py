@@ -68,7 +68,7 @@ async def all_note_metrics():
 
 
 async def update_notes_metrics(user_id: str):
-    logger.critical("background task for metrics")
+    logger.debug("background task for metrics")
 
     query_metric = Select(NoteMetrics).where(NoteMetrics.user_id == user_id)
     metric_data = await db_ops.read_one_record(query=query_metric)
@@ -109,7 +109,7 @@ async def update_notes_metrics(user_id: str):
         result = await db_ops.update_one(
             table=NoteMetrics, record_id=metric_data.pkid, new_values=note_metrics
         )
-    logger.critical(result)
+    logger.debug(result)
 
 
 async def get_metrics(user_identifier: str, user_timezone: str):

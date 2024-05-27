@@ -63,7 +63,7 @@ async def get_analysis(content: str, mood_process: str = None) -> dict:
     }
 
     logger.info("openai request completed")
-    logger.critical(f"analysis: {data}")
+    logger.debug(f"analysis: {data}")
     logger.info("Finished get_analysis function")
 
     return data
@@ -103,7 +103,7 @@ async def get_tags(
 
     # Extract the content from the response
     response_content = chat_completion.choices[0].message.content
-    logger.critical(f"tag response: {response_content}")
+    logger.debug(f"tag response: {response_content}")
 
     # Use a regular expression to extract a list from the response
     match = re.search(r"\[.*\]", response_content)
@@ -295,7 +295,7 @@ async def analyze_post(content: str, temperature: float = temperature) -> dict:
     }
 
     logger.info("openai request completed")
-    logger.critical(f"post analysis content: {data}")
+    logger.debug(f"post analysis content: {data}")
     logger.info("Finished analyze_post function")
 
     return data
