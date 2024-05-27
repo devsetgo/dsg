@@ -380,7 +380,7 @@ async def add_interesting_things():
         # Try to add the new item to the database
         try:
             await db_ops.create_one(thing)
-            logger.critical(thing)
+            logger.debug(thing)
         except Exception as e:
             # If there's an error while adding the item, log the error
             logger.error(f"thing error: {e}")
