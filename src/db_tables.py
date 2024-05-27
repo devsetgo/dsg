@@ -207,8 +207,8 @@ class Notes(schema_base, async_db.Base):
     __tablename__ = "notes"
     __tableargs__ = {"comment": "Notes that the user writes"}
 
-    mood = Column(String(50), unique=False, index=True)
-    mood_analysis = Column(String(50), unique=False, index=True)
+    mood = Column(String(500), unique=False, index=True)
+    mood_analysis = Column(String(500), unique=False, index=True)
     note = Column(Text, unique=False, index=True, nullable=False)
     tags = Column(JSON)
     summary = Column(String(500), unique=False, index=True)

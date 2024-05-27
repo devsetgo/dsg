@@ -184,9 +184,8 @@ async def ai_fix_processing(
         table=Notes, record_id=note["pkid"], new_values=note_update
     )
 
-    data = data.to_dict()
-    logger.info(f"Resubmited note to AI with ID: {data['pkid']}")
-    return RedirectResponse(url=f"/notes/view/{data['pkid']}?ai=true", status_code=302)
+    logger.info(f"Resubmited note to AI with ID: {note_id}")
+    return RedirectResponse(url=f"/notes/view/{note_id}?ai=true", status_code=302)
 
 
 @router.get("/bulk")
@@ -671,7 +670,7 @@ async def read_note(
     if note is None:
         logger.warning(f"No note found with ID: {note_id} for user: {user_identifier}")
         return RedirectResponse(url="/notes", status_code=302)
-
+    
     note = note.to_dict()
     # offset date_created and date_updated to user's timezone
     note["date_created"] = await date_functions.timezone_update(
