@@ -54,17 +54,18 @@ cleanup: isort black autoflake  # Run isort, black, and autoflake
 compile:  # Compile http_request.c into a shared library
 	gcc -shared -o http_request.so http_request.c -lcurl -fPIC
 
+TIMESTAMP := $(shell date +'%y-%m-%d-%H-%M')
+
 docker-beta-run:  # Run docker container
-	docker run -p 5000:5000 dsg:beta-$(shell date +'%y-%m-%d')
+	docker run -p 5000:5000 dsg:beta-$(TIMESTAMP)
 
 docker-beta-build:  # Build docker image
-	docker build --no-cache -t dsg:beta-$(shell date +'%y-%m-%d') .
+	docker build --no-cache -t dsg:beta-$(TIMESTAMP) .
 
 docker-beta-push:  # Push beta test image to docker hub
-	# get current date yy-mm-dd
-	docker tag dsg:beta-$(shell date +'%y-%m-%d') mikeryan56/dsg:beta-$(shell date +'%y-%m-%d')
-	docker push mikeryan56/dsg:beta-$(shell date +'%y-%m-%d')
-
+	docker tag dsg:beta-$(TIMESTAMP) mikeryan56/dsg:beta-$(TIMESTAMP)
+	docker push mikeryan56/dsg:beta-$(TIMESTAMP)
+	
 docker-beta-bp: docker-beta-build docker-beta-push
 
 file-process:
