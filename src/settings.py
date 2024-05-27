@@ -86,23 +86,21 @@ class Settings(BaseSettings):
     openai_key: SecretStr = None  # OpenAI API Key
     openai_model: str = "gpt-3.5-turbo-1106"
     mood_analysis_weights: list = [
-        ("ecstatic", 1),
-        ("joyful", 0.875),
-        ("happy", 0.75),
-        ("pleased", 0.625),
-        ("content", 0.5),
-        ("neutral", 0.375),
-        ("indifferent", 0.25),
-        ("concerned", 0.125),
-        ("disappointed", 0),
-        ("sad", -0.125),
-        ("upset", -0.25),
-        ("angry", -0.375),
-        ("furious", -0.5),
-        ("rage", -0.625),
-        ("despair", -0.75),
-        ("hopeless", -0.875),
-        ("dejected", -1),
+        ("elated", 1),
+        ("overjoyed", 0.875),
+        ("ecstatic", 0.75),
+        ("joyful", 0.625),
+        ("happy", 0.5),
+        ("pleased", 0.375),
+        ("content", 0.25),
+        ("neutral", 0),
+        ("concerned", -0.25),
+        ("disappointed", -0.375),
+        ("sad", -0.5),
+        ("upset", -0.625),
+        ("angry", -0.75),
+        ("despair", -0.875),
+        ("hopeless", -1),
     ]
 
     # GitHub
