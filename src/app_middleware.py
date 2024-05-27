@@ -112,7 +112,7 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
 
         # Log the request details, but ignore favicon.ico requests
         if url.path != "/favicon.ico":
-            logger.info(
+            logger.debug(
                 {
                     "method": method,
                     "url": str(url),
