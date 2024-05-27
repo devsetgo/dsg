@@ -103,8 +103,9 @@ run-plocal:  # Run the FastAPI application in development mode with hot-reloadin
 
 run-real:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.real .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
 	# uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
+	
 
 
 run-test:  # Run the FastAPI application in development mode with hot-reloading

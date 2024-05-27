@@ -44,7 +44,7 @@ async def get_analysis(content: str, mood_process: str = None) -> dict:
 
     # Get the summary from the content
     summary = await get_summary(content=content, sentence_length=1)
-
+    
     # Get the mood analysis from the content
     mood_analysis = await get_mood_analysis(content=content)
 
