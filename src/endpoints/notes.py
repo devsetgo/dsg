@@ -156,16 +156,15 @@ async def ai_fix_processing(
     note = note.to_dict()
 
     mood = None
-    ai_fix = False
     if note["mood"] not in ["postive", "negative", "neutral"]:
         mood = note["mood"]
     # Get the tags and summary from OpenAI
     analysis = await ai.get_analysis(content=note["note"], mood_process=mood)
 
     moods_list:list = [mood[0] for mood in settings.mood_analysis_weights]
-    
+
     if analysis["mood_analysis"] not in moods_list:
-        ai_fix = True
+        pass
 
     logger.debug(f"Received analysis from AI: {analysis}")
     # Create the note
@@ -180,7 +179,7 @@ async def ai_fix_processing(
     if analysis["mood"] is not None:
         note_update["mood"] = analysis["mood"]["mood"]
 
-    data = await db_ops.update_one(
+    await db_ops.update_one(
         table=Notes, record_id=note["pkid"], new_values=note_update
     )
 
@@ -434,7 +433,7 @@ async def create_note(
     analysis = await ai.get_analysis(content=note)
 
     moods_list:list = [mood[0] for mood in settings.mood_analysis_weights]
-    
+
     if analysis["mood_analysis"] not in moods_list:
         ai_fix = True
 
@@ -670,7 +669,7 @@ async def read_note(
     if note is None:
         logger.warning(f"No note found with ID: {note_id} for user: {user_identifier}")
         return RedirectResponse(url="/notes", status_code=302)
-    
+
     note = note.to_dict()
     # offset date_created and date_updated to user's timezone
     note["date_created"] = await date_functions.timezone_update(
