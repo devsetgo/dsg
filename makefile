@@ -27,7 +27,7 @@ alembic-migrate: # Migrate database using Alembic
 	alembic upgrade head
 
 alembic-rev: # Create a new revision file
-	cp env-files/.test .env && \
+	cp env-files/.env.test .env && \
 	./scripts/env.sh && \
 	export DATABASE_URL=`cat /tmp/db_url.txt` && \
 	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL"
