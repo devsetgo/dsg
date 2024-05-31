@@ -97,7 +97,7 @@ async def get_response(
 
 
 @router.get("/list")
-async def get_all(request: Request):
+async def get_all(request: Request, limit=1000):
     query = Select(Requirement).limit(limit)
     db_data = await db_ops.read_query(query=query)
     count_data = await db_ops.count_query(query=query)
