@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block page_title %}| About{% endblock %}
+{% block page_title %}| Data{% endblock %}
 {% block page_stylesheet %}
 <!-- DataTables -->
 <link
@@ -12,13 +12,14 @@
 <link rel="stylesheet"
   href="{{ url_for('static' , path='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
 <!-- Stylesheet for DataTables Buttons Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
-{% block page_breadcrumb %} About{% endblock %}
-{% block page_head_title %}About Page{% endblock %}
+{% block page_breadcrumb %} Data{% endblock %}
+{% block page_head_title %}Data{% endblock %}
 {% block body %}
 <!-- Main content -->
 <section class="content">
-{% include 'api/us-debt.html' %}
+  {% include 'api/us-debt.html' %}
 </section>
 <!-- /.content-wrapper -->
 </div>
@@ -42,18 +43,19 @@
   src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.5/b-3.0.2/b-html5-3.0.2/b-print-3.0.2/sc-2.4.1/sb-1.7.1/datatables.min.js"></script>
 
 
-  <script>
-    $(function () {
-      $('#debtTable').DataTable({
-        "paging": true,
-        "lengthChange": true,
-        "searching": true,
-        "ordering": true,
-        "info": true,
-        "autoWidth": true,
-        dom: 'Bfrtip',
-        buttons: ['copy', 'csv','pdf']
-      });
+<script>
+  $(function () {
+    $('#debtTable').DataTable({
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+      dom: 'Bfrtip',
+      buttons: ['copy', 'csv', 'pdf']
     });
-  </script>
+  });
+</script>
+
 {% endblock %}

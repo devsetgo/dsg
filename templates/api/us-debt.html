@@ -1,35 +1,68 @@
 <div class="row">
     <div class="col-12">
-      <table id="debtTable" class="table table-striped" style="width:100%">
-        <thead>
-          <tr>
-            <th>record_date</th>
-            <th>debt_held_public_amt</th>
-            <th>intragov_hold_amt</th>
-            <th>tot_pub_debt_out_amt</th>
-            <th>debt_growth</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for data in debt %}
-          <tr>
-            <td>{{data.record_date}}</td>
-            <td>{{data.debt_held_public_amt}}</td>
-            <td>{{data.intragov_hold_amt}}</td>
-            <td>{{data.tot_pub_debt_out_amt}}</td>
-            <td>{{data.debt_growth}}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-        <tfoot>
-          <tr>
-            <th>record_date</th>
-            <th>debt_held_public_amt</th>
-            <th>intragov_hold_amt</th>
-            <th>tot_pub_debt_out_amt</th>
-            <th>debt_growth</th>
-          </tr>
-        </tfoot>
-      </table>
+        <table id="debtTable" class="table table-striped" style="width:100%">
+            <thead>
+                <tr>
+                    <th>record_date</th>
+                    <th>debt_held_public_amt</th>
+                    <th>intragov_hold_amt</th>
+                    <th>tot_pub_debt_out_amt</th>
+                    <th>debt_growth</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in debt %}
+                <tr>
+                    <td>{{data.record_date}}</td>
+                    <td>{{data.debt_held_public_amt}}</td>
+                    <td>{{data.intragov_hold_amt}}</td>
+                    <td>{{data.tot_pub_debt_out_amt}}</td>
+                    <td>{{data.debt_growth}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>record_date</th>
+                    <th>debt_held_public_amt</th>
+                    <th>intragov_hold_amt</th>
+                    <th>tot_pub_debt_out_amt</th>
+                    <th>debt_growth</th>
+                </tr>
+            </tfoot>
+        </table>
     </div>
-  </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <!-- Create a canvas element for your chart -->
+        <canvas id="debtChart"></canvas>
+    </div>
+</div>
+<script>
+    // Assuming you have a function to fetch your data
+    // This function should return a promise that resolves with your data
+    fetchData().then(data => {
+        const ctx = document.getElementById('debtChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(item => item.record_date), // Use the record_date field for the x-axis
+                datasets: [{
+                    label: 'US Public Debt',
+                    data: data.map(item => item.debt_held_public_amt), // Use the debt_held_public_amt field for the y-axis
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
