@@ -190,5 +190,12 @@
         "summary": "The article on Cloudomation compares Devfile/devcontainer with Dockerfile/Docker-compose. It explains that while Dockerfiles are used to build single containers and Docker-compose manages multi-container applications, Devfile and devcontainer provide additional functionality for creating comprehensive development environments. These include referencing container images, IDE plugins, source code repositories, and running specific commands. Despite the added convenience, the article highlights the complexity and potential issues arising from multiple overlapping configuration standards.",
         "url": "https://cloudomation.com/en/cloudomation-blog/devfile-devcontainer-vs-dockerfile-docker-compose/",
         "category": "programming"
+    },
+    {
+        "title": "US Debt to Penny API",
+        "summary": "The US Debt to Penny API provides real-time data on the US national debt, offering insights into the country's financial status and trends. The API allows developers to access and display this information in various applications and platforms.",
+        "url": "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny",
+        "category": "programming"
     }
+
 ]
