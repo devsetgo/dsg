@@ -125,7 +125,7 @@ async def add_system_data():
 async def fake_login_attempts():
     from .endpoints.users import fail_logging
 
-    for _ in tqdm(range(100), desc="fake login attempts", leave=True):
+    for _ in tqdm(range(10), desc="fake login attempts", leave=True):
         await fail_logging(
             user_name=silly.noun(),
             password=silly.thing(),
@@ -403,7 +403,7 @@ async def add_posts():
     cat_list = [cat["name"] for cat in categories]
     posts = await db_ops.read_query(Select(Posts))
     if len(posts) == 0:
-        for _ in tqdm(range(20), desc="creating demo posts", leave=False):
+        for _ in tqdm(range(1), desc="creating demo posts", leave=False):
             rand_cat = random.randint(0, len(cat_list) - 1)
             tags = [silly.noun() for _ in range(random.randint(2, 5))]
             date_created = datetime.now(UTC) - timedelta(days=random.randint(1, 700))
