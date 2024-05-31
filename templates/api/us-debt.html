@@ -1,0 +1,35 @@
+<div class="row">
+    <div class="col-12">
+      <table id="debtTable" class="table table-striped" style="width:100%">
+        <thead>
+          <tr>
+            <th>record_date</th>
+            <th>debt_held_public_amt</th>
+            <th>intragov_hold_amt</th>
+            <th>tot_pub_debt_out_amt</th>
+            <th>debt_growth</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for data in debt %}
+          <tr>
+            <td>{{data.record_date}}</td>
+            <td>{{data.debt_held_public_amt}}</td>
+            <td>{{data.intragov_hold_amt}}</td>
+            <td>{{data.tot_pub_debt_out_amt}}</td>
+            <td>{{data.debt_growth}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>record_date</th>
+            <th>debt_held_public_amt</th>
+            <th>intragov_hold_amt</th>
+            <th>tot_pub_debt_out_amt</th>
+            <th>debt_growth</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
