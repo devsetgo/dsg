@@ -161,7 +161,7 @@ async def ai_fix_processing(
     # Get the tags and summary from OpenAI
     analysis = await ai.get_analysis(content=note["note"], mood_process=mood)
 
-    moods_list:list = [mood[0] for mood in settings.mood_analysis_weights]
+    moods_list: list = [mood[0] for mood in settings.mood_analysis_weights]
 
     if analysis["mood_analysis"] not in moods_list:
         pass
@@ -179,9 +179,7 @@ async def ai_fix_processing(
     if analysis["mood"] is not None:
         note_update["mood"] = analysis["mood"]["mood"]
 
-    await db_ops.update_one(
-        table=Notes, record_id=note["pkid"], new_values=note_update
-    )
+    await db_ops.update_one(table=Notes, record_id=note["pkid"], new_values=note_update)
 
     logger.info(f"Resubmited note to AI with ID: {note_id}")
     return RedirectResponse(url=f"/notes/view/{note_id}?ai=true", status_code=302)
@@ -370,28 +368,19 @@ async def get_note_issue(
         logger.debug("User identifier is None, redirecting to login")
         return RedirectResponse(url="/users/login", status_code=302)
 
-    query = Select(Notes).where(
-        and_(Notes.user_id == user_identifier, Notes.ai_fix == True)
-    ).limit(20)
+    query = (
+        Select(Notes)
+        .where(and_(Notes.user_id == user_identifier, Notes.ai_fix == True))
+        .limit(20)
+    )
     notes = await db_ops.read_query(query=query)
 
     # offset date_created and date_updated to user's timezone
     notes = [note.to_dict() for note in notes]
     metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
-
-    for note in notes:
-        note["date_created"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=note["date_created"],
-            friendly_string=True,
-        )
-        note["date_updated"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=note["date_updated"],
-            friendly_string=True,
-        )
-        metrics["word_count"] += len(note["note"].split())
-        metrics["character_count"] += len(note["note"])
+    notes = await date_functions.update_timezone_for_dates(
+        data=notes, user_timezone=user_timezone
+    )
 
     logger.info(f"Found {len(notes)} notes for user {user_identifier}")
 
@@ -432,7 +421,7 @@ async def create_note(
     # Get the tags and summary from OpenAI
     analysis = await ai.get_analysis(content=note)
 
-    moods_list:list = [mood[0] for mood in settings.mood_analysis_weights]
+    moods_list: list = [mood[0] for mood in settings.mood_analysis_weights]
 
     if analysis["mood_analysis"] not in moods_list:
         ai_fix = True
@@ -518,17 +507,9 @@ async def read_notes_pagination(
     else:
         notes = [note.to_dict() for note in notes]
     # offset date_created and date_updated to user's timezone
-    for note in notes:
-        note["date_created"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=note["date_created"],
-            friendly_string=True,
-        )
-        note["date_updated"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=note["date_updated"],
-            friendly_string=True,
-        )
+    notes = await date_functions.update_timezone_for_dates(
+        data=notes, user_timezone=user_timezone
+    )
     found = len(notes)
     note_count = await db_ops.count_query(query=query)
 
@@ -586,45 +567,40 @@ async def read_today_notes(
     start_date = today - timedelta(days=settings.history_range)
     end_date = today + timedelta(days=settings.history_range)
 
-    # get notes within 7 days of today
     query = Select(Notes).where(
         and_(
             Notes.user_id == user_identifier,
-            or_(
-                and_(
-                    extract("month", Notes.date_created) == start_date.month,
-                    between(
-                        extract("day", Notes.date_created), start_date.day, end_date.day
-                    ),
-                ),
-                and_(
-                    extract("month", Notes.date_created) == end_date.month,
-                    between(
-                        extract("day", Notes.date_created), start_date.day, end_date.day
-                    ),
-                ),
-            ),
+            between(Notes.date_created, start_date, end_date),
         )
     )
+    # query = Select(Notes).where(
+    #     and_(
+    #         Notes.user_id == user_identifier,
+    #         or_(
+    #             and_(
+    #                 extract("month", Notes.date_created) == start_date.month,
+    #                 between(
+    #                     extract("day", Notes.date_created), start_date.day, end_date.day
+    #                 ),
+    #             ),
+    #             and_(
+    #                 extract("month", Notes.date_created) == end_date.month,
+    #                 between(
+    #                     extract("day", Notes.date_created), start_date.day, end_date.day
+    #                 ),
+    #             ),
+    #         ),
+    #     )
+    # )
     notes = await db_ops.read_query(query=query)
 
     # offset date_created and date_updated to user's timezone
     notes = [note.to_dict() for note in notes]
-
+    print(notes)
     metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
-    for note in notes:
-        note["date_created"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=note["date_created"],
-            friendly_string=True,
-        )
-        note["date_updated"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=note["date_updated"],
-            friendly_string=True,
-        )
-        metrics["word_count"] += len(note["note"].split())
-        metrics["character_count"] += len(note["note"])
+    notes = await date_functions.update_timezone_for_dates(
+        data=notes, user_timezone=user_timezone
+    )
     logger.info(f"Found {len(notes)} notes for user {user_identifier}")
 
     # get the user's timezone

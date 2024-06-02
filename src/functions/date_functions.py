@@ -15,7 +15,7 @@ from loguru import logger
 
 TIMEZONES = pytz.all_timezones
 
-async def timezone_update(user_timezone: str, date_time, friendly_string=False):
+async def timezone_update(user_timezone: str, date_time:datetime, friendly_string:bool=False,asia_format:bool=False):
     """
     Convert a datetime object or string to a specified timezone and optionally return it as a formatted string.
 
@@ -50,6 +50,8 @@ async def timezone_update(user_timezone: str, date_time, friendly_string=False):
         raise
 
     # If friendly_string is True, convert date_time to a formatted string
+    if asia_format:
+        date_time = date_time.strftime("%Y %b %d %H:%M:%S")
     if friendly_string:
         date_time = date_time.strftime("%d %b, %Y %I:%M %p")
 
@@ -57,3 +59,18 @@ async def timezone_update(user_timezone: str, date_time, friendly_string=False):
     logger.debug(f"Updated date_time: {date_time}")
 
     return date_time
+
+
+async def update_timezone_for_dates(data:list, user_timezone:str):
+    for d in data:
+        d["date_created"] = await timezone_update(
+            user_timezone=user_timezone,
+            date_time=d["date_created"],
+            asia_format=True,
+        )
+        d["date_updated"] = await timezone_update(
+            user_timezone=user_timezone,
+            date_time=d["date_updated"],
+            asia_format=True,
+        )
+    return data
