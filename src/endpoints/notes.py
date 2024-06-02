@@ -498,7 +498,9 @@ async def read_notes_pagination(
         )
     # order and limit the results
     offset = (page - 1) * limit
-    query = query.order_by(Notes.date_created.desc()).limit(limit).offset(offset)
+    query = query.order_by(Notes.date_created.desc())
+    count_query = query
+    query = query.limit(limit).offset(offset)
     notes = await db_ops.read_query(query=query)
     logger.debug(f"notes returned from pagination query {notes}")
     if isinstance(notes, str):
@@ -511,7 +513,7 @@ async def read_notes_pagination(
         data=notes, user_timezone=user_timezone
     )
     found = len(notes)
-    note_count = await db_ops.count_query(query=query)
+    note_count = await db_ops.count_query(query=count_query)
 
     current_count = found + offset
 
@@ -567,31 +569,31 @@ async def read_today_notes(
     start_date = today - timedelta(days=settings.history_range)
     end_date = today + timedelta(days=settings.history_range)
 
-    query = Select(Notes).where(
-        and_(
-            Notes.user_id == user_identifier,
-            between(Notes.date_created, start_date, end_date),
-        )
-    )
     # query = Select(Notes).where(
     #     and_(
     #         Notes.user_id == user_identifier,
-    #         or_(
-    #             and_(
-    #                 extract("month", Notes.date_created) == start_date.month,
-    #                 between(
-    #                     extract("day", Notes.date_created), start_date.day, end_date.day
-    #                 ),
-    #             ),
-    #             and_(
-    #                 extract("month", Notes.date_created) == end_date.month,
-    #                 between(
-    #                     extract("day", Notes.date_created), start_date.day, end_date.day
-    #                 ),
-    #             ),
-    #         ),
+    #         between(Notes.date_created, start_date, end_date),
     #     )
     # )
+    query = Select(Notes).where(
+        and_(
+            Notes.user_id == user_identifier,
+            or_(
+                and_(
+                    extract("month", Notes.date_created) == start_date.month,
+                    between(
+                        extract("day", Notes.date_created), start_date.day, end_date.day
+                    ),
+                ),
+                and_(
+                    extract("month", Notes.date_created) == end_date.month,
+                    between(
+                        extract("day", Notes.date_created), start_date.day, end_date.day
+                    ),
+                ),
+            ),
+        )
+    )
     notes = await db_ops.read_query(query=query)
 
     # offset date_created and date_updated to user's timezone
