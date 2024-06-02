@@ -78,8 +78,7 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
         self.user_identifier = user_identifier
 
     async def dispatch(self, request, call_next):
-        # TODO: Figure out State bug
-        # | ERROR    |  src.app_middleware:dispatch:61 - An error occurred while processing the request: 'State' object has no attribute 'user_info'
+        
         # Record the start time
         start_time = time.time()
         try:
