@@ -49,7 +49,7 @@ cache:  # Clean pycache
 	find . -name '__pycache__' -exec rm -rf {} +
 	find . -name '.pytest_cache' -exec rm -rf {} +
 
-cleanup: isort black autoflake  # Run isort, black, and autoflake
+cleanup: autoflake ruff isort  # Run isort, ruff, and autoflake
 
 compile:  # Compile http_request.c into a shared library
 	gcc -shared -o http_request.so http_request.c -lcurl -fPIC
@@ -103,8 +103,8 @@ run-plocal:  # Run the FastAPI application in development mode with hot-reloadin
 
 run-real:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.real .env
-	# uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+	#uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
 	
 
 
