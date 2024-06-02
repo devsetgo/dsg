@@ -598,7 +598,7 @@ async def read_today_notes(
 
     # offset date_created and date_updated to user's timezone
     notes = [note.to_dict() for note in notes]
-    print(notes)
+
     metrics = {"word_count": 0, "note_count": len(notes), "character_count": 0}
     notes = await date_functions.update_timezone_for_dates(
         data=notes, user_timezone=user_timezone
