@@ -140,7 +140,6 @@ async def admin_update_user(
     if is_complex == False:
         return Response(headers={"HX-Redirect": "/error/400"}, status_code=200)
 
-
     change_email_entry = form.get("change-email-entry")
 
     if account_action == "lock":

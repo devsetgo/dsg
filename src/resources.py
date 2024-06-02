@@ -107,9 +107,7 @@ async def add_system_data():
             leave=True,
         ):
             data = await add_user()  # Create a demo user
-            await add_notes(
-                user_id=data["pkid"]
-            )  # Create notes for the loop user
+            await add_notes(user_id=data["pkid"])  # Create notes for the loop user
 
     if settings.create_base_categories is True:
         logger.warning("Creating base categories")
@@ -342,6 +340,7 @@ async def add_interesting_things():
 
     # Define the list of items to be added
     from dsg_lib.common_functions.file_functions import open_json
+
     my_stuff = open_json("interesting_things.json")
     # Check to see if the items are already in the database
     for item in my_stuff:

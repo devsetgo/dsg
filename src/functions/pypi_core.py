@@ -178,5 +178,3 @@ async def store_package_data(package_data: dict, request_group_id: str):
         f"Finished store_package_data with package_data: {package_data} and\
              request_group_id: {request_group_id}"
     )
-
-

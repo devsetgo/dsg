@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import calendar
 import datetime
 import time
-import calendar
+
 from httpx import AsyncClient
 from loguru import logger
 from tqdm import tqdm
@@ -18,10 +19,14 @@ async def get_public_debt():
     for year in range(1995, 2025):
         month = 1  # January
         month_calendar = calendar.monthcalendar(year, month)
-        second_wednesday = month_calendar[1][calendar.WEDNESDAY] if month_calendar[0][calendar.WEDNESDAY] != 0 else month_calendar[2][calendar.WEDNESDAY]
+        second_wednesday = (
+            month_calendar[1][calendar.WEDNESDAY]
+            if month_calendar[0][calendar.WEDNESDAY] != 0
+            else month_calendar[2][calendar.WEDNESDAY]
+        )
         date_str = f"{year}-{month:02d}-{second_wednesday:02d}"
         dates_list.append(date_str)
-    
+
     current_date = datetime.datetime.now()
     days_to_subtract = (current_date.weekday() - 2) % 7 + 7
     last_wednesday = current_date - datetime.timedelta(days=days_to_subtract)

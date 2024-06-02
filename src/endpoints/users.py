@@ -49,9 +49,7 @@ async def login_user(request: Request):
         logger.warning(
             f"Account for user: {user_name} is locked due to too many failed login attempts"
         )
-        await fail_logging(
-            user_name=user_name, password=password, meta_data=meta_data
-        )
+        await fail_logging(user_name=user_name, password=password, meta_data=meta_data)
 
         # Set the error message and return it in the response
         request.session["error"] = (
@@ -76,9 +74,7 @@ async def login_user(request: Request):
                 record_id=user.pkid,
             )
 
-        await fail_logging(
-            user_name=user_name, password=password, meta_data=meta_data
-        )
+        await fail_logging(user_name=user_name, password=password, meta_data=meta_data)
         # Log the failed login attempt
         logger.debug(f"Failed login attempt for user: {user_name}")
 
@@ -143,7 +139,7 @@ async def fail_logging(user_name: str, password: str, meta_data: dict):
     """
     real_id = False
 
-    user_query = Select(Users).where(Users.user_name ==user_name)
+    user_query = Select(Users).where(Users.user_name == user_name)
     user = await db_ops.read_one_record(query=user_query)
 
     if user is not None:

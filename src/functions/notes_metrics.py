@@ -114,7 +114,9 @@ async def update_notes_metrics(user_id: str):
 
 async def get_metrics(user_identifier: str, user_timezone: str):
     logger.info("Getting metrics for user: {}", user_identifier)
-    query = Select(Notes).where((Notes.user_id == user_identifier)).limit(10000).offset(0)
+    query = (
+        Select(Notes).where((Notes.user_id == user_identifier)).limit(10000).offset(0)
+    )
     notes = await db_ops.read_query(query=query)
     notes = [note.to_dict() for note in notes]
     metrics = {

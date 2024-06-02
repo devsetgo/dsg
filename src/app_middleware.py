@@ -78,7 +78,7 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
         self.user_identifier = user_identifier
 
     async def dispatch(self, request, call_next):
-        
+
         # Record the start time
         start_time = time.time()
         try:

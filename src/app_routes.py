@@ -53,7 +53,7 @@ def create_routes(app: FastAPI) -> NoReturn:
 
     # Record the start time for route creation
     t0 = time.time()
-    site_error_routing_codes:list = [
+    site_error_routing_codes: list = [
         400,
         401,
         402,
@@ -96,10 +96,14 @@ def create_routes(app: FastAPI) -> NoReturn:
         511,
     ]
     # Generate a dictionary of all HTTP codes
-    ALL_HTTP_CODES: Dict[int, Dict[str, Any]] = http_codes.generate_code_dict(site_error_routing_codes)
+    ALL_HTTP_CODES: Dict[int, Dict[str, Any]] = http_codes.generate_code_dict(
+        site_error_routing_codes
+    )
 
     @app.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> RedirectResponse:
+    async def http_exception_handler(
+        request: Request, exc: StarletteHTTPException
+    ) -> RedirectResponse:
         """
         Handles HTTP exceptions by redirecting to an error page.
 
@@ -167,14 +171,12 @@ def create_routes(app: FastAPI) -> NoReturn:
         # Return a template response with the error page and the context
         return templates.TemplateResponse("error/error-page.html", context)
 
-
     app.include_router(
         interesting_things.router,
         prefix="/interesting-things",
         tags=["interesting things"],
         include_in_schema=False,
     )
-
 
     app.include_router(
         notes.router,
