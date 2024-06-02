@@ -34,7 +34,7 @@ async def root():
 async def index(request: Request):
     cool_stuff = await db_ops.read_query(
         Select(InterestingThings)
-        .limit(5)
+        .limit(8)
         .order_by(InterestingThings.date_created.desc())
     )
     cool_stuff = [thing.to_dict() for thing in cool_stuff]
@@ -42,7 +42,7 @@ async def index(request: Request):
         data=cool_stuff, user_timezone=settings.default_timezone
     )
     posts = await db_ops.read_query(
-        Select(Posts).limit(8).order_by(Posts.date_created.desc())
+        Select(Posts).limit(5).order_by(Posts.date_created.desc())
     )
     posts = [post.to_dict() for post in posts]
     posts = await update_timezone_for_dates(
