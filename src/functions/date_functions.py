@@ -15,7 +15,13 @@ from loguru import logger
 
 TIMEZONES = pytz.all_timezones
 
-async def timezone_update(user_timezone: str, date_time:datetime, friendly_string:bool=False,asia_format:bool=False):
+
+async def timezone_update(
+    user_timezone: str,
+    date_time: datetime,
+    friendly_string: bool = False,
+    asia_format: bool = False,
+):
     """
     Convert a datetime object or string to a specified timezone and optionally return it as a formatted string.
 
@@ -61,7 +67,7 @@ async def timezone_update(user_timezone: str, date_time:datetime, friendly_strin
     return date_time
 
 
-async def update_timezone_for_dates(data:list, user_timezone:str):
+async def update_timezone_for_dates(data: list, user_timezone: str):
     for d in data:
         d["date_created"] = await timezone_update(
             user_timezone=user_timezone,

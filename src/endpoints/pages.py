@@ -8,8 +8,8 @@ from loguru import logger
 from sqlalchemy import Select
 
 from ..db_tables import InterestingThings, Posts
-from ..functions.interesting_api_calls import get_public_debt
 from ..functions.date_functions import update_timezone_for_dates
+from ..functions.interesting_api_calls import get_public_debt
 from ..resources import db_ops, templates
 from ..settings import settings
 
