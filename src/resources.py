@@ -108,7 +108,7 @@ async def add_system_data():
         ):
             data = await add_user()  # Create a demo user
             await add_notes(
-                user_id=data["pkid"], qty_notes=random.randint(1, 5)
+                user_id=data["pkid"]
             )  # Create notes for the loop user
 
     if settings.create_base_categories is True:
@@ -403,7 +403,7 @@ async def add_posts():
     cat_list = [cat["name"] for cat in categories]
     posts = await db_ops.read_query(Select(Posts))
     if len(posts) == 0:
-        for _ in tqdm(range(1), desc="creating demo posts", leave=False):
+        for _ in tqdm(range(5), desc="creating demo posts", leave=False):
             rand_cat = random.randint(0, len(cat_list) - 1)
             tags = [silly.noun() for _ in range(random.randint(2, 5))]
             date_created = datetime.now(UTC) - timedelta(days=random.randint(1, 700))

@@ -9,6 +9,7 @@ from sqlalchemy import Select
 
 from ..db_tables import InterestingThings, Posts
 from ..functions.interesting_api_calls import get_public_debt
+from ..functions.date_functions import update_timezone_for_dates
 from ..resources import db_ops, templates
 from ..settings import settings
 
@@ -33,14 +34,20 @@ async def root():
 async def index(request: Request):
     cool_stuff = await db_ops.read_query(
         Select(InterestingThings)
-        .limit(8)
+        .limit(5)
         .order_by(InterestingThings.date_created.desc())
     )
     cool_stuff = [thing.to_dict() for thing in cool_stuff]
+    cool_stuff = await update_timezone_for_dates(
+        data=cool_stuff, user_timezone=settings.default_timezone
+    )
     posts = await db_ops.read_query(
-        Select(Posts).limit(5).order_by(Posts.date_created.desc())
+        Select(Posts).limit(8).order_by(Posts.date_created.desc())
     )
     posts = [post.to_dict() for post in posts]
+    posts = await update_timezone_for_dates(
+        data=posts, user_timezone=settings.default_timezone
+    )
     context = {"data": {"my_stuff": {}, "cool_stuff": cool_stuff}, "posts": posts}
 
     return templates.TemplateResponse(
@@ -97,6 +104,14 @@ async def login(request: Request):
     )
 
 
+@router.get("/data")
+async def get_data_page(request: Request):
+    context = {}
+    return templates.TemplateResponse(
+        request=request, name="interesting-data.html", context=context
+    )
+
+
 @router.get("/public-debt")
 async def public_debt(request: Request):
     debt_list = await get_public_debt()
@@ -105,22 +120,25 @@ async def public_debt(request: Request):
     for d in debt_list:
         year_hold = d["tot_pub_debt_out_amt"]
 
-        if d["debt_held_public_amt"] != 'null':
-            d["debt_held_public_amt"] = "{:,.2f}".format(float(d["debt_held_public_amt"]))
+        # if d["debt_held_public_amt"] != 'null':
+        #     d["debt_held_public_amt"] = "{:,.2f}".format(float(d["debt_held_public_amt"]))
 
-        if d["intragov_hold_amt"] != 'null':
-            d["intragov_hold_amt"] = "{:,.2f}".format(float(d["intragov_hold_amt"]))
+        # if d["intragov_hold_amt"] != 'null':
+        #     d["intragov_hold_amt"] = "{:,.2f}".format(float(d["intragov_hold_amt"]))
 
-        d["tot_pub_debt_out_amt"] = "{:,.2f}".format(float(d["tot_pub_debt_out_amt"]))
+        # d["tot_pub_debt_out_amt"] = "{:,.2f}".format(float(d["tot_pub_debt_out_amt"]))
 
         if last_year is not None:
-            d["debt_growth"] = "{:,.2f}".format(float(year_hold) - float(last_year))
+            d["debt_growth"] = round(
+                ((float(year_hold) - float(last_year)) / float(year_hold)) * 100, 3
+            )
             last_year = year_hold
         else:
             last_year = year_hold
+            d["debt_growth"] = 0
+
     context = {"debt": debt_list}
+
     return templates.TemplateResponse(
-        request=request, name="interesting-data.html", context=context
+        request=request, name="api/us-debt.html", context=context
     )
-
-

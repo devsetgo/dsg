@@ -72,9 +72,10 @@
                       {% if d.summary|length > 100 %}
                       <a href="/interesting-things/view/{{d.pkid}}">Read more</a>
                       {% endif %}
-                      {{d.summary|capitalize}} </li>
+                    </li>
                     <li>Category: {{d.category|capitalize}}</li>
                     <li>Site: <a href="{{d.html_url}}">Link</a></li>
+                    <li><small>Date: {{d.date_created}}</small></li>
                   </ul>
                 </div>
               </div>
@@ -90,7 +91,6 @@
 </div>
 <!-- /.content-wrapper -->
 {% endblock %}
-
 {% block page_sidebar_content %}
 <div class="p-3">
   <h5>Title</h5>
