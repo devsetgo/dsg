@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block page_title %}| Interesting Things{% endblock %}
+{% block page_stylesheet %}
+<!-- page stylesheets-->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css" />
+<!-- <style>.CodeMirror, .editor-preview-side {
+      width: 50% !important;
+  }</style> -->
+{% endblock %}
+{% block page_breadcrumb %} Interesting Things / New{% endblock %}
+{% block page_head_title %}Interesting Things{% endblock %}
+{% block body %}
+<!-- Main content -->
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- left column -->
+      <div class="col-12">
+        <!-- general form elements -->
+        <div class="card card-primary">
+          <div class="card-header">
+            <h3 class="card-title">Add a New Interesting Thing</h3>
+          </div>
+          <!-- /.card-header -->
+          <!-- form start -->
+            <div class="col-12">
+              <form action="/interesting-things/new" method="post" enctype="multipart/form-data"
+                      hx-indicator=".htmx-indicator">
+                <div class="form-group mb-2">
+                  <div class="row">
+                    <label for="title" class="col-sm-2 col-form-label">Title: </label>
+                    <div class="col-sm-10">
+                      <input class="form-control" type="text" name="title" id="title"
+                        placeholder="Wow this is an interesting thing!">
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-2">
+                  <div class="row">
+                    <label for="url" class="col-sm-2 col-form-label">URL: </label>
+                    <div class="col-sm-10">
+                      <input class="form-control" type="text" name="url" id="url"
+                        placeholder="https://example.com/interesting-thing">
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-2">
+                  <div class="row">
+                    <label for="category" class="col-sm-2 col-form-label">Category</label>
+                    <div class="col-sm-10">
+                      <select id="category" class="form-control" name="category" required>
+                        <option value="">Select Category</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+                <script>
+                  $(document).ready(function () {
+                    $.getJSON('/posts/categories', function (data) {
+                      $.each(data, function (index, value) {
+                        $('#category').append('<option value="' + value + '">' + value + '</option>');
+                      });
+                    });
+                  });
+                </script>
+                <div class="input-group mb-2">
+                  {% include "interesting-things/editor_md.html" %}
+                </div>
+                <div class="input-group mb-2">
+                  <button type="submit" class="btn btn-primary btn-block" title="Create Note">Create Interesting
+                    Thing</button>
+                </div>
+              </form>
+            </div>
+
+          <!-- /.col -->
+        </div>
+      </div>
+      <!-- /.card -->
+    </div>
+    <!-- /.row -->
+  </div>
+  <!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+{% endblock %}
+{% block page_sidebar_content %}
+<div class="p-3">
+  <h5>Title</h5>
+  <p>Sidebar content</p>
+</div>
+{% endblock %}
+{% block page_scripts %}
+<!-- page scripts-->
+
+{% endblock %}
+<form hx-post="/endpoint" hx-target="" hx-indicator=".htmx-indicator">
+
+</form>
