@@ -321,7 +321,8 @@ async def add_categories():
             name=c.title(),
             description=f"{str(c).title()} related items",
             is_system=True,
-            is_active=True,
+            is_post=True,
+            is_thing=True,
             user_id=user.pkid,
         )
         try:
