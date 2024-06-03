@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import FailedLoginAttempts, JobApplications, Notes, Users
+from ..db_tables import FailedLoginAttempts, JobApplications, Notes, Users, Categories
 from ..functions import date_functions
 from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
@@ -33,6 +33,8 @@ async def admin_dashboard(
     return templates.TemplateResponse(
         request=request, name="/admin/dashboard.html", context=context
     )
+
+#TODO: create categories maintenance GET and POST
 
 
 async def get_list_of_users(user_timezone: str):
