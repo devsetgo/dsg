@@ -2,17 +2,15 @@ version: "3.3"
 
 services:
   devsetgo:
-    image: mikeryan56/dsg:beta-24-05-26-20-31
+    image: mikeryan56/dsg:beta-24-06-01-2215
     env_file:
       - .env
     container_name: "devsetgoTest"
     restart: always
     ports:
       - "5000:5000"
-    # volumes:
-      # - /home/mike/app-name/app:/app
-      # - /home/mike/dsgTest/sqlite_db:/app/sqlite_db
-      # - /home/mike/dsgTest/log:/app/log
+    volumes:
+      - devsetgo:/app
     networks:
       - web
       - backend
@@ -33,3 +31,7 @@ networks:
     external: true
   postgres_db_network:
     external: true
+
+volumes:
+  devsetgo:
+    external: false
