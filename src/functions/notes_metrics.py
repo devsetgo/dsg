@@ -2,7 +2,7 @@
 
 import datetime
 import json
-import logging
+
 import statistics
 from collections import Counter, defaultdict, deque
 
@@ -195,7 +195,7 @@ async def get_tag_count(notes: list):
 
 
 async def get_note_count_by_year(notes: list):
-    logger = logging.getLogger(__name__)
+
     logger.info("Calculating note count and word count by year")
     result = defaultdict(lambda: {"note_count": 0, "word_count": 0})
 
@@ -216,7 +216,7 @@ async def get_note_count_by_year(notes: list):
 
 
 async def get_note_count_by_month(notes: list):
-    logger = logging.getLogger(__name__)
+
     logger.info("Calculating note count and word count by month")
     result = defaultdict(lambda: {"note_count": 0, "word_count": 0})
 
@@ -238,7 +238,7 @@ async def get_note_count_by_month(notes: list):
 
 
 async def get_note_count_by_week(notes: list):
-    logger = logging.getLogger(__name__)
+
     logger.info("Calculating note count and word count by week")
     result = defaultdict(lambda: {"note_count": 0, "word_count": 0})
 
@@ -375,7 +375,7 @@ async def mood_trend_by_median_month(notes: list):
 
 
 async def mood_trend_by_rolling_mean_month(notes: list):
-    logger = logging.getLogger(__name__)
+
     logger.info("Calculating mood trend by month")
     result = defaultdict(int)
     count = defaultdict(int)
