@@ -170,8 +170,9 @@ class Categories(schema_base, async_db.Base):
     # Define the columns of the table
     name = Column(String(50), unique=False, index=True)  # name of item
     description = Column(String(500), unique=False, index=True)  # description of item
-    is_system = Column(Boolean, default=True)  # If the category is a system default
-    is_active = Column(Boolean, default=True)  # If the c   ategory is active
+    is_post = Column(Boolean, default=False, index=True)
+    is_thing =Column(Boolean, default=False, index=True)
+    is_system = Column(Boolean, default=True, index=True)  # If the category is a system default
     user_id = Column(String, ForeignKey("users.pkid"))
     users = relationship("Users", back_populates="categories")
 

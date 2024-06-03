@@ -299,3 +299,46 @@ async def analyze_post(content: str, temperature: float = temperature) -> dict:
     logger.info("Finished analyze_post function")
 
     return data
+
+
+async def get_url_summary(
+    url: str, temperature: float = temperature, sentence_length: int = 2
+) -> dict:
+    """
+    Gets a summary of the given url.
+
+    Args:
+        url (str): The url to summarize.
+        temperature (float, optional): The temperature to use for the OpenAI API. Defaults to temperature.
+        sentence_length (int, optional): The length of the summary in sentences. Defaults to 1.
+
+    Returns:
+        dict: A dictionary containing the summary.
+    """
+    logger.info("Starting get_url_summary function")
+
+    # Create the prompt for the OpenAI API
+    prompt = f"Please summarize the url and provide {sentence_length} concise sentence in length as a summary for the URL"
+
+    # Send the prompt to the OpenAI API
+    chat_completion = await client.chat.completions.create(
+        model="gpt-3.5-turbo-1106",
+        messages=[
+            {
+                "role": "system",
+                "content": prompt,
+            },
+            {"role": "user", "content": url},
+        ],
+        temperature=temperature,
+    )
+
+    # Extract the content from the response
+    response_content = chat_completion.choices[0].message.content
+    logger.debug(f"summary content: {response_content}")
+
+    # Store the summary in a dictionary
+    response_dict = response_content
+    logger.info("Finished get_url_summary function")
+
+    return response_dict

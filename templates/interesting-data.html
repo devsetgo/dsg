@@ -15,21 +15,22 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 {% block page_breadcrumb %} Data{% endblock %}
-{% block page_head_title %}Data{% endblock %}
+{% block page_head_title %}Fun with Data{% endblock %}
 {% block body %}
 <!-- Main content -->
 <section class="content">
-
-  <div class="row" id="debtData" hx-get="/pages/public-debt" hx-trigger="load">
-    Loading...
+  <div class="row" style="margin-top: 20px;">
+    <div class="col-md-12">
+      <div class="row" id="debtData" hx-get="/pages/public-debt" hx-trigger="load">
+        Loading...
+      </div>
+    </div>
   </div>
-
 </section>
 <!-- /.content-wrapper -->
 </div>
 <!-- /.content-wrapper -->
 {% endblock %}
-
 {% block page_sidebar_content %}
 <div class="p-3">
   <h5>Title</h5>
@@ -40,7 +41,6 @@
 <!-- page scripts-->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"
   integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 <script
