@@ -26,7 +26,7 @@ class RoleEnum(str, Enum):
         notes: Represents a role related to notes.
         posts: Represents a role related to posts.
     """
-
+    user_access="user_access"
     developer = "developer"  # Developer role
     interesting_things = "interesting_things"  # Role for handling interesting things
     job_applications = "job_applications"  # Role for handling job applications

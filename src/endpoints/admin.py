@@ -29,7 +29,7 @@ async def admin_dashboard(
 
     user_list = await get_list_of_users(user_timezone=user_timezone)
 
-    context = {"user_identifier": user_identifier, "users": user_list}
+    context = {"page":"admin","user_identifier": user_identifier, "users": user_list}
     return templates.TemplateResponse(
         request=request, name="/admin/dashboard.html", context=context
     )
@@ -85,7 +85,7 @@ async def admin_user(
     job_app_query = Select(JobApplications).where(JobApplications.user_id == user_id)
     job_app_count = await db_ops.count_query(query=job_app_query)
 
-    context = {
+    context = {"page":"admin",
         "user": user,
         "notes_count": notes_count,
         "job_app_count": job_app_count,
@@ -263,7 +263,7 @@ async def admin_failed_login_attempts(
     logger.debug(f"Retrieved {len(failures)} failed login attempts")
 
     # Create the context for the template
-    context = {"user_identifier": user_identifier, "failures": failures}
+    context = {"page":"admin","user_identifier": user_identifier, "failures": failures}
     # Log the end of the process
     logger.info("Finished processing failed login attempts for admin")
     # Render the template and return the response

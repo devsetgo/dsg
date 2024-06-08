@@ -30,7 +30,9 @@ async def root():
 
 @router.get("/index")
 async def index(request: Request):
-    context = await get_pypi_metrics()
+    
+    metrics = await get_pypi_metrics()
+    context = {"page":"tools",metrics}
     return templates.TemplateResponse(
         request=request, name="/pypi/dashboard.html", context=context
     )
@@ -38,7 +40,7 @@ async def index(request: Request):
 
 @router.get("/check")
 async def get_check_form(request: Request):
-    context = {
+    context = {"page":"tools",
         "request_group_id": str(uuid.uuid4()),
     }
     logger.info("Creating template response.")
@@ -87,7 +89,7 @@ async def get_response(
         for item in db_data
     ]
 
-    context = {
+    context = {"page":"tools",
         "data": db_data_dict,
         "request_group_id": request_group_id,
     }
@@ -107,7 +109,7 @@ async def get_all(request: Request, limit=1000):
         for item in db_data
     ]
 
-    context = {
+    context = {"page":"tools",
         "db_data": db_data_dict,
         "count_data": count_data,
     }

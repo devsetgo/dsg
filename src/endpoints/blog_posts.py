@@ -32,7 +32,7 @@ async def list_of_posts(
     category: str = Query(None, description="Category to search by"),
     # user_info: dict = Depends(check_login),
 ):
-    context = {"request": request}
+    context = {"page":"posts","page":"posts","request": request}
     return templates.TemplateResponse(
         request=request, name="/posts/index.html", context=context
     )

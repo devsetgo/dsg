@@ -39,9 +39,10 @@ class Users(schema_base, async_db.Base):
     email = Column(
         String, unique=False, index=True, nullable=True
     )  # Email of the user, must be unique
-    password = Column(
-        String, unique=False, index=True, nullable=False
-    )  # Password of the user
+    # password = Column(
+    #     String, unique=False, index=True, nullable=False
+    # )  # Password of the user
+    provider = Column(String,unique=False)
     # timezone of the user, should default to new york
     my_timezone = Column(String, unique=False, index=True, default="America/New_York")
     is_active = Column(Boolean, default=True, nullable=False)  # If the user is active
