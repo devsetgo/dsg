@@ -4,13 +4,12 @@
   <a href="/" class="brand-link">
     <i class="fas fa-play fa-lg"> <span class="brand-text font-weight-light">DevSetGo</span></i>
   </a>
-
   <!-- Sidebar -->
   <div class="sidebar">
     {% include "base_nav_items.html" %}
-    {% if request.session.get('user_identifier') is not none %}
+    {% if request.session.user_identifier is not none and request.session.is_active == true %}
     {% include "base_nav_loggedin.html" %}
-    {% if request.session.is_admin is true%}
+    {% if request.session.is_admin %}
     {% include "admin/nav.html" %}
     {% include "base_nav_developer.html" %}
     {% endif %}
@@ -24,7 +23,6 @@
       </li>
     </ul>
     {% endif %}
-    
     <!-- Sidebar user panel (optional) -->
     <!-- /.sidebar -->
 </aside>

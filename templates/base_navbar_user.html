@@ -41,17 +41,13 @@
                 <i class="mr-2 fas fa-user-edit"> </i>
                 My Information
             </a>
-            <div class="dropdown-divider"></div>
-            <a href="/users/password-change" class="dropdown-item">
-
-                <i class="mr-2 fas fa-key"> </i>
-                Password Change
-            </a>
+            {% if request.session.roles and request.session.roles.notes %}
             <div class="dropdown-divider"></div>
             <a href="/notes/bulk" class="dropdown-item">
                 <i class="mr-2 fas fa-tint"> </i>
                 Bulk Load Notes
             </a>
+            {% endif %}
             <div class="dropdown-divider"></div>
             <form action="/users/logout" method="GET">
                 <button class="dropdown-item btn btn-block btn-outline-primary" type="submit">Logout</button>
@@ -89,7 +85,7 @@
     {% else %}
     <!-- Login -->
     <li class="nav-item">
-        <a class="nav-link" href="/users/login">
+        <a class="nav-link" href="/users/github-login">
             <i class="fas fa-user" title="Login"></i>
         </a>
     </li>

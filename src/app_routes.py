@@ -160,7 +160,7 @@ def create_routes(app: FastAPI) -> NoReturn:
             Dict[str, Any]: A dictionary that represents the context of the error page.
         """
         # Create the context for the error page
-        context = {
+        context = {"page":"x",
             "request": request,
             "error_code": error_code,
             "description": ALL_HTTP_CODES[error_code]["description"],

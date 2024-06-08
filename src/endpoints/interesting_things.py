@@ -49,7 +49,7 @@ async def list_of_interesting_things(
             date_time=thing["date_updated"],
             friendly_string=True,
         )
-    context = {"request": request, "things": things}
+    context = {"page":"things","request": request, "things": things}
     return templates.TemplateResponse(
         request=request, name="/interesting-things/index.html", context=context
     )

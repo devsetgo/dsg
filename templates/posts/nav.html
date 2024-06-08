@@ -1,4 +1,4 @@
-<li class="nav-item has-treeview menu-open">
+<li class="nav-item has-treeview {% if page == 'posts' %}menu-open{% else %}menu-closed{% endif %}">
     <a href="#" class="nav-link" title="Notes">
         <i class="nav-icon fas fa-book"></i>
         <p>
@@ -21,12 +21,5 @@
             </a>
         </li>
         {% endif %}
-
-        <!-- <li class="nav-item">
-                <a href="/notes/search" class="nav-link" title="Search">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Search Notes</p>
-                </a>
-            </li> -->
     </ul>
 </li>

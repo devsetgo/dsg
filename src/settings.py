@@ -104,6 +104,8 @@ class Settings(BaseSettings):
     ]
 
     # GitHub
+    github_client_id: str = None
+    github_client_secret: str = None
     github_id: str = "octocat"
     github_repo_limit: int = 50
     github_token: SecretStr = "<enter key>"
