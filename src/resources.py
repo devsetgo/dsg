@@ -19,7 +19,7 @@ Please refer to the individual function or class docstrings for more specific in
 """
 import random
 from datetime import UTC, datetime, timedelta
-
+import uuid
 import silly
 from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
@@ -31,6 +31,7 @@ from tqdm import tqdm
 from .db_init import async_db
 from .db_tables import Categories, InterestingThings, Notes, Posts, Users
 from .functions.hash_function import hash_password
+
 from .functions.models import RoleEnum
 from .settings import settings
 
@@ -117,7 +118,8 @@ async def add_system_data():
         logger.warning("Creating demo data")
         await add_interesting_things()  # Create demo data
         await add_posts()
-        await fake_login_attempts()
+        # await fake_login_attempts()
+
 
 
 async def fake_login_attempts():
@@ -126,7 +128,7 @@ async def fake_login_attempts():
     for _ in tqdm(range(10), desc="fake login attempts", leave=True):
         await fail_logging(
             user_name=silly.noun(),
-            password=silly.thing(),
+            # password=silly.thing(),
             meta_data={
                 "host": "localhost:5000",
                 "connection": "keep-alive",
@@ -161,12 +163,12 @@ async def add_admin():
         for role in RoleEnum:
             add_roles[role] = True
 
-        hashed_password = hash_password(password)
+        # hashed_password = hash_password(password)
         user = Users(
             first_name="Admin",
             last_name="User",
             user_name=user_name,
-            password=hashed_password,
+            # password=hashed_password,
             email=settings.admin_email,
             my_timezone=settings.default_timezone,
             is_active=True,
@@ -257,7 +259,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
 
 async def add_user():
     logger.info("adding system user")
-    hashed_password = hash_password("password")
+    # hashed_password = hash_password("password")
     import secrets
 
     user_name = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
@@ -272,8 +274,8 @@ async def add_user():
         first_name=f"{silly.verb()}",
         last_name=f"{silly.noun()}",
         user_name=user_name,
-        password=hashed_password,
-        is_active=True,
+        # password=hashed_password,
+        is_active=random.choice([True, False]),
         is_admin=random.choice([True, False]),
         roles=role_data,
         is_locked=random.choice([True, False]),
