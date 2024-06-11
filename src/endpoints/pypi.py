@@ -30,9 +30,12 @@ async def root():
 
 @router.get("/index")
 async def index(request: Request):
-    
+    context = {"page":"tools"}
     metrics = await get_pypi_metrics()
-    context = {"page":"tools",metrics}
+
+    for k,v in metrics.items():
+        context[k]=v
+
     return templates.TemplateResponse(
         request=request, name="/pypi/dashboard.html", context=context
     )
