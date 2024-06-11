@@ -1,15 +1,15 @@
 -r prd.txt
 autoflake==2.3.1 # Vulnerabilities: None
-autopep8==2.1.0 # Vulnerabilities: None
+autopep8==2.2.0 # From 2.1.0 | Vulnerabilities: None
 black==24.4.2 # Vulnerabilities: None
 bump-pydantic==0.8.0 # Vulnerabilities: None
 coverage-badge==1.1.1 # Vulnerabilities: None
 genbadge[all]==1.1.1 # Vulnerabilities: None
 isort==5.13.2 # Vulnerabilities: None
 mkdocs-gen-files==0.5.0 # Vulnerabilities: None
-mkdocs-material==9.5.23 # Vulnerabilities: None
+mkdocs-material==9.5.26 # From 9.5.23 | Vulnerabilities: None
 mkdocstrings[python]==0.25.1 # Vulnerabilities: None
 pre-commit==3.7.1 # Vulnerabilities: None
-pytest==8.2.0 # Vulnerabilities: None
+pytest==8.2.2 # From 8.2.0 | Vulnerabilities: None
 pytest-cov==5.0.0 # Vulnerabilities: None
-ruff==0.4.4 # From none | Vulnerabilities: None
+ruff==0.4.8 # From 0.4.4 | Vulnerabilities: None
