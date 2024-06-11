@@ -86,7 +86,7 @@ async def get_pypi_metrics():
             for requirement in await db_ops.read_query(
                 query=Select(Requirement)
                 .order_by(Requirement.date_created.desc())
-                .limit(1)
+                .limit(500)
             )
         ]
     except Exception as e:
