@@ -6,7 +6,7 @@ import httpx
 from loguru import logger
 from sqlalchemy import Select
 from tqdm.asyncio import tqdm as async_tqdm
-
+from tqdm import tqdm
 from ..db_tables import Library, LibraryName, Requirement
 from ..resources import db_ops
 
@@ -38,6 +38,30 @@ async def fetch_package_data(client, package):
     else:
         logger.error(f"Failed to fetch data for package {package['package_name']}")
 
+async def add_demo_data(qty=20):
+    import csv
+    import uuid
+    import random
+
+    # list of libraries from file
+    file = open("data/csv/__pypi_demo.csv", "r")
+    with file as f:
+        reader = csv.reader(f)
+        data = list(reader)
+        # print(data)
+
+    data_list:list=[]
+    for d in data:
+        # print(d)
+        data_list.append(d[0])
+    # print(data_list)
+
+    async for i in async_tqdm(range(qty), desc="Adding demo PYPI data", leave=False):
+        # get 2-10 packages from data using random
+        sample_size = min(len(data_list), random.randint(2, 20))  # get a random integer between 2 and 20, but not more than the length of the list
+        packages = random.sample(data_list, sample_size)
+        # call check_packages
+        await check_packages(packages=packages, request_group_id=str(uuid.uuid4()), request=None)
 
 async def check_packages(packages: list, request_group_id: str, request):
     logger.debug(
@@ -51,7 +75,7 @@ async def check_packages(packages: list, request_group_id: str, request):
         tasks = [fetch_package_data(client, package) for package in cleaned_packages]
         results = []
         for f in async_tqdm.as_completed(
-            tasks, total=len(tasks), desc="Fetching package data"
+            tasks, total=len(tasks), desc="Fetching package data", leave=False
         ):
             result = await f
             results.append(result)
@@ -62,9 +86,12 @@ async def check_packages(packages: list, request_group_id: str, request):
             await store_package_data(package_data, request_group_id)
 
     # Extract host and header data from the request
-    host_ip = request.client.host
-    header_data = dict(request.headers)
-
+    if request is not None:
+        host_ip = request.client.host
+        header_data = dict(request.headers)
+    else:
+        host_ip = None
+        header_data = None
     # Create a new Requirement record
     requirement = Requirement(
         request_group_id=request_group_id,
