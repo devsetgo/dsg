@@ -118,9 +118,10 @@ async def add_system_data():
         logger.warning("Creating demo data")
         await add_interesting_things()  # Create demo data
         await add_posts()
+        
+        from .functions.pypi_core import add_demo_data
+        await add_demo_data(qty=20)
         # await fake_login_attempts()
-
-
 
 async def fake_login_attempts():
     from .endpoints.users import fail_logging
