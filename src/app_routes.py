@@ -144,7 +144,7 @@ def create_routes(app: FastAPI) -> NoReturn:
         devtools.router,
         prefix="/devtools",
         tags=["devtools"],
-        include_in_schema=False,
+        include_in_schema=True,
     )
 
     @app.get("/error/{error_code}")
