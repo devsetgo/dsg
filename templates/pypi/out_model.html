@@ -15,28 +15,26 @@
           </form>
         </div>
         <div class="scrollable-section">
-          {% for item in last_one_hundred_requests %}
-            {% set count = 0 %}
-            {% for d in item.json_data_out|sort(attribute='package_name') %}
-              {% if count < 5 %}
-                {{d.package_name}}{% if d.has_bracket %}[{{d.bracket_content}}]{%endif%}=={{d.latest_version}} #
-                {% if d.latest_version!=d.current_version %} <strong>From {{d.current_version}}</strong> | {%endif%}
-                {% if d.vulnerabilities|length > 0 %}
-                  Vulnerabilities:
-                  {% for v in d.vulnerabilities %}
-                    <a href="{{v.link}}" target="_blank">{{v.link}}</a>
-                  {% endfor %}
-                {% else %}
-                  Vulnerabilities: None
-                {% endif %}
-                <br>
-                {% set count = count + 1 %}
+          {% set count = 0 %}
+          {% for d in lr.json_data_out|sort(attribute='package_name') %}
+            {% if count < 5 %}
+              {{d.package_name}}{% if d.has_bracket %}[{{d.bracket_content}}]{%endif%}=={{d.latest_version}} #
+              {% if d.latest_version!=d.current_version %} <strong>From {{d.current_version}}</strong> | {%endif%}
+              {% if d.vulnerabilities|length > 0 %}
+                Vulnerabilities:
+                {% for v in d.vulnerabilities %}
+                  <a href="{{v.link}}" target="_blank">{{v.link}}</a>
+                {% endfor %}
+              {% else %}
+                Vulnerabilities: None
               {% endif %}
-            {% endfor %}
-            {% if item.json_data_out|length > 5 %}
-              ... (more)
+              <br>
+              {% set count = count + 1 %}
             {% endif %}
           {% endfor %}
+          {% if lr.json_data_out|length > 5 %}
+            <a href="/pypi/check/{{ lr.request_group_id }}">... (more)</a>
+          {% endif %}
         </div>
       </div>
     </div>
