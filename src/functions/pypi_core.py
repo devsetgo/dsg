@@ -6,7 +6,7 @@ import httpx
 from loguru import logger
 from sqlalchemy import Select
 from tqdm.asyncio import tqdm as async_tqdm
-from tqdm import tqdm
+
 from ..db_tables import Library, LibraryName, Requirement
 from ..resources import db_ops
 
@@ -40,8 +40,8 @@ async def fetch_package_data(client, package):
 
 async def add_demo_data(qty=20):
     import csv
-    import uuid
     import random
+    import uuid
 
     # list of libraries from file
     file = open("data/csv/__pypi_demo.csv", "r")
@@ -56,7 +56,7 @@ async def add_demo_data(qty=20):
         data_list.append(d[0])
     # print(data_list)
 
-    async for i in async_tqdm(range(qty), desc="Adding demo PYPI data", leave=False):
+    async for _i in async_tqdm(range(qty), desc="Adding demo PYPI data", leave=False):
         # get 2-10 packages from data using random
         sample_size = min(len(data_list), random.randint(2, 20))  # get a random integer between 2 and 20, but not more than the length of the list
         packages = random.sample(data_list, sample_size)

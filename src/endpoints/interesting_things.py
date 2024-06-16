@@ -2,14 +2,13 @@
 from datetime import datetime
 
 # from pytz import timezone, UTC
-from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from loguru import logger
-from sqlalchemy import Select, Text, and_, asc, cast, or_
+from sqlalchemy import Select, asc, or_
 
-from ..db_tables import InterestingThings,Categories
-from ..functions import date_functions
-from ..functions import ai
+from ..db_tables import Categories, InterestingThings
+from ..functions import ai, date_functions
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
 

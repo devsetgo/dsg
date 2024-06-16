@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import FailedLoginAttempts, JobApplications, Notes, Users, Categories
+from ..db_tables import FailedLoginAttempts, JobApplications, Notes, Users
 from ..functions import date_functions
 from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
