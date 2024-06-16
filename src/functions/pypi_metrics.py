@@ -91,7 +91,6 @@ async def get_pypi_metrics():
         ]
     except Exception as e:
         logger.error(f"Error in last_one_hundred_requests: {e}")
-
         last_one_hundred_requests = []
 
     try:
