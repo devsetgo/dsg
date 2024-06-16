@@ -2,15 +2,17 @@
 from datetime import datetime, timedelta
 
 from dsg_lib.common_functions.email_validation import validate_email_address
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi_sso.sso.github import GithubSSO
 from loguru import logger
 from sqlalchemy import Select
-from ..functions.models import RoleEnum
-from ..db_tables import FailedLoginAttempts, JobApplications, Notes, Users
+
+from ..db_tables import JobApplications, Notes, Users
 from ..functions.date_functions import TIMEZONES as timezones
 from ..functions.hash_function import hash_password, verify_password
 from ..functions.login_required import check_login
+from ..functions.models import RoleEnum
 from ..resources import db_ops, templates
 from ..settings import settings
 
@@ -345,13 +347,11 @@ async def get_user_info(
     )
 
 
-# SSO login endpoint
-from fastapi_sso.sso.github import GithubSSO
 
 github_sso = GithubSSO(
     settings.github_client_id,
     settings.github_client_secret,
-    f"http://localhost:5000/users/callback",
+    "http://localhost:5000/users/callback",
 )
 
 

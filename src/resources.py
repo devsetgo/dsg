@@ -19,7 +19,7 @@ Please refer to the individual function or class docstrings for more specific in
 """
 import random
 from datetime import UTC, datetime, timedelta
-import uuid
+
 import silly
 from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
@@ -30,8 +30,6 @@ from tqdm import tqdm
 
 from .db_init import async_db
 from .db_tables import Categories, InterestingThings, Notes, Posts, Users
-from .functions.hash_function import hash_password
-
 from .functions.models import RoleEnum
 from .settings import settings
 
@@ -101,7 +99,7 @@ async def add_system_data():
             if settings.create_demo_notes is True:
                 await add_notes(user_id=data["pkid"])  # Create notes for the admin user
 
-    
+
     if settings.release_env.lower()!="prd":
         if settings.create_demo_user is True:
             logger.warning("Creating demo user")
@@ -121,7 +119,7 @@ async def add_system_data():
             logger.warning("Creating demo data")
             await add_interesting_things()  # Create demo data
             await add_posts()
-            
+
             from .functions.pypi_core import add_demo_data
             await add_demo_data(qty=20)
             # await fake_login_attempts()
@@ -161,7 +159,7 @@ async def add_admin():
     if settings.create_admin_user is True:
         logger.warning("creating admin user")
         user_name = settings.admin_user.get_secret_value()
-        password = settings.admin_password.get_secret_value()
+        settings.admin_password.get_secret_value()
 
         add_roles = {}
         for role in RoleEnum:

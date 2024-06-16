@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from typing import List
 import uuid
+from typing import List
+
 from fastapi import APIRouter, Body, HTTPException
 from fastapi.responses import JSONResponse
 from loguru import logger
@@ -13,7 +14,7 @@ router = APIRouter()
 @router.post("/pypi/check-list")
 async def post_check_pypi_packages(packages: List[str] = Body(...)):
     logger.info(f"Checking packages: {packages}")
-    
+
     try:
         data = await check_packages(packages=packages,request_group_id=str(uuid.uuid4()),request=None)
         logger.info(f"Successfully checked packages: {packages}")
