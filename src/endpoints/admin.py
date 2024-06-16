@@ -3,7 +3,7 @@ import secrets
 from datetime import datetime
 
 from dsg_lib.common_functions.email_validation import validate_email_address
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response,BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select
@@ -14,6 +14,7 @@ from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
 from ..functions.models import RoleEnum
 from ..resources import db_ops, templates
+from ..functions import note_import
 
 router = APIRouter()
 
@@ -270,3 +271,85 @@ async def admin_failed_login_attempts(
     return templates.TemplateResponse(
         request=request, name="/admin/failed_login_attempts.html", context=context
     )
+
+
+@router.get("/note-ai-check", response_class=HTMLResponse)
+async def admin_note_ai_check(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    """
+    Handles the GET request for the "/note-ai-check" route.
+
+    Args:
+        request (Request): The incoming request.
+        user_info (dict): The user information, obtained from the check_login dependency.
+
+    Returns:
+        TemplateResponse: The response, rendered using a template.
+    """
+
+    # Log the start of the process
+    logger.info("Processing note AI check for admin")
+
+    # Extract user identifier from user_info
+    user_identifier = user_info["user_identifier"]
+
+    # These lines don't seem to do anything. Consider removing them or using the values.
+    user_info["timezone"]
+    user_info["is_admin"]
+
+    # Log the user identifier
+    logger.debug(f"User identifier: {user_identifier}")
+
+    # Create a query to select notes that need AI check
+    query = Select(Notes).where(Notes.mood == "processing")
+
+    # Execute the query and get the results
+    notes = await db_ops.read_query(query=query)
+
+    notes = [note.to_dict() for note in notes]
+    # create a list of User IDs with a count of notes [{user_id: user_id, user_name: user_name, count: count, last_note_date: last_note_date}]  
+    user_note_count = []
+    for note in notes:
+        user_id = note["user_id"]
+        # user_name = note["user_name"]
+        note_date = note["date_created"]
+        found = False
+        for user in user_note_count:
+            if user["user_id"] == user_id:
+                user["count"] += 1
+                if note_date > user["last_note_date"]:
+                    user["last_note_date"] = note_date
+                found = True
+                break
+        if not found:
+            user_note_count.append({"user_id": user_id, "user_name": None, "count": 1, "last_note_date": note_date})
+    # Log the number of retrieved notes
+    logger.debug(f"Retrieved {len(notes)} notes for AI check")
+
+    # Create the context for the template
+    context = {"page":"admin","user_identifier": user_identifier, "notes": notes, "user_note_count": user_note_count}
+    # Log the end of the process
+    logger.info("Finished processing note AI check for admin")
+    # Render the template and return the response
+    return templates.TemplateResponse(
+        request=request, name="/admin/note_ai_check.html", context=context
+    )
+
+@router.get("/note-ai-check/{user_id}")
+async def admin_note_ai_check_user(user_id:str, background_tasks: BackgroundTasks,user_info: dict = Depends(check_login)):
+    # Create a query to select notes that need AI check
+    query = Select(Notes).where(Notes.mood == "processing")
+
+    # Execute the query and get the results
+    notes = await db_ops.read_query(query=query)
+    notes = [note.to_dict() for note in notes]
+    
+    list_of_ids:list = []
+    for note in notes:
+        list_of_ids.append(note['pkid'])
+
+    # print(list_of_ids)
+    background_tasks.add_task(note_import.process_ai, user_identifier=user_id,list_of_ids=list_of_ids)
+    return RedirectResponse(url="/admin", status_code=302)

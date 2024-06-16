@@ -236,15 +236,17 @@ def note_on_change(mapper, connection, target):
     pattern = re.compile("[^a-zA-Z, ]")
     target.ai_fix = False  # Set ai_fix to False by default
 
+    # Check if mood is not one of the specified values
+    if target.mood not in ["positive", "negative", "neutral"]:
+        target.ai_fix = True
+
     # Check if mood_analysis is more than one word
     if " " in target.mood_analysis:
         target.ai_fix = True
 
     for tag in target.tags:
         if pattern.search(tag) or " " in tag:
-            target.ai_fix = (
-                True  # Set ai_fix to True only if an illegal character is found
-            )
+            target.ai_fix = True  # Set ai_fix to True if an illegal character is found
             break
 
 

@@ -9,6 +9,7 @@ import itertools
 from datetime import datetime
 
 from dateutil.parser import parse
+from dateutil.tz import UTC
 from loguru import logger
 from sqlalchemy import Select, and_
 from tqdm import tqdm
@@ -91,59 +92,6 @@ async def read_notes_from_file(csv_file: list, user_id: str):
     await notes_metrics.update_notes_metrics(user_id=user_id)
 
 
-async def process_ai(list_of_ids: list, user_identifier: str):
-    """
-    Processes a list of notes using AI for mood analysis and tagging.
-
-    Args:
-        list_of_ids (list): The list of note IDs to process.
-        user_identifier (str): The user identifier.
-
-    Returns:
-        None
-    """
-    # Iterate over each note ID in the list
-    for note_id in tqdm(list_of_ids, desc="AI processing"):
-        # Create a query to select the note with the given ID and user identifier
-        query = Select(Notes).where(
-            and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
-        )
-        # Execute the query and get the note
-        note = await db_ops.read_one_record(query=query)
-        # Convert the note to a dictionary
-        note = note.to_dict()
-
-        # Get the mood of the note
-        mood = note["mood"]
-        # If the mood is not one of the expected values, use AI to get the mood
-        if mood not in ["positive", "negative", "neutral"]:
-            mood = await ai.get_mood(content=note["note"])
-            mood = mood["mood"]
-
-        # Get the tags and summary from OpenAI
-        analysis = await ai.get_analysis(content=note["note"])
-        # Log the received analysis
-        logger.info(f"Received analysis from AI: {analysis}")
-
-        # Create a dictionary with the new values for the note
-        note_update = {
-            "tags": analysis["tags"]["tags"],
-            "summary": analysis["summary"],
-            "mood_analysis": analysis["mood_analysis"],
-            "ai_fix": False,
-            "mood": mood,
-        }
-
-        # Update the note in the database
-        data = await db_ops.update_one(
-            table=Notes, record_id=note["pkid"], new_values=note_update
-        )
-        # Convert the updated note to a dictionary
-        data = data.to_dict()
-        # Log the ID of the resubmitted note
-        logger.info(f"Resubmited note to AI with ID: {data['pkid']}")
-
-
 def parse_date(date_created):
     """
     Parses a date string into a datetime object.
@@ -157,19 +105,60 @@ def parse_date(date_created):
 
     try:
         # Try to parse the date with time
-        return datetime.strptime(date_created, "%m/%d/%Y %H:%M")
+        dt = datetime.strptime(date_created, "%m/%d/%Y %H:%M")
     except ValueError:
         try:
             # If that fails, try to parse the date without time
-            return datetime.strptime(date_created, "%m/%d/%Y")
+            dt = datetime.strptime(date_created, "%m/%d/%Y")
         except ValueError:
             try:
                 # If that also fails, try to parse the date with dateutil.parser.parse
-                return parse(date_created)
+                dt = parse(date_created)
             except ValueError:
                 # If all attempts fail, return None
                 return None
 
+    # If the datetime object is offset-aware, convert it to UTC and make it offset-naive
+    if dt.tzinfo is not None and dt.tzinfo.utcoffset(dt) is not None:
+        dt = dt.astimezone(UTC).replace(tzinfo=None)
+
+    return dt
+
+
+from tqdm.asyncio import tqdm as async_tqdm
+
+async def process_ai(list_of_ids: list, user_identifier: str):
+    for note_id in async_tqdm(list_of_ids, desc="AI processing"):
+        try:
+            query = Select(Notes).where(Notes.pkid == note_id)
+            note = await db_ops.read_one_record(query=query)
+            note = note.to_dict()
+            logger.debug(f"AI Processing of note: {note}")
+
+            mood = note["mood"]
+            if mood not in ["positive", "negative", "neutral"]:
+                mood = await ai.get_mood(content=note["note"])
+                mood = mood["mood"]
+
+            analysis = await ai.get_analysis(content=note["note"])
+            logger.info(f"Received analysis from AI: {analysis}")
+
+            note_update = {
+                "tags": analysis["tags"]["tags"],
+                "summary": analysis["summary"],
+                "mood_analysis": analysis["mood_analysis"],
+                "ai_fix": False,
+                "mood": mood,
+            }
+
+            data = await db_ops.update_one(
+                table=Notes, record_id=note["pkid"], new_values=note_update
+            )
+            data = data.to_dict()
+            logger.info(f"Resubmitted note to AI with ID: {data['pkid']}")
+        except Exception as e:
+            logger.error(f"Error processing note ID {note_id}: {e}")
+            continue
 
 def validate_csv_headers(csv_reader: csv.DictReader):
     """
