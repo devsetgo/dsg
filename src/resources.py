@@ -97,31 +97,34 @@ async def add_system_data():
         logger.warning("Creating admin user")
         data = await add_admin()  # Create an admin user
 
-        if settings.create_demo_notes is True:
-            await add_notes(user_id=data["pkid"])  # Create notes for the admin user
+        if settings.release_env.lower()!="prd":
+            if settings.create_demo_notes is True:
+                await add_notes(user_id=data["pkid"])  # Create notes for the admin user
 
-    if settings.create_demo_user is True:
-        logger.warning("Creating demo user")
-        for _ in tqdm(
-            range(settings.create_demo_users_qty),
-            desc="creating demo users",
-            leave=True,
-        ):
-            data = await add_user()  # Create a demo user
-            await add_notes(user_id=data["pkid"])  # Create notes for the loop user
+    
+    if settings.release_env.lower()!="prd":
+        if settings.create_demo_user is True:
+            logger.warning("Creating demo user")
+            for _ in tqdm(
+                range(settings.create_demo_users_qty),
+                desc="creating demo users",
+                leave=True,
+            ):
+                data = await add_user()  # Create a demo user
+                await add_notes(user_id=data["pkid"])  # Create notes for the loop user
 
-    if settings.create_base_categories is True:
-        logger.warning("Creating base categories")
-        await add_categories()  # Create base categories
+        if settings.create_base_categories is True:
+            logger.warning("Creating base categories")
+            await add_categories()  # Create base categories
 
-    if settings.create_demo_data is True:
-        logger.warning("Creating demo data")
-        await add_interesting_things()  # Create demo data
-        await add_posts()
-        
-        from .functions.pypi_core import add_demo_data
-        await add_demo_data(qty=20)
-        # await fake_login_attempts()
+        if settings.create_demo_data is True:
+            logger.warning("Creating demo data")
+            await add_interesting_things()  # Create demo data
+            await add_posts()
+            
+            from .functions.pypi_core import add_demo_data
+            await add_demo_data(qty=20)
+            # await fake_login_attempts()
 
 async def fake_login_attempts():
     from .endpoints.users import fail_logging
