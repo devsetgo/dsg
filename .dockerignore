@@ -1,11 +1,12 @@
 .github/
 .git
+.vscode
 __archive
 .devcontainer
-csv/
-
+.sonarlint
+.ruff_cache
 htmlcov
-log/
+log/*.log
 logs/
 scripts/
 sqlite_db/*.db
