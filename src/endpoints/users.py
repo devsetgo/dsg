@@ -351,7 +351,7 @@ async def get_user_info(
 github_sso = GithubSSO(
     settings.github_client_id,
     settings.github_client_secret,
-    "http://localhost:5000/users/callback",
+    f"{settings.github_call_back_domain}/users/callback",
 )
 
 
@@ -366,11 +366,11 @@ async def github_callback(request: Request):
 
     with github_sso:
         user = await github_sso.verify_and_process(request)
-
+    print(user)
     user_stored = await db_ops.read_one_record(
         Select(Users).where(Users.user_name == user.display_name)
     )
-
+    print(user_stored)
     if not user_stored:
         is_admin = False
         is_active = False
@@ -382,7 +382,7 @@ async def github_callback(request: Request):
                 add_roles[role] = True
         else:
             add_roles = {"user_access": True}
-        user = Users(
+        new_user = Users(
             user_name=user.display_name,
             email=user.email,
             my_timezone=settings.default_timezone,
@@ -390,16 +390,18 @@ async def github_callback(request: Request):
             is_admin=is_admin,
             roles=add_roles,
         )
-        user_stored = await db_ops.create_one(user)
-        logger.critical(user_stored.to_dict())
-    # access_token = create_access_token(
-    #         username=user_stored.username,
-    #         provider=user.provider
-    #     )
+        user_stored = await db_ops.create_one(new_user)
+        logger.critical(user_stored)
+        print(user_stored)
 
-    user_stored = user_stored.to_dict()
-    # Log the successful login attempt
-    logger.info(f"Successful login attempt for user {user_stored}")
+    try:
+        user_stored = user_stored.to_dict()
+        # Log the successful login attempt
+        logger.info(f"Successful login attempt for user {user_stored}")
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        print(e)
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
     # Set the user identifier in the session
     request.session["user_identifier"] = user_stored["pkid"]

@@ -24,6 +24,7 @@ def fix_date_value(date_created, timezone="America/New_York"):
     # ensure date is a valid datetime object
     # examples 2013-08-18 19:48:00, 2017-08-20 21:36:42.000000
     # if date is not valid error is raised
+    print(date_created)
     try:
         new_datetime = datetime.datetime.strptime(date_created, "%Y-%m-%d %H:%M:%S.%f")
     except ValueError:
