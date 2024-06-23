@@ -19,153 +19,6 @@ from ..settings import settings
 router = APIRouter()
 
 
-# @router.get("/login", response_class=HTMLResponse)
-# async def login(request: Request):
-#     context = {}
-#     return templates.TemplateResponse(
-#         request=request, name="users/login.html", context=context
-#     )
-
-
-# @router.post("/login")
-# async def login_user(request: Request):
-#     # Get the form data from the request
-#     form = await request.form()
-#     user_name = form["username"]
-#     password = form["password"]
-#     meta_data = dict(request.headers)
-
-#     # Log the login attempt
-#     logger.debug(f"Attempting to log in user: {user_name}")
-#     # Fetch the user record from the database
-#     user = await db_ops.read_one_record(
-#         Select(Users).where(Users.user_name == user_name)
-#     )
-#     logger.debug(f"Users: {user}")
-#     # Check if the user exists and if they have made too many failed login attempts
-#     if (
-#         user is not None
-#         and user.failed_login_attempts >= settings.max_failed_login_attempts
-#     ):
-#         # Log the account lock
-#         logger.warning(
-#             f"Account for user: {user_name} is locked due to too many failed login attempts"
-#         )
-#         await fail_logging(user_name=user_name, password=password, meta_data=meta_data)
-
-#         # Set the error message and return it in the response
-#         request.session["error"] = (
-#             "Account is locked due to too many failed login attempts"
-#         )
-#         response = templates.TemplateResponse(
-#             request=request,
-#             name="users/error_message.html",
-#             context={"error": request.session["error"]},
-#         )
-
-#         return response
-
-#     # Check if the user exists and if the password is correct
-#     if user is None or not verify_password(hash=user.password, password=password):
-#         # If the user exists, increment the failed login attempts
-#         if user is not None:
-#             login_attempt = user.failed_login_attempts + 1
-#             await db_ops.update_one(
-#                 table=Users,
-#                 new_values={"failed_login_attempts": login_attempt},
-#                 record_id=user.pkid,
-#             )
-
-#         await fail_logging(user_name=user_name, password=password, meta_data=meta_data)
-#         # Log the failed login attempt
-#         logger.debug(f"Failed login attempt for user: {user_name}")
-
-#         # Set the error message and return it in the response
-#         request.session["error"] = "Username and/or Password is incorrect"
-
-#         response = templates.TemplateResponse(
-#             request=request,
-#             name="users/error_message.html",
-#             context={"error": request.session["error"]},
-#         )
-
-#         return response
-
-#     # If the login is successful
-#     else:
-#         # Log the successful login attempt
-#         logger.info(f"Successful login attempt for user {user_name}")
-
-#         # Set the user identifier in the session
-#         request.session["user_identifier"] = user.pkid
-#         request.session["roles"] = user.roles
-
-#         if user.is_admin is True:
-#             request.session["is_admin"] = True
-#         request.session["timezone"] = user.my_timezone
-
-#         # Set the session expiration time
-#         session_duration = timedelta(minutes=settings.max_age)
-#         expiration_time = datetime.now() + session_duration
-#         request.session["exp"] = expiration_time.timestamp()
-
-#         # Create the response object
-#         response = Response(headers={"HX-Redirect": "/notes"}, status_code=200)
-
-#         # Update the last login date and reset the failed login attempts in the database
-#         login_update = await db_ops.update_one(
-#             table=Users,
-#             new_values={
-#                 "date_last_login": datetime.utcnow(),
-#                 "failed_login_attempts": 0,
-#             },
-#             record_id=user.pkid,
-#         )
-#         logger.debug(f"Login update: {login_update}")
-
-#         # Return the response
-#         return response
-
-
-# async def fail_logging(user_name: str, password: str, meta_data: dict):
-#     """
-#     Logs a failed login attempt.
-
-#     Args:
-#         user_name (str): The username used in the failed login attempt.
-#         password (str): The password used in the failed login attempt.
-#         meta_data: Additional metadata about the failed login attempt.
-
-#     This function hashes the password, creates a FailedLoginAttempts object,
-#     saves it to the database, and logs the failed attempt.
-#     """
-#     real_id = False
-
-#     user_query = Select(Users).where(Users.user_name == user_name)
-#     user = await db_ops.read_one_record(query=user_query)
-
-#     if user is not None:
-#         logger.debug("Real User with bad password. Hashing for safety.")
-#         # hash password to protect real users
-#         password = hash_password(password)
-#         real_id = True
-#     # Create a FailedLoginAttempts object
-#     fail_data = FailedLoginAttempts(
-#         user_name=user_name, password=password, meta_data=meta_data, real_id=real_id
-#     )
-
-#     # Save the FailedLoginAttempts object to the database
-#     fail_data = await db_ops.create_one(fail_data)
-
-#     # If the returned object has a to_dict method, convert it to a dictionary
-#     if hasattr(fail_data, "to_dict"):
-#         fail_data = fail_data.to_dict()
-
-#     # Log the details of the failed login attempt
-#     logger.debug(f"Failed login data: {fail_data}")
-#     logger.info(f"failed login attempt with user name: {user_name}")
-
-
 @router.get("/edit-user", response_class=HTMLResponse)
 async def edit_user(
     request: Request,
@@ -355,22 +208,22 @@ github_sso = GithubSSO(
 )
 
 
-@router.get("/github-login", tags=["GitHub SSO"])
+@router.get("/github-login")
 async def github_login():
     with github_sso:
         return await github_sso.get_login_redirect()
 
 
-@router.get("/callback", tags=["GitHub SSO"])
+@router.get("/callback")
 async def github_callback(request: Request):
 
     with github_sso:
         user = await github_sso.verify_and_process(request)
-    print(user)
+
     user_stored = await db_ops.read_one_record(
         Select(Users).where(Users.user_name == user.display_name)
     )
-    print(user_stored)
+
     if not user_stored:
         is_admin = False
         is_active = False
@@ -391,8 +244,7 @@ async def github_callback(request: Request):
             roles=add_roles,
         )
         user_stored = await db_ops.create_one(new_user)
-        logger.critical(user_stored)
-        print(user_stored)
+        logger.debug(user_stored)
 
     try:
         user_stored = user_stored.to_dict()
@@ -400,7 +252,6 @@ async def github_callback(request: Request):
         logger.info(f"Successful login attempt for user {user_stored}")
     except Exception as e:
         logger.error(f"Error: {e}")
-        print(e)
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
     # Set the user identifier in the session

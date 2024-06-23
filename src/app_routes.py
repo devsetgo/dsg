@@ -132,12 +132,13 @@ def create_routes(app: FastAPI) -> NoReturn:
     # The tags argument specifies the tags for the routes
     # The include_in_schema argument specifies whether the routes should be included in the OpenAPI schema
 
+    hide_routes=True
     # Make sure these are in route alphabetical order
     app.include_router(
         admin.router,
         prefix="/admin",
         tags=["admin"],
-        include_in_schema=False,
+        include_in_schema=hide_routes,
     )
 
     app.include_router(
@@ -175,40 +176,40 @@ def create_routes(app: FastAPI) -> NoReturn:
         interesting_things.router,
         prefix="/interesting-things",
         tags=["interesting things"],
-        include_in_schema=False,
+        include_in_schema=hide_routes,
     )
 
     app.include_router(
         notes.router,
         prefix="/notes",
         tags=["notes"],
-        include_in_schema=False,
+        include_in_schema=hide_routes,
     )
     app.include_router(
         pages.router,
         prefix="/pages",
         tags=["html-pages"],
-        include_in_schema=False,
+        include_in_schema=hide_routes,
     )
 
     app.include_router(
         blog_posts.router,
         prefix="/posts",
         tags=["posts"],
-        include_in_schema=False,
+        include_in_schema=hide_routes,
     )
 
     app.include_router(
         pypi.router,
         prefix="/pypi",
         tags=["pypi"],
-        include_in_schema=False,
+        include_in_schema=hide_routes,
     )
     app.include_router(
         users.router,
         prefix="/users",
         tags=["users"],
-        include_in_schema=False,
+        include_in_schema=hide_routes,
     )
 
     # This should always be the last route added to keep it at the bottom of the OpenAPI docs
