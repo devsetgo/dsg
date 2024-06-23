@@ -32,24 +32,35 @@ async def root():
 
 @router.get("/index")
 async def index(request: Request):
-    cool_stuff = await db_ops.read_query(
-        Select(InterestingThings)
-        .limit(8)
-        .order_by(InterestingThings.date_created.desc())
-    )
-    cool_stuff = [thing.to_dict() for thing in cool_stuff]
-    cool_stuff = await update_timezone_for_dates(
-        data=cool_stuff, user_timezone=settings.default_timezone
-    )
-    posts = await db_ops.read_query(
-        Select(Posts).limit(5).order_by(Posts.date_created.desc())
-    )
-    posts = [post.to_dict() for post in posts]
-    posts = await update_timezone_for_dates(
-        data=posts, user_timezone=settings.default_timezone
-    )
-    context = {"page":"pages","data": {"my_stuff": {}, "cool_stuff": cool_stuff}, "posts": posts}
+    try:
+        cool_stuff = await db_ops.read_query(
+            Select(InterestingThings)
+            .limit(8)
+            .order_by(InterestingThings.date_created.desc())
+        )
+        cool_stuff = [thing.to_dict() for thing in cool_stuff]
+        cool_stuff = await update_timezone_for_dates(
+            data=cool_stuff, user_timezone=settings.default_timezone
+        )
+    except Exception as e:
+        error:str = f"Error getting Interesting things: {e}"
+        logger.error(error)
+        cool_stuff = []
+    
+    try:
+        posts = await db_ops.read_query(
+            Select(Posts).limit(5).order_by(Posts.date_created.desc())
+        )
+        posts = [post.to_dict() for post in posts]
+        posts = await update_timezone_for_dates(
+            data=posts, user_timezone=settings.default_timezone
+        )
+    except Exception as e:
+        error:str = f"Error getting Posts: {e}"
+        logger.error(error)
+        posts = []
 
+    context = {"page":"pages","data": {"my_stuff": {}, "cool_stuff": cool_stuff}, "posts": posts}
     return templates.TemplateResponse(
         request=request, name="index2.html", context=context
     )
