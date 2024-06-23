@@ -24,26 +24,9 @@ classifiers = [
 
 
 [project.urls]
-Homepage = "https://github.com/devsetgo/devsetgo_lib"
-Documentation = "https://devsetgo.github.io/devsetgo_lib/"
-Repository = "https://github.com/devsetgo/devsetgo_lib"
-
-
-# [project.optional-dependencies]
-# postgres = ["asyncpg>=0.21.0", "sqlalchemy>=2.0.10,<2.0.99"]
-# sqlite = ["aiosqlite>=0.17.0", "sqlalchemy>=2.0.10,<2.0.99"]
-# oracle = ["cx_Oracle>=8.0.0", "sqlalchemy>=2.0.10,<2.0.99"]
-# mssql = ["aioodbc>=0.4.1", "sqlalchemy>=2.0.10,<2.0.99"]
-# fastapi = ["fastapi>=0.100.0", "pydantic[email]>=2.0"]
-# all = [
-#     "asyncpg>=0.21.0",
-#     "sqlalchemy>=2.0.10,<2.0.99",
-#     "aiosqlite>=0.17.0",
-#     "cx_Oracle>=8.0.0",
-#     "fastapi>=0.100.0",
-#     "pydantic[email]>=2.0",
-#     "aioodbc>=0.4.1",
-# ]
+Homepage = "https://github.com/devsetgo/dsg"
+Documentation = "https://devsetgo.github.io/dsg/"
+Repository = "https://github.com/devsetgo/dsg"
 
 [project.scripts]
 # Add your scripts here if any
@@ -55,7 +38,7 @@ indent-width = 4
 unsafe-fixes = true
 # Assume Python 3.8
 target-version = "py312"
-src = ["dsg_lib", "test"]
+src = ["src", "test"]
 exclude = [
     "unreleased/*",
     "scripts/*",
@@ -107,7 +90,7 @@ exclude = [
 ]
 
 [tool.isort]
-src_paths = ["dsg_lib", "test"]
+src_paths = ["src", "test"]
 force_single_line = false
 multi_line_output = 3
 include_trailing_comma = true
