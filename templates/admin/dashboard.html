@@ -1,0 +1,154 @@
+{% extends "base.html" %} <!-- Extends the base HTML layout -->
+{% block page_title %}| Admin Dashboard{% endblock %} <!-- Sets the page title -->
+{% block page_stylesheet %} <!-- Starts the block for page-specific stylesheets -->
+<!-- DataTables -->
+<link
+  href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.5/b-3.0.2/b-html5-3.0.2/b-print-3.0.2/sc-2.4.1/sb-1.7.1/datatables.min.css"
+  rel="stylesheet">
+<!-- Stylesheet for DataTables Bootstrap 4 -->
+<link rel="stylesheet"
+  href="{{ url_for('static' , path='plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Responsive Bootstrap 4 -->
+<link rel="stylesheet"
+  href="{{ url_for('static' , path='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Buttons Bootstrap 4 -->
+{% endblock %} <!-- Ends the block for page-specific stylesheets -->
+{% block page_breadcrumb %} Dashboard{% endblock %} <!-- Sets the breadcrumb -->
+{% block page_head_title %}Dashboard{% endblock %} <!-- Sets the page head title -->
+{% block body %} <!-- Starts the block for the body of the page -->
+<section> <!-- Starts a section -->
+  <div class="container-fluid"> <!-- Starts a container-fluid -->
+    <div class="row"> <!-- Starts a row -->
+      <div class="col-12">
+        <div class="card card-primary card-outline card-outline-tabs">
+          <div class="card-header p-0 border-bottom-0">
+            <ul class="nav nav-tabs" id="custom-tabs-four-tab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="dash-tab" data-toggle="pill" href="#custom-tabs-four-dash" role="tab"
+                  aria-controls="custom-tabs-four-dash" aria-selected="true" hx-trigger="click"
+                  hx-indicator=".htmx-indicator">Dashboard</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="access-tab" data-toggle="pill" href="#custom-tabs-four-access" role="tab"
+                  aria-controls="custom-tabs-four-access" aria-selected="false" hx-trigger="click"
+                  hx-indicator=".htmx-indicator">Access</a>
+              </li>
+            </ul>
+          </div>
+          <div class="card-body">
+            <div class="tab-content" id="custom-tabs-four-tabContent">
+              <div class="tab-pane fade show active" id="custom-tabs-four-dash" role="tabpanel"
+                aria-labelledby="custom-tabs-four-dash-tab">
+                <div class="container-fluid">
+                  <div hx-get="/admin/note-ai-check" hx-trigger="load">
+                    <!-- Content will be loaded here -->
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="custom-tabs-four-access" role="tabpanel"
+                aria-labelledby="custom-tabs-four-access-tab">
+                <table id="usersTable" class="table table-striped" style="width:100%">
+                  <thead>
+                    <tr>
+                      <th>Full Name</th>
+                      <th>User Name</th>
+                      <th>Email</th>
+                      <th>Active</th>
+                      <th>Admin</th>
+                      <th>Site Access</th>
+                      <th>Last Access</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for u in users %}
+                    <tr>
+                      <td>{{u.first_name}} {{u.last_name}}</td>
+                      <td><a href="/admin/user/{{u.pkid}}">{{u.user_name}}</a></td>
+                      <td>{{u.email}}</td>
+                      <td>{{u.is_active}}</td>
+                      <td>{{u.is_admin}}</td>
+                      <td>{{u.site_access}}</td>
+                      <td>{{u.date_last_login}}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th>Name</th>
+                      <th>user_name</th>
+                      <th>email</th>
+                      <th>is_active</th>
+                      <th>is_admin</th>
+                      <th>site_access</th>
+                      <th>Last Access</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</section>
+{% endblock %}
+{% block page_sidebar_content %}
+<!-- blank and demo script adds page configuration example -->
+<ul>
+  {% for _ in range(5) %}
+  <li>Hi</li>
+  {% endfor %}
+</ul>
+{% endblock %}
+{% block page_scripts %}
+<!-- Start of page scripts block -->
+<!-- OPTIONAL SCRIPTS -->
+<!-- tab links -->
+<script>
+  // Add click event listener to each tab
+  document.querySelectorAll('.nav-link').forEach(tab => {
+    tab.addEventListener('click', function () {
+      // Update URL hash when a tab is clicked
+      window.location.hash = this.id;
+    });
+  });
+
+  // On page load, check the URL hash and open the corresponding tab
+  window.onload = function () {
+    let hash = window.location.hash;
+    if (hash) {
+      // Remove '#' from the hash
+      let tabId = hash.slice(1);
+      // Open the tab
+      let tab = document.getElementById(tabId);
+      if (tab) {
+        tab.click();
+      }
+    }
+  };
+</script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"
+  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script
+  src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.5/b-3.0.2/b-html5-3.0.2/b-print-3.0.2/sc-2.4.1/sb-1.7.1/datatables.min.js"></script>
+
+
+<script>
+  $(function () {
+    $('#usersTable').DataTable({
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+      dom: 'Bfrtip',
+      buttons: ['copy', 'csv','pdf']
+    });
+  });
+</script>
+{% endblock %}
+<!-- End of page scripts block -->

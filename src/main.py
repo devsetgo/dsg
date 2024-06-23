@@ -1,101 +1,66 @@
 # -*- coding: utf-8 -*-
-from typing import Any
-from typing import Dict
 
-from dsg_lib.logging_config import config_log
-from starlette.applications import Starlette
-from starlette.middleware import Middleware
-from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.routing import Mount
-from starlette.routing import Route
-from starlette.staticfiles import StaticFiles
-from starlette_wtf import CSRFProtectMiddleware
-import contextlib
+from contextlib import asynccontextmanager
 
-import resources
-from com_lib import exceptions
-from endpoints.health import endpoints as health_pages
-from endpoints.main import endpoints as main_pages
-from endpoints.pypi_check import endpoints as pypi_pages
-from settings import config_settings
+from dsg_lib.common_functions import logging_config
+from fastapi import FastAPI, Request
+from fastapi.responses import RedirectResponse
+from loguru import logger
 
-config_log(
-    # logging_directory="log",
-    # log_name="log.log",
-    logging_level=config_settings.loguru_logging_level,
-    log_rotation=config_settings.loguru_rotation,
-    log_retention=config_settings.loguru_retention,
-    # log_backtrace=False,
+from .app_middleware import add_middleware
+from .app_routes import create_routes
+from .functions.notes_metrics import all_note_metrics
+from .resources import startup
+from .settings import settings
+
+logging_config.config_log(
+    logging_directory=settings.logging_directory,
+    log_name=settings.log_name,
+    logging_level=settings.logging_level,
+    log_rotation=settings.log_rotation,
+    log_retention=settings.log_retention,
+    log_backtrace=settings.log_backtrace,
+    log_format=None,
+    log_serializer=settings.log_serializer,
+    log_diagnose=settings.log_diagnose,
+    # app_name="devsetgo",
+    # append_app_name=False,
 )
 
-# Initialize the app
-resources.init_app()
 
-# Define the various routes for our application
-routes = [
-    Route("/", endpoint=main_pages.homepage, methods=["GET"]),
-    Route("/index", endpoint=main_pages.index, methods=["GET"]),
-    Route("/about", endpoint=main_pages.about_page, methods=["GET"]),
-    Route("/health", endpoint=health_pages.health_status, methods=["GET"]),
-    Route("/pypi/check", endpoint=pypi_pages.pypi_index, methods=["GET", "POST"]),
-    Route("/pypi/dashboard", endpoint=pypi_pages.pypi_data, methods=["GET"]),
-    Route(
-        "/pypi/results/{page}", endpoint=pypi_pages.pypi_result, methods=["GET", "POST"]
-    ),
-    Route("/users/login", endpoint=main_pages.login, methods=["GET", "POST"]),
-    Mount("/static", app=StaticFiles(directory="static"), name="static"),
-]
-
-# Add middleware to the app
-middleware = [
-    Middleware(
-        SessionMiddleware,
-        secret_key=config_settings.secret_key,
-        same_site=config_settings.same_site,
-        https_only=config_settings.https_on,
-        max_age=config_settings.max_age,
-    ),
-    Middleware(CSRFProtectMiddleware, csrf_secret=config_settings.csrf_secret),
-]
-
-# Define Exception Handlers
-exception_handlers: Dict[Any, Any] = {
-    403: exceptions.not_allowed,
-    404: exceptions.not_found,
-    500: exceptions.server_error,
-}
-
-
-# This is a context manager that can be used to manage the lifespan of an application.
-# It takes in an `app` argument, which is the application instance that needs to be managed.
-@contextlib.asynccontextmanager
-async def lifespan(app):
-    # Before starting the application, any necessary resources can be initialized or started up.
-    await resources.startup()
-
-    # The `yield` keyword is used to indicate the start of the application's lifespan.
-    # Any code that comes after this will be executed when the context manager is exited.
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("starting up")
+    await startup()
+    await all_note_metrics()
     yield
-
-    # After the application has finished running, any necessary resources can be cleaned up or shut down.
-    await resources.shutdown()
+    logger.info("shutting down")
 
 
-# Setup the main Starlette application
-app = Starlette(
-    debug=config_settings.debug,
-    routes=routes,
-    middleware=middleware,
-    exception_handlers=exception_handlers,
-    # on_startup=[resources.startup],
-    # on_shutdown=[resources.shutdown],
+# Create an instance of the FastAPI class
+app = FastAPI(
+    title="DevSetGo.com",  # The title of the API
+    description="Website for devsetgo.com",  # A brief description of the API
+    version="2.0",  # The version of the API
+    docs_url="/docs",  # The URL where the API documentation will be served
+    redoc_url="/redoc",  # The URL where the ReDoc documentation will be served
+    openapi_url="/openapi.json",  # The URL where the OpenAPI schema will be served
+    debug=settings.debug_mode,  # Enable debug mode
+    middleware=[],  # A list of middleware to include in the application
+    routes=[],  # A list of routes to include in the application
+    lifespan=lifespan,
+    # exception_handlers=
 )
+if settings.debug_mode:
+    logger.warning("Debug mode is enabled and should not be used in production.")
 
-# Start the application using uvicorn server
-if __name__ == "__main__":
-    import uvicorn
 
-    uvicorn.run(
-        app, host="0.0.0.0", port=5000, log_level="info", debug=config_settings.debug
-    )
+add_middleware(app)
+create_routes(app)
+
+
+@app.get("/")
+async def root(request: Request):
+    # get user_identifier from session
+    request.session.get("user_identifier", None)
+    return RedirectResponse(url="/pages/index")

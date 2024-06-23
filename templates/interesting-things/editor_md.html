@@ -1,0 +1,21 @@
+<div class="input-group mb-5">
+    <textarea id="note" name="summary" maxlength="5000"></textarea>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<script>
+    const easymde = new EasyMDE({
+        toolbar: ["bold", "italic", "strikethrough", "heading", "|", "quote", "code", "image", "horizontal-rule", "link", "heading-2", "heading-3", "undo", "redo", "guide"],
+        sideBySideFullscreen: false,
+        placeholder: "Type here...",
+        element: document.getElementById('note'),
+    });
+    easymde.toggleSideBySide();
+
+    document.querySelector('form').addEventListener('submit', function (e) {
+        if (easymde.value().trim() === '') {
+            e.preventDefault();
+            alert('Please enter a note.');
+        }
+    });
+</script>

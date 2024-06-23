@@ -1,0 +1,127 @@
+<div class="row" style="margin-top: 20px;">
+    <div class="col-12">
+        <table id="debtTable" class="table table-striped" style="width:100%">
+            <thead>
+                <tr>
+                    <th>record_date</th>
+                    <th>debt_held_public_amt</th>
+                    <th>intragov_hold_amt</th>
+                    <th>tot_pub_debt_out_amt</th>
+                    <th>debt_growth</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in debt %}
+                <tr>
+                    <td>{{data.record_date}}</td>
+                    <td>{{ '{:,}'.format(data.debt_held_public_amt|float|round(2)|int) if data.debt_held_public_amt != 'null' else 'null' }}</td>
+                    <td>{{ '{:,}'.format(data.intragov_hold_amt|float|round(2)|int) if data.intragov_hold_amt != 'null' else 'null' }}</td>
+                    <td>{{ '{:,}'.format(data.tot_pub_debt_out_amt|float|round(2)|int) if data.tot_pub_debt_out_amt != 'null' else 'null' }}</td>
+                    <td>{{ '{:,}'.format(data.debt_growth|float|round(4)) if data.debt_growth is not none else none }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>record_date</th>
+                    <th>debt_held_public_amt</th>
+                    <th>intragov_hold_amt</th>
+                    <th>tot_pub_debt_out_amt</th>
+                    <th>debt_growth</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+<div class="row" style="margin-top: 20px;">
+    <div class="col-12">
+        <!-- Create a canvas element for your chart -->
+        <div class="chart-container" style="position: relative; height:60vh; width:80vw">
+            <canvas id="debtChart"></canvas>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const debtData = {{ debt|tojson|safe }};
+    const labels = debtData.map(debt => new Date(debt.record_date));
+    const data = {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Total Public Debt',
+                data: debtData.map(debt => parseFloat(debt.tot_pub_debt_out_amt.replace(/,/g, ''))),
+                borderColor: 'rgb(75, 192, 192)',
+                fill: false,
+                yAxisID: 'y',
+            },
+            {
+                label: 'Debt Held by Public',
+                data: debtData.map(debt => parseFloat(debt.debt_held_public_amt.replace(/,/g, ''))),
+                borderColor: 'rgb(255, 99, 132)',
+                fill: false,
+                yAxisID: 'y',
+            },
+            {
+                label: 'Intragovernmental Holdings',
+                data: debtData.map(debt => parseFloat(debt.intragov_hold_amt.replace(/,/g, ''))),
+                borderColor: 'rgb(255, 205, 86)',
+                fill: false,
+                yAxisID: 'y',
+            },
+            {
+                label: 'Debt Growth',
+                data: debtData.map((debt, i, arr) => i > 0 ? ((parseFloat(debt.tot_pub_debt_out_amt.replace(/,/g, '')) - parseFloat(arr[i-1].tot_pub_debt_out_amt.replace(/,/g, ''))) / parseFloat(arr[i-1].tot_pub_debt_out_amt.replace(/,/g, ''))) * 100 : 0),
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.5)', // Add this line
+                fill: true, // Change this line
+                yAxisID: 'y1',
+            }
+        ]
+    };
+
+    const config = {
+        type: 'line',
+        data: data,
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'month'
+                    }
+                },
+                y: {
+                    beginAtZero: true
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                }
+            },
+            interaction: {
+                intersect: true,
+            }
+        }
+    };
+
+    new Chart(document.getElementById('debtChart'), config);
+</script>
+
+<script>
+    $(function () {
+      $('#debtTable').DataTable({
+        "paging": true,
+        "lengthChange": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "autoWidth": true,
+        dom: 'Bfrtip',
+        buttons: ['copy', 'csv', 'pdf']
+      });
+    });
+  </script>

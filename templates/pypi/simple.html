@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block page_title %}| Requirements{% endblock %}
+{% block page_stylesheet %}
+<!-- <style>
+  #text-to-copy {
+    margin: 0;
+    padding: 0;
+    white-space: pre-wrap;
+  }
+</style> -->
+<!-- DataTables -->
+<link rel="stylesheet" href="{{ url_for('static' , path='plugins/datatables-bs4/css/dataTables.bootstrap4.css') }}">
+{% endblock %}
+{% block page_breadcrumb %} Requirements{% endblock %}
+{% block page_head_title %}Requirements Page{% endblock %}
+{% block body %}
+<!-- Main content -->
+
+<section class="content">
+<a href="/pypi/list">All</a><br>
+
+{{request_group_id}}
+<p>{{db_data}}</p>
+<p>
+<ul>
+  {% for item in db_data %}
+  <li>
+    Request Group ID: {{ item.request_group_id }}<br>
+    New Version: {{ item.new_version }}<br>
+    Vulnerabilities:<br>
+    {% for vuln in item.vulnerability %}
+      ID: {{ vuln.id }}<br>
+      Details: {{ vuln.details }}<br>
+      Fixed In: {{ vuln.fixed_in }}<br>
+      Link: <a href="{{ vuln.link }}">{{ vuln.link }}</a><br>
+      Source: {{ vuln.source }}<br>
+      Summary: {{ vuln.summary }}<br>
+      Withdrawn: {{ vuln.withdrawn }}<br>
+    {% endfor %}
+    Date Created: {{ item.date_created }}<br>
+    Current Version: {{ item.current_version }}<br>
+    Library ID: {{ item.library_id }}<br>
+    New Version Vulnerability: {{ item.new_version_vulnerability }}<br>
+    PKID: {{ item.pkid }}<br>
+    Date Updated: {{ item.date_updated }}
+  </li>
+  {% endfor %}
+</ul>
+</p>
+</section>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+{% endblock %}
+
+{% block page_sidebar_content %}
+<!-- blank and demo script adds page configuration example -->
+<!-- <div class="p-3">
+  <h5>Title</h5>
+  <p>Sidebar content</p>
+</div> -->
+{% endblock %}
+{% block page_scripts %}
+<!-- page scripts-->
+<script>
+function copyText() {
+  var textToCopy = document.getElementById("text-to-copy").textContent;
+
+  // Remove extra empty lines and spaces at the beginning of each line
+  textToCopy = textToCopy.replace(/^\s*[\r\n]/gm, '').replace(/^\s+/gm, '');
+
+  navigator.clipboard.writeText(textToCopy)
+    .then(() => {
+      var alertBox = alert("Text copied to clipboard!");
+      setTimeout(function() {
+        // Close the alert after 3 seconds
+        alertBox.close();
+      }, 3000);
+    })
+    .catch((error) => console.error("Copy failed", error));
+}
+</script>
+
+
+<!-- DataTables -->
+<script src="{{ url_for('static' , path='plugins/datatables/jquery.dataTables.js') }}"></script>
+<script src="{{ url_for('static' , path='plugins/datatables-bs4/js/dataTables.bootstrap4.js') }}"></script>
+
+<!-- page script -->
+<script>
+  $(function () {
+    $("#example1").DataTable();
+    $('#example2').DataTable({
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+    });
+  });
+</script>
+{% endblock %}

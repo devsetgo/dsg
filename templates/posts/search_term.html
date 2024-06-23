@@ -1,0 +1,32 @@
+<!-- TODO: even spacing from left panel (padding-left: 15px;) -->
+<!-- TODO: Figure out correct place for link to Note -->
+<!-- TODO: Add pagination based on found and limit of 200 -->
+<div class="row">
+  <div class="col-md-12">
+    <p>{{found}} of {{note_count}}</p>
+    <h5>Search Results</h5>
+    {% for post in posts %}
+    {% if loop.index0 % 3 == 0 %}
+    <div class="row">
+    {% endif %}
+    <div class="{{ 'col-md-4' if found > 1 else 'col-md-12' }}">
+      <div class="card" style="width: 18rem;">
+        <div class="card-body">
+          <h5 class="card-title"><a href="/notes/{{note.pkid}}" class="card-link"><strong>{{ post.mood|capitalize }}</strong></a></h5>
+          <p class="card-text">{{ post.summary }}</p>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">{{ post.tags }}</li>
+        </ul>
+        <div class="card-body">
+          <p class="card-text"><small>{{ post.date_created }}</small></p>
+        </div>
+      </div>
+    </div>
+    {% if loop.index0 % 3 == 2 or loop.last %}
+    </div>
+    {% endif %}
+
+    {% endfor %}
+  </div>
+</div>

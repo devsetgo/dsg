@@ -1,0 +1,25 @@
+<li class="nav-item has-treeview {% if page == 'posts' %}menu-open{% else %}menu-closed{% endif %}">
+    <a href="#" class="nav-link" title="Notes">
+        <i class="nav-icon fas fa-book"></i>
+        <p>
+            Posts
+            <i class="right fas fa-angle-left"></i>
+        </p>
+    </a>
+    <ul class="nav nav-treeview">
+        <li class="nav-item">
+            <a href="/posts" class="nav-link" title="Dashboard">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Posts</p>
+            </a>
+        </li>
+        {% if request.session.roles and request.session.roles.posts %}
+        <li class="nav-item">
+            <a href="/posts/new" class="nav-link" title="New Note">
+                <i class="far fa-circle nav-icon"></i>
+                <p>New Post</p>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</li>

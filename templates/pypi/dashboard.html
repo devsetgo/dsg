@@ -1,0 +1,342 @@
+{% extends "base.html" %} <!-- Extends the base HTML layout -->
+
+{% block page_title %}| PyPi Data{% endblock %} <!-- Sets the page title -->
+
+{% block page_stylesheet %} <!-- Starts the block for page-specific stylesheets -->
+<!-- DataTables -->
+<link rel="stylesheet" href="{{ url_for('static' , path='plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Bootstrap 4 -->
+<link rel="stylesheet"
+  href="{{ url_for('static' , path='plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Responsive Bootstrap 4 -->
+<link rel="stylesheet"
+  href="{{ url_for('static' , path='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Buttons Bootstrap 4 -->
+
+<style>
+  .scrollable-section {
+    max-height: 200px;
+    overflow-y: auto;
+
+  }
+</style>
+{% endblock %} <!-- Ends the block for page-specific stylesheets -->
+
+{% block page_breadcrumb %} PyPi Data{% endblock %} <!-- Sets the breadcrumb -->
+
+{% block page_head_title %}PyPi Data{% endblock %} <!-- Sets the page head title -->
+
+{% block body %} <!-- Starts the block for the body of the page -->
+<section> <!-- Starts a section -->
+
+  <!-- Main content -->
+  <div class="content">
+    <div class="container-fluid">
+      <!-- Small boxes (Stat box) -->
+      <div class="row">
+        <!-- Box for Total Libraries -->
+        <div class="col-12 col-sm-6 col-md-3">
+          <div class="info-box">
+            <!-- Icon for Total Libraries -->
+            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-book"></i></span>
+            <div class="info-box-content">
+              <!-- Text for Total Libraries -->
+              <span class="info-box-text">Total Libraries</span>
+              <!-- Display total libraries -->
+              <span class="info-box-number">{{ total_libraries }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Box for Per Request Group -->
+        <div class="col-12 col-sm-6 col-md-3">
+          <div class="info-box mb-3">
+            <!-- Icon for Per Request Group -->
+            <span class="info-box-icon bg-success elevation-1"><i class="fas fa-layer-group"></i></span>
+            <div class="info-box-content">
+              <!-- Text for Per Request Group -->
+              <span class="info-box-text">Per Request Group</span>
+              <!-- Display libraries per request group -->
+              <span class="info-box-number">{{ libraries_per_request_group }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Clearfix for medium up screens -->
+        <div class="clearfix hidden-md-up"></div>
+
+        <!-- Box for Libraries With New Versions -->
+        <div class="col-12 col-sm-6 col-md-3">
+          <div class="info-box mb-3">
+            <!-- Icon for Libraries With New Versions -->
+            <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-exclamation-triangle"></i></span>
+            <div class="info-box-content">
+              <!-- Text for Libraries With New Versions -->
+              <span class="info-box-text">With New Versions</span>
+              <!-- Display libraries with new versions -->
+              <span class="info-box-number">{{ libraries_with_new_versions }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Box for Total Requests -->
+        <div class="col-12 col-sm-6 col-md-3">
+          <div class="info-box mb-3">
+            <!-- Icon for Total Requests -->
+            <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-list"></i></span>
+            <div class="info-box-content">
+              <!-- Text for Total Requests -->
+              <span class="info-box-text">Total Requests</span>
+              <!-- Display total requirements -->
+              <span class="info-box-number">{{ total_requirements }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Box for Requirements By Host IP -->
+        <div class="col-12 col-sm-6 col-md-3">
+          <div class="info-box mb-3">
+            <!-- Icon for Requirements By Host IP -->
+            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-network-wired"></i></span>
+            <div class="info-box-content">
+              <!-- Text for Requirements By Host IP -->
+              <span class="info-box-text">By Host IP</span>
+              <!-- Display requirements by host IP -->
+              <span class="info-box-number">{{ requirements_by_host_ip }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Box for Most Common User Agents -->
+        <div class="col-12 col-sm-6 col-md-3">
+          <div class="info-box mb-3">
+            <!-- Icon for User Agents -->
+            <span class="info-box-icon bg-success elevation-1"><i class="fa-brands fa-edge"></i></span>
+            <div class="info-box-content">
+              <!-- Text for User Agents -->
+              <span class="info-box-text">User Agents</span>
+              <!-- Display most common user agents -->
+              <span class="info-box-number">{{ most_common_user_agents }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Box for Mean per Request -->
+        <div class="col-12 col-sm-6 col-md-3">
+          <div class="info-box mb-3">
+            <!-- Icon for Mean per Request -->
+            <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-book-reader"></i></span>
+            <div class="info-box-content">
+              <!-- Text for Mean per Request -->
+              <span class="info-box-text">Mean per Request</span>
+              <!-- Display average number of libraries per requirement -->
+              <span class="info-box-number">{{ average_number_of_libraries_per_requirement }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Box for Number of Vulnerabilities -->
+        <div class="col-12 col-sm-6 col-md-3">
+          <div class="info-box mb-3">
+            <!-- Icon for Number of Vulnerabilities -->
+            <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-bug"></i></span>
+            <div class="info-box-content">
+              <!-- Text for Number of Vulnerabilities -->
+              <span class="info-box-text">Number of Vulnerabilities</span>
+              <!-- Display total number of vulnerabilities -->
+              <span class="info-box-number">{{ total_number_of_vulnerabilities }}</span>
+            </div>
+          </div>
+        </div>
+        <!-- End of the row -->
+      </div>
+      <!-- Start of the row -->
+      <div class="row">
+        <!-- Column for Most Common Libraries -->
+        <div class="col-md-6">
+          <!-- Heading for Most Common Libraries -->
+          <h3>Most Common Libraries</h3>
+          <!-- List for Most Common Libraries -->
+          <ul>
+            <!-- Loop through each library in most_common_libraries -->
+
+            {% if most_common_libraries %} <!-- Check if most_common_libraries is not empty -->
+              {% for library_name, count in most_common_libraries %}
+              <li>
+                <!-- Link to the library on PyPI -->
+                <a href="https://pypi.org/project/{{ library_name }}/" target="_blank">{{ library_name }}</a> ({{ count }})
+              </li>
+              {% endfor %}
+            {% else %} <!-- If most_common_libraries is empty -->
+              <li>No libraries found.</li>
+            {% endif %}
+          </ul>
+        </div>
+
+        <!-- Column for Libraries with Most Vulnerabilities -->
+        <div class="col-md-6">
+          <!-- Heading for Libraries with Most Vulnerabilities -->
+          <h3>Libraries with Most Vulnerabilities</h3>
+          <!-- List for Libraries with Most Vulnerabilities -->
+          <ul>
+            <!-- Loop through each library in libraries_with_most_vulnerabilities -->
+            {% for library in libraries_with_most_vulnerabilities %}
+            <li>
+              <!-- Link to the library on PyPI -->
+              <a href="https://pypi.org/project/{{ library.library_name }}/" target="_blank">{{ library.library_name
+                }}</a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <!-- End of the row -->
+      <!-- End of the container-fluid -->
+    </div>
+  </div>
+    <!-- End of the content -->
+
+    <!-- /.content-wrapper -->
+    <!-- Start of column -->
+    <div class="col-12">
+      <!-- Start of card -->
+      <div class="card">
+        <!-- Card header -->
+        <div class="card-header">
+          <!-- Card title -->
+          <h3 class="card-title">Last 100 Requests</h3>
+        </div>
+        <!-- End of card header -->
+        <!-- Card body -->
+        <div class="card-body">
+          <!-- Start of table -->
+          <table id="requirementsTable" class="table table-bordered table-striped">
+            <!-- Table head -->
+            <thead>
+              <tr>
+                <th>Link</th>
+                <th>Output</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <!-- Table body -->
+            <tbody>
+              <!-- Loop through the last 100 requests -->
+              {% for lr in last_one_hundred_requests %}
+              <tr>
+                <!-- Link to the request -->
+                <td><a href="/pypi/check/{{lr.request_group_id}}">Link</a></td>
+                <!-- Output of the request -->
+                <td>
+                  <!-- Button to preview the request -->
+                  <button type="button" class="btn btn-default" data-toggle="modal"
+                    data-target="#modal-{{lr.request_group_id}}">
+                    Preview Request <span title="{{lr.lib_out_count}} Libraries Checked"
+                      class="badge bg-primary">{{lr.lib_out_count}}</span>
+                  </button>
+                  <!-- Include the output model -->
+                  {% include "pypi/out_model.html" %}
+                  <!-- End of modal -->
+                </td>
+                <!-- Date of the request -->
+                <td>{{lr.date_created}}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <!-- Table foot -->
+            <tfoot>
+              <tr>
+                <th>Link</th>
+                <th>Output</th>
+                <th>Date</th>
+              </tr>
+            </tfoot>
+          </table>
+          <!-- End of table -->
+        </div>
+        <!-- End of card body -->
+      </div>
+      <!-- End of card -->
+    </div>
+    <!-- End of column -->
+    <!-- /.card -->
+</section>
+{% endblock %}
+
+
+{% block page_sidebar_content %}
+<!-- blank and demo script adds page configuration example -->
+
+{% endblock %}
+{% block page_scripts %}
+<!-- Start of page scripts block -->
+
+<!-- OPTIONAL SCRIPTS -->
+
+<!-- Import Chart.js library -->
+<script src="{{ url_for('static' , path='plugins/chart.js/Chart.min.js') }}"></script>
+
+<!-- Import demo.js script (currently commented out) -->
+<!-- <script src="{{ url_for('static' , path='dist/js/demo.js') }}"></script> -->
+
+<!-- Import dashboard3.js script -->
+<script src="{{ url_for('static' , path='dist/js/pages/dashboard3.js') }}"></script>
+
+<!-- DataTables & Plugins -->
+
+<!-- Import jQuery DataTables library -->
+<script src="{{ url_for('static' , path='plugins/datatables/jquery.dataTables.min.js') }}"></script>
+
+<!-- Import Bootstrap 4 DataTables library -->
+<script src="{{ url_for('static' , path='plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+
+<!-- Import DataTables Responsive library -->
+<script src="{{ url_for('static' , path='plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
+
+<!-- Import DataTables Responsive Bootstrap 4 library -->
+<script src="{{ url_for('static' , path='plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
+
+<!-- Import DataTables Buttons library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
+
+<!-- Import DataTables Buttons Bootstrap 4 library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
+
+<!-- Import JSZip library (for Excel export) -->
+<script src="{{ url_for('static' , path='plugins/jszip/jszip.min.js') }}"></script>
+
+<!-- Import PDFMake library (for PDF export) -->
+<script src="{{ url_for('static' , path='plugins/pdfmake/pdfmake.min.js') }}"></script>
+
+<!-- Import PDFMake fonts -->
+<script src="{{ url_for('static' , path='plugins/pdfmake/vfs_fonts.js') }}"></script>
+
+<!-- Import DataTables HTML5 Buttons library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
+
+<!-- Import DataTables Print Button library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
+
+<!-- Import DataTables Column Visibility Button library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
+
+<!-- Initialize DataTable with specific options -->
+<script>
+  $(document).ready(function () {
+    $('#requirementsTable').DataTable({
+      responsive: true,  // Enable responsive feature
+      lengthChange: false,  // Disable length change option
+      searching: false,  // Disable searching option
+      ordering: true,  // Enable ordering option
+      info: true,  // Enable info option
+      autoWidth: false,  // Disable auto width feature
+      dom: 'Bfrtip',  // Define DataTables DOM positioning
+      buttons: [
+        'copy', 'csv', 'excel', 'pdf', 'print', 'colvis'  // Define buttons
+      ]
+    }).buttons().container().appendTo('#requirementsTable_wrapper .col-md-6:eq(0)');  // Append buttons to DataTable
+  });
+</script>
+
+{% endblock %}
+<!-- End of page scripts block -->

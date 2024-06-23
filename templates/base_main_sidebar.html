@@ -1,0 +1,28 @@
+<!-- Main Sidebar Container -->
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+  <!-- Brand Logo -->
+  <a href="/" class="brand-link">
+    <i class="fas fa-play fa-lg"> <span class="brand-text font-weight-light">DevSetGo</span></i>
+  </a>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    {% include "base_nav_items.html" %}
+    {% if request.session.user_identifier is not none and request.session.is_active == true %}
+    {% include "base_nav_loggedin.html" %}
+    {% if request.session.is_admin %}
+    {% include "admin/nav.html" %}
+    {% include "base_nav_developer.html" %}
+    {% endif %}
+    <ul>
+      <li class="nav-item">
+        <form action="/users/logout" method="GET">
+          <p> &nbsp;</p>
+          <button class="btn btn-block btn-outline-warning" type="submit"><i class="fas fa-sign-out-alt nav-icon"></i>
+            Logout</button>
+        </form>
+      </li>
+    </ul>
+    {% endif %}
+    <!-- Sidebar user panel (optional) -->
+    <!-- /.sidebar -->
+</aside>

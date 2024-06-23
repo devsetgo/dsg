@@ -1,0 +1,47 @@
+{% extends "base.html" %} <!-- Extends the base HTML layout -->
+
+{% block page_title %}| Posts{% endblock %} <!-- Sets the page title -->
+
+{% block page_stylesheet %} <!-- Starts the block for page-specific stylesheets -->
+
+{% endblock %} <!-- Ends the block for page-specific stylesheets -->
+
+{% block page_breadcrumb %} Posts{% endblock %} <!-- Sets the breadcrumb -->
+
+{% block page_head_title %}Posts{% endblock %} <!-- Sets the page head title -->
+
+{% block body %} <!-- Starts the block for the body of the page -->
+<section> <!-- Starts a section -->
+
+  <!-- Main content -->
+  <div class="content">
+    <div class="container-fluid">
+      {% include 'posts/search-form.html' %}
+      <script>
+        document.addEventListener('htmx:configRequest', (event) => {
+          const urlParams = new URLSearchParams(window.location.search);
+          for (const [key, value] of urlParams) {
+            event.detail.parameters[key] = value;
+          }
+        });
+      </script>
+
+      <div class="row" hx-get="/posts/pagination" hx-trigger="load" hx-target="#posts-data" hx-indicator=".htmx-indicator">
+        <div id="posts-data"></div>
+      </div>
+    </div>
+  </div>
+  {% endblock %}
+
+  {% block page_sidebar_content %}
+  <!-- blank and demo script adds page configuration example -->
+  <!-- <div class="p-3">
+  <h5>Title</h5>
+  <p>Sidebar content</p>
+</div> -->
+  {% endblock %}
+  {% block page_scripts %}
+  <!-- page scripts-->
+  <!-- AdminLTE for demo purposes -->
+
+  {% endblock %}

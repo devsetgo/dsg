@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block page_title %}| Requirements{% endblock %}
+{% block page_stylesheet %}
+<!-- <style>
+  #text-to-copy {
+    margin: 0;
+    padding: 0;
+    white-space: pre-wrap;
+  }
+</style> -->
+<!-- DataTables -->
+<link rel="stylesheet" href="{{ url_for('static' , path='plugins/datatables-bs4/css/dataTables.bootstrap4.css') }}">
+{% endblock %}
+{% block page_breadcrumb %} Requirements{% endblock %}
+{% block page_head_title %}Requirements Page{% endblock %}
+{% block body %}
+<!-- Main content -->
+
+<section class="content">
+  <!-- Default box -->
+  <div class="card card-solid">
+    <div class="card-body pb-0">
+      <div class="row d-flex align-items-stretch">
+        <div class="col-6 align-items-stretch">
+          <div class="card card-info">
+            <div class="card-header">
+              <h3 class="card-title">New Requirements: {{ data[0].lib_out_count }}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" onclick="copyText()"><i class="fas fa-copy"
+                    title="Copy New Requirements"></i></button>
+              </div>
+            </div>
+            <div class="card-body pt-0">
+              <div class="row">
+                <div class="col-12" id="text-to-copy" style="white-space: nowrap;">
+                  {% for item in data %}
+                    {% for d in item.json_data_out|sort(attribute='package_name') %}
+                      {{d.package_name}}{% if d.has_bracket %}[{{d.bracket_content}}]{%endif%}=={{d.latest_version}} #
+                      {% if d.latest_version!=d.current_version %} <strong>From {{d.current_version}}</strong> | {%endif%}
+                      {% if d.vulnerabilities|length > 0 %}
+                        Vulnerabilities:
+                        {% for v in d.vulnerabilities %}
+                          <a href="{{v.link}}">{{v.link}}</a>
+                        {% endfor %}
+                      {% else %}
+                        Vulnerabilities: None
+                      {% endif %}
+                      <br>
+                    {% endfor %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 align-items-stretch">
+          <div class="card card-secondary">
+            <div class="card-header">
+              <h3 class="card-title">Original Requirements: {{ data[0].lib_in_count }}</h3>
+              <div class="card-tools">
+                <!-- <button type="button" class="btn btn-tool" data-card-widget="collapse">
+            <i class="fas fa-copy"></i>
+            </button> -->
+              </div>
+            </div>
+            <div class="card-body pt-0">
+              <div class="row">
+                <div class="col-12">
+                  {% for item in data %}
+                  {% for d in item.text_in.split('\n') %}
+                  {{d}}<br>
+                  {% endfor %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /.card-body -->
+    </div>
+  </div>
+  </div>
+  <!-- /.card -->
+</section>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+{% endblock %}
+
+{% block page_sidebar_content %}
+<!-- blank and demo script adds page configuration example -->
+<!-- <div class="p-3">
+  <h5>Title</h5>
+  <p>Sidebar content</p>
+</div> -->
+{% endblock %}
+{% block page_scripts %}
+<!-- page scripts-->
+<script>
+  function copyText() {
+    var textToCopy = document.getElementById("text-to-copy").innerText;
+
+    // Remove extra empty lines and spaces at the beginning of each line
+    textToCopy = textToCopy.replace(/^\s*[\r\n]/gm, '').replace(/^\s+/gm, '');
+
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => {
+        var alertBox = alert("Text copied to clipboard!");
+        setTimeout(function () {
+          // Close the alert after 3 seconds
+          alertBox.close();
+        }, 3000);
+      })
+      .catch((error) => console.error("Copy failed", error));
+  }
+</script>
+
+
+<!-- DataTables -->
+<script src="{{ url_for('static' , path='plugins/datatables/jquery.dataTables.js') }}"></script>
+<script src="{{ url_for('static' , path='plugins/datatables-bs4/js/dataTables.bootstrap4.js') }}"></script>
+
+<!-- page script -->
+<script>
+  $(function () {
+    $("#example1").DataTable();
+    $('#example2').DataTable({
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+    });
+  });
+</script>
+{% endblock %}
