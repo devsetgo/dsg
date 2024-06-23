@@ -1,0 +1,33 @@
+<div id="toast-messages" aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <img src="..." class="rounded me-2" alt="...">
+            <strong class="me-auto">Bootstrap</strong>
+            <small>11 mins ago</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            Hello, world! This is a toast message.
+        </div>
+    </div>
+</div>
+
+<script>
+    var toastMessages = {{ toast_messages | safe }};
+
+    toastMessages.forEach(function(toastMessage, index) {
+        var toast = document.getElementById('toast-messages').cloneNode(true);
+        toast.id = 'toast-messages' + index;
+        document.body.appendChild(toast);
+
+        var toastBody = toast.querySelector('.toast-body');
+        var toastColor = toastMessage.color;
+
+        toastBody.textContent = toastMessage.message;
+        toast.classList.remove('bg-primary');
+        toast.classList.add('bg-' + toastColor);
+
+        var toastEl = new bootstrap.Toast(toast, {delay: 10000});
+        toastEl.show();
+    });
+</script>

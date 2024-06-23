@@ -1,0 +1,590 @@
+{% extends "base.html" %} <!-- Extends the base HTML layout -->
+{% block page_title %}| Notes{% endblock %} <!-- Sets the page title -->
+{% block page_stylesheet %} <!-- Starts the block for page-specific stylesheets -->
+<!-- DataTables -->
+<link rel="stylesheet" href="{{ url_for('static' , path='plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Bootstrap 4 -->
+<link rel="stylesheet"
+  href="{{ url_for('static' , path='plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Responsive Bootstrap 4 -->
+<link rel="stylesheet"
+  href="{{ url_for('static' , path='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Buttons Bootstrap 4 -->
+{% endblock %} <!-- Ends the block for page-specific stylesheets -->
+{% block page_breadcrumb %} Notes{% endblock %} <!-- Sets the breadcrumb -->
+{% block page_head_title %}Notes{% endblock %} <!-- Sets the page head title -->
+{% block body %} <!-- Starts the block for the body of the page -->
+<section> <!-- Starts a section -->
+  <div class="container-fluid"> <!-- Starts a container-fluid -->
+    <div class="row"> <!-- Starts a row -->
+      <div class="col-12">
+        <div class="card card-primary card-outline card-outline-tabs">
+          <div class="card-header p-0 border-bottom-0">
+            <ul class="nav nav-tabs" id="custom-tabs-four-tab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="custom-tabs-four-dash-tab" data-toggle="pill"
+                  href="#custom-tabs-four-dash" role="tab" aria-controls="custom-tabs-four-dash" aria-selected="true"
+                  hx-trigger="click" hx-indicator=".htmx-indicator">Dashboard</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="custom-tabs-four-notes-tab" data-toggle="pill" href="#custom-tabs-four-notes"
+                  role="tab" aria-controls="custom-tabs-four-notes" aria-selected="false" hx-get="/notes/pagination"
+                  hx-trigger="click" hx-target="#notes-data" hx-indicator=".htmx-indicator">
+                  Notes
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="custom-tabs-four-history-tab" data-toggle="pill"
+                  href="#custom-tabs-four-history" role="tab" aria-controls="custom-tabs-four-history"
+                  aria-selected="false" hx-get="/notes/today" hx-trigger="click" hx-target="#history-data"
+                  hx-indicator=".htmx-indicator">
+                  History
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="custom-tabs-four-aifix-tab" data-toggle="pill" href="#custom-tabs-four-aifix"
+                  role="tab" aria-controls="custom-tabs-four-aifix" aria-selected="false" hx-get="/notes/issues"
+                  hx-trigger="click" hx-target="#aifix-data" hx-indicator=".htmx-indicator">AI Issues</a>
+              </li>
+            </ul>
+          </div>
+          <div class="card-body">
+            <div class="tab-content" id="custom-tabs-four-tabContent">
+              <div class="tab-pane fade show active" id="custom-tabs-four-dash" role="tabpanel"
+                aria-labelledby="custom-tabs-four-dash-tab">
+                <div class="container-fluid">
+                  <div hx-get="/notes/metrics/counts" hx-trigger="load" hx-indicator=".htmx-indicator">Loading....</div>
+                  {% include 'notes/data-block.html' %}
+                  {% include 'notes/charting.html' %}
+                </div>
+              </div>
+              <div class="tab-pane fade" id="custom-tabs-four-notes" role="tabpanel"
+                aria-labelledby="custom-tabs-four-notes-tab">
+                <!-- Begin Search Form -->
+                {% include 'notes/search-form.html' %}
+                <div class="row" id="notes-data"></div>
+                <!-- End Search Form -->
+              </div>
+              <div class="tab-pane fade" id="custom-tabs-four-history" role="tabpanel"
+                aria-labelledby="custom-tabs-four-history-tab">
+                <div class="row" id="history-data" style="display: flex; flex-direction: column;"></div>
+              </div>
+              <div class="tab-pane fade" id="custom-tabs-four-aifix" role="tabpanel"
+                aria-labelledby="custom-tabs-four-aifix-tab">
+                <div class="row" id="aifix-data" style="display: flex; flex-direction: column;">Stuff here caused by AI
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</section>
+{% endblock %}
+{% block page_sidebar_content %}
+<!-- blank and demo script adds page configuration example -->
+<ul>
+  {% for _ in range(5) %}
+  <li>Hi</li>
+  {% endfor %}
+</ul>
+{% endblock %}
+{% block page_scripts %}
+<!-- Start of page scripts block -->
+<!-- OPTIONAL SCRIPTS -->
+<!-- tab links -->
+<script>
+  // Add click event listener to each tab
+  document.querySelectorAll('.nav-link').forEach(tab => {
+    tab.addEventListener('click', function () {
+      // Update URL hash when a tab is clicked
+      window.location.hash = this.id;
+    });
+  });
+  // On page load, check the URL hash and open the corresponding tab
+  window.onload = function () {
+    let hash = window.location.hash;
+    if (hash) {
+      // Remove '#' from the hash
+      let tabId = hash.slice(1);
+      // Open the tab
+      let tab = document.getElementById(tabId);
+      if (tab) {
+        tab.click();
+      }
+    }
+  };
+</script>
+<!-- Mood Trend by Month -->
+<script>
+  // Data for the chart
+  const metricsMood = {{ metrics.mood_trend_by_month | safe }};
+  const metricsMoodMedian = {{ metrics.mood_trend_by_median_month | safe }};
+  const metricsMoodRollingMean = {{ metrics.mood_trend_by_rolling_mean_month | safe }};
+  const metricsMoodAnalysis = {{ metrics.mood_analysis_trend_by_mean_month | safe }};
+  // Create a function to generate a chart
+  function createMoodChart(elementId, metrics, metricsMedian, metricsRollingMean, metricsAnalysis) {
+    const labels = Object.keys(metrics);
+    const moodAverages = labels.map(label => metrics[label]);
+    const moodMedians = labels.map(label => metricsMedian[label]);
+    const moodRollingMeans = labels.map(label => metricsRollingMean[label] || null);
+    const moodAnalysisMeans = labels.map(label => metricsAnalysis[label] || null);
+
+    const datasets = [
+      {
+        yAxisID: 'y1',
+        type: 'line',
+        label: 'Rolling Mean',
+        data: moodRollingMeans,
+        fill: false,
+        borderColor: 'rgb(255, 165, 0)' // orange line for rolling mean values
+      },
+      {
+        yAxisID: 'y1',
+        type: 'line',
+        label: 'Median',
+        data: moodMedians,
+        fill: false,
+        borderColor: 'rgb(0, 0, 255)' // blue line for median values
+      },
+      {
+        yAxisID: 'y1',
+        type: 'bar',
+        label: 'Average',
+        data: moodAverages,
+        backgroundColor: moodAverages.map(value => {
+          if (value < 0) {
+            return 'rgb(255, 0, 0)'; // red for negative values
+          } else if (value < 0.5) {
+            return 'rgb(255, 255, 0)'; // yellow for values between 0 and 0.5
+          } else {
+            return 'rgb(0, 255, 0)'; // green for values greater than 0.5
+          }
+        }),
+      },
+      {
+        yAxisID: 'y1',
+        type: 'line',
+        label: 'Mood Analysis Mean',
+        data: moodAnalysisMeans,
+        fill: false,
+        borderColor: 'rgb(128, 0, 128)' // purple line for mood analysis mean values
+      }
+    ];
+
+    const data = {
+      labels: labels,
+      datasets: datasets
+    };
+
+    const config = {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        scales: {
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            min: -1,
+            max: 1
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Mood Trend by Month'
+          },
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: 'x'
+            },
+            zoom: {
+              wheel: {
+                enabled: true,
+              },
+              pinch: {
+                enabled: true
+              },
+              mode: 'x'
+            }
+          }
+        },
+        interaction: {
+          intersect: true,
+        }
+      }
+    };
+
+    new Chart(document.getElementById(elementId), config);
+  }
+
+  // Create the chart
+  createMoodChart('moodTrendChart', metricsMood, metricsMoodMedian, metricsMoodRollingMean, metricsMoodAnalysis);
+</script>
+<!-- Chart of Tags -->
+<script>
+  // Assign the Jinja variable to a JavaScript variable
+  const metricsTags = {{ metrics.tags_common| safe }};
+
+  function createTagChart(elementId, metrics) {
+    const labels = Object.keys(metrics);
+    const dataCounts = Object.values(metrics);
+
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Tag Count',
+          data: dataCounts,
+          backgroundColor: 'rgb(75, 192, 192)',
+        }
+      ]
+    };
+
+    const config = {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Tags'
+          }
+        },
+        interaction: {
+          intersect: true,
+        }
+      }
+    };
+
+    new Chart(document.getElementById(elementId), config);
+  }
+
+  // Create the tags chart
+  createTagChart('tagsChart', metricsTags);
+</script>
+<!-- Notes Chart Script -->
+<!-- Notes by Year -->
+<script>
+  // Data for the chart
+  const metricsYear = {{ metrics.note_count_by_year| safe}};
+
+  // Create a function to generate a chart
+  function createChart(elementId, metrics) {
+    const labels = Object.keys(metrics);
+    const noteCounts = labels.map(label => metrics[label].note_count);
+    const wordCounts = labels.map(label => metrics[label].word_count);
+
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          yAxisID: 'y1',
+          type: 'bar',
+          label: 'Note Count',
+          data: noteCounts,
+          backgroundColor: 'rgb(75, 192, 192)',
+          order: 2
+        },
+        {
+          yAxisID: 'y2',
+          type: 'line',
+          label: 'Word Count',
+          data: wordCounts,
+          borderColor: 'rgb(255, 99, 132)',
+          fill: false,
+          order: 1
+        }
+      ]
+    };
+
+    const config = {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        scales: {
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+          },
+          y2: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false, // only want the grid lines for one axis to show up
+            },
+          },
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Notes by Year'
+          }
+        },
+        interaction: {
+          intersect: true,
+        }
+      }
+    };
+
+    new Chart(document.getElementById(elementId), config);
+  }
+
+  // Create the chart
+  createChart('yearChart', metricsYear);
+</script>
+<!-- Notes by Month -->
+<script>
+  // Data for the chart
+  const metricsMonth = {{ metrics.note_count_by_month| safe}};
+
+  // Create a function to generate a chart
+  function createChart(elementId, metrics) {
+    const labels = Object.keys(metrics);
+    const noteCounts = labels.map(label => metrics[label].note_count);
+    const wordCounts = labels.map(label => metrics[label].word_count);
+
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          yAxisID: 'y1',
+          type: 'bar',
+          label: 'Note Count',
+          data: noteCounts,
+          backgroundColor: 'rgb(75, 192, 192)',
+          order: 2
+        },
+        {
+          yAxisID: 'y2',
+          type: 'line',
+          label: 'Word Count',
+          data: wordCounts,
+          borderColor: 'rgb(255, 99, 132)',
+          fill: false,
+          order: 1
+        }
+      ]
+    };
+
+    const config = {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        scales: {
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+          },
+          y2: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false, // only want the grid lines for one axis to show up
+            },
+          },
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Notes by Month'
+          }
+        },
+        interaction: {
+          intersect: true,
+        }
+      }
+    };
+
+    new Chart(document.getElementById(elementId), config);
+  }
+
+  // Create the chart
+  createChart('monthChart', metricsMonth);
+</script>
+<!-- Notes by Week -->
+<script>
+  // Data for the chart
+  const metricsWeek = {{ metrics.note_count_by_week| safe}};
+
+  // Create a function to generate a chart
+  function createChart(elementId, metrics) {
+    const labels = Object.keys(metrics);
+    const noteCounts = labels.map(label => metrics[label].note_count);
+    const wordCounts = labels.map(label => metrics[label].word_count);
+
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          yAxisID: 'y1',
+          type: 'bar',
+          label: 'Note Count',
+          data: noteCounts,
+          backgroundColor: 'rgb(75, 192, 192)',
+          order: 2
+        },
+        {
+          yAxisID: 'y2',
+          type: 'line',
+          label: 'Word Count',
+          data: wordCounts,
+          borderColor: 'rgb(255, 99, 132)',
+          fill: false,
+          order: 1
+        }
+      ]
+    };
+
+    const config = {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        scales: {
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+          },
+          y2: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false, // only want the grid lines for one axis to show up
+            },
+          },
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Notes by Week'
+          }
+        },
+        interaction: {
+          intersect: true,
+        }
+      }
+    };
+
+    new Chart(document.getElementById(elementId), config);
+  }
+
+  // Create the chart
+  createChart('weekChart', metricsWeek);
+</script>
+<!-- Mood Chart Script -->
+<script>
+  const metrics = {{ metrics.mood_by_month| tojson | safe }};
+  const labels = Object.keys(metrics);
+  const data = {
+    labels: labels,
+    datasets: [
+      {
+        label: 'Positive',
+        data: Object.values(metrics).map(mood => mood.positive || 0),
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+        fill: true
+      },
+      {
+        label: 'Neutral',
+        data: Object.values(metrics).map(mood => mood.neutral || 0),
+        borderColor: 'rgb(255, 205, 86)',
+        backgroundColor: 'rgba(255, 205, 86, 0.1)',
+        fill: true
+      },
+      {
+        label: 'Negative',
+        data: Object.values(metrics).map(mood => mood.negative || 0),
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+        fill: true
+      }
+    ]
+  };
+
+  const config = {
+    type: 'line',
+    data: data,
+    options: {
+      plugins: {
+        filler: {
+          propagate: false,
+        },
+        title: {
+          display: true,
+          text: (ctx) => 'Fill: ' + ctx.chart.data.datasets[0].fill
+        }
+      },
+      interaction: {
+        intersect: true,
+      }
+    }
+  };
+
+  new Chart(document.getElementById('moodChart'), config);
+</script>
+<!-- Import dashboard3.js script -->
+<script src="{{ url_for('static' , path='dist/js/pages/dashboard3.js') }}"></script>
+<!-- DataTables & Plugins -->
+<!-- Import jQuery DataTables library -->
+<script src="{{ url_for('static' , path='plugins/datatables/jquery.dataTables.min.js') }}"></script>
+<!-- Import Bootstrap 4 DataTables library -->
+<script src="{{ url_for('static' , path='plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+<!-- Import DataTables Responsive library -->
+<script src="{{ url_for('static' , path='plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
+<!-- Import DataTables Responsive Bootstrap 4 library -->
+<script src="{{ url_for('static' , path='plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
+<!-- Import DataTables Buttons library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
+<!-- Import DataTables Buttons Bootstrap 4 library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
+<!-- Import JSZip library (for Excel export) -->
+<script src="{{ url_for('static' , path='plugins/jszip/jszip.min.js') }}"></script>
+<!-- Import PDFMake library (for PDF export) -->
+<script src="{{ url_for('static' , path='plugins/pdfmake/pdfmake.min.js') }}"></script>
+<!-- Import PDFMake fonts -->
+<script src="{{ url_for('static' , path='plugins/pdfmake/vfs_fonts.js') }}"></script>
+<!-- Import DataTables HTML5 Buttons library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
+<!-- Import DataTables Print Button library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
+<!-- Import DataTables Column Visibility Button library -->
+<script src="{{ url_for('static' , path='plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
+<!-- Initialize DataTable with specific options -->
+<script>
+  $(document).ready(function () {
+    $('#requirementsTable').DataTable({
+      responsive: true,  // Enable responsive feature
+      lengthChange: false,  // Disable length change option
+      searching: false,  // Disable searching option
+      ordering: true,  // Enable ordering option
+      info: true,  // Enable info option
+      autoWidth: false,  // Disable auto width feature
+      dom: 'Bfrtip',  // Define DataTables DOM positioning
+      buttons: [
+        'copy', 'csv', 'excel', 'pdf', 'print', 'colvis'  // Define buttons
+      ]
+    }).buttons().container().appendTo('#requirementsTable_wrapper .col-md-6:eq(0)');  // Append buttons to DataTable
+  });
+</script>
+{% endblock %}
+<!-- End of page scripts block -->

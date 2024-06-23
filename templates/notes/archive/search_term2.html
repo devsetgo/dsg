@@ -1,0 +1,22 @@
+<div class="row">
+  <div class="col-md-12">
+    <p>{{found}} of {{note_count}}</p>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <h3>Search Results</h3>
+  {% for note in notes %}
+  <div class="col-md-4">
+    <div class="card mb-1">
+      <div class="card-body">
+        <h5 class="card-title"><strong>{{ note.mood|capitalize }}</strong>: {{ note.tags }}</h5>
+        <p class="card-text">{{ note.summary }}</p>
+        <p class="card-text">{{ note.tags }}</p>
+        <p class="card-text"><small>{{ note.date_created }}</small></p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  </div>
+</div>

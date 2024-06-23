@@ -1,11 +1,30 @@
+# local development
+note.json
+new_note.json
+__archive/
 .env
+.env.*
 _venv/
 _scratch_pad/
+logs/*
+log/*
+log.json
+log.log
+*.db
+.VSCodeCounter
+
+# hide specific files
+export.csv
+export_cleaned.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 .vscode/
+
+
+
 # C extensions
 *.so
 

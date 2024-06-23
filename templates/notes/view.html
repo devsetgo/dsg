@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block page_title %}| Notes{% endblock %}
+{% block page_stylesheet %}
+<!-- page stylesheets-->
+
+<style>
+    #requirements {
+        width: 100%;
+        /* or any other value that suits your needs */
+    }
+</style>
+{% endblock %}
+{% block page_breadcrumb %} Notes / New{% endblock %}
+{% block page_head_title %}View Note{% endblock %}
+{% block body %}
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-12">
+                <!-- general form elements -->
+                <div class="card card-primary" style="margin: 20px;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">View Note</h3>
+                        <div class="d-flex align-items-center ml-auto">
+                            <a href="/notes/edit/{{ note.pkid }}" class="btn btn-warning ml-2" title="Edit"><i
+                                    class="fa-solid fa-pen-to-square" style="color:black;"></i></a>
+                            <a href="/notes/delete/{{ note.pkid }}" class="btn btn-danger ml-2" title="Delete"><i
+                                    class="fa-solid fa-trash" style="color:lightgray;"></i></a>                                
+                            {% if request.session.is_admin is true %}
+                            <a href="/notes/ai-fix/{{note.pkid}}" class="btn btn-success ml-2" title="Send to AI Fix"><i
+                                    class="fa-solid fa-robot" style="color:black;"></i></a>
+                            {%endif%}
+                        </div>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <div class="row">
+                        <div class="col-12">
+                            <!-- Nav tabs -->
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="details-tab" data-toggle="tab" href="#details"
+                                        role="tab" aria-controls="details" aria-selected="true">Details</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="info-tab" data-toggle="tab" href="#info" role="tab"
+                                        aria-controls="info" aria-selected="false">Info</a>
+                                </li>
+                            </ul>
+                            <!-- Tab panes -->
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="details" role="tabpanel" aria-labelledby="details-tab">
+                                    <!-- Begin Details Section -->
+                                    <div class="row" style="padding: 20px; margin: 10px;background-color: #e9ecef;">
+                                        <!-- Begin Optional Fields to View -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="summaryInput">Summary</label>
+                                                <p>{{ note.summary }}</p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="tags">Tags</label>
+                                                <p>{% for tag in note.tags %}{{ tag|capitalize }}{% if not loop.last %},
+                                                    {%
+                                                    endif %}{%
+                                                    endfor %}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label><strong>Mood Analysis:</strong></label>
+                                                <p>{{ note.mood_analysis |capitalize}}</p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label><strong>Current Mood:</strong></label>
+                                                <p>{{ note.mood |capitalize}}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- End Details Section -->
+                                </div>
+                                <div class="tab-pane" id="info" role="tabpanel" aria-labelledby="info-tab">
+                                    <!-- Begin Info Section -->
+                                    <div class="row" style="padding: 20px; margin: 10px;background-color: #e9ecef;">
+                                        <div class="col-md-6">
+                                            <p>Date Created: {{ note.date_created }}</p>
+                                            <p>Date Updated: {{ note.date_updated }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p>Word Count: {{ note.word_count }}</p>
+                                            <p>Character Count: {{ note.character_count }}</p>
+                                        </div>
+                                    </div>
+                                    <!-- End Info Section -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <!-- Begin Note Section -->
+                            <div class="row" style="padding: 20px; margin: 10px;background-color: #f8f9fa;">
+                                {% include "notes/note_view_md.html" %}
+                            </div>
+                            <!-- End Note Section -->
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+{% endblock %}
+{% block page_sidebar_content %}
+<div class="p-3">
+    <h5>Title</h5>
+    <p>Sidebar content</p>
+</div>
+{% endblock %}
+{% block page_scripts %}
+<!-- page scripts-->
+{% endblock %}

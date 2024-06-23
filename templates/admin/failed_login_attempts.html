@@ -1,0 +1,66 @@
+<p>Failed Login Attempts</p>
+
+<table id="failTable" class="table table-striped" style="width:100%">
+  <thead>
+    <tr>
+      <th>User Name</th>
+      <th>Password</th>
+      <th>Real User</th>
+      <th>Date</th>
+      <th>Meta Data</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for data in failures %}
+    <tr>
+      <td>
+        {% if data.real_id == false %}
+        {{data.user_name}}
+        {% else %}
+        <a href="/admin/user/{{data.user_id}}">{{data.user_name}}</a>
+        {% endif %}
+      </td>
+      <td>
+        {% if data.password.startswith('$argon2') %}
+        *****Password Hashed for Safety*****
+        {% else %}
+        {{data.password}}
+        {% endif %}
+      </td>
+      <td>
+        {% if data.real_id == false %}
+        {{data.real_id}}
+        {% else %}
+        <strong>{{data.real_id}}</strong>
+        {% endif %}
+      </td>
+      <td>{{data.date_created}}</td>
+      <td>{% include 'admin/meta-modal.html' %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th>User Name</th>
+      <th>Password</th>
+      <th>Real User</th>
+      <th>Date</th>
+      <th>Meta Data</th>
+    </tr>
+  </tfoot>
+</table>
+<script>
+  $(function () {
+    $('#failTable').DataTable({
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+      dom: 'Bfrtip',
+      buttons: ['copy', 'csv', 'pdf']
+    });
+  });
+</script>
+{{users}}

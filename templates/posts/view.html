@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block page_title %}| Posts{% endblock %}
+{% block page_stylesheet %}
+<!-- page stylesheets-->
+
+<style>
+    #requirements {
+        width: 100%;
+        /* or any other value that suits your needs */
+    }
+</style>
+{% endblock %}
+{% block page_breadcrumb %} Post{% endblock %}
+{% block page_head_title %}Post{% endblock %}
+{% block body %}
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-12">
+                <!-- general form elements -->
+                <div class="card card-primary" style="margin: 20px;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">{{post.title|title}}</h3>
+                        <div class="d-flex align-items-center ml-auto">
+                            {% if request.session.roles and request.session.roles.interesting_things %}
+                            <a href="/posts/edit/{{ post.pkid }}" class="btn btn-warning ml-2" title="Edit"><i
+                                    class="fa-solid fa-pen-to-square" style="color:black;"></i></a>
+                            <a href="/posts/delete/{{ post.pkid }}" class="btn btn-danger ml-2" title="Delete"><i
+                                    class="fa-solid fa-trash" style="color:lightgray;"></i></a>
+                            <a href="/posts/ai-fix/{{post.pkid}}" class="btn btn-success ml-2" title="Send to AI Fix"><i
+                                    class="fa-solid fa-robot" style="color:black;"></i></a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card-secondary">
+                                <p>
+                                <h2>{{post.title|title}}</h2>
+                                </p>
+                                <p>By <strong>{{post.full_name | title}}</strong> | Created: {{post.date_created}} | Category: <a
+                                        href="/posts/?category={{post.category}}">{{post.category |capitalize}}</a></p>
+                            </div>
+                            {% include "posts/post_view_md.html" %}
+                            <p>Word Count: {{post.word_count}}</p>
+                            <p>Tags: {% for tag in post.tags %}<a href="/posts/?search_term={{tag}}">{{ tag|capitalize
+                                    }}</a>{% if not loop.last %}, {%
+                                endif %}{%
+                                endfor %}</p>
+                        </div>
+                        <hr>
+                        <!-- /.col -->
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+{% endblock %}
+{% block page_sidebar_content %}
+<div class="p-3">
+    <h5>Title</h5>
+    <p>Sidebar content</p>
+</div>
+{% endblock %}
+{% block page_scripts %}
+<!-- page scripts-->
+
+{% endblock %}

@@ -1,0 +1,24 @@
+<div class="input-group mb-5">
+    <textarea id="content" name="content" maxlength="100000"></textarea>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<script>
+    const easymde = new EasyMDE({
+        toolbar: ["bold", "italic", "strikethrough", "heading", "|", "quote", "code", "image", "horizontal-rule", "link", "heading-2", "heading-3", "undo", "redo", "guide"],
+        sideBySideFullscreen: false,
+        lineWrapping: true,
+        placeholder: "Type here...",
+        tabSize: 4,
+        toolbarTips: true,
+        element: document.getElementById('content'),
+    });
+    easymde.toggleSideBySide();
+
+    document.querySelector('form').addEventListener('submit', function (e) {
+        if (easymde.value().trim() === '') {
+            e.preventDefault();
+            alert('Please create a post.');
+        }
+    });
+</script>

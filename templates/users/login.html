@@ -1,0 +1,68 @@
+{% extends "base_user_login.html" %} {% block page_title %}Login{% endblock %}
+{% block page_stylesheet %}
+<!-- overlayScrollbars -->
+<link rel="stylesheet"
+  href="{{ url_for('static' , path='plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}" />
+
+{% endblock %} {% block page_breadcrumb %}Login{% endblock %} {% block
+page_head_title %}Login {% endblock %} {% block body %}
+
+<div class="login-box">
+  <div class="card card-outline card-primary">
+    <div class="card-header text-center">
+      <a href="/" class="h1"><b>DevSet</b>GO</a>
+    </div>
+    <div class="card-body">
+      <p class="login-box-msg">Sign in to start your session</p>
+      <!-- Add this div to display error messages -->
+      <div id="error-messages"></div>
+      <span class="htmx-indicator">
+        <img class="htmx-indicator" src="{{ url_for('static', path='image/loading_4.gif') }}" alt="Loading..."
+          height="20" width="300">
+      </span>
+      <form hx-post="/users/login" hx-trigger="submit" hx-indicator=".htmx-indicator">
+        <!-- rest of the form -->
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="user_name" name="username" />
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fa-solid fa-user"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="password" class="form-control" placeholder="Password" name="password" />
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-8">
+            <!-- <div class="icheck-primary">
+              <input type="checkbox" id="remember" name="remember" />
+              <label for="remember"> Remember Me </label>
+            </div> -->
+          </div>
+          <div class="col-4">
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+          </div>
+
+        </div>
+      </form>
+      <!-- <p class="mb-1">
+        <a href="users/forgot-password.html">I forgot my password</a>
+      </p>
+      <p class="mb-0">
+        <a href="users/register.html" class="text-center">Register a new membership</a>
+      </p> -->
+    </div>
+  </div>
+</div>
+
+<!-- /.login-box -->
+{% endblock %} {% block page_scripts %}
+<!-- page scripts-->
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+{% endblock %}

@@ -1,0 +1,46 @@
+<p>Users with Notes Needing AI Fix</p>
+
+<table id="aiFixNeeded" class="table table-striped" style="width:100%">
+  <thead>
+    <tr>
+      <th>User Name</th>
+      <th>Count</th>
+      <th>Last Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for data in user_note_count %}
+    <tr>
+      <td>
+        <a href="/admin/note-ai-check/{{data.user_id}}">{{data.user_id}}</a>
+      </td>
+      <td>
+        {{data.count}}
+      </td>
+      <td>{{data.last_note_date}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+        <th>User Name</th>
+        <th>Count</th>
+        <th>Last Date</th>
+    </tr>
+  </tfoot>
+</table>
+<script>
+  $(function () {
+    $('#aiFixNeeded').DataTable({
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+      dom: 'Bfrtip',
+      buttons: ['copy', 'csv', 'pdf']
+    });
+  });
+</script>
+{{users}}

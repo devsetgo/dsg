@@ -1,0 +1,93 @@
+<!-- Right navbar links -->
+<ul class="navbar-nav ml-auto">
+    {% if request.session.user_identifier %}
+    <!-- Notifications Dropdown Menu -->
+    <!-- <li class="nav-item dropdown">
+        <a class="nav-link" data-toggle="dropdown" href="#">
+            <i class="far fa-bell"></i>
+            <span class="badge badge-warning navbar-badge">15</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+            <span class="dropdown-item dropdown-header">15 Notifications</span>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item">
+                <i class="fas fa-envelope mr-2"></i> 4 new messages
+                <span class="float-right text-muted text-sm">3 mins</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item">
+                <i class="fas fa-users mr-2"></i> 8 friend requests
+                <span class="float-right text-muted text-sm">12 hours</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item">
+                <i class="fas fa-file mr-2"></i> 3 new reports
+                <span class="float-right text-muted text-sm">2 days</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+        </div>
+    </li> -->
+    <!-- User -->
+    <li class="nav-item dropdown">
+        <a class="nav-link" data-toggle="dropdown" href="#">
+            <i class="mr-2 fas fa-user"></i>
+            <!-- <span class="badge badge-warning navbar-badge">55</span> -->
+        </a>
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+            <!-- <span class="dropdown-item dropdown-header">15 Notifications</span> -->
+            <div class="dropdown-divider"></div>
+            <a href="/users/user-info" class="dropdown-item">
+                <i class="mr-2 fas fa-user-edit"> </i>
+                My Information
+            </a>
+            {% if request.session.roles and request.session.roles.notes %}
+            <div class="dropdown-divider"></div>
+            <a href="/notes/bulk" class="dropdown-item">
+                <i class="mr-2 fas fa-tint"> </i>
+                Bulk Load Notes
+            </a>
+            {% endif %}
+            <div class="dropdown-divider"></div>
+            <form action="/users/logout" method="GET">
+                <button class="dropdown-item btn btn-block btn-outline-primary" type="submit">Logout</button>
+            </form>
+            {% if request.session.is_admin %}
+            <div class="dropdown-divider"></div>
+            <a href="/admin/user/{{request.session.user_identifier}}" class="dropdown-item">
+            <i class="fa-solid fa-circle-info"></i> Session Information
+            <ul>
+                {% for k, v in request.session.items() %}
+                {% if k == 'roles' %}
+                {% for k,v in request.session.roles.items() %}
+                <li>{% if v == true %}<span class="badge badge-success">{{k|replace("_", "
+                        ")|title}}</span>{%else%}<span class="badge badge-secondary">{{k|replace("_", "
+                        ")|title}}</span>{%endif%}</li>
+                {% endfor %}
+                {%else %}
+                <li>{{k}}: {{v}}</li>
+                {% endif %}
+                {% endfor %}
+            </ul></a>
+            {% endif %}
+
+
+            <!-- <a href="/auth/logout" class="dropdown-item">
+                <i class="mr-2 fas fa-sign-in-alt"> </i>
+                Logout
+            </a> -->
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#">
+            <i class="fas fa-th-large"></i>
+        </a>
+    </li>
+    {% else %}
+    <!-- Login -->
+    <li class="nav-item">
+        <a class="nav-link" href="/users/github-login">
+            <i class="fas fa-user" title="Login"></i>
+        </a>
+    </li>
+    {% endif %}
+</ul>

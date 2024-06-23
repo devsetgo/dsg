@@ -1,0 +1,48 @@
+<div class="card card-warning collapsed-card">
+    <div class="card-header">
+        <h3 class="card-title">Access Grant</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-plus"></i>
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <form hx-post="/admin/user/access/{{user.pkid}}" hx-trigger="submit" hx-indicator=".htmx-indicator">
+            <style>
+                tr:nth-child(even) {
+                    background-color: #f2f2f2;
+                }
+            </style>
+            <table width="100%">
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        <th>Enable</th>
+                        <th>Disable</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for role in roles %}
+                        <tr>
+                            <td>{{ role|replace("_", " ") | title }}</td>
+                            <td>
+                                <input type="radio" id="{{ role }}_enable" name="{{ role }}" value="true"
+                                       {% if user.roles.get(role, False) %}checked{% endif %}>
+                                <label for="{{ role }}_enable">Enable</label>
+                            </td>
+                            <td>
+                                <input type="radio" id="{{ role }}_disable" name="{{ role }}" value="false"
+                                       {% if not user.roles.get(role, False) %}checked{% endif %}>
+                                <label for="{{ role }}_disable">Disable</label>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <hr>
+
+            <input type="submit" value="Submit">
+        </form>
+
+    </div>
+</div>

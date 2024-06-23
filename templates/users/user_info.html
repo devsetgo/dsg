@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block page_title %}| User Info{% endblock %}
+{% block page_stylesheet %}
+
+{% endblock %}
+{% block page_breadcrumb %} User Info{% endblock %}
+{% block page_head_title %}User Info{% endblock %}
+{% block body %}
+<!-- Main content -->
+<section class="content">
+    {% if message%}
+    <div class="alert alert-success alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <h5><i class="icon fas fa-check"></i> Success!</h5>
+        {{message}}
+    </div>
+    {% endif %}
+    <div class="row">
+        <div class="col-6">
+            <div class="card card-primary">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">Hello {{user.first_name|capitalize}} {{user.last_name|capitalize}}</h3>
+                    <div class="d-flex align-items-center ml-auto">
+                        <a href="/users/edit-user" class="btn btn-warning ml-2" title="Edit"><i class="fa-solid fa-pen-to-square" style="color:black;"></i></a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <strong><i class="fa-solid fa-id-badge"></i> User Name:</strong> {{user.user_name|lower}}
+                    <hr>
+                    <strong><i class="fa-regular fa-envelope"></i> Email:</strong> {{user.email|lower}}
+                    <hr>
+                    <strong><i class="fa-regular fa-clock"></i> Timezone:</strong> {{user.my_timezone}}
+                    <hr>
+                    <strong><i class="fa-solid fa-calendar"></i> Date Joined:</strong> {{user.date_created}}
+                    <hr>
+                    <strong><i class="fa-solid fa-calendar"></i> Access Rights:</strong>
+                    <br>
+                    {% for k,v in user.roles.items() %}
+                    <span class="badge badge-success">{% if v == true %}{{k|replace("_", " ")|title}}{%endif%}</span>
+                    {% endfor %}
+                    <hr>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+{% endblock %}
+
+{% block page_sidebar_content %}
+<!-- blank and demo script adds page configuration example -->
+<!-- <div class="p-3">
+  <h5>Title</h5>
+  <p>Sidebar content</p>
+</div> -->
+{% endblock %}
+{% block page_scripts %}
+{% endblock %}
