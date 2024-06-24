@@ -6,7 +6,7 @@ email-validator==2.2.0 #   Vulnerabilities: None
 fastapi[all]==0.111.0 #   Vulnerabilities: None
 fastapi-debug-toolbar==0.6.3 #   Vulnerabilities: None
 fastapi-sso==0.15.0 #   Vulnerabilities: None
-granian==1.4.3 #  From 1.4.1 |   Vulnerabilities: None
+granian==1.4.4 #  From 1.4.1 |   Vulnerabilities: None
 httpx-auth==0.22.0 #   Vulnerabilities: None
 numpy==1.26.4 #   Vulnerabilities: None
 openai==1.35.3 #  From 1.33.0 |   Vulnerabilities: None
