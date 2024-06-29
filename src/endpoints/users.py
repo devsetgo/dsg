@@ -203,7 +203,7 @@ async def get_user_info(
 
 github_sso = GithubSSO(
     settings.github_client_id,
-    settings.github_client_secret,
+    settings.github_client_secret.get_secret_value(),
     f"{settings.github_call_back_domain}/users/callback",
 )
 

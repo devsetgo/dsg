@@ -105,13 +105,13 @@ class Settings(BaseSettings):
 
     # GitHub
     github_client_id: str = None
-    github_client_secret: str = None
+    github_client_secret: SecretStr = None
     github_call_back_domain:str = "https://localhost:5000"
     github_id: str = "octocat"
     github_repo_limit: int = 50
     github_token: SecretStr = "<enter key>"
     # historical data
-    history_range: int = 3
+    history_range: int = 1
     # add an admin user
     create_admin_user: bool = False
     admin_user: SecretStr = None
@@ -120,7 +120,7 @@ class Settings(BaseSettings):
     default_timezone: str = "America/New_York"
     # create psuedo data
     create_demo_user: bool = False
-    create_demo_users_qty: int = 20
+    create_demo_users_qty: int = 0
     create_base_categories: bool = False
     create_demo_data: bool = False
     create_demo_notes: bool = False
