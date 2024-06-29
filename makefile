@@ -68,9 +68,6 @@ docker-beta-push:  # Push beta test image to docker hub
 	
 docker-beta-bp: docker-beta-build docker-beta-push
 
-file-process:
-	cp
-
 flake8:  # Run flake8 and output report
 	flake8 --tee . > _flake8Report.txt
 
@@ -91,7 +88,6 @@ run-dev:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.dev .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
 
-
 run-local:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.local .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
@@ -100,14 +96,11 @@ run-plocal:  # Run the FastAPI application in development mode with hot-reloadin
 	cp env-files/.env.plocal .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
 
-
 run-real:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.real .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
 	#uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
 	
-
-
 run-test:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.test .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
@@ -128,13 +121,11 @@ run-grdev:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.dev .env
 	granian --interface rsgi ${SERVICE_PATH}.main:app --port ${PORT} --reload
 
-
 test:  # Run tests and generate coverage report
 	pre-commit run -a
 	PYTHONPATH=. pytest
 	sed -i 's|<source>/workspaces/dsg</source>|<source>/github/workspace/dsg</source>|' /workspaces/dsg/coverage.xml
 	genbadge coverage -i /workspaces/dsg/coverage.xml
-
 
 ruff: ## Format Python code with Ruff
 	ruff check --fix --exit-non-zero-on-fix --show-fixes $(SERVICE_PATH)
