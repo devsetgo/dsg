@@ -10,10 +10,16 @@ Functions:
 """
 import ast
 import re
+import spacy
+from typing import Dict, List
 
 from loguru import logger
 from openai import AsyncOpenAI
 from src.settings import settings
+
+# Load the multi-language model
+nlp = spacy.load("xx_ent_wiki_sm")
+
 
 client = AsyncOpenAI(
     # This is the default and can be omitted
@@ -131,8 +137,18 @@ async def get_tags(
     logger.debug(f"tag content {response_content}")
     response_dict = {"tags": response_content}
     logger.info("Finished get_tags function")
+    resp = tag_check(response_dict)
+    return resp
 
-    return response_dict
+
+def tag_check(tags:dict):
+    tag_list = tags["tags"]
+    filtered_tags = []
+    for tag in tag_list:
+        doc = nlp(tag)
+        if not any(ent.label_ == "PER" for ent in doc.ents):  # "PER" stands for Person
+            filtered_tags.append(tag)
+    return {'tags': filtered_tags}
 
 
 async def get_summary(
