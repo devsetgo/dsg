@@ -3,18 +3,24 @@ import secrets
 from datetime import datetime
 
 from dsg_lib.common_functions.email_validation import validate_email_address
-from fastapi import APIRouter, Depends, HTTPException, Request, Response,BackgroundTasks
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Request,
+    Response,
+)
 from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select
 
 from ..db_tables import FailedLoginAttempts, JobApplications, Notes, Users
-from ..functions import date_functions
+from ..functions import date_functions, note_import
 from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
 from ..functions.models import RoleEnum
 from ..resources import db_ops, templates
-from ..functions import note_import
 
 router = APIRouter()
 
@@ -309,7 +315,7 @@ async def admin_note_ai_check(
     notes = await db_ops.read_query(query=query)
 
     notes = [note.to_dict() for note in notes]
-    # create a list of User IDs with a count of notes [{user_id: user_id, user_name: user_name, count: count, last_note_date: last_note_date}]  
+    # create a list of User IDs with a count of notes [{user_id: user_id, user_name: user_name, count: count, last_note_date: last_note_date}]
     user_note_count = []
     for note in notes:
         user_id = note["user_id"]
@@ -345,7 +351,7 @@ async def admin_note_ai_check_user(user_id:str, background_tasks: BackgroundTask
     # Execute the query and get the results
     notes = await db_ops.read_query(query=query)
     notes = [note.to_dict() for note in notes]
-    
+
     list_of_ids:list = []
     for note in notes:
         list_of_ids.append(note['pkid'])

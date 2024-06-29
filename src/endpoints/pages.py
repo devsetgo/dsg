@@ -46,7 +46,7 @@ async def index(request: Request):
         error:str = f"Error getting Interesting things: {e}"
         logger.error(error)
         cool_stuff = []
-    
+
     try:
         posts = await db_ops.read_query(
             Select(Posts).limit(5).order_by(Posts.date_created.desc())
