@@ -8,7 +8,7 @@ fastapi-debug-toolbar==0.6.3 #   Vulnerabilities: None
 fastapi-sso==0.15.0 #   Vulnerabilities: None
 granian==1.4.4 #   Vulnerabilities: None
 httpx-auth==0.22.0 #   Vulnerabilities: None
-numpy==2.0.0 #  From 1.26.4 |   Vulnerabilities: None
+# numpy==1.26.4 #  From 1.26.4 |   Vulnerabilities: None
 openai==1.35.7 #  From 1.35.3 |   Vulnerabilities: None
 pydantic[email]==2.7.4 #   Vulnerabilities: None
 PyJWT[crypto]==2.8.0 #   Vulnerabilities: None
