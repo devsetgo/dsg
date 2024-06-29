@@ -19,7 +19,8 @@ Please refer to the individual function or class docstrings for more specific in
 """
 import random
 from datetime import UTC, datetime, timedelta
-
+import spacy
+from spacy.cli import download
 import silly
 from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
@@ -71,6 +72,21 @@ async def startup():
     user = await db_ops.read_query(Select(Users))
     if len(user) == 0:
         await add_system_data()
+
+    model_name = "xx_ent_wiki_sm"
+    download_spacy_model(model_name)
+
+def download_spacy_model(model_name: str):
+    try:
+        # Try to load the model to see if it's already installed
+        spacy.load(model_name)
+        print(f"Model '{model_name}' is already installed.")
+    except OSError:
+        # If the model isn't installed, download it
+        print(f"Downloading model '{model_name}'...")
+        download(model_name)
+        print(f"Model '{model_name}' downloaded.")
+
 
 
 async def shutdown():
