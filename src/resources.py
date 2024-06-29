@@ -19,13 +19,14 @@ Please refer to the individual function or class docstrings for more specific in
 """
 import random
 from datetime import UTC, datetime, timedelta
-import spacy
-from spacy.cli import download
+
 import silly
+import spacy
 from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from loguru import logger
+from spacy.cli import download
 from sqlalchemy import Select, func
 from tqdm import tqdm
 

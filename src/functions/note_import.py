@@ -1,8 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-This module contains the function to read notes from a CSV file and store them in the database.
+This module provides functionality for importing notes from a CSV file into a database. It leverages OpenAI for creating summaries and performing analysis on the notes. The main functionality is encapsulated in the `read_notes_from_file` asynchronous function, which reads notes from a specified CSV file and stores them in the database using the user's identifier.
 
-OpenAI is used to create summary and perform analysis on the notes
+Functions:
+    read_notes_from_file(csv_file: list, user_id: str) -> dict: Reads notes from a CSV file and stores them in the database.
+
+Modules:
+    csv: For reading from and writing to CSV files.
+    itertools: Provides access to the iterator functions.
+    datetime: For working with dates and times.
+    dateutil.parser: For parsing dates and times from strings.
+    dateutil.tz: For timezone definitions.
+    loguru: For logging.
+    sqlalchemy: For database interaction.
+    tqdm: For providing a progress bar.
+    tqdm.asyncio: For providing an asynchronous progress bar.
+    db_tables: Defines the database tables.
+    functions.ai: Contains functions related to AI operations.
+    functions.notes_metrics: Contains functions for calculating metrics on notes.
+    resources.db_ops: Contains database operations.
+
+Example:
+    To use this module to import notes from a CSV file, you would call the `read_notes_from_file` function with the path to your CSV file and the user identifier as arguments.
 """
 import csv
 import itertools
@@ -11,8 +30,9 @@ from datetime import datetime
 from dateutil.parser import parse
 from dateutil.tz import UTC
 from loguru import logger
-from sqlalchemy import Select, and_
+from sqlalchemy import Select
 from tqdm import tqdm
+from tqdm.asyncio import tqdm as async_tqdm
 
 from ..db_tables import Notes
 from ..functions import ai, notes_metrics
@@ -124,8 +144,6 @@ def parse_date(date_created):
 
     return dt
 
-
-from tqdm.asyncio import tqdm as async_tqdm
 
 async def process_ai(list_of_ids: list, user_identifier: str):
     for note_id in async_tqdm(list_of_ids, desc="AI processing"):
