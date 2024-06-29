@@ -80,12 +80,12 @@ def download_spacy_model(model_name: str):
     try:
         # Try to load the model to see if it's already installed
         spacy.load(model_name)
-        print(f"Model '{model_name}' is already installed.")
+        logger.info(f"Model '{model_name}' is already installed.")
     except OSError:
         # If the model isn't installed, download it
-        print(f"Downloading model '{model_name}'...")
+        logger.info(f"Downloading model '{model_name}'...")
         download(model_name)
-        print(f"Model '{model_name}' downloaded.")
+        logger.info(f"Model '{model_name}' downloaded.")
 
 
 
