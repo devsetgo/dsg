@@ -1,9 +1,25 @@
 # -*- coding: utf-8 -*-
 """
+This module provides developer tools for interacting with PyPI (Python Package Index), specifically for checking package information. It includes endpoints to check a list of packages or a single package against PyPI to retrieve their details or status. The functionality is exposed via FastAPI routes, making it suitable for integration into web applications that require information on Python packages.
 
 Author:
     Mike Ryan
-    MIT Licensed
+
+License:
+    MIT License
+
+Dependencies:
+    - fastapi: For creating API routes.
+    - loguru: For logging.
+    - uuid: For generating unique request identifiers.
+    - src.functions.pypi_core: Contains the core functionality for interacting with PyPI.
+
+Routes:
+    - POST /pypi/check-list: Accepts a list of package names and returns their details from PyPI.
+    - GET /pypi/check-one: Accepts a single package name as a query parameter and returns its details from PyPI.
+
+Usage:
+    This module is intended to be used as part of a larger application that requires information about Python packages from PyPI. It can be mounted on a FastAPI application to provide API endpoints for checking package details.
 """
 import uuid
 from typing import List

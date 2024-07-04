@@ -1,9 +1,32 @@
 # -*- coding: utf-8 -*-
 """
+This module, `interesting_things.py`, serves as a part of a web application that showcases interesting things, categorized and filterable by tags, date ranges, and categories. It utilizes FastAPI for routing and SQLAlchemy for database interactions, providing an API endpoint to list interesting things with support for pagination.
 
 Author:
     Mike Ryan
-    MIT Licensed
+
+License:
+    MIT License
+
+Dependencies:
+    - fastapi: For creating API routes and handling HTTP requests.
+    - loguru: For logging.
+    - sqlalchemy: For constructing and executing SQL queries.
+    - datetime: For handling date and time information.
+    - db_tables: Contains the SQLAlchemy table definitions for Categories and InterestingThings.
+    - functions: Includes utility functions and decorators, such as for AI processing and date manipulation.
+    - resources: Provides access to common resources like database operations (`db_ops`) and HTML templates.
+
+API Endpoints:
+    - GET "/": Lists interesting things with optional filters applied. Supports pagination through `offset` and `limit` query parameters.
+    - GET "/categories": Retrieves a list of categories for interesting things.
+    - GET "/pagination": Lists interesting things with pagination and optional filters.
+    - GET "/new": Displays a form to create a new interesting thing.
+    - POST "/new": Creates a new interesting thing based on form data.
+    
+
+Usage:
+    This module is designed to be integrated into a FastAPI application, providing a backend API for listing interesting things. It can be used in web applications that require content curation and discovery features, with the ability to filter and paginate through large sets of data.
 """
 from datetime import datetime
 

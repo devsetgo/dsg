@@ -1,9 +1,26 @@
 # -*- coding: utf-8 -*-
 """
+This module is responsible for managing blog posts within the web application. It includes functionalities for creating, retrieving, updating, and deleting blog posts. The module interacts with the application's database to perform these operations, ensuring data persistence and integrity.
 
 Author:
     Mike Ryan
-    MIT Licensed
+
+License:
+    MIT License
+
+Dependencies:
+    - SQLAlchemy: Used for database interactions.
+    - FastAPI: Provides the web framework for routing and handling HTTP requests.
+
+Functions:
+    - create_post(title, content): Creates a new blog post with the given title and content.
+    - get_posts(): Retrieves all blog posts from the database.
+    - get_post(post_id): Retrieves a single blog post by its ID.
+    - update_post(post_id, title, content): Updates the title and content of an existing blog post.
+    - delete_post(post_id): Deletes a blog post by its ID.
+
+Usage:
+    This module is intended to be imported and used by other parts of the application, particularly where blog post management functionality is required. It provides a clear API for interacting with blog post data.
 """
 from datetime import datetime
 

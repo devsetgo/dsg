@@ -1,19 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-app_routes.py
+This module, `app_routes.py`, orchestrates the routing configuration for a FastAPI application. It is tasked with the setup of static file serving and the registration of various application endpoints, including but not limited to admin interfaces, blog posts, development tools, curated content, note-taking functionalities, general web pages, Python Package Index (PyPI) interactions, and user management.
 
-This module is responsible for setting up the routes for the FastAPI application.
-
-It includes the creation of routes for static files and various endpoints such as admin, blog_posts, devtools, interesting_things, notes, pages, pypi, and users.
-
-The function `create_routes(app)` is used to mount these routes to the provided FastAPI application instance.
+The central function, `create_routes(app)`, is designed to integrate these routes into a given FastAPI application instance, ensuring a structured and organized approach to endpoint management.
 
 Functions:
-    create_routes(app): Mounts routes to the provided FastAPI application instance.
+    create_routes(app): Integrates predefined routes and static file serving into the specified FastAPI application instance, enhancing its functionality with a diverse set of web endpoints.
 
 Author:
     Mike Ryan
-    MIT Licensed
+
+License:
+    MIT License
+
+Dependencies:
+    - fastapi: Utilized for the core web framework capabilities, including route definition and request handling.
+    - loguru: Employed for logging across the application, aiding in debugging and operational monitoring.
+    - starlette: Provides foundational web functionalities such as static file serving, which FastAPI builds upon.
+    - dsg_lib.fastapi_functions: Contains utility functions and constants for HTTP status codes and system health checks.
+    - .endpoints: A package containing individual modules for each specific application endpoint, such as admin, blog_posts, and users.
+    - .resources: Houses shared resources like HTML templates, facilitating consistent response rendering across endpoints.
 """
 import time
 from typing import Any, Dict, NoReturn

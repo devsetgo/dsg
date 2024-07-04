@@ -1,9 +1,32 @@
 # -*- coding: utf-8 -*-
 """
+This module defines the administrative functionalities for the web application, including the admin dashboard view and user management.
+
+It utilizes FastAPI for routing and depends on various internal modules such as `dsg_lib` for common functions like email validation, `db_tables` for database models, and `functions` for specific operations like password hashing and login checks. The module also uses `loguru` for logging and `sqlalchemy` for database operations.
 
 Author:
     Mike Ryan
-    MIT Licensed
+
+License:
+    MIT License
+
+Dependencies:
+    - FastAPI: For creating API routes.
+    - loguru: For logging.
+    - sqlalchemy: For database operations.
+    - dsg_lib: A custom library for common functions like email validation.
+    - db_tables: Defines the SQLAlchemy database models used in the application.
+    - functions: Contains utility functions for date manipulation, note import, password hashing, and login checks.
+    - resources: Includes database operations and template rendering utilities.
+
+Routes:
+    - GET "/": Displays the admin dashboard. Requires login verification.
+    - GET "/user/{user_id}": Fetches and displays details for a specific user by their ID. Requires login verification.
+    - POST "/user/{update_user_id}": Updates details for a specific user by their ID. Requires login verification.
+    - POST "/user/access/{update_user_id}": Modifies user access roles for a specific user by their ID. Requires admin access.
+    - GET "/failed-login-attempts": Lists all failed login attempts. Useful for monitoring unauthorized access attempts. Requires login verification.
+    - GET "/note-ai-check": Lists notes pending AI review. Allows admins to manually trigger AI checks on notes. Requires login verification.
+    - GET "/note-ai-check/{user_id}": Triggers AI processing for all notes associated with a specific user. Designed to facilitate batch processing of user notes. Requires login verification.
 """
 import secrets
 from datetime import datetime

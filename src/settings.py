@@ -1,12 +1,27 @@
 # -*- coding: utf-8 -*-
-
 """
-This module provides classes and functions for managing database settings in an
-application.
+This module, `settings.py`, defines the configuration schema for the application using Pydantic models. It includes settings for database connections, supporting multiple database drivers such as PostgreSQL, SQLite, MySQL, and Oracle. The module leverages Pydantic's BaseSettings class to automatically load environment variables and validate them against the defined schema, ensuring that the application starts with a valid configuration.
+
+The `Settings` class within this module specifies the structure of the application's configuration, including database connection details (driver, username, password, host, port, and database name) and other application-specific settings as needed. It also defines enums for database drivers and cookie SameSite policies to ensure that only valid options are used throughout the application.
 
 Author:
     Mike Ryan
-    MIT Licensed
+
+License:
+    MIT License
+
+Dependencies:
+    - pydantic: For data validation and settings management.
+    - loguru: For logging.
+    - secrets, datetime, enum, functools: Standard library modules for security, date handling, enumerations, and caching.
+
+Classes:
+    - SameSiteEnum: Enumerates valid options for the SameSite attribute of cookies.
+    - DatabaseDriverEnum: Enumerates supported database drivers and their connection strings.
+    - Settings: Defines the application's configuration schema, including database connection details and other necessary settings.
+
+Usage:
+    This module is intended to be imported and instantiated at the application startup to configure and validate the application settings. The `Settings` instance can then be used throughout the application to access configuration values.
 """
 import secrets  # For generating secure random numbers
 from datetime import datetime  # A Python library used for working with dates and times

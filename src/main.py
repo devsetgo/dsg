@@ -1,9 +1,30 @@
 # -*- coding: utf-8 -*-
 """
+This module, `main.py`, serves as the entry point for a FastAPI application named DevSetGo.com. It is responsible for configuring the application's logging, middleware, routes, and lifecycle events. The application provides a set of APIs for various functionalities, including note metrics and user management, with detailed API documentation available through FastAPI's built-in support for OpenAPI.
+
+The module utilizes the `asynccontextmanager` from the `contextlib` module to define an asynchronous context manager for the application's lifespan events, ensuring proper startup and shutdown procedures are followed. It also integrates custom modules for logging configuration, middleware setup, route creation, and application settings.
 
 Author:
     Mike Ryan
-    MIT Licensed
+
+License:
+    MIT License
+
+Dependencies:
+    - fastapi: For creating and configuring the FastAPI application.
+    - loguru: For application logging.
+    - contextlib: For the asynchronous context manager.
+    - .app_middleware: Module for adding middleware to the application.
+    - .app_routes: Module for defining application routes.
+    - .functions.notes_metrics: Module for note metrics functionalities.
+    - .resources.startup: Module for startup tasks.
+    - .settings: Module for application settings.
+
+Functions:
+    - lifespan(app: FastAPI): An asynchronous context manager for managing application startup and shutdown events.
+
+Usage:
+    This module is executed to start the FastAPI application, setting up logging, middleware, routes, and handling the application's lifespan events. It configures the application with a title, description, version, and documentation URLs, and initializes it with specified settings for debugging, middleware, and routes.
 """
 from contextlib import asynccontextmanager
 
