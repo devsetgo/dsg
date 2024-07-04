@@ -7,6 +7,9 @@ It uses the AsyncOpenAI client to make asynchronous requests to the API. The mod
 Functions:
     get_analysis(content: str, mood_process: str = None) -> dict: Gets the tags, summary, mood analysis, and mood from the given content.
 
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 import ast
 import re

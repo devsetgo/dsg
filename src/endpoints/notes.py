@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 import csv
 import io
 from datetime import UTC, datetime, timedelta

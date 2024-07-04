@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 import re
 
 from dsg_lib.async_database_functions import base_schema

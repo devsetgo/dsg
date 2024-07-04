@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
 
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 import uuid
 from typing import List
 

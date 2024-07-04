@@ -12,6 +12,9 @@ Functions:
     call_github_user: Fetches the user data from GitHub. format_time: Formats
     the time received from the GitHub API.
 
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 from datetime import datetime
 

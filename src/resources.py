@@ -16,6 +16,10 @@ Functions:
     startup: An asynchronous function that is used to start up the application.
 
 Please refer to the individual function or class docstrings for more specific information about what each part of the module does.
+
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 import random
 from datetime import UTC, datetime, timedelta

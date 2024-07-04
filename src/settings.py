@@ -3,6 +3,10 @@
 """
 This module provides classes and functions for managing database settings in an
 application.
+
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 import secrets  # For generating secure random numbers
 from datetime import datetime  # A Python library used for working with dates and times

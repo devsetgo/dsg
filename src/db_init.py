@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 from dsg_lib.async_database_functions import async_database, database_config
 from loguru import logger
 

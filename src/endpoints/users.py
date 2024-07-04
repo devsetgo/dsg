@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 from datetime import datetime, timedelta
 
 from dsg_lib.common_functions.email_validation import validate_email_address

@@ -6,6 +6,10 @@ It includes an enumeration for user roles.
 
 Classes:
     RoleEnum: An enumeration representing different roles in the system.
+
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 
 # -*- coding: utf-8 -*-

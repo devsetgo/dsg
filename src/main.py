@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
 
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 from contextlib import asynccontextmanager
 
 from dsg_lib.common_functions import logging_config
