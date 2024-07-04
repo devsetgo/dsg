@@ -29,7 +29,7 @@ API Endpoints:
     - POST "/password-change": Processes the form data submitted for changing the user's password.
     - GET "/github-login": Initiates the GitHub OAuth2 login flow.
     - GET "/github-callback": Handles the callback from GitHub after successful authentication.
-    
+
 
 Usage:
     This module is intended to be used as part of a larger FastAPI application. It can be mounted as a router to handle user-related routes, providing a RESTful API for user management and authentication.
@@ -251,7 +251,6 @@ async def github_login():
 
 @router.get("/callback")
 async def github_callback(request: Request):
-
     with github_sso:
         user = await github_sso.verify_and_process(request)
 

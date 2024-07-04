@@ -65,7 +65,7 @@ docker-beta-build:  # Build docker image
 docker-beta-push:  # Push beta test image to docker hub
 	docker tag dsg:beta-$(TIMESTAMP) mikeryan56/dsg:beta-$(TIMESTAMP)
 	docker push mikeryan56/dsg:beta-$(TIMESTAMP)
-	
+
 docker-beta-bp: docker-beta-build docker-beta-push
 
 flake8:  # Run flake8 and output report
@@ -100,7 +100,7 @@ run-real:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.real .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
 	#uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
-	
+
 run-test:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.test .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload

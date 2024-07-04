@@ -27,17 +27,19 @@ from ..settings import settings
 class EncryptionError(Exception):
     """Exception raised for errors during the encryption process."""
 
+
 class DecryptionError(Exception):
     """Exception raised for errors during the decryption process."""
 
 
 # Original phrase
-phrase: bytes = settings.phrase.get_secret_value().encode('utf-8')
+phrase: bytes = settings.phrase.get_secret_value().encode("utf-8")
 # Generate a 32-byte key using PBKDF2 HMAC SHA-256
-key: bytes = hashlib.pbkdf2_hmac('sha256', phrase, b'salt', 100000)
+key: bytes = hashlib.pbkdf2_hmac("sha256", phrase, b"salt", 100000)
 # Encode the key to make it url-safe base64-encoded
 encoded_key: bytes = base64.urlsafe_b64encode(key)
 pipe: Fernet = Fernet(key=encoded_key)  # Corrected to use encoded_key
+
 
 def encrypt_text(text: str) -> bytes:
     """
@@ -59,7 +61,7 @@ def encrypt_text(text: str) -> bytes:
     EncryptionError with the error message.
     """
     try:
-        text_bytes = text.encode('utf-8')  # Convert the input text to bytes
+        text_bytes = text.encode("utf-8")  # Convert the input text to bytes
         encrypted_bytes = pipe.encrypt(text_bytes)  # Encrypt the bytes
         logger.debug("Text encrypted successfully.")
         return encrypted_bytes
@@ -67,6 +69,7 @@ def encrypt_text(text: str) -> bytes:
         error = f"Encryption failed: {e}"
         logger.error(error)
         raise EncryptionError(error)  # Raise an EncryptionError with the error message
+
 
 def decrypt_text(text: bytes) -> str:
     """
@@ -89,7 +92,9 @@ def decrypt_text(text: bytes) -> str:
     """
     try:
         decrypted_bytes = pipe.decrypt(text)  # Decrypt the input bytes
-        decrypted_text = decrypted_bytes.decode('utf-8')  # Convert decrypted bytes back to string
+        decrypted_text = decrypted_bytes.decode(
+            "utf-8"
+        )  # Convert decrypted bytes back to string
         logger.debug("Text decrypted successfully.")
         return decrypted_text
     except Exception as e:

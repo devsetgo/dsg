@@ -268,7 +268,7 @@ class Notes(schema_base, async_db.Base):
         try:
             return decrypt_text(self._note)
         except DecryptionError as e:
-            error:str = f"Failed to decrypt note: {e}"
+            error: str = f"Failed to decrypt note: {e}"
             logger.error(error)
             # Decide on the action: raise, ignore, or another approach
             return error
@@ -278,7 +278,7 @@ class Notes(schema_base, async_db.Base):
         try:
             self._note = encrypt_text(value)
         except EncryptionError as e:
-            error:str = f'Failed to encrypt note: {e}'
+            error: str = f"Failed to encrypt note: {e}"
             logger.error(error)
             # Decide on the action: raise, ignore, or another approach
             return error
@@ -288,7 +288,7 @@ class Notes(schema_base, async_db.Base):
         try:
             return decrypt_text(self._summary)
         except DecryptionError as e:
-            error:str = f"Failed to decrypt summary: {e}"
+            error: str = f"Failed to decrypt summary: {e}"
             logger.error(error)
             # Decide on the action: raise, ignore, or another approach
             return error
@@ -298,7 +298,7 @@ class Notes(schema_base, async_db.Base):
         try:
             self._summary = encrypt_text(value)
         except EncryptionError as e:
-            error:str = f"Failed to encrypt summary: {e}"
+            error: str = f"Failed to encrypt summary: {e}"
             logger.error(error)
             # Decide on the action: raise, ignore, or another approach
             return error
