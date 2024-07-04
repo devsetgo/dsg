@@ -61,6 +61,5 @@ async def get_check_pypi_packages(package: str):
         logger.info(f"Successfully checked package: {package}")
         return JSONResponse(data[0])
     except Exception as e:
-
         logger.error(f"Failed to check package: {package}. Error: {e}")
         raise HTTPException(status_code=500, detail="Failed to check package")

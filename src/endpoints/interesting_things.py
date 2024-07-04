@@ -23,7 +23,7 @@ API Endpoints:
     - GET "/pagination": Lists interesting things with pagination and optional filters.
     - GET "/new": Displays a form to create a new interesting thing.
     - POST "/new": Creates a new interesting thing based on form data.
-    
+
 
 Usage:
     This module is designed to be integrated into a FastAPI application, providing a backend API for listing interesting things. It can be used in web applications that require content curation and discovery features, with the ability to filter and paginate through large sets of data.
