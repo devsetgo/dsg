@@ -36,12 +36,13 @@ async def admin_dashboard(
 
     user_list = await get_list_of_users(user_timezone=user_timezone)
 
-    context = {"page":"admin","user_identifier": user_identifier, "users": user_list}
+    context = {"page": "admin", "user_identifier": user_identifier, "users": user_list}
     return templates.TemplateResponse(
         request=request, name="/admin/dashboard.html", context=context
     )
 
-#TODO: create categories maintenance GET and POST
+
+# TODO: create categories maintenance GET and POST
 
 
 async def get_list_of_users(user_timezone: str):
@@ -92,7 +93,8 @@ async def admin_user(
     job_app_query = Select(JobApplications).where(JobApplications.user_id == user_id)
     job_app_count = await db_ops.count_query(query=job_app_query)
 
-    context = {"page":"admin",
+    context = {
+        "page": "admin",
         "user": user,
         "notes_count": notes_count,
         "job_app_count": job_app_count,
@@ -270,7 +272,11 @@ async def admin_failed_login_attempts(
     logger.debug(f"Retrieved {len(failures)} failed login attempts")
 
     # Create the context for the template
-    context = {"page":"admin","user_identifier": user_identifier, "failures": failures}
+    context = {
+        "page": "admin",
+        "user_identifier": user_identifier,
+        "failures": failures,
+    }
     # Log the end of the process
     logger.info("Finished processing failed login attempts for admin")
     # Render the template and return the response
@@ -330,12 +336,24 @@ async def admin_note_ai_check(
                 found = True
                 break
         if not found:
-            user_note_count.append({"user_id": user_id, "user_name": None, "count": 1, "last_note_date": note_date})
+            user_note_count.append(
+                {
+                    "user_id": user_id,
+                    "user_name": None,
+                    "count": 1,
+                    "last_note_date": note_date,
+                }
+            )
     # Log the number of retrieved notes
     logger.debug(f"Retrieved {len(notes)} notes for AI check")
 
     # Create the context for the template
-    context = {"page":"admin","user_identifier": user_identifier, "notes": notes, "user_note_count": user_note_count}
+    context = {
+        "page": "admin",
+        "user_identifier": user_identifier,
+        "notes": notes,
+        "user_note_count": user_note_count,
+    }
     # Log the end of the process
     logger.info("Finished processing note AI check for admin")
     # Render the template and return the response
@@ -343,8 +361,13 @@ async def admin_note_ai_check(
         request=request, name="/admin/note_ai_check.html", context=context
     )
 
+
 @router.get("/note-ai-check/{user_id}")
-async def admin_note_ai_check_user(user_id:str, background_tasks: BackgroundTasks,user_info: dict = Depends(check_login)):
+async def admin_note_ai_check_user(
+    user_id: str,
+    background_tasks: BackgroundTasks,
+    user_info: dict = Depends(check_login),
+):
     # Create a query to select notes that need AI check
     query = Select(Notes).where(Notes.mood == "processing")
 
@@ -352,10 +375,12 @@ async def admin_note_ai_check_user(user_id:str, background_tasks: BackgroundTask
     notes = await db_ops.read_query(query=query)
     notes = [note.to_dict() for note in notes]
 
-    list_of_ids:list = []
+    list_of_ids: list = []
     for note in notes:
-        list_of_ids.append(note['pkid'])
+        list_of_ids.append(note["pkid"])
 
     # print(list_of_ids)
-    background_tasks.add_task(note_import.process_ai, user_identifier=user_id,list_of_ids=list_of_ids)
+    background_tasks.add_task(
+        note_import.process_ai, user_identifier=user_id, list_of_ids=list_of_ids
+    )
     return RedirectResponse(url="/admin", status_code=302)

@@ -32,7 +32,7 @@ async def list_of_posts(
     category: str = Query(None, description="Category to search by"),
     # user_info: dict = Depends(check_login),
 ):
-    context = {"page":"posts","request": request}
+    context = {"page": "posts", "request": request}
     return templates.TemplateResponse(
         request=request, name="/posts/index.html", context=context
     )
@@ -41,7 +41,9 @@ async def list_of_posts(
 @router.get("/categories", response_class=JSONResponse)
 async def get_categories():
     categories = await db_ops.read_query(
-        Select(Categories).where(Categories.is_post==True).order_by(asc(Categories.name))
+        Select(Categories)
+        .where(Categories.is_post == True)
+        .order_by(asc(Categories.name))
     )
     cat_list = [cat.to_dict()["name"] for cat in categories]
     return cat_list

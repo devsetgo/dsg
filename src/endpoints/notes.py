@@ -78,7 +78,8 @@ async def read_notes(
                 notes_metrics.update_notes_metrics, user_id=user_identifier
             )
     logger.info(f"User {user_identifier} dashboard retrieved")
-    context = {"page":"notes",
+    context = {
+        "page": "notes",
         "user_identifier": user_identifier,
         "metrics": metrics,
         "note_metrics": note_metrics,

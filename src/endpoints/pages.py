@@ -43,7 +43,7 @@ async def index(request: Request):
             data=cool_stuff, user_timezone=settings.default_timezone
         )
     except Exception as e:
-        error:str = f"Error getting Interesting things: {e}"
+        error: str = f"Error getting Interesting things: {e}"
         logger.error(error)
         cool_stuff = []
 
@@ -56,11 +56,15 @@ async def index(request: Request):
             data=posts, user_timezone=settings.default_timezone
         )
     except Exception as e:
-        error:str = f"Error getting Posts: {e}"
+        error: str = f"Error getting Posts: {e}"
         logger.error(error)
         posts = []
 
-    context = {"page":"pages","data": {"my_stuff": {}, "cool_stuff": cool_stuff}, "posts": posts}
+    context = {
+        "page": "pages",
+        "data": {"my_stuff": {}, "cool_stuff": cool_stuff},
+        "posts": posts,
+    }
     return templates.TemplateResponse(
         request=request, name="index2.html", context=context
     )
@@ -96,7 +100,7 @@ async def about_page(request: Request):
     template: str = "about.html"
 
     # Define the context variables to pass to the template.
-    context = {"page":"pages","data": data}
+    context = {"page": "pages", "data": data}
 
     # Log some information about the request.
     logger.info(f"page accessed: /{template}")
@@ -117,7 +121,9 @@ async def about_page(request: Request):
 
 @router.get("/data")
 async def get_data_page(request: Request):
-    context = {"page":"pages",}
+    context = {
+        "page": "pages",
+    }
     return templates.TemplateResponse(
         request=request, name="interesting-data.html", context=context
     )
@@ -148,7 +154,7 @@ async def public_debt(request: Request):
             last_year = year_hold
             d["debt_growth"] = 0
 
-    context = {"page":"pages","debt": debt_list}
+    context = {"page": "pages", "debt": debt_list}
 
     return templates.TemplateResponse(
         request=request, name="api/us-debt.html", context=context

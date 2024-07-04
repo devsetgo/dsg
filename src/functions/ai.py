@@ -140,7 +140,6 @@ async def get_tags(
     return resp
 
 
-
 @lru_cache(maxsize=128)
 def load_model() -> Language:
     """
@@ -152,6 +151,7 @@ def load_model() -> Language:
     # Load the multi-language model
     nlp = spacy.load("xx_ent_wiki_sm")
     return nlp
+
 
 def tag_check(tags: Dict[str, List[str]]) -> Dict[str, List[str]]:
     """
@@ -174,7 +174,8 @@ def tag_check(tags: Dict[str, List[str]]) -> Dict[str, List[str]]:
         # Filter out tags recognized as person names ("PER")
         if not any(ent.label_ == "PER" for ent in doc.ents):
             filtered_tags.append(tag)
-    return {'tags': filtered_tags}
+    return {"tags": filtered_tags}
+
 
 async def get_summary(
     content: str, temperature: float = temperature, sentence_length: int = 1
