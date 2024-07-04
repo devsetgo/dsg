@@ -26,10 +26,8 @@ from typing import NoReturn
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from loguru import logger
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.requests import Request
-from starlette.responses import Response
 
 from .settings import settings
 
@@ -79,21 +77,21 @@ def add_middleware(app: FastAPI) -> NoReturn:
 
 class AccessLoggerMiddleware(BaseHTTPMiddleware):
     """
-    Middleware to log all requests made to the application.
+    Middleware to log all requests made to application
     """
 
     def __init__(self, app, user_identifier: str = "id"):
         super().__init__(app)
-        self.user_identifier: str = user_identifier
+        self.user_identifier = user_identifier
 
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+    async def dispatch(self, request, call_next):
         # Record the start time
-        start_time: float = time.time()
+        start_time = time.time()
         try:
             # Call the next middleware or endpoint in the stack
-            response: Response = await call_next(request)
+            response = await call_next(request)
             # Get the status code from the response
-            status_code: int = response.status_code
+            status_code = response.status_code
             logger.debug(f"Response: {response}")
         except Exception as e:
             # Log the exception and re-raise it
@@ -101,16 +99,16 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
             raise
 
         # Calculate the processing time
-        process_time: float = time.time() - start_time
+        process_time = time.time() - start_time
         logger.debug(f"Processing time: {process_time}")
         # Get the request details
-        method: str = request.method
-        url: str = str(request.url)
-        client: str = request.client.host
-        referer: str = request.headers.get("referer", "No referer")
-        user_id: str = request.session.get(self.user_identifier, "unknown guest")
-        headers: dict = dict(request.headers.items())
-        sensitive_headers: list = ["Authorization"]
+        method = request.method
+        url = request.url
+        client = request.client.host
+        referer = request.headers.get("referer", "No referer")
+        user_id = request.session.get(self.user_identifier, "unknown guest")
+        headers = dict(request.headers.items())
+        sensitive_headers = ["Authorization"]
 
         # Redact sensitive headers
         for header in sensitive_headers:
@@ -122,7 +120,7 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
             logger.debug(
                 {
                     "method": method,
-                    "url": url,
+                    "url": str(url),
                     "client": client,
                     "referer": referer,
                     "user_id": user_id,
