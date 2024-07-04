@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     db_name: SecretStr = Field(
         ..., description="For sqlite it should be folder path 'folder/filename"
     )
+    phrase: SecretStr = Field(..., description="substitution cipher")
     echo: bool = Field(True, description="Enable echo")
     future: bool = Field(True, description="Enable future")
     pool_pre_ping: bool = Field(False, description="Enable pool_pre_ping")
@@ -106,7 +107,7 @@ class Settings(BaseSettings):
     # GitHub
     github_client_id: str = None
     github_client_secret: SecretStr = None
-    github_call_back_domain:str = "https://localhost:5000"
+    github_call_back_domain: str = "https://localhost:5000"
     github_id: str = "octocat"
     github_repo_limit: int = 50
     github_token: SecretStr = "<enter key>"

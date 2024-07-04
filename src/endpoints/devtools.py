@@ -17,7 +17,9 @@ async def post_check_pypi_packages(packages: List[str] = Body(...)):
     logger.info(f"Checking packages: {packages}")
 
     try:
-        data = await check_packages(packages=packages,request_group_id=str(uuid.uuid4()),request=None)
+        data = await check_packages(
+            packages=packages, request_group_id=str(uuid.uuid4()), request=None
+        )
         logger.info(f"Successfully checked packages: {packages}")
         return JSONResponse(data)
     except Exception as e:
@@ -32,7 +34,9 @@ async def get_check_pypi_packages(package: str):
     print(package)
     try:
         packages = [package]
-        data = await check_packages(packages, request=None, request_group_id=str(uuid.uuid4()))
+        data = await check_packages(
+            packages, request=None, request_group_id=str(uuid.uuid4())
+        )
         logger.info(f"Successfully checked package: {package}")
         return JSONResponse(data[0])
     except Exception as e:

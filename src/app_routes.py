@@ -132,7 +132,7 @@ def create_routes(app: FastAPI) -> NoReturn:
     # The tags argument specifies the tags for the routes
     # The include_in_schema argument specifies whether the routes should be included in the OpenAPI schema
 
-    show_route:bool=False
+    show_route: bool = False
     # Make sure these are in route alphabetical order
     app.include_router(
         admin.router,
@@ -161,7 +161,8 @@ def create_routes(app: FastAPI) -> NoReturn:
             Dict[str, Any]: A dictionary that represents the context of the error page.
         """
         # Create the context for the error page
-        context = {"page":"x",
+        context = {
+            "page": "x",
             "request": request,
             "error_code": error_code,
             "description": ALL_HTTP_CODES[error_code]["description"],

@@ -48,18 +48,22 @@ async def list_of_interesting_things(
             date_time=thing["date_updated"],
             friendly_string=True,
         )
-    context = {"page":"things","request": request, "things": things}
+    context = {"page": "things", "request": request, "things": things}
     return templates.TemplateResponse(
         request=request, name="/interesting-things/index.html", context=context
     )
 
+
 @router.get("/categories", response_class=JSONResponse)
 async def get_categories():
     categories = await db_ops.read_query(
-        Select(Categories).where(Categories.is_thing==True).order_by(asc(Categories.name))
+        Select(Categories)
+        .where(Categories.is_thing == True)
+        .order_by(asc(Categories.name))
     )
     cat_list = [cat.to_dict()["name"] for cat in categories]
     return cat_list
+
 
 @router.get("/pagination")
 async def read_things_pagination(
@@ -172,8 +176,11 @@ async def read_things_pagination(
 @router.get("/new")
 async def new_thing(request: Request):
     return templates.TemplateResponse(
-        request=request, name="/interesting-things/new.html", context={"request": request}
+        request=request,
+        name="/interesting-things/new.html",
+        context={"request": request},
     )
+
 
 @router.post("/new")
 async def create_thing(
@@ -208,7 +215,6 @@ async def create_thing(
     logger.info(f"Created interesting-things with ID: {data.pkid}")
 
     return RedirectResponse(url=f"/interesting-thing/view/{data.pkid}", status_code=302)
-
 
 
 # @router.get("/edit/{post_id}")

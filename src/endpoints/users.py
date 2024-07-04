@@ -36,7 +36,7 @@ async def edit_user(
 
     user = user.to_dict()
 
-    context = {"page":"user","user": user, "timezones": timezones}
+    context = {"page": "user", "user": user, "timezones": timezones}
 
     response = templates.TemplateResponse(
         request=request, name="/users/user_edit.html", context=context
@@ -115,7 +115,7 @@ async def get_password_change_form(
     user_info: dict = Depends(check_login),
     error: str = None,
 ):
-    context = {"page":"user","error": error}
+    context = {"page": "user", "error": error}
     response = templates.TemplateResponse(
         request=request, name="users/password_change.html", context=context
     )
@@ -189,7 +189,8 @@ async def get_user_info(
     )
     job_app_count = await db_ops.count_query(query=job_app_query)
 
-    context = {"page":"user",
+    context = {
+        "page": "user",
         "user": user,
         "notes_count": notes_count,
         "job_app_count": job_app_count,
@@ -198,7 +199,6 @@ async def get_user_info(
     return templates.TemplateResponse(
         request=request, name="/users/user_info.html", context=context
     )
-
 
 
 github_sso = GithubSSO(
@@ -228,7 +228,7 @@ async def github_callback(request: Request):
         is_admin = False
         is_active = False
         if settings.admin_user.get_secret_value().lower() == user.display_name.lower():
-            is_admin= True
+            is_admin = True
             is_active = True
             add_roles = {}
             for role in RoleEnum:
@@ -258,7 +258,7 @@ async def github_callback(request: Request):
     request.session["user_identifier"] = user_stored["pkid"]
     request.session["roles"] = user_stored["roles"]
     request.session["is_active"] = user_stored["is_active"]
-    if user_stored['is_admin'] is True:
+    if user_stored["is_admin"] is True:
         request.session["is_admin"] = True
     request.session["timezone"] = user_stored["my_timezone"]
 
@@ -281,9 +281,11 @@ async def github_callback(request: Request):
     logger.debug(f"Login update: {login_update}")
 
     if user_stored["first_name"] is None or user_stored["last_name"] is None:
-        response = RedirectResponse(url="/users/edit-user", status_code=status.HTTP_302_FOUND)
+        response = RedirectResponse(
+            url="/users/edit-user", status_code=status.HTTP_302_FOUND
+        )
     else:
-    # response.set_cookie(SESSION_COOKIE_NAME, access_token)
+        # response.set_cookie(SESSION_COOKIE_NAME, access_token)
         response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
     return response
 

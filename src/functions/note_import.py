@@ -178,6 +178,7 @@ async def process_ai(list_of_ids: list, user_identifier: str):
             logger.error(f"Error processing note ID {note_id}: {e}")
             continue
 
+
 def validate_csv_headers(csv_reader: csv.DictReader):
     """
     Validates the headers of a CSV file.

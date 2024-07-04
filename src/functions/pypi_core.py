@@ -38,6 +38,7 @@ async def fetch_package_data(client, package):
     else:
         logger.error(f"Failed to fetch data for package {package['package_name']}")
 
+
 async def add_demo_data(qty=20):
     import csv
     import random
@@ -50,7 +51,7 @@ async def add_demo_data(qty=20):
         data = list(reader)
         # print(data)
 
-    data_list:list=[]
+    data_list: list = []
     for d in data:
         # print(d)
         data_list.append(d[0])
@@ -58,10 +59,15 @@ async def add_demo_data(qty=20):
 
     async for _i in async_tqdm(range(qty), desc="Adding demo PYPI data", leave=False):
         # get 2-10 packages from data using random
-        sample_size = min(len(data_list), random.randint(2, 20))  # get a random integer between 2 and 20, but not more than the length of the list
+        sample_size = min(
+            len(data_list), random.randint(2, 20)
+        )  # get a random integer between 2 and 20, but not more than the length of the list
         packages = random.sample(data_list, sample_size)
         # call check_packages
-        await check_packages(packages=packages, request_group_id=str(uuid.uuid4()), request=None)
+        await check_packages(
+            packages=packages, request_group_id=str(uuid.uuid4()), request=None
+        )
+
 
 async def check_packages(packages: list, request_group_id: str, request):
     logger.debug(
