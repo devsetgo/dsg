@@ -11,6 +11,10 @@ The settings for the middleware components are fetched from the settings module.
 
 Functions:
     add_middleware(app): Adds middleware to the provided FastAPI application instance.
+
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 import sys
 import time

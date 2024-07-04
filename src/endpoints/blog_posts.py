@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 from datetime import datetime
 
 # from pytz import timezone, UTC

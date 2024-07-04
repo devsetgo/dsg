@@ -22,6 +22,10 @@ Modules:
 
 Example:
     To use this module to import notes from a CSV file, you would call the `read_notes_from_file` function with the path to your CSV file and the user identifier as arguments.
+
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 import csv
 import itertools

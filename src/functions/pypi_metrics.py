@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
 
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 from collections import Counter
 from datetime import datetime, timedelta
 

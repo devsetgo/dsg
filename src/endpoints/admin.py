@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 import secrets
 from datetime import datetime
 

@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
 
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse

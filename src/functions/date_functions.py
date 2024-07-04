@@ -7,6 +7,10 @@ It uses the pytz library to handle timezone conversions and the loguru library f
 
 Functions:
     timezone_update(user_timezone: str, date_time, friendly_string=False): Convert a datetime object or string to a specified timezone and optionally return it as a formatted string.
+
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 from datetime import datetime
 

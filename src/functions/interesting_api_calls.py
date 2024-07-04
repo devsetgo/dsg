@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
 
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 import calendar
 import datetime
 import time

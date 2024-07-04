@@ -10,6 +10,10 @@ The function `create_routes(app)` is used to mount these routes to the provided 
 
 Functions:
     create_routes(app): Mounts routes to the provided FastAPI application instance.
+
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 import time
 from typing import Any, Dict, NoReturn
