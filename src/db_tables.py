@@ -2,6 +2,7 @@
 import re
 
 from dsg_lib.async_database_functions import base_schema
+from loguru import logger
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -16,6 +17,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import class_mapper, relationship
 
 from .db_init import async_db
+from .functions.encrypt import (
+    DecryptionError,
+    EncryptionError,
+    decrypt_text,
+    encrypt_text,
+)
 from .settings import settings
 
 if settings.db_driver.startswith("sqlite"):
@@ -42,7 +49,7 @@ class Users(schema_base, async_db.Base):
     # password = Column(
     #     String, unique=False, index=True, nullable=False
     # )  # Password of the user
-    provider = Column(String,unique=False)
+    provider = Column(String, unique=False)
     # timezone of the user, should default to new york
     my_timezone = Column(String, unique=False, index=True, default="America/New_York")
     is_active = Column(Boolean, default=True, nullable=False)  # If the user is active
@@ -172,8 +179,10 @@ class Categories(schema_base, async_db.Base):
     name = Column(String(50), unique=False, index=True)  # name of item
     description = Column(String(500), unique=False, index=True)  # description of item
     is_post = Column(Boolean, default=False, index=True)
-    is_thing =Column(Boolean, default=False, index=True)
-    is_system = Column(Boolean, default=True, index=True)  # If the category is a system default
+    is_thing = Column(Boolean, default=False, index=True)
+    is_system = Column(
+        Boolean, default=True, index=True
+    )  # If the category is a system default
     user_id = Column(String, ForeignKey("users.pkid"))
     users = relationship("Users", back_populates="categories")
 
@@ -211,20 +220,65 @@ class Notes(schema_base, async_db.Base):
 
     mood = Column(String(500), unique=False, index=True)
     mood_analysis = Column(String(500), unique=False, index=True)
-    note = Column(Text, unique=False, index=True, nullable=False)
+    _note = Column(Text, unique=False, index=True, nullable=False)
     tags = Column(JSON)
-    summary = Column(String(500), unique=False, index=True)
+    _summary = Column(String(500), unique=False, index=True)
     word_count = Column(Integer)
     character_count = Column(Integer)
     ai_fix = Column(Boolean, default=False)
     user_id = Column(String, ForeignKey("users.pkid"), nullable=False, index=True)
     users = relationship("Users", back_populates="notes")
 
+    # def __init__(self, note):
+    #     self._note = encrypt_text(note)  # Encrypt and store the note internally
+
     def to_dict(self):
         data = {
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
+        data["note"] = self.note  # Add the decrypted note
+        data["summary"] = self.summary
         return data
+
+    @property
+    def note(self):
+        try:
+            return decrypt_text(self._note)
+        except DecryptionError as e:
+            error:str = f"Failed to decrypt note: {e}"
+            logger.error(error)
+            # Decide on the action: raise, ignore, or another approach
+            return error
+
+    @note.setter
+    def note(self, value):
+        try:
+            self._note = encrypt_text(value)
+        except EncryptionError as e:
+            error:str = f'Failed to encrypt note: {e}'
+            logger.error(error)
+            # Decide on the action: raise, ignore, or another approach
+            return error
+
+    @property
+    def summary(self):
+        try:
+            return decrypt_text(self._summary)
+        except DecryptionError as e:
+            error:str = f"Failed to decrypt summary: {e}"
+            logger.error(error)
+            # Decide on the action: raise, ignore, or another approach
+            return error
+
+    @summary.setter
+    def summary(self, value):
+        try:
+            self._summary = encrypt_text(value)
+        except EncryptionError as e:
+            error:str = f"Failed to encrypt summary: {e}"
+            logger.error(error)
+            # Decide on the action: raise, ignore, or another approach
+            return error
 
 
 @event.listens_for(Notes, "before_insert")
@@ -248,6 +302,9 @@ def note_on_change(mapper, connection, target):
         if pattern.search(tag) or " " in tag:
             target.ai_fix = True  # Set ai_fix to True if an illegal character is found
             break
+
+    # if target.note:  # Check if the note is not None
+    #     target.note = encrypt_text(target.note)
 
 
 class LibraryName(async_db.Base):
