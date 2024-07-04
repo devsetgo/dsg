@@ -1,9 +1,30 @@
 # -*- coding: utf-8 -*-
 """
+This module, `pages.py`, is part of a web application that serves various web pages and API endpoints. It uses FastAPI to define routes for serving HTML content and handling API requests. The module includes functionality for redirecting to the OpenAPI documentation, serving an index page, and potentially more pages as defined further in the module. It leverages external libraries such as `httpx` for asynchronous HTTP requests and `loguru` for logging. Database interactions are handled through SQLAlchemy, with specific operations defined in the `db_ops` module.
 
 Author:
     Mike Ryan
-    MIT Licensed
+
+License:
+    MIT License
+
+Dependencies:
+    - fastapi: For creating API routes and handling HTTP requests.
+    - httpx: For making asynchronous HTTP requests.
+    - loguru: For logging.
+    - sqlalchemy: For database interactions.
+    - db_tables: Contains the SQLAlchemy table definitions used in the application.
+    - functions: Includes utility functions such as `update_timezone_for_dates` and `get_public_debt`.
+    - resources: Provides access to common resources like `db_ops` for database operations and `templates` for rendering HTML content.
+    - settings: Contains application settings.
+
+Routes:
+    - GET "/": Redirects to the OpenAPI documentation.
+    - GET "/index": Serves the index page of the web application.
+    - GET "/about": Serves the about page of the web application.
+
+Usage:
+    This module is designed to be integrated into a FastAPI application, providing a router for serving web pages and related API endpoints. It can be mounted on the main application to handle requests to the root and index endpoints, among others defined within the module.
 """
 
 from fastapi import APIRouter, Request

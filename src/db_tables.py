@@ -1,9 +1,26 @@
 # -*- coding: utf-8 -*-
 """
+This module, `db_tables.py`, defines the SQLAlchemy ORM models for the database schema of a FastAPI application. It dynamically selects a base schema class based on the database driver specified in the application's settings, supporting different databases like SQLite and PostgreSQL. The module includes model definitions for various entities such as `Users`, with fields for user information including first name, last name, username, and email. It leverages the `dsg_lib.async_database_functions` for asynchronous database operations and integrates encryption functionalities for sensitive information.
 
 Author:
     Mike Ryan
-    MIT Licensed
+
+License:
+    MIT License
+
+Dependencies:
+    - sqlalchemy: For ORM support and database model definitions.
+    - loguru: Used for logging.
+    - dsg_lib.async_database_functions: Provides base schema classes and asynchronous database functionalities.
+    - .db_init: Initializes the database connection using application settings.
+    - .functions.encrypt: Contains encryption and decryption functions for handling sensitive information.
+    - .settings: Contains the application's configuration settings, including database connection details.
+
+Models:
+    - Users: Represents the users of the application, with fields for personal and authentication information.
+
+Usage:
+    This module is intended to be imported wherever database ORM models are required within the application, such as in database initialization scripts, CRUD operation handlers, and when performing queries or updates to the database.
 """
 import re
 

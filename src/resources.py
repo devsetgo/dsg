@@ -1,25 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-This module, `resources.py`, is responsible for managing and handling resources in the application.
+This module, `resources.py`, centralizes the management and provisioning of shared resources within the application. It is designed to streamline the access and manipulation of various resources such as templates for HTML rendering, static files for web content, and database operations for data persistence.
 
-It includes functions and classes for loading, manipulating, and saving resources. The specific resources it handles can vary,
-but they might include things like images, audio files, configuration files, or other data files used by the application.
-
-The module also includes setup for database operations and static files.
+The module abstracts the complexity of initializing and configuring these resources, offering a simplified interface for the rest of the application. By centralizing resource management, it facilitates consistency and reusability across different parts of the application.
 
 Module Attributes:
-    templates (Jinja2Templates): An instance of `Jinja2Templates` for rendering templates.
-    statics (StaticFiles): An instance of `StaticFiles` for serving static files.
-    db_ops (DatabaseOperations): An instance of `DatabaseOperations` for performing database operations.
+    templates (Jinja2Templates): Manages the rendering of HTML templates, providing a bridge between Python code and HTML output.
+    statics (StaticFiles): Handles the serving of static files, such as CSS, JavaScript, and images, essential for web content.
+    db_ops (DatabaseOperations): Encapsulates database operations, offering a unified interface for CRUD operations and database transactions.
 
 Functions:
-    startup: An asynchronous function that is used to start up the application.
-
-Please refer to the individual function or class docstrings for more specific information about what each part of the module does.
+    startup: Initializes the resources required by the application, ensuring they are ready for use when the application starts. This function is asynchronous to accommodate the initialization of resources that may require IO operations, such as database connections.
 
 Author:
     Mike Ryan
-    MIT Licensed
+
+License:
+    MIT License
 """
 import random
 from datetime import UTC, datetime, timedelta

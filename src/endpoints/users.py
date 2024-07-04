@@ -1,9 +1,38 @@
 # -*- coding: utf-8 -*-
 """
+This module, `users.py`, is designed to handle user management and authentication within a web application. It provides functionalities for user registration, login, profile management, and OAuth2 callbacks, specifically focusing on GitHub as an authentication provider. Utilizing FastAPI for routing, this module defines API endpoints for the aforementioned functionalities and integrates with external authentication services and the application's database for user data storage and retrieval.
 
 Author:
     Mike Ryan
-    MIT Licensed
+
+License:
+    MIT License
+
+Dependencies:
+    - fastapi: For creating API routes and handling HTTP requests.
+    - sqlalchemy: For database interactions.
+    - oauthlib: For OAuth2 authentication flows.
+    - httpx: For making HTTP requests to external services.
+    - db_tables: Contains the SQLAlchemy table definitions for user data.
+    - functions.auth: Includes utility functions for authentication processes, such as token generation and verification.
+    - resources: Provides access to common resources like database operations (`db_ops`) and configuration settings.
+
+API Endpoints:
+    - POST "/register": Registers a new user with the provided credentials.
+    - POST "/login": Authenticates a user and returns a session token.
+    - GET "/profile": Retrieves the profile information of the currently authenticated user.
+    - GET "/callback": Handles the OAuth2 callback from GitHub, facilitating user authentication via GitHub accounts.
+    - GET "/edit-user": Displays a form for editing user information.
+    - POST "/edit-user": Processes the form data submitted for editing user information.
+    - GET "/logout": Logs out the currently authenticated user.
+    - GET "/password-change": Displays a form for changing the user's password.
+    - POST "/password-change": Processes the form data submitted for changing the user's password.
+    - GET "/github-login": Initiates the GitHub OAuth2 login flow.
+    - GET "/github-callback": Handles the callback from GitHub after successful authentication.
+    
+
+Usage:
+    This module is intended to be used as part of a larger FastAPI application. It can be mounted as a router to handle user-related routes, providing a RESTful API for user management and authentication.
 """
 from datetime import datetime, timedelta
 
@@ -294,42 +323,6 @@ async def github_callback(request: Request):
         # response.set_cookie(SESSION_COOKIE_NAME, access_token)
         response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
     return response
-
-
-# async def github_callback(request: Request, db: Session = Depends(get_db)):
-#     """Process login response from GitHub and return user info"""
-
-#     try:
-#         with github_sso:
-#             user = await github_sso.verify_and_process(request)
-#         username = user.email if user.email else user.display_name
-#         user_stored = db_crud.get_user(db, username, user.provider)
-#         if not user_stored:
-#             user_to_add = UserSignUp(
-#                 username=username,
-#                 fullname=user.display_name
-#             )
-#             user_stored = db_crud.add_user(
-#                 db,
-#                 user_to_add,
-#                 provider=user.provider
-#             )
-#         access_token = create_access_token(
-#             username=user_stored.username,
-#             provider=user.provider
-#         )
-#         response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
-#         response.set_cookie(SESSION_COOKIE_NAME, access_token)
-#         return response
-#     except db_crud.DuplicateError as e:
-#         raise HTTPException(status_code=403, detail=f"{e}")
-#     except ValueError as e:
-#         raise HTTPException(status_code=400, detail=f"{e}")
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=500,
-#             detail=f"An unexpected error occurred. Report this message to support: {e}"
-#         )
 
 
 # deactivate user endpoint
