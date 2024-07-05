@@ -13,10 +13,14 @@ DEV_SERVER = uvicorn ${SERVICE_PATH}.main:app
 PROD_SERVER = uvicorn ${SERVICE_PATH}.main:app
 PORT = 5000
 WORKERS = 4
+THREADS = 2
 
 VENV_PATH = _venv
 REQUIREMENTS_PATH = requirements.txt
 DEV_REQUIREMENTS_PATH = requirements/dev.txt
+
+TIMESTAMP := $(shell date +'%y-%m-%d-%H%M')
+LOG_LEVEL := $(shell grep LOGGING_LEVEL .env | cut -d '=' -f2 | tr '[:upper:]' '[:lower:]')
 
 .PHONY: alembic-downgrade alembic-init alembic-migrate alembic-rev autoflake black cache cleanup compile dev docker-beta-bp docker-beta-build docker-beta-push docker-beta-run flake8 gdev gprd grdev help install install-dev isort prd run-dev run-gdev run-gprd run-grdev run-local run-prod run-real run-test test
 
@@ -54,8 +58,6 @@ cleanup: autoflake ruff isort  # Run isort, ruff, and autoflake
 compile:  # Compile http_request.c into a shared library
 	gcc -shared -o http_request.so http_request.c -lcurl -fPIC
 
-TIMESTAMP := $(shell date +'%y-%m-%d-%H%M')
-
 docker-beta-run:  # Run docker container
 	docker run -p 5000:5000 dsg:beta-$(TIMESTAMP)
 
@@ -86,40 +88,40 @@ isort:  # Sort imports using isort
 
 run-dev:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.dev .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
-
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
 run-local:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.local .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
 
 run-plocal:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.plocal .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
 
 run-real:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.real .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
-	#uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
+	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --threads ${THREADS} --http auto --log-level ${LOG_LEVEL}
+# uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+# uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
 
 run-test:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.test .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
 
 run-stage:  # Run the FastAPI application in production mode
 	cp env-files/.env.stage .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --log-level ${LOG_LEVEL}
 
 run-gdev:  # Run the FastAPI application in development mode with hot-reloading using granian
 	cp env-files/.env.dev .env
-	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --reload
+	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
 
 run-gprd:  # Run the FastAPI application in production mode using granian
 	cp env-files/.env.prd .env
-	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
+	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --log-level ${LOG_LEVEL}
 
 run-grdev:  # Run the FastAPI application in development mode with hot-reloading using granian and rsgi interface
 	cp env-files/.env.dev .env
-	granian --interface rsgi ${SERVICE_PATH}.main:app --port ${PORT} --reload
+	granian --interface rsgi ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
 
 test:  # Run tests and generate coverage report
 	pre-commit run -a
@@ -130,3 +132,7 @@ test:  # Run tests and generate coverage report
 ruff: ## Format Python code with Ruff
 	ruff check --fix --exit-non-zero-on-fix --show-fixes $(SERVICE_PATH)
 	ruff check --fix --exit-non-zero-on-fix --show-fixes $(TESTS_PATH)
+
+
+kill-server: ## Kill the server
+	kill -9 $(lsof -t -i:5000)

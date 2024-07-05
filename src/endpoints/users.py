@@ -144,59 +144,59 @@ async def logout(request: Request):
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.get("/password-change", response_class=HTMLResponse)
-async def get_password_change_form(
-    request: Request,
-    user_info: dict = Depends(check_login),
-    error: str = None,
-):
-    context = {"page": "user", "error": error}
-    response = templates.TemplateResponse(
-        request=request, name="users/password_change.html", context=context
-    )
-    return response
+# @router.get("/password-change", response_class=HTMLResponse)
+# async def get_password_change_form(
+#     request: Request,
+#     user_info: dict = Depends(check_login),
+#     error: str = None,
+# ):
+#     context = {"page": "user", "error": error}
+#     response = templates.TemplateResponse(
+#         request=request, name="users/password_change.html", context=context
+#     )
+#     return response
 
 
-@router.post("/password-change")
-async def post_password_change_form(
-    request: Request,
-    user_info: dict = Depends(check_login),
-):
-    form = await request.form()
-    old_password = form["old_password"]
-    new_password = form["new_password"]
-    new_password_confirm = form["new_password_confirm"]
-    user_identifier = request.session.get("user_identifier", None)
-    user = await db_ops.read_one_record(
-        Select(Users).where(Users.pkid == user_identifier)
-    )
-    if not verify_password(hash=user.password, password=old_password):
-        request.session["error"] = "Old password is incorrect"
-        return templates.TemplateResponse(
-            request=request,
-            name="users/error_message.html",
-            context={"error": request.session["error"]},
-        )
-    if new_password != new_password_confirm:
-        request.session["error"] = "New passwords do not match"
-        return templates.TemplateResponse(
-            request=request,
-            name="users/error_message.html",
-            context={"error": request.session["error"]},
-        )
-    new_password_hash = hash_password(new_password)
-    update = await db_ops.update_one(
-        table=Users,
-        new_values={"password": new_password_hash},
-        record_id=user_identifier,
-    )
-    logger.debug(f"Password update: {update}")
-    request.session["message"] = "Password updated successfully"
-    return templates.TemplateResponse(
-        request=request,
-        name="users/message.html",
-        context={"message": request.session["message"]},
-    )
+# @router.post("/password-change")
+# async def post_password_change_form(
+#     request: Request,
+#     user_info: dict = Depends(check_login),
+# ):
+#     form = await request.form()
+#     old_password = form["old_password"]
+#     new_password = form["new_password"]
+#     new_password_confirm = form["new_password_confirm"]
+#     user_identifier = request.session.get("user_identifier", None)
+#     user = await db_ops.read_one_record(
+#         Select(Users).where(Users.pkid == user_identifier)
+#     )
+#     if not verify_password(hash=user.password, password=old_password):
+#         request.session["error"] = "Old password is incorrect"
+#         return templates.TemplateResponse(
+#             request=request,
+#             name="users/error_message.html",
+#             context={"error": request.session["error"]},
+#         )
+#     if new_password != new_password_confirm:
+#         request.session["error"] = "New passwords do not match"
+#         return templates.TemplateResponse(
+#             request=request,
+#             name="users/error_message.html",
+#             context={"error": request.session["error"]},
+#         )
+#     new_password_hash = hash_password(new_password)
+#     update = await db_ops.update_one(
+#         table=Users,
+#         new_values={"password": new_password_hash},
+#         record_id=user_identifier,
+#     )
+#     logger.debug(f"Password update: {update}")
+#     request.session["message"] = "Password updated successfully"
+#     return templates.TemplateResponse(
+#         request=request,
+#         name="users/message.html",
+#         context={"message": request.session["message"]},
+#     )
 
 
 # get user information endpoint
