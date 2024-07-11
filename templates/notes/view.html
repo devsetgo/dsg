@@ -30,7 +30,7 @@
                                     class="fa-solid fa-trash" style="color:lightgray;"></i></a>
                             {% if request.session.is_admin is true %}
                             <a href="/notes/ai-fix/{{note.pkid}}" class="btn btn-success ml-2" title="Send to AI Fix"><i
-                                    class="fa-solid fa-robot" style="color:black;"></i></a>
+                                    class="fa-solid fa-robot" style="color:{{ 'red' if note.ai_fix else 'black' }};"></i></a>
                             {%endif%}
                         </div>
                     </div>

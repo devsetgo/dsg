@@ -45,7 +45,6 @@ from sqlalchemy import Select
 
 from ..db_tables import JobApplications, Notes, Users
 from ..functions.date_functions import TIMEZONES as timezones
-from ..functions.hash_function import hash_password, verify_password
 from ..functions.login_required import check_login
 from ..functions.models import RoleEnum
 from ..resources import db_ops, templates

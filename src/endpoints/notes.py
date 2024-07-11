@@ -413,7 +413,7 @@ async def get_note_issue(
     query = (
         Select(Notes)
         .where(and_(Notes.user_id == user_identifier, Notes.ai_fix == True))
-        .limit(20)
+        .limit(200)
     )
     notes = await db_ops.read_query(query=query)
 
