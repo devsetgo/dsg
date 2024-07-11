@@ -37,7 +37,6 @@ from dateutil.tz import UTC
 from loguru import logger
 from sqlalchemy import Select
 from tqdm import tqdm
-from tqdm.asyncio import tqdm as async_tqdm
 
 from ..db_tables import Notes
 from ..functions import ai, notes_metrics

@@ -28,7 +28,6 @@ from fastapi.middleware.gzip import GZipMiddleware
 from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-
 from .settings import settings
 
 
@@ -58,7 +57,7 @@ def add_middleware(app: FastAPI) -> NoReturn:
     app.add_middleware(
         SessionMiddleware,
         secret_key=settings.session_secret_key,
-        same_site="Strict",  # can be Lax or None, but CSRF will be needed
+        same_site=settings.same_site,  # can be Lax or None, but CSRF will be needed for None
         https_only=settings.https_only,
         max_age=settings.max_age,
     )

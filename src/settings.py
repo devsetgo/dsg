@@ -61,6 +61,8 @@ class DatabaseDriverEnum(str, Enum):
 
 class Settings(BaseSettings):
     # Class that describes the settings schema
+    https_redirect: bool = False
+    # allowed_hosts: list = ["localhost", "devsetgo.com","*.devsetgo.com","0.0.0.0"]
     # database_configuration: DatabaseSettings = DatabaseSettings()
     db_driver: DatabaseDriverEnum = Field("memory", description="DB_DRIVER")
     db_username: SecretStr = Field(..., description="DB_USERNAME")
@@ -156,6 +158,8 @@ class Settings(BaseSettings):
             except KeyError:
                 pass
         return values
+
+
 
     model_config = SettingsConfigDict(
         env_file=".env",

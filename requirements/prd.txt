@@ -18,5 +18,4 @@ spacy==3.7.5 # Vulnerabilities: None
 starlette-authlib==0.3.0 # Vulnerabilities: None
 tqdm==4.66.4 # Vulnerabilities: None
 unsync==1.4.0 # Vulnerabilities: None
-uvicorn==0.30.1 # Vulnerabilities: None
-
+uvicorn[standard]==0.30.1 # Vulnerabilities: None

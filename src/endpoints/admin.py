@@ -42,7 +42,7 @@ from fastapi import (
 )
 from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
-from sqlalchemy import Select
+from sqlalchemy import Select,and_
 
 from ..db_tables import FailedLoginAttempts, JobApplications, Notes, Users
 from ..functions import date_functions, note_import
@@ -344,12 +344,13 @@ async def admin_note_ai_check(
     logger.debug(f"User identifier: {user_identifier}")
 
     # Create a query to select notes that need AI check
-    query = Select(Notes).where(Notes.mood == "processing")
+    query = Select(Notes).where(Notes.ai_fix == True)
 
     # Execute the query and get the results
     notes = await db_ops.read_query(query=query)
 
     notes = [note.to_dict() for note in notes]
+
     # create a list of User IDs with a count of notes [{user_id: user_id, user_name: user_name, count: count, last_note_date: last_note_date}]
     user_note_count = []
     for note in notes:
@@ -398,12 +399,11 @@ async def admin_note_ai_check_user(
     user_info: dict = Depends(check_login),
 ):
     # Create a query to select notes that need AI check
-    query = Select(Notes).where(Notes.mood == "processing")
+    query = Select(Notes).where(and_(Notes.user_id == user_id, Notes.ai_fix == True))
 
     # Execute the query and get the results
     notes = await db_ops.read_query(query=query)
     notes = [note.to_dict() for note in notes]
-
     list_of_ids: list = []
     for note in notes:
         list_of_ids.append(note["pkid"])
