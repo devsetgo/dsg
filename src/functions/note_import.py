@@ -149,7 +149,9 @@ def parse_date(date_created):
     return dt
 
 
-async def process_note(note_id: str, semaphore: asyncio.Semaphore, user_identifier: str):
+async def process_note(
+    note_id: str, semaphore: asyncio.Semaphore, user_identifier: str
+):
     async with semaphore:
         try:
             query = Select(Notes).where(Notes.pkid == note_id)
@@ -181,10 +183,15 @@ async def process_note(note_id: str, semaphore: asyncio.Semaphore, user_identifi
         except Exception as e:
             logger.error(f"Error processing note ID {note_id}: {e}")
 
+
 async def process_ai(list_of_ids: list, user_identifier: str):
     semaphore = asyncio.Semaphore(20)  # Limit to 20 concurrent tasks
-    tasks = [process_note(note_id, semaphore, user_identifier) for note_id in list_of_ids]
-    for chunk in async_tqdm([tasks[i:i + 20] for i in range(0, len(tasks), 20)], desc="AI processing"):
+    tasks = [
+        process_note(note_id, semaphore, user_identifier) for note_id in list_of_ids
+    ]
+    for chunk in async_tqdm(
+        [tasks[i : i + 20] for i in range(0, len(tasks), 20)], desc="AI processing"
+    ):
         await asyncio.gather(*chunk)
 
 

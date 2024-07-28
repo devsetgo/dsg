@@ -84,7 +84,7 @@ class Users(schema_base, async_db.Base):
     #     Boolean, default=False, nullable=False
     # )  # If the user has access to the site
     date_last_login = Column(DateTime, unique=False, index=True)  # Last login date
-    failed_login_attempts = Column(Integer, default=0)  # Failed login attempts
+    # failed_login_attempts = Column(Integer, default=0)  # Failed login attempts
     is_locked = Column(
         Boolean, default=False, index=True, nullable=False
     )  # If the user account is locked
@@ -119,20 +119,20 @@ class Users(schema_base, async_db.Base):
     )
 
 
-class FailedLoginAttempts(schema_base, async_db.Base):
-    __tablename__ = "failed_login_attempts"  # Name of the table in the database
-    __tableargs__ = {"comment": "Failed login attempts for the users"}
+# class FailedLoginAttempts(schema_base, async_db.Base):
+#     __tablename__ = "failed_login_attempts"  # Name of the table in the database
+#     __tableargs__ = {"comment": "Failed login attempts for the users"}
 
-    # Define the columns of the table
-    user_name = Column(String, unique=False, index=True)
-    password = Column(String, unique=False, index=True)
-    real_id = Column(Boolean, default=False, index=True)
-    meta_data = Column(JSON)
+#     # Define the columns of the table
+#     user_name = Column(String, unique=False, index=True)
+#     password = Column(String, unique=False, index=True)
+#     real_id = Column(Boolean, default=False, index=True)
+#     meta_data = Column(JSON)
 
-    def to_dict(self):
-        return {
-            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
-        }
+#     def to_dict(self):
+#         return {
+#             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+#         }
 
 
 class Posts(schema_base, async_db.Base):

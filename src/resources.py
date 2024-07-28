@@ -113,8 +113,8 @@ def download_spacy_model(model_name: str):
             logger.info(f"Model '{model_name}' downloaded successfully.")
 
             # Create a flag file to indicate the model has been downloaded
-            with open(flag_file_path, 'w') as f:
-                f.write('Downloaded')
+            with open(flag_file_path, "w") as f:
+                f.write("Downloaded")
         except Exception as e:
             # Log any error during the download process
             logger.error(f"Failed to download model '{model_name}'. Error: {e}")

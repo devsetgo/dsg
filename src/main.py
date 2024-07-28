@@ -49,8 +49,6 @@ logging_config.config_log(
     log_format=None,
     log_serializer=settings.log_serializer,
     log_diagnose=settings.log_diagnose,
-    # app_name="devsetgo",
-    # append_app_name=False,
 )
 
 
