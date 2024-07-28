@@ -11,7 +11,7 @@ import statistics
 from collections import Counter, defaultdict, deque
 
 from loguru import logger
-from sqlalchemy import Select, select
+from sqlalchemy import Select
 from tqdm import tqdm
 
 from ..db_tables import NoteMetrics, Notes
