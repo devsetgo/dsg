@@ -65,6 +65,10 @@ async def index(request: Request):
     for k, v in metrics.items():
         context[k] = v
 
+    from dsg_lib.common_functions.file_functions import save_text
+
+    save_text(data=str(metrics), file_name="pypi_metrics.txt")
+
     return templates.TemplateResponse(
         request=request, name="/pypi/dashboard.html", context=context
     )

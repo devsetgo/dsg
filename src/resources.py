@@ -18,11 +18,12 @@ Author:
 License:
     MIT License
 """
+import os
 import random
 from datetime import UTC, datetime, timedelta
-import os
-import spacy
+
 import silly
+import spacy
 from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates

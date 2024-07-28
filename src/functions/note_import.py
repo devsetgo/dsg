@@ -27,16 +27,17 @@ Author:
     Mike Ryan
     MIT Licensed
 """
+import asyncio
 import csv
 import itertools
 from datetime import datetime
-import asyncio
-from tqdm.asyncio import tqdm as async_tqdm
+
 from dateutil.parser import parse
 from dateutil.tz import UTC
 from loguru import logger
 from sqlalchemy import Select
 from tqdm import tqdm
+from tqdm.asyncio import tqdm as async_tqdm
 
 from ..db_tables import Notes
 from ..functions import ai, notes_metrics

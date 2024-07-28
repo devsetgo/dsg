@@ -28,6 +28,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+
 from .settings import settings
 
 
