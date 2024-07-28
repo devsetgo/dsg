@@ -71,8 +71,6 @@ async def admin_dashboard(
     )
 
 
-# TODO: create categories maintenance GET and POST
-
 
 async def get_list_of_users(user_timezone: str):
     query = Select(Users)
@@ -89,6 +87,18 @@ async def get_list_of_users(user_timezone: str):
                 )
 
     return users
+
+# TODO: create categories maintenance GET and POST
+@router.get("/categories", response_class=HTMLResponse)
+async def admin_categories(request: Request, user_info: dict = Depends(check_login)):
+    user_identifier = user_info["user_identifier"]
+    user_timezone = user_info["timezone"]
+    user_info["is_admin"]
+
+    context = {"page": "admin", "user_identifier": user_identifier}
+    return templates.TemplateResponse(
+        request=request, name="/admin/categories-edit-add.html", context=context
+    )
 
 
 @router.get("/user/{user_id}", response_class=HTMLResponse)

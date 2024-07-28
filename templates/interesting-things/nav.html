@@ -1,22 +1,20 @@
 <li class="nav-item has-treeview {% if page == 'things' %}menu-open{% else %}menu-closed{% endif %}">
         <a href="#" class="nav-link" title="interesting things">
-            <i class="nav-icon fas fa-book"></i>
-            <p>
-                interesting-things
-                <i class="right fas fa-angle-left"></i>
-            </p>
+            <i class="nav-icon fa-solid fa-bookmark"></i>
+            <p>interesting-things</p>
+            <i class="right fas fa-angle-left"></i>
         </a>
         <ul class="nav nav-treeview">
             <li class="nav-item">
                 <a href="/interesting-things" class="nav-link" title="Index">
-                    <i class="far fa-circle nav-icon"></i>
+                    <i class="fa-solid fa-eye">&nbsp;</i>
                     <p>Interesting Things</p>
                 </a>
             </li>
             {% if request.session.roles and request.session.roles.interesting_things %}
             <li class="nav-item">
                 <a href="/interesting-things/new" class="nav-link" title="New Thing">
-                    <i class="far fa-circle nav-icon"></i>
+                    <i class="fa-solid fa-plus">&nbsp;</i>
                     <p>New Thing</p>
                 </a>
             </li>
