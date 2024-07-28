@@ -183,8 +183,8 @@ async def most_common_library():
     last_year = await db_ops.read_query(
         query=Select(Library)
         .options(joinedload(Library.library))
-        .where(and_(Library.date_created >= one_year_ago)),
-        limit=10000,
+        .where(and_(Library.date_created >= one_year_ago))
+        .limit(10000)
     )
 
     library_counter = Counter(library.library.name for library in last_year)
