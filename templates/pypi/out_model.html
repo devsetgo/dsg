@@ -17,14 +17,15 @@
         <div class="scrollable-section">
           {% set count = 0 %}
           {% if lr.json_data_out %}
-            {% for d in lr.json_data_out|sort(attribute='package_name') %}
+            {% set filtered_data = lr.json_data_out | selectattr('package_name', 'defined') | select('!=', None) | list %}
+            {% for d in filtered_data | sort(attribute='package_name') %}
               {% if count < 5 %}
-                {{d.package_name}}{% if d.has_bracket %}[{{d.bracket_content}}]{%endif%}=={{d.latest_version}} #
-                {% if d.latest_version!=d.current_version %} <strong>From {{d.current_version}}</strong> | {%endif%}
+                {{ d.package_name }}{% if d.has_bracket %}[{{ d.bracket_content }}]{% endif %}=={{ d.latest_version }} #
+                {% if d.latest_version != d.current_version %} <strong>From {{ d.current_version }}</strong> | {% endif %}
                 {% if d.vulnerabilities|length > 0 %}
                   Vulnerabilities:
                   {% for v in d.vulnerabilities %}
-                    <a href="{{v.link}}" target="_blank">{{v.link}}</a>
+                    <a href="{{ v.link }}" target="_blank">{{ v.link }}</a>
                   {% endfor %}
                 {% else %}
                   Vulnerabilities: None
@@ -33,7 +34,7 @@
                 {% set count = count + 1 %}
               {% endif %}
             {% endfor %}
-            {% if lr.json_data_out|length > 5 %}
+            {% if filtered_data|length > 5 %}
               <!-- Additional content if there are more than 5 items -->
             {% endif %}
           {% else %}
