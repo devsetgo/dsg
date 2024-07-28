@@ -42,9 +42,9 @@ from fastapi import (
 )
 from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
-from sqlalchemy import Select,and_
+from sqlalchemy import Select, and_
 
-from ..db_tables import FailedLoginAttempts, JobApplications, Notes, Users
+from ..db_tables import JobApplications, Notes, Users  # , FailedLoginAttempts
 from ..functions import date_functions, note_import
 from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
@@ -259,59 +259,59 @@ async def admin_update_user_access(
         return Response(headers={"HX-Redirect": "/error/403"}, status_code=200)
 
 
-@router.get("/failed-login-attempts", response_class=HTMLResponse)
-async def admin_failed_login_attempts(
-    request: Request,
-    user_info: dict = Depends(check_login),
-):
-    """
-    Handles the GET request for the "/failed-login-attempts" route.
+# @router.get("/failed-login-attempts", response_class=HTMLResponse)
+# async def admin_failed_login_attempts(
+#     request: Request,
+#     user_info: dict = Depends(check_login),
+# ):
+#     """
+#     Handles the GET request for the "/failed-login-attempts" route.
 
-    Args:
-        request (Request): The incoming request.
-        user_info (dict): The user information, obtained from the check_login dependency.
+#     Args:
+#         request (Request): The incoming request.
+#         user_info (dict): The user information, obtained from the check_login dependency.
 
-    Returns:
-        TemplateResponse: The response, rendered using a template.
-    """
+#     Returns:
+#         TemplateResponse: The response, rendered using a template.
+#     """
 
-    # Log the start of the process
-    logger.info("Processing failed login attempts for admin")
+#     # Log the start of the process
+#     logger.info("Processing failed login attempts for admin")
 
-    # Extract user identifier from user_info
-    user_identifier = user_info["user_identifier"]
+#     # Extract user identifier from user_info
+#     user_identifier = user_info["user_identifier"]
 
-    # These lines don't seem to do anything. Consider removing them or using the values.
-    user_info["timezone"]
-    user_info["is_admin"]
+#     # These lines don't seem to do anything. Consider removing them or using the values.
+#     user_info["timezone"]
+#     user_info["is_admin"]
 
-    # Log the user identifier
-    logger.debug(f"User identifier: {user_identifier}")
+#     # Log the user identifier
+#     logger.debug(f"User identifier: {user_identifier}")
 
-    # Create a query to select failed login attempts, limited to 1000
-    query = Select(FailedLoginAttempts).limit(1000)
+#     # Create a query to select failed login attempts, limited to 1000
+#     query = Select(FailedLoginAttempts).limit(1000)
 
-    # Execute the query and get the results
-    failures = await db_ops.read_query(query=query)
+#     # Execute the query and get the results
+#     failures = await db_ops.read_query(query=query)
 
-    # Convert each failure to a dictionary
-    failures = [fail.to_dict() for fail in failures]
+#     # Convert each failure to a dictionary
+#     failures = [fail.to_dict() for fail in failures]
 
-    # Log the number of retrieved failed login attempts
-    logger.debug(f"Retrieved {len(failures)} failed login attempts")
+#     # Log the number of retrieved failed login attempts
+#     logger.debug(f"Retrieved {len(failures)} failed login attempts")
 
-    # Create the context for the template
-    context = {
-        "page": "admin",
-        "user_identifier": user_identifier,
-        "failures": failures,
-    }
-    # Log the end of the process
-    logger.info("Finished processing failed login attempts for admin")
-    # Render the template and return the response
-    return templates.TemplateResponse(
-        request=request, name="/admin/failed_login_attempts.html", context=context
-    )
+#     # Create the context for the template
+#     context = {
+#         "page": "admin",
+#         "user_identifier": user_identifier,
+#         "failures": failures,
+#     }
+#     # Log the end of the process
+#     logger.info("Finished processing failed login attempts for admin")
+#     # Render the template and return the response
+#     return templates.TemplateResponse(
+#         request=request, name="/admin/failed_login_attempts.html", context=context
+#     )
 
 
 @router.get("/note-ai-check", response_class=HTMLResponse)

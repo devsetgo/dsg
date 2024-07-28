@@ -88,7 +88,9 @@ isort:  # Sort imports using isort
 
 run-dev:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.dev .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --log-level ${LOG_LEVEL}
+#uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
+
 run-local:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.local .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
@@ -99,9 +101,10 @@ run-plocal:  # Run the FastAPI application in development mode with hot-reloadin
 
 run-real:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.real .env
-	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --threads ${THREADS} --http auto --log-level ${LOG_LEVEL}
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --log-level ${LOG_LEVEL}
+# granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --threads ${THREADS} --http auto --log-level ${LOG_LEVEL}
 # uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload
-# uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS}
+
 
 run-test:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.test .env
