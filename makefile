@@ -88,8 +88,8 @@ isort:  # Sort imports using isort
 
 run-dev:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.dev .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --log-level ${LOG_LEVEL}
-#uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
+# uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --log-level ${LOG_LEVEL}
 
 run-local:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.local .env
