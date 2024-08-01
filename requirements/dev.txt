@@ -12,4 +12,4 @@ mkdocstrings[python]==0.25.1 #   Vulnerabilities: None
 pre-commit==3.7.1 #   Vulnerabilities: None
 pytest==8.2.2 #   Vulnerabilities: None
 pytest-cov==5.0.0 #   Vulnerabilities: None
-ruff==0.4.9 #  From 0.4.8 |   Vulnerabilities: None
+ruff==0.5.5 #  From 0.4.8 |   Vulnerabilities: None
