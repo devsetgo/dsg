@@ -1,0 +1,35 @@
+<!-- Begin Pagination Template -->
+{% include 'weblinks/page-controls.html' %}
+<!-- Begin Cards -->
+<div class="row">
+  <div class="col-12">
+    <h3 class="text-center">Use the search to filter on terms, dates, and/or mood.</h3>
+  </div>
+  {% for data in weblinks %}
+
+  <div class="col-md-6 mb-2 p-1">
+    <div class="card">
+      <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">
+            <a href="/weblinks/{{ data.pkid }}" class="text">{{ data.title|title }}</a>
+          </h5>
+          <p class="card-text">
+            URL: <a href="{{ data.url }}" target="_blank" class="text-primary">Link</a>
+          </p>
+          <p class="card-text">{{ data.summary|truncate(150, end='...') }}</p>
+          <p class="card-text">
+            <small class="text-muted">{{ data.date_created }}</small><br>
+            <small class="text-muted">
+              <strong>Words:</strong> {{ data.word_count }} | 
+              <strong>Characters:</strong> {{ data.character_count }}
+            </small>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% include 'weblinks/page-controls.html' %}
+<!-- End Pagination Template -->

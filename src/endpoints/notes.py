@@ -1,4 +1,45 @@
 # -*- coding: utf-8 -*-
+"""
+This module, `notes.py`, is designed for handling note-taking functionalities within a web application. It provides the capability to create, read, update, and delete notes. Additionally, it supports importing notes from CSV files and offers time-based features, such as setting reminders for notes. The module leverages FastAPI for creating API endpoints and utilizes Python's built-in `datetime` module for time-related operations.
+
+Author:
+    Mike Ryan
+
+License:
+    MIT License
+
+Dependencies:
+    - fastapi: For creating API routes and handling HTTP requests.
+    - csv: For parsing CSV files during note import operations.
+    - io: For handling in-memory file operations, useful in parsing CSV content.
+    - datetime: For managing dates and times, including support for time zones and time deltas.
+
+Features:
+    - CRUD operations for notes.
+    - Importing notes from CSV files.
+    - Setting reminders and deadlines for notes.
+
+Usage:
+    This module is intended to be used as part of a larger FastAPI application. It can be mounted as a router to handle note-related routes, providing a RESTful API for managing notes.
+
+Routes:
+    - GET /: Retrieves a list of notes for the user.
+    - GET /metrics/counts: Retrieves metrics related to the user's notes.
+    - GET /ai-resubmit/{note_id}: Displays a form to resubmit a note for AI processing.
+    - GET /ai-fix/{note_id}: Initiates AI processing to fix a note's content.
+    - GET /bulk: Displays a form for bulk note import.
+    - POST /bulk: Handles bulk note import from a CSV file.
+    - GET /edit/{note_id}: Displays a form to edit a note.
+    - POST /edit/{note_id}: Updates a note with new content.
+    - GET /delete/{note_id}: Displays a form to delete a note.
+    - POST /delete/{note_id}: Deletes a note.
+    - GET /issues: Retrieves notes with AI issues.
+    - GET /new: Displays a form to create a new note.
+    - POST /new: Creates a new note.
+    - GET /pagination: Retrieves paginated notes based on search criteria.
+    - GET /today: Retrieves notes for today's date.
+    - GET /view/{note_id}: Displays a single note.
+"""
 import csv
 import io
 from datetime import UTC, datetime, timedelta
@@ -78,7 +119,8 @@ async def read_notes(
                 notes_metrics.update_notes_metrics, user_id=user_identifier
             )
     logger.info(f"User {user_identifier} dashboard retrieved")
-    context = {"page":"notes",
+    context = {
+        "page": "notes",
         "user_identifier": user_identifier,
         "metrics": metrics,
         "note_metrics": note_metrics,
@@ -371,7 +413,7 @@ async def get_note_issue(
     query = (
         Select(Notes)
         .where(and_(Notes.user_id == user_identifier, Notes.ai_fix == True))
-        .limit(20)
+        .limit(200)
     )
     notes = await db_ops.read_query(query=query)
 
@@ -541,7 +583,8 @@ async def read_notes_pagination(
             "found": found,
             "note_count": note_count,
             "total_pages": total_pages,
-            "current_count": current_count,
+            "start_count": offset + 1,
+            "current_count": offset + current_count,
             "current_page": page,
             "prev_page_url": prev_page_url,
             "next_page_url": next_page_url,

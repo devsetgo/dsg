@@ -1,8 +1,27 @@
 # -*- coding: utf-8 -*-
-
 """
-This module provides classes and functions for managing database settings in an
-application.
+This module, `settings.py`, defines the configuration schema for the application using Pydantic models. It includes settings for database connections, supporting multiple database drivers such as PostgreSQL, SQLite, MySQL, and Oracle. The module leverages Pydantic's BaseSettings class to automatically load environment variables and validate them against the defined schema, ensuring that the application starts with a valid configuration.
+
+The `Settings` class within this module specifies the structure of the application's configuration, including database connection details (driver, username, password, host, port, and database name) and other application-specific settings as needed. It also defines enums for database drivers and cookie SameSite policies to ensure that only valid options are used throughout the application.
+
+Author:
+    Mike Ryan
+
+License:
+    MIT License
+
+Dependencies:
+    - pydantic: For data validation and settings management.
+    - loguru: For logging.
+    - secrets, datetime, enum, functools: Standard library modules for security, date handling, enumerations, and caching.
+
+Classes:
+    - SameSiteEnum: Enumerates valid options for the SameSite attribute of cookies.
+    - DatabaseDriverEnum: Enumerates supported database drivers and their connection strings.
+    - Settings: Defines the application's configuration schema, including database connection details and other necessary settings.
+
+Usage:
+    This module is intended to be imported and instantiated at the application startup to configure and validate the application settings. The `Settings` instance can then be used throughout the application to access configuration values.
 """
 import secrets  # For generating secure random numbers
 from datetime import datetime  # A Python library used for working with dates and times
@@ -42,6 +61,8 @@ class DatabaseDriverEnum(str, Enum):
 
 class Settings(BaseSettings):
     # Class that describes the settings schema
+    https_redirect: bool = False
+    # allowed_hosts: list = ["localhost", "devsetgo.com","*.devsetgo.com","0.0.0.0"]
     # database_configuration: DatabaseSettings = DatabaseSettings()
     db_driver: DatabaseDriverEnum = Field("memory", description="DB_DRIVER")
     db_username: SecretStr = Field(..., description="DB_USERNAME")
@@ -51,6 +72,7 @@ class Settings(BaseSettings):
     db_name: SecretStr = Field(
         ..., description="For sqlite it should be folder path 'folder/filename"
     )
+    phrase: SecretStr = Field(..., description="substitution cipher")
     echo: bool = Field(True, description="Enable echo")
     future: bool = Field(True, description="Enable future")
     pool_pre_ping: bool = Field(False, description="Enable pool_pre_ping")
@@ -105,13 +127,13 @@ class Settings(BaseSettings):
 
     # GitHub
     github_client_id: str = None
-    github_client_secret: str = None
-    github_call_back_domain:str = "https://localhost:5000"
+    github_client_secret: SecretStr = None
+    github_call_back_domain: str = "https://localhost:5000"
     github_id: str = "octocat"
     github_repo_limit: int = 50
     github_token: SecretStr = "<enter key>"
     # historical data
-    history_range: int = 3
+    history_range: int = 1
     # add an admin user
     create_admin_user: bool = False
     admin_user: SecretStr = None
@@ -120,7 +142,7 @@ class Settings(BaseSettings):
     default_timezone: str = "America/New_York"
     # create psuedo data
     create_demo_user: bool = False
-    create_demo_users_qty: int = 20
+    create_demo_users_qty: int = 0
     create_base_categories: bool = False
     create_demo_data: bool = False
     create_demo_notes: bool = False

@@ -1,26 +1,29 @@
 # -*- coding: utf-8 -*-
 """
-This module, `resources.py`, is responsible for managing and handling resources in the application.
+This module, `resources.py`, centralizes the management and provisioning of shared resources within the application. It is designed to streamline the access and manipulation of various resources such as templates for HTML rendering, static files for web content, and database operations for data persistence.
 
-It includes functions and classes for loading, manipulating, and saving resources. The specific resources it handles can vary,
-but they might include things like images, audio files, configuration files, or other data files used by the application.
-
-The module also includes setup for database operations and static files.
+The module abstracts the complexity of initializing and configuring these resources, offering a simplified interface for the rest of the application. By centralizing resource management, it facilitates consistency and reusability across different parts of the application.
 
 Module Attributes:
-    templates (Jinja2Templates): An instance of `Jinja2Templates` for rendering templates.
-    statics (StaticFiles): An instance of `StaticFiles` for serving static files.
-    db_ops (DatabaseOperations): An instance of `DatabaseOperations` for performing database operations.
+    templates (Jinja2Templates): Manages the rendering of HTML templates, providing a bridge between Python code and HTML output.
+    statics (StaticFiles): Handles the serving of static files, such as CSS, JavaScript, and images, essential for web content.
+    db_ops (DatabaseOperations): Encapsulates database operations, offering a unified interface for CRUD operations and database transactions.
 
 Functions:
-    startup: An asynchronous function that is used to start up the application.
+    startup: Initializes the resources required by the application, ensuring they are ready for use when the application starts. This function is asynchronous to accommodate the initialization of resources that may require IO operations, such as database connections.
 
-Please refer to the individual function or class docstrings for more specific information about what each part of the module does.
+Author:
+    Mike Ryan
+
+License:
+    MIT License
 """
+import os
 import random
 from datetime import UTC, datetime, timedelta
 
 import silly
+import spacy
 from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -29,7 +32,7 @@ from sqlalchemy import Select, func
 from tqdm import tqdm
 
 from .db_init import async_db
-from .db_tables import Categories, InterestingThings, Notes, Posts, Users
+from .db_tables import Categories, Notes, Posts, Users, WebLinks
 from .functions.models import RoleEnum
 from .settings import settings
 
@@ -72,6 +75,51 @@ async def startup():
     if len(user) == 0:
         await add_system_data()
 
+    model_name = "xx_ent_wiki_sm"
+    download_spacy_model(model_name)
+
+
+def download_spacy_model(model_name: str):
+    """
+    Downloads the specified spaCy model if it is not already installed.
+
+    This function checks for the presence of a flag file in the /tmp directory
+    to determine if the model has been downloaded previously. If the model is not
+    found, it attempts to download and install the model. Upon successful download,
+    a flag file is created to indicate the model's availability for future checks.
+
+    Args:
+        model_name (str): The name of the spaCy model to download, e.g., "xx_ent_wiki_sm".
+
+    Returns:
+        None
+    """
+    # Path to a flag file which indicates whether the model has been downloaded
+    flag_file_path = f"/tmp/{model_name}_downloaded.flag"
+
+    # Check if the flag file exists, indicating the model has already been downloaded
+    if os.path.exists(flag_file_path):
+        logger.info(f"Model '{model_name}' is already installed. No download needed.")
+        return
+
+    try:
+        # Attempt to load the model to check if it's already installed
+        spacy.load(model_name)
+        logger.info(f"Model '{model_name}' found. No download needed.")
+    except OSError:
+        # Model not installed, proceed with download
+        logger.info(f"Model '{model_name}' not found. Starting download...")
+        try:
+            spacy.cli.download(model_name)
+            logger.info(f"Model '{model_name}' downloaded successfully.")
+
+            # Create a flag file to indicate the model has been downloaded
+            with open(flag_file_path, "w") as f:
+                f.write("Downloaded")
+        except Exception as e:
+            # Log any error during the download process
+            logger.error(f"Failed to download model '{model_name}'. Error: {e}")
+
 
 async def shutdown():
     """
@@ -95,12 +143,11 @@ async def add_system_data():
         logger.warning("Creating admin user")
         data = await add_admin()  # Create an admin user
 
-        if settings.release_env.lower()!="prd":
+        if settings.release_env.lower() != "prd":
             if settings.create_demo_notes is True:
                 await add_notes(user_id=data["pkid"])  # Create notes for the admin user
 
-
-    if settings.release_env.lower()!="prd":
+    if settings.release_env.lower() != "prd":
         if settings.create_demo_user is True:
             logger.warning("Creating demo user")
             for _ in tqdm(
@@ -117,42 +164,12 @@ async def add_system_data():
 
         if settings.create_demo_data is True:
             logger.warning("Creating demo data")
-            await add_interesting_things()  # Create demo data
+            await add_web_links()  # Create demo data
             await add_posts()
 
             from .functions.pypi_core import add_demo_data
+
             await add_demo_data(qty=20)
-            # await fake_login_attempts()
-
-async def fake_login_attempts():
-    from .endpoints.users import fail_logging
-
-    for _ in tqdm(range(10), desc="fake login attempts", leave=True):
-        await fail_logging(
-            user_name=silly.noun(),
-            # password=silly.thing(),
-            meta_data={
-                "host": "localhost:5000",
-                "connection": "keep-alive",
-                "content-length": "29",
-                "sec-ch-ua": '"Microsoft Edge";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
-                "dnt": "1",
-                "hx-current-url": "http://localhost:5000/users/login",
-                "sec-ch-ua-mobile": "?0",
-                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0",
-                "content-type": "application/x-www-form-urlencoded",
-                "hx-request": "true",
-                "sec-ch-ua-platform": '"Windows"',
-                "accept": "*/*",
-                "origin": "http://localhost:5000",
-                "sec-fetch-site": "same-origin",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-dest": "empty",
-                "referer": "http://localhost:5000/users/login",
-                "accept-encoding": "gzip, deflate, br, zstd",
-                "accept-language": "en-US,en;q=0.9",
-            },
-        )
 
 
 async def add_admin():
@@ -265,7 +282,7 @@ async def add_user():
     import secrets
 
     user_name = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
-    roles = ["notes", "interesting_things", "job_applications", "developer", "posts"]
+    roles = ["notes", "web_links", "job_applications", "developer", "posts"]
     role_data = {}
 
     for role in roles:
@@ -315,7 +332,7 @@ async def add_categories():
 
     cat: list = ["technology", "news", "sites", "programming", "woodworking", "other"]
     user_name = settings.admin_user.get_secret_value()
-    user = await db_ops.read_one_record(
+    await db_ops.read_one_record(
         Select(Users).where(Users.user_name == user_name)
     )
 
@@ -326,8 +343,7 @@ async def add_categories():
             description=f"{str(c).title()} related items",
             is_system=True,
             is_post=True,
-            is_thing=True,
-            user_id=user.pkid,
+            is_weblink=True,
         )
         try:
             await db_ops.create_one(category)
@@ -339,19 +355,19 @@ async def add_categories():
         logger.info(f"category name: {d.name}")
 
 
-async def add_interesting_things():
+async def add_web_links():
     # This function is responsible for adding a list of interesting things to the database.
     # Each item in the list is a dictionary with keys for name, description, url, and category.
 
     # Define the list of items to be added
     from dsg_lib.common_functions.file_functions import open_json
 
-    my_stuff = open_json("interesting_things.json")
+    my_stuff = open_json("web_links.json")
     # Check to see if the items are already in the database
     for item in my_stuff:
         # Query the database for each item by name
         data = await db_ops.read_query(
-            Select(InterestingThings).where(InterestingThings.title == item["title"])
+            Select(WebLinks).where(WebLinks.title == item["title"])
         )
         # If the item already exists in the database, log a message and return
         if len(data) > 0:
@@ -373,8 +389,8 @@ async def add_interesting_things():
         logger.info(category.name)
         # Log a message indicating that the current item is being added
         logger.info(f"adding system item {item['title']}")
-        # Create a new InterestingThings instance with the item details
-        thing = InterestingThings(
+        # Create a new WebLinks instance with the item details
+        thing = WebLinks(
             title=item["title"],
             summary=item["summary"],
             url=item["url"],
@@ -389,8 +405,8 @@ async def add_interesting_things():
             # If there's an error while adding the item, log the error
             logger.error(f"thing error: {e}")
 
-    # Get all items from the InterestingThings table
-    all_things = await db_ops.read_query(Select(InterestingThings))
+    # Get all items from the WebLinks table
+    all_things = await db_ops.read_query(Select(WebLinks))
     # Log the title, category, URL, and summary of each item
     for thing in all_things:
         logger.info(f"{thing.title}, {thing.category}, {thing.url}, {thing.summary}")

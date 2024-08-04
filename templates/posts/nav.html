@@ -1,6 +1,6 @@
 <li class="nav-item has-treeview {% if page == 'posts' %}menu-open{% else %}menu-closed{% endif %}">
-    <a href="#" class="nav-link" title="Notes">
-        <i class="nav-icon fas fa-book"></i>
+    <a href="#" class="nav-link" title="Posts">
+    <i class="nav-icon fa-solid fa-droplet"></i>
         <p>
             Posts
             <i class="right fas fa-angle-left"></i>
@@ -9,14 +9,14 @@
     <ul class="nav nav-treeview">
         <li class="nav-item">
             <a href="/posts" class="nav-link" title="Dashboard">
-                <i class="far fa-circle nav-icon"></i>
+                <i class="fa-solid fa-list">&nbsp;</i>
                 <p>Posts</p>
             </a>
         </li>
         {% if request.session.roles and request.session.roles.posts %}
         <li class="nav-item">
             <a href="/posts/new" class="nav-link" title="New Note">
-                <i class="far fa-circle nav-icon"></i>
+                <i class="fa-solid fa-plus">&nbsp;</i>
                 <p>New Post</p>
             </a>
         </li>
