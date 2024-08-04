@@ -107,16 +107,16 @@ class Users(schema_base, async_db.Base):
         "InterestingThings", back_populates="users", cascade="all,delete"
     )
     posts = relationship("Posts", back_populates="user", cascade="all,delete")
-    categories = relationship(
-        "Categories", back_populates="users", cascade="all,delete"
-    )
+    # categories = relationship(
+    #     "Categories", back_populates="users", cascade="all,delete"
+    # )
     notes = relationship("Notes", back_populates="users", cascade="all,delete")
     note_metrics = relationship(
         "NoteMetrics", back_populates="users", cascade="all,delete"
     )
-    job_applications = relationship(
-        "JobApplications", back_populates="users", cascade="all,delete"
-    )
+    # job_applications = relationship(
+    #     "JobApplications", back_populates="users", cascade="all,delete"
+    # )
 
 
 class Posts(schema_base, async_db.Base):
@@ -185,13 +185,15 @@ class Categories(schema_base, async_db.Base):
     # Define the columns of the table
     name = Column(String(50), unique=False, index=True)  # name of item
     description = Column(String(500), unique=False, index=True)  # description of item
-    is_post = Column(Boolean, default=False, index=True)
-    is_thing = Column(Boolean, default=False, index=True)
+    is_post = Column(Boolean, default=False, index=True)  # If the category is for posts
+    is_thing = Column(
+        Boolean, default=False, index=True
+    )  # If the category is for interesting things
     is_system = Column(
         Boolean, default=True, index=True
     )  # If the category is a system default
-    user_id = Column(String, ForeignKey("users.pkid"))
-    users = relationship("Users", back_populates="categories")
+    # user_id = Column(String, ForeignKey("users.pkid"))
+    # users = relationship("Users", back_populates="categories")
 
     def to_dict(self):
         return {
@@ -362,46 +364,46 @@ class Requirement(schema_base, async_db.Base):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-class JobApplications(schema_base, async_db.Base):
-    __tablename__ = "job_applications"  # Name of the table in the database
-    __tableargs__ = {"comment": "Job applications that the user has submitted"}
+# class JobApplications(schema_base, async_db.Base):
+#     __tablename__ = "job_applications"  # Name of the table in the database
+#     __tableargs__ = {"comment": "Job applications that the user has submitted"}
 
-    # Define the columns of the table
-    url = Column(String, unique=False, index=True)  # URL of the job posting
-    job_title = Column(String, unique=False, index=True)  # Job title
-    company_name = Column(String, unique=False, index=True)  # Company name
-    application_date = Column(DateTime, unique=False, index=True)  # Application date
-    application_status = Column(String, unique=False, index=True)  # Application status
-    user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the User table
+#     # Define the columns of the table
+#     url = Column(String, unique=False, index=True)  # URL of the job posting
+#     job_title = Column(String, unique=False, index=True)  # Job title
+#     company_name = Column(String, unique=False, index=True)  # Company name
+#     application_date = Column(DateTime, unique=False, index=True)  # Application date
+#     application_status = Column(String, unique=False, index=True)  # Application status
+#     user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the User table
 
-    # Define the parent relationship to the User class
-    users = relationship("Users", back_populates="job_applications")
+#     # Define the parent relationship to the User class
+#     users = relationship("Users", back_populates="job_applications")
 
-    # Define the child relationship to the JobApplicationTasks class
-    tasks = relationship("JobApplicationTasks", back_populates="job_application")
+#     # Define the child relationship to the JobApplicationTasks class
+#     tasks = relationship("JobApplicationTasks", back_populates="job_application")
 
-    def to_dict(self):
-        return {
-            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
-        }
+#     def to_dict(self):
+#         return {
+#             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+#         }
 
 
-class JobApplicationTasks(schema_base, async_db.Base):
-    __tablename__ = "job_application_tasks"  # Name of the table in the database
-    __tableargs__ = {"comment": "Tasks related to a job application"}
+# class JobApplicationTasks(schema_base, async_db.Base):
+#     __tablename__ = "job_application_tasks"  # Name of the table in the database
+#     __tableargs__ = {"comment": "Tasks related to a job application"}
 
-    # Define the columns of the table
-    task_description = Column(String, unique=False, index=True)  # Task description
-    due_date = Column(DateTime, unique=False, index=True)  # Due date for the task
-    status = Column(String, unique=False, index=True)  # Status of the task
-    job_application_id = Column(
-        String, ForeignKey("job_applications.pkid")
-    )  # Foreign key to the JobApplications table
+#     # Define the columns of the table
+#     task_description = Column(String, unique=False, index=True)  # Task description
+#     due_date = Column(DateTime, unique=False, index=True)  # Due date for the task
+#     status = Column(String, unique=False, index=True)  # Status of the task
+#     job_application_id = Column(
+#         String, ForeignKey("job_applications.pkid")
+#     )  # Foreign key to the JobApplications table
 
-    # Define the parent relationship to the JobApplications class
-    job_application = relationship("JobApplications", back_populates="tasks")
+#     # Define the parent relationship to the JobApplications class
+#     job_application = relationship("JobApplications", back_populates="tasks")
 
-    def to_dict(self):
-        return {
-            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
-        }
+#     def to_dict(self):
+#         return {
+#             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+#         }

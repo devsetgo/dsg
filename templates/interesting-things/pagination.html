@@ -1,26 +1,24 @@
 <!-- Begin Pagination Template -->
-{% include 'posts/page-controls.html' %}
+{% include 'interesting-things/page-controls.html' %}
 <!-- Begin Cards -->
 <div class="row">
   <div class="col-12">
     <h3 class="text-center">Use the search to filter on terms, dates, and/or mood.</h3>
   </div>
-  {% for post in posts %}
+  {% for data in interesting_things %}
   <div class="col-md-4 mb-4 p-2">
     <div class="card">
       <div class="card-body">
-        <h5 class="card-title"><a href="/posts/view/{{post.pkid}}" class="card-link"></a></h5>
-        <p class="card-text">{{ post.summary|truncate(30, end='...')|title }}</p>
+        <h5 class="card-title"><a href="/interesting-things/view/{{data.pkid}}" class="card-link"></a></h5>
+        <p class="card-text">{{ data.summary|truncate(30, end='...')|title }}</p>
       </div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item">{% for tag in post.tags.tags %}{{ tag|capitalize }}{% if not loop.last %}, {%
-          endif %}{%
-          endfor %}</li>
+        <li class="list-group-item">{% for tag in data.tags.tags %}{{ tag|capitalize }}{% if not loop.last %}, {% endif %}{% endfor %}</li>
       </ul>
       <div class="card-body">
-        <p class="card-text"><small>{{ post.date_created }}</small>
+        <p class="card-text"><small>{{ data.date_created }}</small>
           <br>
-          <small><strong>Words:</strong> {{ post.word_count }} | <strong>Characters:</strong> {{ post.character_count
+          <small><strong>Words:</strong> {{ data.word_count }} | <strong>Characters:</strong> {{ data.character_count
             }}</small>
         </p>
       </div>
@@ -28,5 +26,5 @@
   </div>
   {% endfor %}
 </div>
-{% include 'posts/page-controls.html' %}
+{% include 'interesting-things/page-controls.html' %}
 <!-- End Pagination Template -->
