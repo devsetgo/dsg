@@ -1,0 +1,26 @@
+<h4>{{status|title}}</h4>
+<div>
+  <label>Name:</label>
+  <div>{{category_data.name}}</div>
+</div>
+<div>
+  <label>Posts:</label>
+  <div>{{category_data.is_post}}</div>
+</div>
+<div>
+  <label>Things:</label>
+  <div>{{category_data.is_thing}}</div>
+</div>
+<div>
+  <label>System:</label>
+  <div>{{category_data.is_system}}</div>
+</div>
+
+<script>
+  setTimeout(function() {
+    // Update the category-create div
+    htmx.ajax('GET', '/admin/category-edit', '#category-create');
+    // Update the category table
+    htmx.ajax('GET', '/admin/categories-table', '#category-section');
+  }, 2000); // 2 seconds
+</script>

@@ -1,0 +1,67 @@
+<table id="categoriesTable" class="table table-striped" style="width:100%">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Posts</th>
+            <th>Things</th>
+            <th>System</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in categories %}
+        <tr>
+          <td>
+            <a href="#" hx-get="/admin/category-edit?category_id={{c.pkid}}" hx-target="#category-create" hx-swap="innerHTML">
+              {{c.name}}
+            </a>
+          </td>
+            <td>{{c.description}}</td>
+            <td>
+              {% if c.is_post %}
+                <span style="color: green;">✔</span>
+              {% else %}
+                <span style="color: red;">✖</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if c.is_thing %}
+                <span style="color: green;">✔</span>
+              {% else %}
+                <span style="color: red;">✖</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if c.is_system %}
+                <span style="color: green;">✔</span>
+              {% else %}
+                <span style="color: red;">✖</span>
+              {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Posts</th>
+            <th>Things</th>
+            <th>System</th>
+        </tr>
+    </tfoot>
+</table>
+<script>
+    $(function () {
+      $('#categoriesTable').DataTable({
+        "paging": true,
+        "lengthChange": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "autoWidth": true,
+        dom: 'Bfrtip',
+        buttons: ['copy', 'csv', 'pdf']
+      });
+    });
+  </script>

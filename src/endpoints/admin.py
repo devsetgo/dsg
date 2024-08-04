@@ -44,7 +44,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select, and_
 
-from ..db_tables import JobApplications, Notes, Users  # , FailedLoginAttempts
+# , FailedLoginAttempts,JobApplications
+from ..db_tables import Categories, Notes, Users
 from ..functions import date_functions, note_import
 from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
@@ -71,7 +72,6 @@ async def admin_dashboard(
     )
 
 
-
 async def get_list_of_users(user_timezone: str):
     query = Select(Users)
     users = await db_ops.read_query(query=query)
@@ -88,16 +88,120 @@ async def get_list_of_users(user_timezone: str):
 
     return users
 
-# TODO: create categories maintenance GET and POST
+
 @router.get("/categories", response_class=HTMLResponse)
-async def admin_categories(request: Request, user_info: dict = Depends(check_login)):
+async def admin_categories(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
     user_identifier = user_info["user_identifier"]
-    user_timezone = user_info["timezone"]
+    user_info["timezone"]
     user_info["is_admin"]
 
     context = {"page": "admin", "user_identifier": user_identifier}
     return templates.TemplateResponse(
-        request=request, name="/admin/categories-edit-add.html", context=context
+        request=request, name="/admin/categories.html", context=context
+    )
+
+
+@router.get("/categories-table", response_class=HTMLResponse)
+async def admin_categories_table(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    user_info["user_identifier"]
+    user_info["timezone"]
+    user_info["is_admin"]
+
+    query = Select(Categories)
+    categories = await db_ops.read_query(query=query)
+    categories = [category.to_dict() for category in categories]
+
+    context = {"categories": categories}
+    return templates.TemplateResponse(
+        request=request, name="/admin/categories-table.html", context=context
+    )
+
+
+@router.get("/category-edit", response_class=HTMLResponse)
+async def admin_category_edit(
+    request: Request, category_id: str = None, user_info: dict = Depends(check_login)
+):
+
+    context = {"categories": None, "rand": secrets.token_urlsafe(2)}
+    if category_id is not None:
+        query = Select(Categories).where(Categories.pkid == category_id)
+        category = await db_ops.read_one_record(query=query)
+        context["category"] = category.to_dict()
+
+    return templates.TemplateResponse(
+        request=request, name="/admin/category-form.html", context=context
+    )
+
+
+@router.post("/category-edit", response_class=HTMLResponse)
+async def add_edit_category(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    user_info["timezone"]
+    form = await request.form()
+    name = form["name"]
+    description = form["description"]
+    is_post = False
+    is_thing = False
+    is_system = False
+
+    if "is_post" in form and form["is_post"] == "on":
+        is_post = True
+
+    if "is_thing" in form and form["is_thing"] == "on":
+        is_thing = True
+
+    if "is_system" in form and form["is_system"] == "on":
+        is_system = True
+
+    context = {"category_data": None}
+    if "category_id" in form and form["category_id"] != "":
+
+        category_id = form["category_id"]
+        # Fetch the old data
+        old_data = await db_ops.read_one_record(
+            query=Select(Categories).where(Categories.pkid == category_id)
+        )
+        old_data = old_data.to_dict()
+
+        updated_data = {
+            "name": name,
+            "description": description,
+            "is_post": is_post,
+            "is_thing": is_thing,
+            "is_system": is_system,
+            "date_updated": datetime.utcnow(),
+        }
+
+        # Update the database
+        data = await db_ops.update_one(
+            table=Categories, record_id=category_id, new_values=updated_data
+        )
+        context["category_data"] = data.to_dict()
+        context["status"] = "updated"
+    else:
+        # Process the form data and save the category
+        category_data = Categories(
+            name=form["name"],
+            description=form["description"],
+            is_post=is_post,
+            is_thing=is_thing,
+            is_system=is_system,
+        )
+
+        data = await db_ops.create_one(category_data)
+        context["category_data"] = data.to_dict()
+        context["status"] = "created"
+
+    return templates.TemplateResponse(
+        request=request, name="/admin/category-confirm.html", context=context
     )
 
 
@@ -129,14 +233,14 @@ async def admin_user(
     notes_query = Select(Notes).where(Notes.user_id == user_id)
     notes_count = await db_ops.count_query(query=notes_query)
 
-    job_app_query = Select(JobApplications).where(JobApplications.user_id == user_id)
-    job_app_count = await db_ops.count_query(query=job_app_query)
+    # job_app_query = Select(JobApplications).where(JobApplications.user_id == user_id)
+    # job_app_count = await db_ops.count_query(query=job_app_query)
 
     context = {
         "page": "admin",
         "user": user,
         "notes_count": notes_count,
-        "job_app_count": job_app_count,
+        # "job_app_count": job_app_count,
         "random_pass": secrets.token_urlsafe(10),
         "roles": [
             role.value for role in sorted(RoleEnum, key=lambda x: x.name)
