@@ -57,7 +57,7 @@ async def list_of_web_links(
     if user_timezone is None:
         user_timezone = "America/New_York"
 
-    query = Select(WebLinks).limit(20).offset(0)
+    query = Select(WebLinks).limit(10).offset(0)
     weblinks = await db_ops.read_query(query=query)
 
     if isinstance(weblinks, str):
@@ -77,7 +77,7 @@ async def list_of_web_links(
             date_time=link["date_updated"],
             friendly_string=True,
         )
-    context = {"page": "weblinks", "request": request, "weblinks": weblinks}
+    context = {"page": "weblinks", "request": request}#, "weblinks": weblinks}
     return templates.TemplateResponse(
         request=request, name="/weblinks/index.html", context=context
     )
@@ -103,7 +103,7 @@ async def read_weblinks_pagination(
     category: str = Query(None, description="Category"),
     page: int = Query(1, description="Page number"),
     limit: int = Query(10, description="Number of weblinks per page"),
-    user_info: dict = Depends(check_login),
+    # user_info: dict = Depends(check_login),
 ):
     query_params = {
         "search_term": search_term,
@@ -167,7 +167,8 @@ async def read_weblinks_pagination(
             friendly_string=True,
         )
     found = len(weblinks)
-    weblinks_count = await db_ops.count_query(query=query)
+    count_query = Select(WebLinks)
+    weblinks_count = await db_ops.count_query(query=count_query)
 
     current_count = found
 
@@ -191,12 +192,12 @@ async def read_weblinks_pagination(
             "found": found,
             "weblinks_count": weblinks_count,
             "total_pages": total_pages,
-            "current_count": current_count,
+            "start_count": offset + 1,
+            "current_count": offset + current_count,
             "current_page": page,
             "prev_page_url": prev_page_url,
             "next_page_url": next_page_url,
         }
-    print(context)
     return templates.TemplateResponse(
         request=request,
         name="/weblinks/pagination.html",
