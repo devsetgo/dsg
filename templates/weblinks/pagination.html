@@ -5,21 +5,17 @@
   <div class="col-12">
     <h3 class="text-center">Use the search to filter on terms, dates, and/or mood.</h3>
   </div>
-  {% for data in web_links %}
-  <div class="col-md-4 mb-4 p-2">
+  {% for data in weblinks %}
+
+  <div class="col-md-4 mb-2 p-1">
     <div class="card">
       <div class="card-body">
-        <h5 class="card-title"><a href="/weblinks/view/{{data.pkid}}" class="card-link"></a></h5>
-        <p class="card-text">{{ data.summary|truncate(30, end='...')|title }}</p>
-      </div>
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item">{% for tag in data.tags.tags %}{{ tag|capitalize }}{% if not loop.last %}, {% endif %}{% endfor %}</li>
-      </ul>
-      <div class="card-body">
-        <p class="card-text"><small>{{ data.date_created }}</small>
-          <br>
-          <small><strong>Words:</strong> {{ data.word_count }} | <strong>Characters:</strong> {{ data.character_count
-            }}</small>
+        <p class="card-text"><a href="{{ data.url }}" target="_blank"><strong>{{ data.title|title }}</strong></a></strong></p>
+        URL: <a href="{{ data.url }}" target="_blank">Link</a>
+        <p>{{ data.summary|truncate(50, end='...') }}</p>
+        <p class="card-text">
+          <small>{{ data.date_created }}</small><br>
+          <small><strong>Words:</strong> {{ data.word_count }} | <strong>Characters:</strong> {{ data.character_count }}</small>
         </p>
       </div>
     </div>
