@@ -137,5 +137,5 @@ ruff: ## Format Python code with Ruff
 	ruff check --fix --exit-non-zero-on-fix --show-fixes $(TESTS_PATH)
 
 
-kill-server: ## Kill the server
+kill: ## Kill the server
 	kill -9 $(lsof -t -i:5000)

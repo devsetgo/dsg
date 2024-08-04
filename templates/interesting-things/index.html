@@ -1,34 +1,22 @@
 {% extends "base.html" %} <!-- Extends the base HTML layout -->
-
 {% block page_title %}| Interesting Things{% endblock %} <!-- Sets the page title -->
-
 {% block page_stylesheet %} <!-- Starts the block for page-specific stylesheets -->
-
 {% endblock %} <!-- Ends the block for page-specific stylesheets -->
-
 {% block page_breadcrumb %} Interesting Things{% endblock %} <!-- Sets the breadcrumb -->
-
 {% block page_head_title %}Interesting Things{% endblock %} <!-- Sets the page head title -->
-
 {% block body %} <!-- Starts the block for the body of the page -->
 <section> <!-- Starts a section -->
-
   <!-- Main content -->
   <div class="content">
     <div class="container-fluid">
       <!-- Small boxes (Stat box) -->
-      <div class="row">
-        {% for thing in things %}
-            {{thing.title}}
-        {% endfor %}
-      </div>
+
       <div class="row">
         {% include 'interesting-things/pagination.html' %}
       </div>
     </div>
   </div>
 {% endblock %}
-
 {% block page_sidebar_content %}
 <!-- blank and demo script adds page configuration example -->
 <!-- <div class="p-3">
@@ -38,6 +26,4 @@
 {% endblock %}
 {% block page_scripts %}
 <!-- page scripts-->
-<!-- AdminLTE for demo purposes -->
-
 {% endblock %}

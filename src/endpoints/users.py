@@ -43,7 +43,7 @@ from fastapi_sso.sso.github import GithubSSO
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import JobApplications, Notes, Users
+from ..db_tables import Notes, Users  # JobApplications,
 from ..functions.date_functions import TIMEZONES as timezones
 from ..functions.login_required import check_login
 from ..functions.models import RoleEnum
@@ -218,16 +218,16 @@ async def get_user_info(
     notes_query = Select(Notes).where(Notes.user_id == user_identifier)
     notes_count = await db_ops.count_query(query=notes_query)
 
-    job_app_query = Select(JobApplications).where(
-        JobApplications.user_id == user_identifier
-    )
-    job_app_count = await db_ops.count_query(query=job_app_query)
+    # job_app_query = Select(JobApplications).where(
+    #     JobApplications.user_id == user_identifier
+    # )
+    # job_app_count = await db_ops.count_query(query=job_app_query)
 
     context = {
         "page": "user",
         "user": user,
         "notes_count": notes_count,
-        "job_app_count": job_app_count,
+        # "job_app_count": job_app_count,
         "message": message,
     }
     return templates.TemplateResponse(

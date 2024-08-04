@@ -364,7 +364,7 @@ async def add_categories():
 
     cat: list = ["technology", "news", "sites", "programming", "woodworking", "other"]
     user_name = settings.admin_user.get_secret_value()
-    user = await db_ops.read_one_record(
+    await db_ops.read_one_record(
         Select(Users).where(Users.user_name == user_name)
     )
 
@@ -376,7 +376,6 @@ async def add_categories():
             is_system=True,
             is_post=True,
             is_thing=True,
-            user_id=user.pkid,
         )
         try:
             await db_ops.create_one(category)
