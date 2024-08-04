@@ -26,7 +26,7 @@ class RoleEnum(str, Enum):
 
     Attributes:
         developer: Represents a developer role.
-        interesting_things: Represents a role related to interesting things.
+        web_links: Represents a role related to interesting things.
         job_applications: Represents a role related to job applications.
         notes: Represents a role related to notes.
         posts: Represents a role related to posts.
@@ -34,7 +34,7 @@ class RoleEnum(str, Enum):
 
     user_access = "user_access"
     developer = "developer"  # Developer role
-    interesting_things = "interesting_things"  # Role for handling interesting things
+    web_links = "web_links"  # Role for handling interesting things
     job_applications = "job_applications"  # Role for handling job applications
     notes = "notes"  # Role for handling notes
     posts = "posts"  # Role for handling posts

@@ -101,11 +101,9 @@ class Users(schema_base, async_db.Base):
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
 
-    # Define the child relationship to the InterestingThings class
+    # Define the child relationship to the WebLinks class
 
-    interesting_things = relationship(
-        "InterestingThings", back_populates="users", cascade="all,delete"
-    )
+    web_links = relationship("WebLinks", back_populates="users", cascade="all,delete")
     posts = relationship("Posts", back_populates="user", cascade="all,delete")
     # categories = relationship(
     #     "Categories", back_populates="users", cascade="all,delete"
@@ -156,8 +154,8 @@ def posts_on_change(mapper, connection, target):
             break
 
 
-class InterestingThings(schema_base, async_db.Base):
-    __tablename__ = "interesting_things"  # Name of the table in the database
+class WebLinks(schema_base, async_db.Base):
+    __tablename__ = "web_links"  # Name of the table in the database
     __tableargs__ = {"comment": "Interesting things that the user finds"}
 
     # Define the columns of the table
@@ -169,7 +167,7 @@ class InterestingThings(schema_base, async_db.Base):
     # Define the parent relationship to the User class
     user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the User table
     users = relationship(
-        "Users", back_populates="interesting_things"
+        "Users", back_populates="web_links"
     )  # Relationship to the Users class
 
     def to_dict(self):

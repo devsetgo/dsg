@@ -46,7 +46,7 @@ from loguru import logger
 from sqlalchemy import Select, and_
 
 # , FailedLoginAttempts,JobApplications
-from ..db_tables import Categories, InterestingThings, Notes, Posts, Users
+from ..db_tables import Categories, WebLinks, Notes, Posts, Users
 from ..functions import date_functions, note_import
 from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
@@ -122,7 +122,7 @@ async def admin_categories_table(
     # Get a count of posts for each category
     post_query = Select(Posts)
     post_count = await db_ops.read_query(query=post_query)
-    it_query = Select(InterestingThings)
+    it_query = Select(WebLinks)
     it_count = await db_ops.read_query(query=it_query)
 
     category_count = defaultdict(int)

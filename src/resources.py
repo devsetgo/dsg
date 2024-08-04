@@ -32,7 +32,7 @@ from sqlalchemy import Select, func
 from tqdm import tqdm
 
 from .db_init import async_db
-from .db_tables import Categories, InterestingThings, Notes, Posts, Users
+from .db_tables import Categories, WebLinks, Notes, Posts, Users
 from .functions.models import RoleEnum
 from .settings import settings
 
@@ -164,7 +164,7 @@ async def add_system_data():
 
         if settings.create_demo_data is True:
             logger.warning("Creating demo data")
-            await add_interesting_things()  # Create demo data
+            await add_web_links()  # Create demo data
             await add_posts()
 
             from .functions.pypi_core import add_demo_data
@@ -282,7 +282,7 @@ async def add_user():
     import secrets
 
     user_name = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
-    roles = ["notes", "interesting_things", "job_applications", "developer", "posts"]
+    roles = ["notes", "web_links", "job_applications", "developer", "posts"]
     role_data = {}
 
     for role in roles:
@@ -355,19 +355,19 @@ async def add_categories():
         logger.info(f"category name: {d.name}")
 
 
-async def add_interesting_things():
+async def add_web_links():
     # This function is responsible for adding a list of interesting things to the database.
     # Each item in the list is a dictionary with keys for name, description, url, and category.
 
     # Define the list of items to be added
     from dsg_lib.common_functions.file_functions import open_json
 
-    my_stuff = open_json("interesting_things.json")
+    my_stuff = open_json("web_links.json")
     # Check to see if the items are already in the database
     for item in my_stuff:
         # Query the database for each item by name
         data = await db_ops.read_query(
-            Select(InterestingThings).where(InterestingThings.title == item["title"])
+            Select(WebLinks).where(WebLinks.title == item["title"])
         )
         # If the item already exists in the database, log a message and return
         if len(data) > 0:
@@ -389,8 +389,8 @@ async def add_interesting_things():
         logger.info(category.name)
         # Log a message indicating that the current item is being added
         logger.info(f"adding system item {item['title']}")
-        # Create a new InterestingThings instance with the item details
-        thing = InterestingThings(
+        # Create a new WebLinks instance with the item details
+        thing = WebLinks(
             title=item["title"],
             summary=item["summary"],
             url=item["url"],
@@ -405,8 +405,8 @@ async def add_interesting_things():
             # If there's an error while adding the item, log the error
             logger.error(f"thing error: {e}")
 
-    # Get all items from the InterestingThings table
-    all_things = await db_ops.read_query(Select(InterestingThings))
+    # Get all items from the WebLinks table
+    all_things = await db_ops.read_query(Select(WebLinks))
     # Log the title, category, URL, and summary of each item
     for thing in all_things:
         logger.info(f"{thing.title}, {thing.category}, {thing.url}, {thing.summary}")
