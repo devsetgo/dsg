@@ -1,0 +1,29 @@
+<li class="nav-item has-treeview {% if page == 'weblinks' %}menu-open{% else %}menu-closed{% endif %}">
+        <a href="#" class="nav-link" title="Web Links">
+            <i class="nav-icon fa-solid fa-bookmark"></i>
+            <p>WebLinks</p>
+            <i class="right fas fa-angle-left"></i>
+        </a>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="/weblinks" class="nav-link" title="Index">
+                    <i class="fa-solid fa-eye">&nbsp;</i>
+                    <p>Links</p>
+                </a>
+            </li>
+            {% if request.session.roles and request.session.roles.web_links %}
+            <li class="nav-item">
+                <a href="/weblinks/new" class="nav-link" title="New Link">
+                    <i class="fa-solid fa-plus">&nbsp;</i>
+                    <p>New Link</p>
+                </a>
+            </li>
+            {% endif %}
+            <!-- <li class="nav-item">
+                <a href="/parent/child" class="nav-link" title="Child Name">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Child Name</p>
+                </a>
+            </li> -->
+        </ul>
+    </li>

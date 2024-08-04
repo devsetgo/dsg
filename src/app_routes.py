@@ -1,15 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-app_routes.py
+This module, `app_routes.py`, orchestrates the routing configuration for a FastAPI application. It is tasked with the setup of static file serving and the registration of various application endpoints, including but not limited to admin interfaces, blog posts, development tools, curated content, note-taking functionalities, general web pages, Python Package Index (PyPI) interactions, and user management.
 
-This module is responsible for setting up the routes for the FastAPI application.
-
-It includes the creation of routes for static files and various endpoints such as admin, blog_posts, devtools, interesting_things, notes, pages, pypi, and users.
-
-The function `create_routes(app)` is used to mount these routes to the provided FastAPI application instance.
+The central function, `create_routes(app)`, is designed to integrate these routes into a given FastAPI application instance, ensuring a structured and organized approach to endpoint management.
 
 Functions:
-    create_routes(app): Mounts routes to the provided FastAPI application instance.
+    create_routes(app): Integrates predefined routes and static file serving into the specified FastAPI application instance, enhancing its functionality with a diverse set of web endpoints.
+
+Author:
+    Mike Ryan
+
+License:
+    MIT License
+
+Dependencies:
+    - fastapi: Utilized for the core web framework capabilities, including route definition and request handling.
+    - loguru: Employed for logging across the application, aiding in debugging and operational monitoring.
+    - starlette: Provides foundational web functionalities such as static file serving, which FastAPI builds upon.
+    - dsg_lib.fastapi_functions: Contains utility functions and constants for HTTP status codes and system health checks.
+    - .endpoints: A package containing individual modules for each specific application endpoint, such as admin, blog_posts, and users.
+    - .resources: Houses shared resources like HTML templates, facilitating consistent response rendering across endpoints.
 """
 import time
 from typing import Any, Dict, NoReturn
@@ -22,16 +32,7 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .endpoints import (
-    admin,
-    blog_posts,
-    devtools,
-    interesting_things,
-    notes,
-    pages,
-    pypi,
-    users,
-)
+from .endpoints import admin, blog_posts, devtools, notes, pages, pypi, users, web_links
 from .resources import templates
 
 
@@ -39,7 +40,7 @@ def create_routes(app: FastAPI) -> NoReturn:
     """
     Mounts routes to the provided FastAPI application instance.
 
-    This function mounts routes for static files and various endpoints such as admin, blog_posts, devtools, interesting_things, notes, pages, pypi, and users.
+    This function mounts routes for static files and various endpoints such as admin, blog_posts, devtools, web_links, notes, pages, pypi, and users.
 
     Args:
         app (FastAPI): The FastAPI application instance to which the routes will be mounted.
@@ -132,7 +133,7 @@ def create_routes(app: FastAPI) -> NoReturn:
     # The tags argument specifies the tags for the routes
     # The include_in_schema argument specifies whether the routes should be included in the OpenAPI schema
 
-    show_route:bool=False
+    show_route: bool = False
     # Make sure these are in route alphabetical order
     app.include_router(
         admin.router,
@@ -161,7 +162,8 @@ def create_routes(app: FastAPI) -> NoReturn:
             Dict[str, Any]: A dictionary that represents the context of the error page.
         """
         # Create the context for the error page
-        context = {"page":"x",
+        context = {
+            "page": "x",
             "request": request,
             "error_code": error_code,
             "description": ALL_HTTP_CODES[error_code]["description"],
@@ -173,9 +175,9 @@ def create_routes(app: FastAPI) -> NoReturn:
         return templates.TemplateResponse("error/error-page.html", context)
 
     app.include_router(
-        interesting_things.router,
-        prefix="/interesting-things",
-        tags=["interesting things"],
+        web_links.router,
+        prefix="/weblinks",
+        tags=["weblinks"],
         include_in_schema=show_route,
     )
 

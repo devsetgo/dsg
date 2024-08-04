@@ -7,12 +7,20 @@ It uses the AsyncOpenAI client to make asynchronous requests to the API. The mod
 Functions:
     get_analysis(content: str, mood_process: str = None) -> dict: Gets the tags, summary, mood analysis, and mood from the given content.
 
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 import ast
 import re
+from functools import lru_cache
+from typing import Dict, List
 
+import spacy
 from loguru import logger
 from openai import AsyncOpenAI
+from spacy.language import Language
+
 from src.settings import settings
 
 client = AsyncOpenAI(
@@ -131,8 +139,45 @@ async def get_tags(
     logger.debug(f"tag content {response_content}")
     response_dict = {"tags": response_content}
     logger.info("Finished get_tags function")
+    resp = tag_check(response_dict)
+    return resp
 
-    return response_dict
+
+@lru_cache(maxsize=128)
+def load_model() -> Language:
+    """
+    Load and cache the multi-language spaCy model to improve performance.
+
+    Returns:
+        The loaded spaCy Language model.
+    """
+    # Load the multi-language model
+    nlp = spacy.load("xx_ent_wiki_sm")
+    return nlp
+
+
+def tag_check(tags: Dict[str, List[str]]) -> Dict[str, List[str]]:
+    """
+    Filter out tags that are recognized as person names by the spaCy model.
+
+    Args:
+        tags: A dictionary with a key "tags" containing a list of strings to be checked.
+
+    Returns:
+        A dictionary with the key "tags" containing a filtered list of strings
+        where any recognized person names have been removed.
+    """
+    # Load the multi-language model
+    nlp = load_model()
+    tag_list = tags["tags"]
+    filtered_tags = []
+    for tag in tag_list:
+        # Process each tag through the spaCy model
+        doc = nlp(tag)
+        # Filter out tags recognized as person names ("PER")
+        if not any(ent.label_ == "PER" for ent in doc.ents):
+            filtered_tags.append(tag)
+    return {"tags": filtered_tags}
 
 
 async def get_summary(

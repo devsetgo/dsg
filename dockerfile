@@ -74,3 +74,4 @@ EXPOSE 5000
 
 # Run the command to start ASGI server
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "5000", "--workers", "4"]
+# CMD ["granian", "--interface", "asgi", "src.main:app", "--host","0.0.0.0", "--port", "5000", "--workers", "4", "--threads", "2", "--http", "1", "--log-level", "debug"]

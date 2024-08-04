@@ -1,0 +1,77 @@
+<table id="categoriesTable" class="table table-striped" style="width:100%">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Posts</th>
+      <th>WebLink</th>
+      <th>System</th>
+      <th>Count</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in categories %}
+    <tr>
+      <td>
+        <a href="#" hx-get="/admin/category-edit?category_id={{c.pkid}}" hx-target="#category-create"
+          hx-swap="innerHTML">
+          {{c.name}}
+        </a>
+      </td>
+      <td>{{c.description}}</td>
+      <td>
+        {% if c.is_post %}
+        <span style="color: green;">✔</span>
+        {% else %}
+        <span style="color: red;">✖</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if c.is_weblink %}
+        <span style="color: green;">✔</span>
+        {% else %}
+        <span style="color: red;">✖</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if c.is_system %}
+        <span style="color: green;">✔</span>
+        {% else %}
+        <span style="color: red;">✖</span>
+        {% endif %}
+      </td>
+      <td>
+        {% for item in category_count_list %}
+        {% if item.category | lower == c.name | lower %}
+        {{ item.count }}
+        {% endif %}
+        {% endfor %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Posts</th>
+      <th>WebLink</th>
+      <th>System</th>
+      <th>Count</th>
+    </tr>
+  </tfoot>
+</table>
+<script>
+  $(function () {
+    $('#categoriesTable').DataTable({
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+      dom: 'Bfrtip',
+      buttons: ['copy', 'csv', 'pdf']
+    });
+  });
+</script>

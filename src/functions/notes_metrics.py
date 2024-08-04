@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
 
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 import datetime
 import json
 import statistics
@@ -71,8 +76,12 @@ async def update_notes_metrics(user_id: str):
 
     query_metric = Select(NoteMetrics).where(NoteMetrics.user_id == user_id)
     metric_data = await db_ops.read_one_record(query=query_metric)
-    query = Select(Notes).where((Notes.user_id == user_id)).limit(100000)
+    # query = select(*[column for column in Notes.__table__.c if column.key != '_note' or column.key != '_summary'])\
+    # .where(Notes.user_id == user_id)\
+    # .limit(100000)
+    query = Select(Notes).where(Notes.user_id == user_id)
     notes = await db_ops.read_query(query=query)
+
     notes = [note.to_dict() for note in notes]
 
     mood_metric = await mood_metrics(notes=notes)
@@ -194,7 +203,6 @@ async def get_tag_count(notes: list):
 
 
 async def get_note_count_by_year(notes: list):
-
     logger.info("Calculating note count and word count by year")
     result = defaultdict(lambda: {"note_count": 0, "word_count": 0})
 
@@ -215,7 +223,6 @@ async def get_note_count_by_year(notes: list):
 
 
 async def get_note_count_by_month(notes: list):
-
     logger.info("Calculating note count and word count by month")
     result = defaultdict(lambda: {"note_count": 0, "word_count": 0})
 
@@ -237,7 +244,6 @@ async def get_note_count_by_month(notes: list):
 
 
 async def get_note_count_by_week(notes: list):
-
     logger.info("Calculating note count and word count by week")
     result = defaultdict(lambda: {"note_count": 0, "word_count": 0})
 
@@ -374,7 +380,6 @@ async def mood_trend_by_median_month(notes: list):
 
 
 async def mood_trend_by_rolling_mean_month(notes: list):
-
     logger.info("Calculating mood trend by month")
     result = defaultdict(int)
     count = defaultdict(int)

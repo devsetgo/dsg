@@ -8,6 +8,10 @@ It uses the SQLAlchemy library for database operations and the settings module f
 Functions:
     check_user_identifier(request): Checks if the user identifier in the session is valid.
     check_session_expiry(request): Checks if the session has expired.
+
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 from datetime import datetime, timedelta
 
