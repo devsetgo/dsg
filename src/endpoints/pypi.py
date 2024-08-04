@@ -64,7 +64,7 @@ async def index(request: Request):
 
     for k, v in metrics.items():
         context[k] = v
-    
+
     return templates.TemplateResponse(
         request=request, name="/pypi/dashboard.html", context=context
     )
