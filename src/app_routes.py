@@ -186,7 +186,7 @@ def create_routes(app: FastAPI) -> NoReturn:
     app.include_router(
         web_links.router,
         prefix="/weblinks",
-        tags=["interesting things"],
+        tags=["weblinks"],
         include_in_schema=show_route,
     )
 

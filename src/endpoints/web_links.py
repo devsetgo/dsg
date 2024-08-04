@@ -21,8 +21,8 @@ API Endpoints:
     - GET "/": Lists weblinks with optional filters applied. Supports pagination through `offset` and `limit` query parameters.
     - GET "/categories": Retrieves a list of categories for weblinks.
     - GET "/pagination": Lists weblinks with pagination and optional filters.
-    - GET "/new": Displays a form to create a new interesting thing.
-    - POST "/new": Creates a new interesting thing based on form data.
+    - GET "/new": Displays a form to create a new interesting link.
+    - POST "/new": Creates a new interesting link based on form data.
 
 
 Usage:
@@ -66,15 +66,15 @@ async def list_of_web_links(
     else:
         weblinks = [link.to_dict() for link in weblinks]
     # offset date_created and date_updated to user's timezone
-    for thing in weblinks:
-        thing["date_created"] = await date_functions.timezone_update(
+    for link in weblinks:
+        link["date_created"] = await date_functions.timezone_update(
             user_timezone=user_timezone,
-            date_time=thing["date_created"],
+            date_time=link["date_created"],
             friendly_string=True,
         )
-        thing["date_updated"] = await date_functions.timezone_update(
+        link["date_updated"] = await date_functions.timezone_update(
             user_timezone=user_timezone,
-            date_time=thing["date_updated"],
+            date_time=link["date_updated"],
             friendly_string=True,
         )
     context = {"page": "weblinks", "request": request, "weblinks": weblinks}
@@ -102,7 +102,7 @@ async def read_weblinks_pagination(
     end_date: str = Query(None, description="End date"),
     category: str = Query(None, description="Category"),
     page: int = Query(1, description="Page number"),
-    limit: int = Query(20, description="Number of weblinks per page"),
+    limit: int = Query(10, description="Number of weblinks per page"),
     user_info: dict = Depends(check_login),
 ):
     query_params = {
@@ -153,17 +153,17 @@ async def read_weblinks_pagination(
         logger.error(f"Unexpected result from read_query: {weblinks}")
         weblinks = []
     else:
-        weblinks = [thing.to_dict() for thing in weblinks]
+        weblinks = [link.to_dict() for link in weblinks]
     # offset date_created and date_updated to user's timezone
-    for thing in weblinks:
-        thing["date_created"] = await date_functions.timezone_update(
+    for link in weblinks:
+        link["date_created"] = await date_functions.timezone_update(
             user_timezone=user_timezone,
-            date_time=thing["date_created"],
+            date_time=link["date_created"],
             friendly_string=True,
         )
-        thing["date_updated"] = await date_functions.timezone_update(
+        link["date_updated"] = await date_functions.timezone_update(
             user_timezone=user_timezone,
-            date_time=thing["date_updated"],
+            date_time=link["date_updated"],
             friendly_string=True,
         )
     found = len(weblinks)
@@ -186,24 +186,26 @@ async def read_weblinks_pagination(
         else None
     )
     logger.info(f"Found {found} weblinks")
-    return templates.TemplateResponse(
-        request=request,
-        name="/weblinks/pagination.html",
-        context={"page": "weblinks",
+    context={"page": "weblinks",
             "weblinks": weblinks,
             "found": found,
-            "note_count": weblinks_count,
+            "weblinks_count": weblinks_count,
             "total_pages": total_pages,
             "current_count": current_count,
             "current_page": page,
             "prev_page_url": prev_page_url,
             "next_page_url": next_page_url,
-        },
+        }
+    print(context)
+    return templates.TemplateResponse(
+        request=request,
+        name="/weblinks/pagination.html",
+        context=context,
     )
 
 
 @router.get("/new")
-async def new_thing(request: Request):
+async def new_link(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="/weblinks/new.html",
@@ -212,7 +214,7 @@ async def new_thing(request: Request):
 
 
 @router.post("/new")
-async def create_thing(
+async def create_link(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
@@ -229,20 +231,20 @@ async def create_thing(
     summary = await ai.get_url_summary(url=url, sentence_length=2)
     logger.debug(f"Received summary from AI: {summary}")
     # Create the post
-    thing = WebLinks(
+    link = WebLinks(
         title=title,
         summary=summary,
         user_id=user_identifier,
         category=category,
     )
-    data = await db_ops.create_one(thing)
+    data = await db_ops.create_one(link)
     if isinstance(data, dict):
-        logger.error(f"Error creating thing: {data}")
+        logger.error(f"Error creating link: {data}")
         return RedirectResponse(url="/error/418", status_code=302)
 
-    logger.debug(f"Created weblinks: {thing}")
+    logger.debug(f"Created weblinks: {link}")
     logger.info(f"Created weblinks with ID: {data.pkid}")
 
-    return RedirectResponse(url=f"/interesting-thing/view/{data.pkid}", status_code=302)
+    return RedirectResponse(url=f"/weblink/view/{data.pkid}", status_code=302)
 
 
