@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block page_title %}| Category Management{% endblock %}
+{% block page_stylesheet %}
+<!-- Add any additional stylesheets here -->
+<link
+    href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.5/b-3.0.2/b-html5-3.0.2/b-print-3.0.2/sc-2.4.1/sb-1.7.1/datatables.min.css"
+    rel="stylesheet">
+<!-- Stylesheet for DataTables Bootstrap 4 -->
+<link rel="stylesheet"
+    href="{{ url_for('static' , path='plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Responsive Bootstrap 4 -->
+<link rel="stylesheet"
+    href="{{ url_for('static' , path='plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+<!-- Stylesheet for DataTables Buttons Bootstrap 4 -->
+{% endblock %}
+{% block page_breadcrumb %} Category Management{% endblock %}
+{% block page_head_title %}Category Management{% endblock %}
+{% block body %}
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-md-9">
+            <h2>Categories</h2>
+            <div id="category-section" hx-get="/admin/categories-table" hx-trigger="load" hx-target="#category-section">
+                <!-- Categories will be loaded here -->
+            </div>
+        </div>
+        <div class="col-md-3">
+            <h2>Category</h2>
+            <div id="category-create" hx-get="/admin/category-edit" hx-target="#category-create" hx-swap="innerHTML" hx-trigger="load">
+                <!-- Category form/confirmation will be loaded here -->
+            </div>
+        </div>
+    </div>
+    <!-- /.row -->
+</section>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+{% endblock %}
+{% block page_sidebar_content %}
+<!-- blank and demo script adds page configuration example -->
+<!-- <div class="p-3">
+  <h5>Title</h5>
+  <p>Sidebar content</p>
+</div> -->
+{% endblock %}
+{% block page_scripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script
+    src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.5/b-3.0.2/b-html5-3.0.2/b-print-3.0.2/sc-2.4.1/sb-1.7.1/datatables.min.js"></script>
+
+{% endblock %}
