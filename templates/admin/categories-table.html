@@ -41,7 +41,6 @@
         {% endif %}
       </td>
       <td>
-        {% set count = 0 %}
         {% for item in category_count_list %}
         {% if item.category | lower == c.name | lower %}
         {{ item.count }}
