@@ -170,38 +170,6 @@ async def add_system_data():
             from .functions.pypi_core import add_demo_data
 
             await add_demo_data(qty=20)
-            # await fake_login_attempts()
-
-
-async def fake_login_attempts():
-    from .endpoints.users import fail_logging
-
-    for _ in tqdm(range(10), desc="fake login attempts", leave=True):
-        await fail_logging(
-            user_name=silly.noun(),
-            # password=silly.thing(),
-            meta_data={
-                "host": "localhost:5000",
-                "connection": "keep-alive",
-                "content-length": "29",
-                "sec-ch-ua": '"Microsoft Edge";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
-                "dnt": "1",
-                "hx-current-url": "http://localhost:5000/users/login",
-                "sec-ch-ua-mobile": "?0",
-                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0",
-                "content-type": "application/x-www-form-urlencoded",
-                "hx-request": "true",
-                "sec-ch-ua-platform": '"Windows"',
-                "accept": "*/*",
-                "origin": "http://localhost:5000",
-                "sec-fetch-site": "same-origin",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-dest": "empty",
-                "referer": "http://localhost:5000/users/login",
-                "accept-encoding": "gzip, deflate, br, zstd",
-                "accept-language": "en-US,en;q=0.9",
-            },
-        )
 
 
 async def add_admin():
@@ -455,7 +423,7 @@ async def add_posts():
     cat_list = [cat["name"] for cat in categories]
     posts = await db_ops.read_query(Select(Posts))
     if len(posts) == 0:
-        for _ in tqdm(range(5), desc="creating demo posts", leave=False):
+        for _ in tqdm(range(100), desc="creating demo posts", leave=False):
             rand_cat = random.randint(0, len(cat_list) - 1)
             tags = [silly.noun() for _ in range(random.randint(2, 5))]
             date_created = datetime.now(UTC) - timedelta(days=random.randint(1, 700))

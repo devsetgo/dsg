@@ -34,7 +34,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from loguru import logger
-from sqlalchemy import Select, asc, or_
+from sqlalchemy import Select, asc, func, or_
 
 from ..db_tables import Categories, InterestingThings
 from ..functions import ai, date_functions
@@ -88,7 +88,7 @@ async def get_categories():
     categories = await db_ops.read_query(
         Select(Categories)
         .where(Categories.is_thing == True)
-        .order_by(asc(Categories.name))
+        .order_by(asc(func.lower(Categories.name)))
     )
     cat_list = [cat.to_dict()["name"] for cat in categories]
     return cat_list
