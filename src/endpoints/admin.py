@@ -100,6 +100,7 @@ async def admin_categories(
     user_info["is_admin"]
 
     context = {"page": "admin", "user_identifier": user_identifier}
+    logger.debug(f"categories: {context}")
     return templates.TemplateResponse(
         request=request, name="/admin/categories.html", context=context
     )
@@ -117,7 +118,8 @@ async def admin_categories_table(
     query = Select(Categories)
     categories = await db_ops.read_query(query=query)
     categories = [category.to_dict() for category in categories]
-    # get a count of posts for each category
+
+    # Get a count of posts for each category
     post_query = Select(Posts)
     post_count = await db_ops.read_query(query=post_query)
     it_query = Select(InterestingThings)
@@ -127,14 +129,14 @@ async def admin_categories_table(
 
     for post in post_count:
         post = post.to_dict()
-        category_count[post['category']] += 1
+        category_count[post['category'].lower()] += 1
 
     for it in it_count:
         it = it.to_dict()
-        category_count[it['category']] += 1
+        category_count[it['category'].lower()] += 1
 
     category_count_list = [{'category': category, 'count': count} for category, count in category_count.items()]
-
+    logger.debug(category_count_list)
     context = {"categories": categories, "category_count_list": category_count_list}
     logger.debug(f"categories-table: {context}")
     return templates.TemplateResponse(
@@ -153,6 +155,7 @@ async def admin_category_edit(
         category = await db_ops.read_one_record(query=query)
         context["category"] = category.to_dict()
 
+    logger.debug(f"category-edit: {context}")
     return templates.TemplateResponse(
         request=request, name="/admin/category-form.html", context=context
     )
@@ -219,6 +222,7 @@ async def add_edit_category(
         context["category_data"] = data.to_dict()
         context["status"] = "created"
 
+    logger.debug(f"category-edit: {context}")
     return templates.TemplateResponse(
         request=request, name="/admin/category-confirm.html", context=context
     )
