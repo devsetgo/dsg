@@ -36,7 +36,7 @@ from .endpoints import (
     admin,
     blog_posts,
     devtools,
-    interesting_things,
+    web_links,
     notes,
     pages,
     pypi,
@@ -49,7 +49,7 @@ def create_routes(app: FastAPI) -> NoReturn:
     """
     Mounts routes to the provided FastAPI application instance.
 
-    This function mounts routes for static files and various endpoints such as admin, blog_posts, devtools, interesting_things, notes, pages, pypi, and users.
+    This function mounts routes for static files and various endpoints such as admin, blog_posts, devtools, web_links, notes, pages, pypi, and users.
 
     Args:
         app (FastAPI): The FastAPI application instance to which the routes will be mounted.
@@ -184,8 +184,8 @@ def create_routes(app: FastAPI) -> NoReturn:
         return templates.TemplateResponse("error/error-page.html", context)
 
     app.include_router(
-        interesting_things.router,
-        prefix="/interesting-things",
+        web_links.router,
+        prefix="/weblinks",
         tags=["interesting things"],
         include_in_schema=show_route,
     )

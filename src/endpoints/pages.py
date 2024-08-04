@@ -33,7 +33,7 @@ from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import InterestingThings, Posts
+from ..db_tables import WebLinks, Posts
 from ..functions.date_functions import update_timezone_for_dates
 from ..functions.interesting_api_calls import get_public_debt
 from ..resources import db_ops, templates
@@ -60,9 +60,9 @@ async def root():
 async def index(request: Request):
     try:
         cool_stuff = await db_ops.read_query(
-            Select(InterestingThings)
+            Select(WebLinks)
             .limit(8)
-            .order_by(InterestingThings.date_created.desc())
+            .order_by(WebLinks.date_created.desc())
         )
         cool_stuff = [thing.to_dict() for thing in cool_stuff]
         cool_stuff = await update_timezone_for_dates(

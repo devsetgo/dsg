@@ -24,7 +24,7 @@
           <!-- /.card-header -->
           <!-- form start -->
             <div class="col-12">
-              <form action="/interesting-things/new" method="post" enctype="multipart/form-data" hx-indicator=".htmx-indicator">
+              <form action="/weblinks/new" method="post" enctype="multipart/form-data" hx-indicator=".htmx-indicator">
                 <div class="form-group mb-2">
                   <div class="row">
                     <div class="col-sm-6">
@@ -65,7 +65,7 @@
                   });
                 </script>
                 <div class="input-group mb-2">
-                  {% include "interesting-things/editor_md.html" %}
+                  {% include "weblinks/editor_md.html" %}
                 </div>
                 <div class="input-group mb-2">
                   <button type="submit" class="btn btn-primary btn-block" title="Create Note">Create Interesting Thing</button>

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This module, `interesting_things.py`, serves as a part of a web application that showcases interesting things, categorized and filterable by tags, date ranges, and categories. It utilizes FastAPI for routing and SQLAlchemy for database interactions, providing an API endpoint to list interesting things with support for pagination.
+This module, `web_links.py`, serves as a part of a web application that showcases interesting things, categorized and filterable by tags, date ranges, and categories. It utilizes FastAPI for routing and SQLAlchemy for database interactions, providing an API endpoint to list interesting things with support for pagination.
 
 Author:
     Mike Ryan
@@ -13,7 +13,7 @@ Dependencies:
     - loguru: For logging.
     - sqlalchemy: For constructing and executing SQL queries.
     - datetime: For handling date and time information.
-    - db_tables: Contains the SQLAlchemy table definitions for Categories and InterestingThings.
+    - db_tables: Contains the SQLAlchemy table definitions for Categories and WebLinks.
     - functions: Includes utility functions and decorators, such as for AI processing and date manipulation.
     - resources: Provides access to common resources like database operations (`db_ops`) and HTML templates.
 
@@ -36,7 +36,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select, asc, func, or_
 
-from ..db_tables import Categories, InterestingThings
+from ..db_tables import Categories, WebLinks
 from ..functions import ai, date_functions
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
@@ -47,7 +47,7 @@ router = APIRouter()
 # api endpoints
 # /list with filters (by tag, by date range, by category)
 @router.get("/")
-async def list_of_interesting_things(
+async def list_of_web_links(
     request: Request,
     offset: int = Query(0, description="Offset for pagination"),
     limit: int = Query(100, description="Limit for pagination"),
@@ -57,7 +57,7 @@ async def list_of_interesting_things(
     if user_timezone is None:
         user_timezone = "America/New_York"
 
-    query = Select(InterestingThings).limit(20).offset(0)
+    query = Select(WebLinks).limit(20).offset(0)
     things = await db_ops.read_query(query=query)
 
     if isinstance(things, str):
@@ -79,7 +79,7 @@ async def list_of_interesting_things(
         )
     context = {"page": "things", "request": request, "things": things}
     return templates.TemplateResponse(
-        request=request, name="/interesting-things/index.html", context=context
+        request=request, name="/weblinks/index.html", context=context
     )
 
 
@@ -121,11 +121,11 @@ async def read_things_pagination(
         f"Searching for term: {search_term}, start_date: {start_date}, end_date: {end_date}"
     )
     # find search_term in columns: note, mood, tags, summary
-    query = Select(InterestingThings).where(
+    query = Select(WebLinks).where(
         or_(
-            InterestingThings.name.contains(search_term) if search_term else True,
+            WebLinks.name.contains(search_term) if search_term else True,
             (
-                InterestingThings.description.contains(search_term)
+                WebLinks.description.contains(search_term)
                 if search_term
                 else True
             ),
@@ -137,13 +137,13 @@ async def read_things_pagination(
         start_date = datetime.strptime(start_date, "%Y-%m-%d")
         end_date = datetime.strptime(end_date, "%Y-%m-%d")
         query = query.where(
-            (InterestingThings.date_created >= start_date)
-            & (InterestingThings.date_created <= end_date)
+            (WebLinks.date_created >= start_date)
+            & (WebLinks.date_created <= end_date)
         )
     # order and limit the results
     offset = (page - 1) * limit
     query = (
-        query.order_by(InterestingThings.date_created.desc())
+        query.order_by(WebLinks.date_created.desc())
         .limit(limit)
         .offset(offset)
     )
@@ -174,13 +174,13 @@ async def read_things_pagination(
     total_pages = -(-things_count // limit)  # Ceiling division
     # Generate the URLs for the previous and next pages
     prev_page_url = (
-        f"/interesting-things/pagination?page={page - 1}&"
+        f"/weblinks/pagination?page={page - 1}&"
         + "&".join(f"{k}={v}" for k, v in query_params.items() if v)
         if page > 1
         else None
     )
     next_page_url = (
-        f"/interesting-things/pagination?page={page + 1}&"
+        f"/weblinks/pagination?page={page + 1}&"
         + "&".join(f"{k}={v}" for k, v in query_params.items() if v)
         if page < total_pages
         else None
@@ -188,7 +188,7 @@ async def read_things_pagination(
     logger.info(f"Found {found} interesting things")
     return templates.TemplateResponse(
         request=request,
-        name="/interesting-things/pagination.html",
+        name="/weblinks/pagination.html",
         context={
             "things": things,
             "found": found,
@@ -206,7 +206,7 @@ async def read_things_pagination(
 async def new_thing(request: Request):
     return templates.TemplateResponse(
         request=request,
-        name="/interesting-things/new.html",
+        name="/weblinks/new.html",
         context={"request": request},
     )
 
@@ -229,7 +229,7 @@ async def create_thing(
     summary = await ai.get_url_summary(url=url, sentence_length=2)
     logger.debug(f"Received summary from AI: {summary}")
     # Create the post
-    thing = InterestingThings(
+    thing = WebLinks(
         title=title,
         summary=summary,
         user_id=user_identifier,
@@ -240,8 +240,8 @@ async def create_thing(
         logger.error(f"Error creating thing: {data}")
         return RedirectResponse(url="/error/418", status_code=302)
 
-    logger.debug(f"Created interesting-things: {thing}")
-    logger.info(f"Created interesting-things with ID: {data.pkid}")
+    logger.debug(f"Created weblinks: {thing}")
+    logger.info(f"Created weblinks with ID: {data.pkid}")
 
     return RedirectResponse(url=f"/interesting-thing/view/{data.pkid}", status_code=302)
 
