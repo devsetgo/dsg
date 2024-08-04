@@ -46,7 +46,7 @@ from loguru import logger
 from sqlalchemy import Select, and_
 
 # , FailedLoginAttempts,JobApplications
-from ..db_tables import Categories, WebLinks, Notes, Posts, Users
+from ..db_tables import Categories, Notes, Posts, Users, WebLinks
 from ..functions import date_functions, note_import
 from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login

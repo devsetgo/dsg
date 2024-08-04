@@ -32,16 +32,7 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .endpoints import (
-    admin,
-    blog_posts,
-    devtools,
-    web_links,
-    notes,
-    pages,
-    pypi,
-    users,
-)
+from .endpoints import admin, blog_posts, devtools, notes, pages, pypi, users, web_links
 from .resources import templates
 
 

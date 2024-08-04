@@ -33,7 +33,7 @@ from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import WebLinks, Posts
+from ..db_tables import Posts, WebLinks
 from ..functions.date_functions import update_timezone_for_dates
 from ..functions.interesting_api_calls import get_public_debt
 from ..resources import db_ops, templates

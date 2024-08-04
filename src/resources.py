@@ -32,7 +32,7 @@ from sqlalchemy import Select, func
 from tqdm import tqdm
 
 from .db_init import async_db
-from .db_tables import Categories, WebLinks, Notes, Posts, Users
+from .db_tables import Categories, Notes, Posts, Users, WebLinks
 from .functions.models import RoleEnum
 from .settings import settings
 
