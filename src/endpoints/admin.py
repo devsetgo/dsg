@@ -29,6 +29,7 @@ Routes:
     - GET "/note-ai-check/{user_id}": Triggers AI processing for all notes associated with a specific user. Designed to facilitate batch processing of user notes. Requires login verification.
 """
 import secrets
+from collections import defaultdict
 from datetime import datetime
 
 from dsg_lib.common_functions.email_validation import validate_email_address
@@ -45,7 +46,7 @@ from loguru import logger
 from sqlalchemy import Select, and_
 
 # , FailedLoginAttempts,JobApplications
-from ..db_tables import Categories, Notes, Users, Posts, InterestingThings
+from ..db_tables import Categories, InterestingThings, Notes, Posts, Users
 from ..functions import date_functions, note_import
 from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
@@ -121,18 +122,17 @@ async def admin_categories_table(
     post_count = await db_ops.read_query(query=post_query)
     it_query = Select(InterestingThings)
     it_count = await db_ops.read_query(query=it_query)
-    
-    from collections import defaultdict
+
     category_count = defaultdict(int)
 
     for post in post_count:
         post = post.to_dict()
         category_count[post['category']] += 1
-    
+
     for it in it_count:
         it = it.to_dict()
         category_count[it['category']] += 1
-    
+
     category_count_list = [{'category': category, 'count': count} for category, count in category_count.items()]
 
     context = {"categories": categories, "category_count_list": category_count_list}
