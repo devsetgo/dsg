@@ -184,7 +184,7 @@ class Categories(schema_base, async_db.Base):
     name = Column(String(50), unique=False, index=True)  # name of item
     description = Column(String(500), unique=False, index=True)  # description of item
     is_post = Column(Boolean, default=False, index=True)  # If the category is for posts
-    is_thing = Column(
+    is_weblink = Column(
         Boolean, default=False, index=True
     )  # If the category is for interesting things
     is_system = Column(

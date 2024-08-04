@@ -171,14 +171,14 @@ async def add_edit_category(
     name = form["name"]
     description = form["description"]
     is_post = False
-    is_thing = False
+    is_weblink = False
     is_system = False
 
     if "is_post" in form and form["is_post"] == "on":
         is_post = True
 
-    if "is_thing" in form and form["is_thing"] == "on":
-        is_thing = True
+    if "is_weblink" in form and form["is_weblink"] == "on":
+        is_weblink = True
 
     if "is_system" in form and form["is_system"] == "on":
         is_system = True
@@ -197,7 +197,7 @@ async def add_edit_category(
             "name": name,
             "description": description,
             "is_post": is_post,
-            "is_thing": is_thing,
+            "is_weblink": is_weblink,
             "is_system": is_system,
             "date_updated": datetime.utcnow(),
         }
@@ -214,7 +214,7 @@ async def add_edit_category(
             name=form["name"],
             description=form["description"],
             is_post=is_post,
-            is_thing=is_thing,
+            is_weblink=is_weblink,
             is_system=is_system,
         )
 
