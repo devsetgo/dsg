@@ -34,19 +34,24 @@
               <div class="row">
                 <div class="col-12" id="text-to-copy" style="white-space: nowrap;">
                   {% for item in data %}
-                    {% for d in item.json_data_out|sort(attribute='package_name') %}
-                      {{d.package_name}}{% if d.has_bracket %}[{{d.bracket_content}}]{%endif%}=={{d.latest_version}} #
-                      {% if d.latest_version!=d.current_version %} <strong>From {{d.current_version}}</strong> | {%endif%}
-                      {% if d.vulnerabilities|length > 0 %}
-                        Vulnerabilities:
-                        {% for v in d.vulnerabilities %}
-                          <a href="{{v.link}}">{{v.link}}</a>
-                        {% endfor %}
-                      {% else %}
-                        Vulnerabilities: None
-                      {% endif %}
-                      <br>
-                    {% endfor %}
+                    {% if item.json_data_out %}
+                      {% set filtered_data = item.json_data_out | selectattr('package_name', 'defined') | select('!=', None) | list %}
+                      {% for d in filtered_data | sort(attribute='package_name') %}
+                        {{ d.package_name }}{% if d.has_bracket %}[{{ d.bracket_content }}]{% endif %}=={{ d.latest_version }} #
+                        {% if d.latest_version != d.current_version %} <strong>From {{ d.current_version }}</strong> | {% endif %}
+                        {% if d.vulnerabilities|length > 0 %}
+                          Vulnerabilities:
+                          {% for v in d.vulnerabilities %}
+                            <a href="{{ v.link }}" target="_blank">{{ loop.index }}</a>
+                          {% endfor %}
+                        {% else %}
+                          Vulnerabilities: None
+                        {% endif %}
+                        <br>
+                      {% endfor %}
+                    {% else %}
+                      <p>No data available.</p>
+                    {% endif %}
                   {% endfor %}
                 </div>
               </div>

@@ -74,10 +74,10 @@
               <div class="row">
                 <div class="col-12">
                   <ul>
-                    <li>Title: <a href="/interesting-things/view/{{d.pkid}}">{{d.title|title}}</a></li>
+                    <li>Title: <a href="/weblinks/view/{{d.pkid}}">{{d.title|title}}</a></li>
                     <li>Summary: {{ d.summary|truncate(100, end='...') }}
                       {% if d.summary|length > 100 %}
-                      <a href="/interesting-things/view/{{d.pkid}}">Read more</a>
+                      <a href="/weblinks/view/{{d.pkid}}">Read more</a>
                       {% endif %}
                     </li>
                     <li>Category: {{d.category|capitalize}}</li>

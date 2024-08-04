@@ -29,6 +29,10 @@ Args:
 
 Returns:
     str: A string containing the generated paragraph.
+
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 import random
 

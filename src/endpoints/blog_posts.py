@@ -1,4 +1,27 @@
 # -*- coding: utf-8 -*-
+"""
+This module is responsible for managing blog posts within the web application. It includes functionalities for creating, retrieving, updating, and deleting blog posts. The module interacts with the application's database to perform these operations, ensuring data persistence and integrity.
+
+Author:
+    Mike Ryan
+
+License:
+    MIT License
+
+Dependencies:
+    - SQLAlchemy: Used for database interactions.
+    - FastAPI: Provides the web framework for routing and handling HTTP requests.
+
+Functions:
+    - create_post(title, content): Creates a new blog post with the given title and content.
+    - get_posts(): Retrieves all blog posts from the database.
+    - get_post(post_id): Retrieves a single blog post by its ID.
+    - update_post(post_id, title, content): Updates the title and content of an existing blog post.
+    - delete_post(post_id): Deletes a blog post by its ID.
+
+Usage:
+    This module is intended to be imported and used by other parts of the application, particularly where blog post management functionality is required. It provides a clear API for interacting with blog post data.
+"""
 from datetime import datetime
 
 # from pytz import timezone, UTC
@@ -32,7 +55,7 @@ async def list_of_posts(
     category: str = Query(None, description="Category to search by"),
     # user_info: dict = Depends(check_login),
 ):
-    context = {"page":"posts","request": request}
+    context = {"page": "posts", "request": request}
     return templates.TemplateResponse(
         request=request, name="/posts/index.html", context=context
     )
@@ -41,7 +64,9 @@ async def list_of_posts(
 @router.get("/categories", response_class=JSONResponse)
 async def get_categories():
     categories = await db_ops.read_query(
-        Select(Categories).where(Categories.is_post==True).order_by(asc(Categories.name))
+        Select(Categories)
+        .where(Categories.is_post == True)
+        .order_by(asc(Categories.name))
     )
     cat_list = [cat.to_dict()["name"] for cat in categories]
     return cat_list
@@ -333,7 +358,8 @@ async def read_posts_pagination(
             "found": found,
             "posts_count": posts_count,
             "total_pages": total_pages,
-            "current_count": current_count,
+            "start_count": offset + 1,
+            "current_count": offset + current_count,
             "current_page": page,
             "prev_page_url": prev_page_url,
             "next_page_url": next_page_url,

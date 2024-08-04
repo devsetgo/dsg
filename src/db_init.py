@@ -1,4 +1,26 @@
 # -*- coding: utf-8 -*-
+"""
+This module, `db_init.py`, is responsible for initializing the database connection for a FastAPI application. It dynamically constructs the database URI based on the application's configuration settings, supporting various database drivers such as SQLite (with aiosqlite for asynchronous support), PostgreSQL, MySQL, Oracle, and MSSQL. The module also defines a mapping of configuration options to database drivers, indicating which options are supported by each driver.
+
+The database URI construction takes into account different scenarios, including in-memory SQLite databases, file-based SQLite databases, and other SQL databases requiring connection details such as username, password, host, and port.
+
+Author:
+    Mike Ryan
+
+License:
+    MIT License
+
+Dependencies:
+    - dsg_lib.async_database_functions: Provides asynchronous database functions and configuration utilities.
+    - loguru: Used for logging.
+    - .settings: A module containing the application's configuration settings, including database connection details.
+
+Functions:
+    None explicitly defined; the module's main functionality is executed at the module level during import, setting up the database URI based on the application's configuration.
+
+Usage:
+    This module is intended to be imported at the application startup to ensure the database connection is configured correctly. It automatically constructs the database URI from the application settings and logs it for debugging purposes.
+"""
 from dsg_lib.async_database_functions import async_database, database_config
 from loguru import logger
 
