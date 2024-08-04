@@ -343,7 +343,7 @@ async def add_categories():
             description=f"{str(c).title()} related items",
             is_system=True,
             is_post=True,
-            is_thing=True,
+            is_weblink=True,
         )
         try:
             await db_ops.create_one(category)

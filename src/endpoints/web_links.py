@@ -87,7 +87,7 @@ async def list_of_web_links(
 async def get_categories():
     categories = await db_ops.read_query(
         Select(Categories)
-        .where(Categories.is_thing == True)
+        .where(Categories.is_weblink == True)
         .order_by(asc(func.lower(Categories.name)))
     )
     cat_list = [cat.to_dict()["name"] for cat in categories]
