@@ -1,0 +1,28 @@
+<div class="card-body">
+    <form id="category-form" hx-post="/admin/category-edit">
+        <div class="form-group mb-2">
+            <input type="hidden" class="form-control" id="category_id" name="category_id" maxlength="36" required value="{{ category.pkid if category }}" readonly>
+        </div>
+        <div class="form-group mb-2">
+            <label for="name">Name:</label>
+            <input type="text" class="form-control" id="name" name="name" maxlength="30" required value="{{ category.name if category }}">
+        </div>
+        <div class="form-group mb-2">
+            <label for="description">Description:</label>
+            <textarea class="form-control" id="description" name="description" required>{{ category.description if category }}</textarea>
+        </div>
+        <div class="form-group mb-2">
+            <label for="is_post">Is Post:</label>
+            <input type="checkbox" id="is_post" name="is_post" {% if category and category.is_post %}checked{% endif %}>
+        </div>
+        <div class="form-group mb-2">
+            <label for="is_weblink">Is Thing:</label>
+            <input type="checkbox" id="is_weblink" name="is_weblink" {% if category and category.is_weblink %}checked{% endif %}>
+        </div>
+        <div class="form-group mb-2">
+            <label for="is_system">Is System:</label>
+            <input type="checkbox" id="is_system" name="is_system" {% if category and category.is_system %}checked{% endif %}>
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>

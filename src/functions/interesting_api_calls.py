@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
+"""
 
+Author:
+    Mike Ryan
+    MIT Licensed
+"""
 import calendar
 import datetime
 import time
 
 from httpx import AsyncClient
 from loguru import logger
-from tqdm import tqdm
 from unsync import unsync
 
 client = AsyncClient()
 
 
 async def get_public_debt():
-
     dates_list = []
 
     for year in range(1995, 2025):
@@ -34,19 +37,28 @@ async def get_public_debt():
     dates_list.append(last_wednesday_str)
     dates_list.sort()
     t0 = time.time()
-    tasks = [
-        debt_api_call(debt_date=d) for d in tqdm(dates_list, ascii=False, leave=True)
-    ]
+
+    # Assuming debt_api_call is an async function that makes API calls for each date
+    tasks = [debt_api_call(date) for date in dates_list]
     debt_list = [task.result() for task in tasks]
-    print(f"Debt API call time taken: {time.time() - t0:.3f}")
-    return sorted(debt_list, key=lambda d: d["record_date"])
+
+    # Filter out None values from debt_list before sorting
+    filtered_debt_list = [debt for debt in debt_list if debt is not None]
+
+    logger.info(f"Debt API call time taken: {time.time() - t0:.3f} seconds")
+    return sorted(filtered_debt_list, key=lambda d: d["record_date"])
 
 
 @unsync
 async def debt_api_call(debt_date: str):
-
     url = f"https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny?filter=record_date:eq:{debt_date}"
     response = await client.get(url)
     resp = response.json()
     logger.debug(f"Debt API call response: {resp} for date {debt_date}")
-    return resp["data"][0]
+
+    # Check if 'data' is not empty before accessing its first element
+    if resp["data"]:
+        return resp["data"][0]
+    else:
+        logger.warning(f"No data returned for date {debt_date}")
+        return None  # Or handle the empty data case as needed

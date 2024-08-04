@@ -1,7 +1,31 @@
 # -*- coding: utf-8 -*-
+"""
+This module, `db_tables.py`, defines the SQLAlchemy ORM models for the database schema of a FastAPI application. It dynamically selects a base schema class based on the database driver specified in the application's settings, supporting different databases like SQLite and PostgreSQL. The module includes model definitions for various entities such as `Users`, with fields for user information including first name, last name, username, and email. It leverages the `dsg_lib.async_database_functions` for asynchronous database operations and integrates encryption functionalities for sensitive information.
+
+Author:
+    Mike Ryan
+
+License:
+    MIT License
+
+Dependencies:
+    - sqlalchemy: For ORM support and database model definitions.
+    - loguru: Used for logging.
+    - dsg_lib.async_database_functions: Provides base schema classes and asynchronous database functionalities.
+    - .db_init: Initializes the database connection using application settings.
+    - .functions.encrypt: Contains encryption and decryption functions for handling sensitive information.
+    - .settings: Contains the application's configuration settings, including database connection details.
+
+Models:
+    - Users: Represents the users of the application, with fields for personal and authentication information.
+
+Usage:
+    This module is intended to be imported wherever database ORM models are required within the application, such as in database initialization scripts, CRUD operation handlers, and when performing queries or updates to the database.
+"""
 import re
 
 from dsg_lib.async_database_functions import base_schema
+from loguru import logger
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -16,6 +40,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import class_mapper, relationship
 
 from .db_init import async_db
+from .functions.encrypt import (
+    DecryptionError,
+    EncryptionError,
+    decrypt_text,
+    encrypt_text,
+)
 from .settings import settings
 
 if settings.db_driver.startswith("sqlite"):
@@ -42,7 +72,7 @@ class Users(schema_base, async_db.Base):
     # password = Column(
     #     String, unique=False, index=True, nullable=False
     # )  # Password of the user
-    provider = Column(String,unique=False)
+    provider = Column(String, unique=False)
     # timezone of the user, should default to new york
     my_timezone = Column(String, unique=False, index=True, default="America/New_York")
     is_active = Column(Boolean, default=True, nullable=False)  # If the user is active
@@ -54,7 +84,7 @@ class Users(schema_base, async_db.Base):
     #     Boolean, default=False, nullable=False
     # )  # If the user has access to the site
     date_last_login = Column(DateTime, unique=False, index=True)  # Last login date
-    failed_login_attempts = Column(Integer, default=0)  # Failed login attempts
+    # failed_login_attempts = Column(Integer, default=0)  # Failed login attempts
     is_locked = Column(
         Boolean, default=False, index=True, nullable=False
     )  # If the user account is locked
@@ -71,38 +101,20 @@ class Users(schema_base, async_db.Base):
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
 
-    # Define the child relationship to the InterestingThings class
+    # Define the child relationship to the WebLinks class
 
-    interesting_things = relationship(
-        "InterestingThings", back_populates="users", cascade="all,delete"
-    )
+    web_links = relationship("WebLinks", back_populates="users", cascade="all,delete")
     posts = relationship("Posts", back_populates="user", cascade="all,delete")
-    categories = relationship(
-        "Categories", back_populates="users", cascade="all,delete"
-    )
+    # categories = relationship(
+    #     "Categories", back_populates="users", cascade="all,delete"
+    # )
     notes = relationship("Notes", back_populates="users", cascade="all,delete")
     note_metrics = relationship(
         "NoteMetrics", back_populates="users", cascade="all,delete"
     )
-    job_applications = relationship(
-        "JobApplications", back_populates="users", cascade="all,delete"
-    )
-
-
-class FailedLoginAttempts(schema_base, async_db.Base):
-    __tablename__ = "failed_login_attempts"  # Name of the table in the database
-    __tableargs__ = {"comment": "Failed login attempts for the users"}
-
-    # Define the columns of the table
-    user_name = Column(String, unique=False, index=True)
-    password = Column(String, unique=False, index=True)
-    real_id = Column(Boolean, default=False, index=True)
-    meta_data = Column(JSON)
-
-    def to_dict(self):
-        return {
-            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
-        }
+    # job_applications = relationship(
+    #     "JobApplications", back_populates="users", cascade="all,delete"
+    # )
 
 
 class Posts(schema_base, async_db.Base):
@@ -142,8 +154,8 @@ def posts_on_change(mapper, connection, target):
             break
 
 
-class InterestingThings(schema_base, async_db.Base):
-    __tablename__ = "interesting_things"  # Name of the table in the database
+class WebLinks(schema_base, async_db.Base):
+    __tablename__ = "web_links"  # Name of the table in the database
     __tableargs__ = {"comment": "Interesting things that the user finds"}
 
     # Define the columns of the table
@@ -155,7 +167,7 @@ class InterestingThings(schema_base, async_db.Base):
     # Define the parent relationship to the User class
     user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the User table
     users = relationship(
-        "Users", back_populates="interesting_things"
+        "Users", back_populates="web_links"
     )  # Relationship to the Users class
 
     def to_dict(self):
@@ -171,11 +183,15 @@ class Categories(schema_base, async_db.Base):
     # Define the columns of the table
     name = Column(String(50), unique=False, index=True)  # name of item
     description = Column(String(500), unique=False, index=True)  # description of item
-    is_post = Column(Boolean, default=False, index=True)
-    is_thing =Column(Boolean, default=False, index=True)
-    is_system = Column(Boolean, default=True, index=True)  # If the category is a system default
-    user_id = Column(String, ForeignKey("users.pkid"))
-    users = relationship("Users", back_populates="categories")
+    is_post = Column(Boolean, default=False, index=True)  # If the category is for posts
+    is_weblink = Column(
+        Boolean, default=False, index=True
+    )  # If the category is for interesting things
+    is_system = Column(
+        Boolean, default=True, index=True
+    )  # If the category is a system default
+    # user_id = Column(String, ForeignKey("users.pkid"))
+    # users = relationship("Users", back_populates="categories")
 
     def to_dict(self):
         return {
@@ -211,20 +227,65 @@ class Notes(schema_base, async_db.Base):
 
     mood = Column(String(500), unique=False, index=True)
     mood_analysis = Column(String(500), unique=False, index=True)
-    note = Column(Text, unique=False, index=True, nullable=False)
+    _note = Column(Text, unique=False, index=True, nullable=False)
     tags = Column(JSON)
-    summary = Column(String(500), unique=False, index=True)
+    _summary = Column(String(500), unique=False, index=True)
     word_count = Column(Integer)
     character_count = Column(Integer)
     ai_fix = Column(Boolean, default=False)
     user_id = Column(String, ForeignKey("users.pkid"), nullable=False, index=True)
     users = relationship("Users", back_populates="notes")
 
+    # def __init__(self, note):
+    #     self._note = encrypt_text(note)  # Encrypt and store the note internally
+
     def to_dict(self):
         data = {
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
+        data["note"] = self.note  # Add the decrypted note
+        data["summary"] = self.summary
         return data
+
+    @property
+    def note(self):
+        try:
+            return decrypt_text(self._note)
+        except DecryptionError as e:
+            error: str = f"Failed to decrypt note: {e}"
+            logger.error(error)
+            # Decide on the action: raise, ignore, or another approach
+            return error
+
+    @note.setter
+    def note(self, value):
+        try:
+            self._note = encrypt_text(value)
+        except EncryptionError as e:
+            error: str = f"Failed to encrypt note: {e}"
+            logger.error(error)
+            # Decide on the action: raise, ignore, or another approach
+            return error
+
+    @property
+    def summary(self):
+        try:
+            return decrypt_text(self._summary)
+        except DecryptionError as e:
+            error: str = f"Failed to decrypt summary: {e}"
+            logger.error(error)
+            # Decide on the action: raise, ignore, or another approach
+            return error
+
+    @summary.setter
+    def summary(self, value):
+        try:
+            self._summary = encrypt_text(value)
+        except EncryptionError as e:
+            error: str = f"Failed to encrypt summary: {e}"
+            logger.error(error)
+            # Decide on the action: raise, ignore, or another approach
+            return error
 
 
 @event.listens_for(Notes, "before_insert")
@@ -248,6 +309,9 @@ def note_on_change(mapper, connection, target):
         if pattern.search(tag) or " " in tag:
             target.ai_fix = True  # Set ai_fix to True if an illegal character is found
             break
+
+    # if target.note:  # Check if the note is not None
+    #     target.note = encrypt_text(target.note)
 
 
 class LibraryName(async_db.Base):
@@ -298,46 +362,46 @@ class Requirement(schema_base, async_db.Base):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-class JobApplications(schema_base, async_db.Base):
-    __tablename__ = "job_applications"  # Name of the table in the database
-    __tableargs__ = {"comment": "Job applications that the user has submitted"}
+# class JobApplications(schema_base, async_db.Base):
+#     __tablename__ = "job_applications"  # Name of the table in the database
+#     __tableargs__ = {"comment": "Job applications that the user has submitted"}
 
-    # Define the columns of the table
-    url = Column(String, unique=False, index=True)  # URL of the job posting
-    job_title = Column(String, unique=False, index=True)  # Job title
-    company_name = Column(String, unique=False, index=True)  # Company name
-    application_date = Column(DateTime, unique=False, index=True)  # Application date
-    application_status = Column(String, unique=False, index=True)  # Application status
-    user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the User table
+#     # Define the columns of the table
+#     url = Column(String, unique=False, index=True)  # URL of the job posting
+#     job_title = Column(String, unique=False, index=True)  # Job title
+#     company_name = Column(String, unique=False, index=True)  # Company name
+#     application_date = Column(DateTime, unique=False, index=True)  # Application date
+#     application_status = Column(String, unique=False, index=True)  # Application status
+#     user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the User table
 
-    # Define the parent relationship to the User class
-    users = relationship("Users", back_populates="job_applications")
+#     # Define the parent relationship to the User class
+#     users = relationship("Users", back_populates="job_applications")
 
-    # Define the child relationship to the JobApplicationTasks class
-    tasks = relationship("JobApplicationTasks", back_populates="job_application")
+#     # Define the child relationship to the JobApplicationTasks class
+#     tasks = relationship("JobApplicationTasks", back_populates="job_application")
 
-    def to_dict(self):
-        return {
-            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
-        }
+#     def to_dict(self):
+#         return {
+#             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+#         }
 
 
-class JobApplicationTasks(schema_base, async_db.Base):
-    __tablename__ = "job_application_tasks"  # Name of the table in the database
-    __tableargs__ = {"comment": "Tasks related to a job application"}
+# class JobApplicationTasks(schema_base, async_db.Base):
+#     __tablename__ = "job_application_tasks"  # Name of the table in the database
+#     __tableargs__ = {"comment": "Tasks related to a job application"}
 
-    # Define the columns of the table
-    task_description = Column(String, unique=False, index=True)  # Task description
-    due_date = Column(DateTime, unique=False, index=True)  # Due date for the task
-    status = Column(String, unique=False, index=True)  # Status of the task
-    job_application_id = Column(
-        String, ForeignKey("job_applications.pkid")
-    )  # Foreign key to the JobApplications table
+#     # Define the columns of the table
+#     task_description = Column(String, unique=False, index=True)  # Task description
+#     due_date = Column(DateTime, unique=False, index=True)  # Due date for the task
+#     status = Column(String, unique=False, index=True)  # Status of the task
+#     job_application_id = Column(
+#         String, ForeignKey("job_applications.pkid")
+#     )  # Foreign key to the JobApplications table
 
-    # Define the parent relationship to the JobApplications class
-    job_application = relationship("JobApplications", back_populates="tasks")
+#     # Define the parent relationship to the JobApplications class
+#     job_application = relationship("JobApplications", back_populates="tasks")
 
-    def to_dict(self):
-        return {
-            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
-        }
+#     def to_dict(self):
+#         return {
+#             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+#         }

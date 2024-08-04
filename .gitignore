@@ -12,7 +12,8 @@ log.json
 log.log
 *.db
 .VSCodeCounter
-
+.env.*
+!.env.sample
 # hide specific files
 export.csv
 export_cleaned.csv

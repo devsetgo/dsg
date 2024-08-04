@@ -1,4 +1,39 @@
 # -*- coding: utf-8 -*-
+"""
+This module, `users.py`, is designed to handle user management and authentication within a web application. It provides functionalities for user registration, login, profile management, and OAuth2 callbacks, specifically focusing on GitHub as an authentication provider. Utilizing FastAPI for routing, this module defines API endpoints for the aforementioned functionalities and integrates with external authentication services and the application's database for user data storage and retrieval.
+
+Author:
+    Mike Ryan
+
+License:
+    MIT License
+
+Dependencies:
+    - fastapi: For creating API routes and handling HTTP requests.
+    - sqlalchemy: For database interactions.
+    - oauthlib: For OAuth2 authentication flows.
+    - httpx: For making HTTP requests to external services.
+    - db_tables: Contains the SQLAlchemy table definitions for user data.
+    - functions.auth: Includes utility functions for authentication processes, such as token generation and verification.
+    - resources: Provides access to common resources like database operations (`db_ops`) and configuration settings.
+
+API Endpoints:
+    - POST "/register": Registers a new user with the provided credentials.
+    - POST "/login": Authenticates a user and returns a session token.
+    - GET "/profile": Retrieves the profile information of the currently authenticated user.
+    - GET "/callback": Handles the OAuth2 callback from GitHub, facilitating user authentication via GitHub accounts.
+    - GET "/edit-user": Displays a form for editing user information.
+    - POST "/edit-user": Processes the form data submitted for editing user information.
+    - GET "/logout": Logs out the currently authenticated user.
+    - GET "/password-change": Displays a form for changing the user's password.
+    - POST "/password-change": Processes the form data submitted for changing the user's password.
+    - GET "/github-login": Initiates the GitHub OAuth2 login flow.
+    - GET "/github-callback": Handles the callback from GitHub after successful authentication.
+
+
+Usage:
+    This module is intended to be used as part of a larger FastAPI application. It can be mounted as a router to handle user-related routes, providing a RESTful API for user management and authentication.
+"""
 from datetime import datetime, timedelta
 
 from dsg_lib.common_functions.email_validation import validate_email_address
@@ -8,9 +43,8 @@ from fastapi_sso.sso.github import GithubSSO
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import JobApplications, Notes, Users
+from ..db_tables import Notes, Users  # JobApplications,
 from ..functions.date_functions import TIMEZONES as timezones
-from ..functions.hash_function import hash_password, verify_password
 from ..functions.login_required import check_login
 from ..functions.models import RoleEnum
 from ..resources import db_ops, templates
@@ -36,7 +70,7 @@ async def edit_user(
 
     user = user.to_dict()
 
-    context = {"page":"user","user": user, "timezones": timezones}
+    context = {"page": "user", "user": user, "timezones": timezones}
 
     response = templates.TemplateResponse(
         request=request, name="/users/user_edit.html", context=context
@@ -109,59 +143,59 @@ async def logout(request: Request):
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.get("/password-change", response_class=HTMLResponse)
-async def get_password_change_form(
-    request: Request,
-    user_info: dict = Depends(check_login),
-    error: str = None,
-):
-    context = {"page":"user","error": error}
-    response = templates.TemplateResponse(
-        request=request, name="users/password_change.html", context=context
-    )
-    return response
+# @router.get("/password-change", response_class=HTMLResponse)
+# async def get_password_change_form(
+#     request: Request,
+#     user_info: dict = Depends(check_login),
+#     error: str = None,
+# ):
+#     context = {"page": "user", "error": error}
+#     response = templates.TemplateResponse(
+#         request=request, name="users/password_change.html", context=context
+#     )
+#     return response
 
 
-@router.post("/password-change")
-async def post_password_change_form(
-    request: Request,
-    user_info: dict = Depends(check_login),
-):
-    form = await request.form()
-    old_password = form["old_password"]
-    new_password = form["new_password"]
-    new_password_confirm = form["new_password_confirm"]
-    user_identifier = request.session.get("user_identifier", None)
-    user = await db_ops.read_one_record(
-        Select(Users).where(Users.pkid == user_identifier)
-    )
-    if not verify_password(hash=user.password, password=old_password):
-        request.session["error"] = "Old password is incorrect"
-        return templates.TemplateResponse(
-            request=request,
-            name="users/error_message.html",
-            context={"error": request.session["error"]},
-        )
-    if new_password != new_password_confirm:
-        request.session["error"] = "New passwords do not match"
-        return templates.TemplateResponse(
-            request=request,
-            name="users/error_message.html",
-            context={"error": request.session["error"]},
-        )
-    new_password_hash = hash_password(new_password)
-    update = await db_ops.update_one(
-        table=Users,
-        new_values={"password": new_password_hash},
-        record_id=user_identifier,
-    )
-    logger.debug(f"Password update: {update}")
-    request.session["message"] = "Password updated successfully"
-    return templates.TemplateResponse(
-        request=request,
-        name="users/message.html",
-        context={"message": request.session["message"]},
-    )
+# @router.post("/password-change")
+# async def post_password_change_form(
+#     request: Request,
+#     user_info: dict = Depends(check_login),
+# ):
+#     form = await request.form()
+#     old_password = form["old_password"]
+#     new_password = form["new_password"]
+#     new_password_confirm = form["new_password_confirm"]
+#     user_identifier = request.session.get("user_identifier", None)
+#     user = await db_ops.read_one_record(
+#         Select(Users).where(Users.pkid == user_identifier)
+#     )
+#     if not verify_password(hash=user.password, password=old_password):
+#         request.session["error"] = "Old password is incorrect"
+#         return templates.TemplateResponse(
+#             request=request,
+#             name="users/error_message.html",
+#             context={"error": request.session["error"]},
+#         )
+#     if new_password != new_password_confirm:
+#         request.session["error"] = "New passwords do not match"
+#         return templates.TemplateResponse(
+#             request=request,
+#             name="users/error_message.html",
+#             context={"error": request.session["error"]},
+#         )
+#     new_password_hash = hash_password(new_password)
+#     update = await db_ops.update_one(
+#         table=Users,
+#         new_values={"password": new_password_hash},
+#         record_id=user_identifier,
+#     )
+#     logger.debug(f"Password update: {update}")
+#     request.session["message"] = "Password updated successfully"
+#     return templates.TemplateResponse(
+#         request=request,
+#         name="users/message.html",
+#         context={"message": request.session["message"]},
+#     )
 
 
 # get user information endpoint
@@ -184,15 +218,16 @@ async def get_user_info(
     notes_query = Select(Notes).where(Notes.user_id == user_identifier)
     notes_count = await db_ops.count_query(query=notes_query)
 
-    job_app_query = Select(JobApplications).where(
-        JobApplications.user_id == user_identifier
-    )
-    job_app_count = await db_ops.count_query(query=job_app_query)
+    # job_app_query = Select(JobApplications).where(
+    #     JobApplications.user_id == user_identifier
+    # )
+    # job_app_count = await db_ops.count_query(query=job_app_query)
 
-    context = {"page":"user",
+    context = {
+        "page": "user",
         "user": user,
         "notes_count": notes_count,
-        "job_app_count": job_app_count,
+        # "job_app_count": job_app_count,
         "message": message,
     }
     return templates.TemplateResponse(
@@ -200,10 +235,9 @@ async def get_user_info(
     )
 
 
-
 github_sso = GithubSSO(
     settings.github_client_id,
-    settings.github_client_secret,
+    settings.github_client_secret.get_secret_value(),
     f"{settings.github_call_back_domain}/users/callback",
 )
 
@@ -216,7 +250,6 @@ async def github_login():
 
 @router.get("/callback")
 async def github_callback(request: Request):
-
     with github_sso:
         user = await github_sso.verify_and_process(request)
 
@@ -228,7 +261,7 @@ async def github_callback(request: Request):
         is_admin = False
         is_active = False
         if settings.admin_user.get_secret_value().lower() == user.display_name.lower():
-            is_admin= True
+            is_admin = True
             is_active = True
             add_roles = {}
             for role in RoleEnum:
@@ -258,7 +291,7 @@ async def github_callback(request: Request):
     request.session["user_identifier"] = user_stored["pkid"]
     request.session["roles"] = user_stored["roles"]
     request.session["is_active"] = user_stored["is_active"]
-    if user_stored['is_admin'] is True:
+    if user_stored["is_admin"] is True:
         request.session["is_admin"] = True
     request.session["timezone"] = user_stored["my_timezone"]
 
@@ -281,47 +314,13 @@ async def github_callback(request: Request):
     logger.debug(f"Login update: {login_update}")
 
     if user_stored["first_name"] is None or user_stored["last_name"] is None:
-        response = RedirectResponse(url="/users/edit-user", status_code=status.HTTP_302_FOUND)
+        response = RedirectResponse(
+            url="/users/edit-user", status_code=status.HTTP_302_FOUND
+        )
     else:
-    # response.set_cookie(SESSION_COOKIE_NAME, access_token)
+        # response.set_cookie(SESSION_COOKIE_NAME, access_token)
         response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
     return response
-
-
-# async def github_callback(request: Request, db: Session = Depends(get_db)):
-#     """Process login response from GitHub and return user info"""
-
-#     try:
-#         with github_sso:
-#             user = await github_sso.verify_and_process(request)
-#         username = user.email if user.email else user.display_name
-#         user_stored = db_crud.get_user(db, username, user.provider)
-#         if not user_stored:
-#             user_to_add = UserSignUp(
-#                 username=username,
-#                 fullname=user.display_name
-#             )
-#             user_stored = db_crud.add_user(
-#                 db,
-#                 user_to_add,
-#                 provider=user.provider
-#             )
-#         access_token = create_access_token(
-#             username=user_stored.username,
-#             provider=user.provider
-#         )
-#         response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
-#         response.set_cookie(SESSION_COOKIE_NAME, access_token)
-#         return response
-#     except db_crud.DuplicateError as e:
-#         raise HTTPException(status_code=403, detail=f"{e}")
-#     except ValueError as e:
-#         raise HTTPException(status_code=400, detail=f"{e}")
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=500,
-#             detail=f"An unexpected error occurred. Report this message to support: {e}"
-#         )
 
 
 # deactivate user endpoint

@@ -1,5 +1,31 @@
 # -*- coding: utf-8 -*-
+"""
+This module, `pages.py`, is part of a web application that serves various web pages and API endpoints. It uses FastAPI to define routes for serving HTML content and handling API requests. The module includes functionality for redirecting to the OpenAPI documentation, serving an index page, and potentially more pages as defined further in the module. It leverages external libraries such as `httpx` for asynchronous HTTP requests and `loguru` for logging. Database interactions are handled through SQLAlchemy, with specific operations defined in the `db_ops` module.
 
+Author:
+    Mike Ryan
+
+License:
+    MIT License
+
+Dependencies:
+    - fastapi: For creating API routes and handling HTTP requests.
+    - httpx: For making asynchronous HTTP requests.
+    - loguru: For logging.
+    - sqlalchemy: For database interactions.
+    - db_tables: Contains the SQLAlchemy table definitions used in the application.
+    - functions: Includes utility functions such as `update_timezone_for_dates` and `get_public_debt`.
+    - resources: Provides access to common resources like `db_ops` for database operations and `templates` for rendering HTML content.
+    - settings: Contains application settings.
+
+Routes:
+    - GET "/": Redirects to the OpenAPI documentation.
+    - GET "/index": Serves the index page of the web application.
+    - GET "/about": Serves the about page of the web application.
+
+Usage:
+    This module is designed to be integrated into a FastAPI application, providing a router for serving web pages and related API endpoints. It can be mounted on the main application to handle requests to the root and index endpoints, among others defined within the module.
+"""
 
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
@@ -7,7 +33,7 @@ from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy import Select
 
-from ..db_tables import InterestingThings, Posts
+from ..db_tables import Posts, WebLinks
 from ..functions.date_functions import update_timezone_for_dates
 from ..functions.interesting_api_calls import get_public_debt
 from ..resources import db_ops, templates
@@ -34,19 +60,19 @@ async def root():
 async def index(request: Request):
     try:
         cool_stuff = await db_ops.read_query(
-            Select(InterestingThings)
+            Select(WebLinks)
             .limit(8)
-            .order_by(InterestingThings.date_created.desc())
+            .order_by(WebLinks.date_created.desc())
         )
         cool_stuff = [thing.to_dict() for thing in cool_stuff]
         cool_stuff = await update_timezone_for_dates(
             data=cool_stuff, user_timezone=settings.default_timezone
         )
     except Exception as e:
-        error:str = f"Error getting Interesting things: {e}"
+        error: str = f"Error getting Interesting things: {e}"
         logger.error(error)
         cool_stuff = []
-    
+
     try:
         posts = await db_ops.read_query(
             Select(Posts).limit(5).order_by(Posts.date_created.desc())
@@ -56,11 +82,15 @@ async def index(request: Request):
             data=posts, user_timezone=settings.default_timezone
         )
     except Exception as e:
-        error:str = f"Error getting Posts: {e}"
+        error: str = f"Error getting Posts: {e}"
         logger.error(error)
         posts = []
 
-    context = {"page":"pages","data": {"my_stuff": {}, "cool_stuff": cool_stuff}, "posts": posts}
+    context = {
+        "page": "pages",
+        "data": {"my_stuff": {}, "cool_stuff": cool_stuff},
+        "posts": posts,
+    }
     return templates.TemplateResponse(
         request=request, name="index2.html", context=context
     )
@@ -96,7 +126,7 @@ async def about_page(request: Request):
     template: str = "about.html"
 
     # Define the context variables to pass to the template.
-    context = {"page":"pages","data": data}
+    context = {"page": "pages", "data": data}
 
     # Log some information about the request.
     logger.info(f"page accessed: /{template}")
@@ -117,7 +147,9 @@ async def about_page(request: Request):
 
 @router.get("/data")
 async def get_data_page(request: Request):
-    context = {"page":"pages",}
+    context = {
+        "page": "pages",
+    }
     return templates.TemplateResponse(
         request=request, name="interesting-data.html", context=context
     )
@@ -148,7 +180,7 @@ async def public_debt(request: Request):
             last_year = year_hold
             d["debt_growth"] = 0
 
-    context = {"page":"pages","debt": debt_list}
+    context = {"page": "pages", "debt": debt_list}
 
     return templates.TemplateResponse(
         request=request, name="api/us-debt.html", context=context

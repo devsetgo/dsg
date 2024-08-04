@@ -24,7 +24,7 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h3 class="card-title mb-0">{{post.title|title}}</h3>
                         <div class="d-flex align-items-center ml-auto">
-                            {% if request.session.roles and request.session.roles.interesting_things %}
+                            {% if request.session.roles and request.session.roles.web_links %}
                             <a href="/posts/edit/{{ post.pkid }}" class="btn btn-warning ml-2" title="Edit"><i
                                     class="fa-solid fa-pen-to-square" style="color:black;"></i></a>
                             <a href="/posts/delete/{{ post.pkid }}" class="btn btn-danger ml-2" title="Delete"><i

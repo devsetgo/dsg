@@ -16,6 +16,10 @@ The module uses the `argon2` library to perform the hashing. The `PasswordHasher
 - `encoding="utf-8"`: The encoding to use.
 
 If run as a script, the module will hash a test password, verify it against the hash, and check if the hash needs to be rehashed.
+
+Author:
+    Mike Ryan
+    MIT Licensed
 """
 
 from argon2 import PasswordHasher, exceptions

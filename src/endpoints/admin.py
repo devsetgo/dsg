@@ -1,20 +1,57 @@
 # -*- coding: utf-8 -*-
+"""
+This module defines the administrative functionalities for the web application, including the admin dashboard view and user management.
+
+It utilizes FastAPI for routing and depends on various internal modules such as `dsg_lib` for common functions like email validation, `db_tables` for database models, and `functions` for specific operations like password hashing and login checks. The module also uses `loguru` for logging and `sqlalchemy` for database operations.
+
+Author:
+    Mike Ryan
+
+License:
+    MIT License
+
+Dependencies:
+    - FastAPI: For creating API routes.
+    - loguru: For logging.
+    - sqlalchemy: For database operations.
+    - dsg_lib: A custom library for common functions like email validation.
+    - db_tables: Defines the SQLAlchemy database models used in the application.
+    - functions: Contains utility functions for date manipulation, note import, password hashing, and login checks.
+    - resources: Includes database operations and template rendering utilities.
+
+Routes:
+    - GET "/": Displays the admin dashboard. Requires login verification.
+    - GET "/user/{user_id}": Fetches and displays details for a specific user by their ID. Requires login verification.
+    - POST "/user/{update_user_id}": Updates details for a specific user by their ID. Requires login verification.
+    - POST "/user/access/{update_user_id}": Modifies user access roles for a specific user by their ID. Requires admin access.
+    - GET "/failed-login-attempts": Lists all failed login attempts. Useful for monitoring unauthorized access attempts. Requires login verification.
+    - GET "/note-ai-check": Lists notes pending AI review. Allows admins to manually trigger AI checks on notes. Requires login verification.
+    - GET "/note-ai-check/{user_id}": Triggers AI processing for all notes associated with a specific user. Designed to facilitate batch processing of user notes. Requires login verification.
+"""
 import secrets
+from collections import defaultdict
 from datetime import datetime
 
 from dsg_lib.common_functions.email_validation import validate_email_address
-from fastapi import APIRouter, Depends, HTTPException, Request, Response,BackgroundTasks
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Request,
+    Response,
+)
 from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
-from sqlalchemy import Select
+from sqlalchemy import Select, and_
 
-from ..db_tables import FailedLoginAttempts, JobApplications, Notes, Users
-from ..functions import date_functions
+# , FailedLoginAttempts,JobApplications
+from ..db_tables import Categories, Notes, Posts, Users, WebLinks
+from ..functions import date_functions, note_import
 from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
 from ..functions.models import RoleEnum
 from ..resources import db_ops, templates
-from ..functions import note_import
 
 router = APIRouter()
 
@@ -30,12 +67,10 @@ async def admin_dashboard(
 
     user_list = await get_list_of_users(user_timezone=user_timezone)
 
-    context = {"page":"admin","user_identifier": user_identifier, "users": user_list}
+    context = {"page": "admin", "user_identifier": user_identifier, "users": user_list}
     return templates.TemplateResponse(
         request=request, name="/admin/dashboard.html", context=context
     )
-
-#TODO: create categories maintenance GET and POST
 
 
 async def get_list_of_users(user_timezone: str):
@@ -53,6 +88,144 @@ async def get_list_of_users(user_timezone: str):
                 )
 
     return users
+
+
+@router.get("/categories", response_class=HTMLResponse)
+async def admin_categories(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    user_identifier = user_info["user_identifier"]
+    user_info["timezone"]
+    user_info["is_admin"]
+
+    context = {"page": "admin", "user_identifier": user_identifier}
+    logger.debug(f"categories: {context}")
+    return templates.TemplateResponse(
+        request=request, name="/admin/categories.html", context=context
+    )
+
+
+@router.get("/categories-table", response_class=HTMLResponse)
+async def admin_categories_table(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    user_info["user_identifier"]
+    user_info["timezone"]
+    user_info["is_admin"]
+
+    query = Select(Categories)
+    categories = await db_ops.read_query(query=query)
+    categories = [category.to_dict() for category in categories]
+
+    # Get a count of posts for each category
+    post_query = Select(Posts)
+    post_count = await db_ops.read_query(query=post_query)
+    it_query = Select(WebLinks)
+    it_count = await db_ops.read_query(query=it_query)
+
+    category_count = defaultdict(int)
+
+    for post in post_count:
+        post = post.to_dict()
+        category_count[post['category'].lower()] += 1
+
+    for it in it_count:
+        it = it.to_dict()
+        category_count[it['category'].lower()] += 1
+
+    category_count_list = [{'category': category, 'count': count} for category, count in category_count.items()]
+    logger.debug(category_count_list)
+    context = {"categories": categories, "category_count_list": category_count_list}
+    logger.debug(f"categories-table: {context}")
+    return templates.TemplateResponse(
+        request=request, name="/admin/categories-table.html", context=context
+    )
+
+
+@router.get("/category-edit", response_class=HTMLResponse)
+async def admin_category_edit(
+    request: Request, category_id: str = None, user_info: dict = Depends(check_login)
+):
+
+    context = {"categories": None, "rand": secrets.token_urlsafe(2)}
+    if category_id is not None:
+        query = Select(Categories).where(Categories.pkid == category_id)
+        category = await db_ops.read_one_record(query=query)
+        context["category"] = category.to_dict()
+
+    logger.debug(f"category-edit: {context}")
+    return templates.TemplateResponse(
+        request=request, name="/admin/category-form.html", context=context
+    )
+
+
+@router.post("/category-edit", response_class=HTMLResponse)
+async def add_edit_category(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    user_info["timezone"]
+    form = await request.form()
+    name = form["name"]
+    description = form["description"]
+    is_post = False
+    is_weblink = False
+    is_system = False
+
+    if "is_post" in form and form["is_post"] == "on":
+        is_post = True
+
+    if "is_weblink" in form and form["is_weblink"] == "on":
+        is_weblink = True
+
+    if "is_system" in form and form["is_system"] == "on":
+        is_system = True
+
+    context = {"category_data": None}
+    if "category_id" in form and form["category_id"] != "":
+
+        category_id = form["category_id"]
+        # Fetch the old data
+        old_data = await db_ops.read_one_record(
+            query=Select(Categories).where(Categories.pkid == category_id)
+        )
+        old_data = old_data.to_dict()
+
+        updated_data = {
+            "name": name,
+            "description": description,
+            "is_post": is_post,
+            "is_weblink": is_weblink,
+            "is_system": is_system,
+            "date_updated": datetime.utcnow(),
+        }
+
+        # Update the database
+        data = await db_ops.update_one(
+            table=Categories, record_id=category_id, new_values=updated_data
+        )
+        context["category_data"] = data.to_dict()
+        context["status"] = "updated"
+    else:
+        # Process the form data and save the category
+        category_data = Categories(
+            name=form["name"],
+            description=form["description"],
+            is_post=is_post,
+            is_weblink=is_weblink,
+            is_system=is_system,
+        )
+
+        data = await db_ops.create_one(category_data)
+        context["category_data"] = data.to_dict()
+        context["status"] = "created"
+
+    logger.debug(f"category-edit: {context}")
+    return templates.TemplateResponse(
+        request=request, name="/admin/category-confirm.html", context=context
+    )
 
 
 @router.get("/user/{user_id}", response_class=HTMLResponse)
@@ -83,13 +256,14 @@ async def admin_user(
     notes_query = Select(Notes).where(Notes.user_id == user_id)
     notes_count = await db_ops.count_query(query=notes_query)
 
-    job_app_query = Select(JobApplications).where(JobApplications.user_id == user_id)
-    job_app_count = await db_ops.count_query(query=job_app_query)
+    # job_app_query = Select(JobApplications).where(JobApplications.user_id == user_id)
+    # job_app_count = await db_ops.count_query(query=job_app_query)
 
-    context = {"page":"admin",
+    context = {
+        "page": "admin",
         "user": user,
         "notes_count": notes_count,
-        "job_app_count": job_app_count,
+        # "job_app_count": job_app_count,
         "random_pass": secrets.token_urlsafe(10),
         "roles": [
             role.value for role in sorted(RoleEnum, key=lambda x: x.name)
@@ -222,57 +396,6 @@ async def admin_update_user_access(
         return Response(headers={"HX-Redirect": "/error/403"}, status_code=200)
 
 
-@router.get("/failed-login-attempts", response_class=HTMLResponse)
-async def admin_failed_login_attempts(
-    request: Request,
-    user_info: dict = Depends(check_login),
-):
-    """
-    Handles the GET request for the "/failed-login-attempts" route.
-
-    Args:
-        request (Request): The incoming request.
-        user_info (dict): The user information, obtained from the check_login dependency.
-
-    Returns:
-        TemplateResponse: The response, rendered using a template.
-    """
-
-    # Log the start of the process
-    logger.info("Processing failed login attempts for admin")
-
-    # Extract user identifier from user_info
-    user_identifier = user_info["user_identifier"]
-
-    # These lines don't seem to do anything. Consider removing them or using the values.
-    user_info["timezone"]
-    user_info["is_admin"]
-
-    # Log the user identifier
-    logger.debug(f"User identifier: {user_identifier}")
-
-    # Create a query to select failed login attempts, limited to 1000
-    query = Select(FailedLoginAttempts).limit(1000)
-
-    # Execute the query and get the results
-    failures = await db_ops.read_query(query=query)
-
-    # Convert each failure to a dictionary
-    failures = [fail.to_dict() for fail in failures]
-
-    # Log the number of retrieved failed login attempts
-    logger.debug(f"Retrieved {len(failures)} failed login attempts")
-
-    # Create the context for the template
-    context = {"page":"admin","user_identifier": user_identifier, "failures": failures}
-    # Log the end of the process
-    logger.info("Finished processing failed login attempts for admin")
-    # Render the template and return the response
-    return templates.TemplateResponse(
-        request=request, name="/admin/failed_login_attempts.html", context=context
-    )
-
-
 @router.get("/note-ai-check", response_class=HTMLResponse)
 async def admin_note_ai_check(
     request: Request,
@@ -303,13 +426,14 @@ async def admin_note_ai_check(
     logger.debug(f"User identifier: {user_identifier}")
 
     # Create a query to select notes that need AI check
-    query = Select(Notes).where(Notes.mood == "processing")
+    query = Select(Notes).where(Notes.ai_fix == True)
 
     # Execute the query and get the results
     notes = await db_ops.read_query(query=query)
 
     notes = [note.to_dict() for note in notes]
-    # create a list of User IDs with a count of notes [{user_id: user_id, user_name: user_name, count: count, last_note_date: last_note_date}]  
+
+    # create a list of User IDs with a count of notes [{user_id: user_id, user_name: user_name, count: count, last_note_date: last_note_date}]
     user_note_count = []
     for note in notes:
         user_id = note["user_id"]
@@ -324,12 +448,24 @@ async def admin_note_ai_check(
                 found = True
                 break
         if not found:
-            user_note_count.append({"user_id": user_id, "user_name": None, "count": 1, "last_note_date": note_date})
+            user_note_count.append(
+                {
+                    "user_id": user_id,
+                    "user_name": None,
+                    "count": 1,
+                    "last_note_date": note_date,
+                }
+            )
     # Log the number of retrieved notes
     logger.debug(f"Retrieved {len(notes)} notes for AI check")
 
     # Create the context for the template
-    context = {"page":"admin","user_identifier": user_identifier, "notes": notes, "user_note_count": user_note_count}
+    context = {
+        "page": "admin",
+        "user_identifier": user_identifier,
+        "notes": notes,
+        "user_note_count": user_note_count,
+    }
     # Log the end of the process
     logger.info("Finished processing note AI check for admin")
     # Render the template and return the response
@@ -337,19 +473,25 @@ async def admin_note_ai_check(
         request=request, name="/admin/note_ai_check.html", context=context
     )
 
+
 @router.get("/note-ai-check/{user_id}")
-async def admin_note_ai_check_user(user_id:str, background_tasks: BackgroundTasks,user_info: dict = Depends(check_login)):
+async def admin_note_ai_check_user(
+    user_id: str,
+    background_tasks: BackgroundTasks,
+    user_info: dict = Depends(check_login),
+):
     # Create a query to select notes that need AI check
-    query = Select(Notes).where(Notes.mood == "processing")
+    query = Select(Notes).where(and_(Notes.user_id == user_id, Notes.ai_fix == True))
 
     # Execute the query and get the results
     notes = await db_ops.read_query(query=query)
     notes = [note.to_dict() for note in notes]
-    
-    list_of_ids:list = []
+    list_of_ids: list = []
     for note in notes:
-        list_of_ids.append(note['pkid'])
+        list_of_ids.append(note["pkid"])
 
     # print(list_of_ids)
-    background_tasks.add_task(note_import.process_ai, user_identifier=user_id,list_of_ids=list_of_ids)
+    background_tasks.add_task(
+        note_import.process_ai, user_identifier=user_id, list_of_ids=list_of_ids
+    )
     return RedirectResponse(url="/admin", status_code=302)

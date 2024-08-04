@@ -1,16 +1,23 @@
 # -*- coding: utf-8 -*-
 """
-app_middleware.py
+This module, `app_middleware.py`, configures middleware for a FastAPI application to enhance its functionality and performance. It integrates GZipMiddleware for compressing HTTP responses, SessionMiddleware for session management, and optionally, AccessLoggerMiddleware for logging HTTP requests when the application is deployed with Uvicorn. The middleware settings are dynamically loaded from the application's settings module, allowing for easy configuration adjustments.
 
-This module contains the middleware configuration for the FastAPI application.
+Author:
+    Mike Ryan
 
-It includes the addition of GZipMiddleware for response compression, SessionMiddleware for managing user sessions,
-and a conditional AccessLoggerMiddleware for logging user access when the application is run with uvicorn.
+License:
+    MIT License
 
-The settings for the middleware components are fetched from the settings module.
+Dependencies:
+    - fastapi: For the FastAPI application framework.
+    - loguru: For logging.
+    - starlette: Provides the middleware components used in FastAPI applications.
 
 Functions:
-    add_middleware(app): Adds middleware to the provided FastAPI application instance.
+    - add_middleware(app): Configures and adds middleware to a FastAPI application instance. It sets up response compression, session management, and request logging based on the application's runtime environment and settings.
+
+Usage:
+    This module is designed to be imported and utilized within a FastAPI application to apply middleware configurations. By calling `add_middleware(app)`, an application can enhance its performance and functionality with response compression, session management, and conditional request logging.
 """
 import sys
 import time
@@ -51,7 +58,7 @@ def add_middleware(app: FastAPI) -> NoReturn:
     app.add_middleware(
         SessionMiddleware,
         secret_key=settings.session_secret_key,
-        same_site="Strict",  # can be Lax or None, but CSRF will be needed
+        same_site=settings.same_site,  # can be Lax or None, but CSRF will be needed for None
         https_only=settings.https_only,
         max_age=settings.max_age,
     )
@@ -78,7 +85,6 @@ class AccessLoggerMiddleware(BaseHTTPMiddleware):
         self.user_identifier = user_identifier
 
     async def dispatch(self, request, call_next):
-
         # Record the start time
         start_time = time.time()
         try:
