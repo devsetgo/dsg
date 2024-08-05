@@ -35,7 +35,8 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    event,LargeBinary
+    event,
+    LargeBinary,
 )
 from sqlalchemy.orm import class_mapper, relationship
 

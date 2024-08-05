@@ -165,7 +165,9 @@ async def get_libraries_with_most_vulnerabilities():
 async def number_of_vulnerabilities():
     logger.info("Starting to count vulnerabilities.")
     v_data = await db_ops.read_query(query=Select(Library))
-
+    logger.critical(f"Counted {type(v_data)} libraries.{v_data}")
+    if isinstance(v_data, dict):
+        return 0
     v_set = set()
     for v in v_data:
         if len(v.vulnerability) > 1:
@@ -201,24 +203,28 @@ async def average_number_of_libraries_per_requirement():
     # Query the Library table for entries
     # This query will fetch the first 100,000 entries from the Library table
     logger.debug("Querying the Library table")
-    lx = await db_ops.read_query(query=Select(Library).limit(100000))
+    try:
+        lx = await db_ops.read_query(query=Select(Library).limit(100000))
 
-    # Convert each Library object to a dictionary
-    # This is done to make it easier to access the properties of each Library object
-    logger.debug("Converting Library objects to dictionaries")
-    libraries = [obj.__dict__ for obj in lx]
+        # Convert each Library object to a dictionary
+        # This is done to make it easier to access the properties of each Library object
+        logger.debug("Converting Library objects to dictionaries")
+        libraries = [obj.__dict__ for obj in lx]
 
-    # Group by request_group_id and count the number of libraries in each group
-    # This is done by creating a dictionary where the keys are the request_group_ids and the values are the counts of libraries
-    logger.debug("Grouping libraries by request_group_id")
-    libraries_per_request_group = {}
-    for library in libraries:
-        request_group_id = library["request_group_id"]
-        if request_group_id in libraries_per_request_group:
-            libraries_per_request_group[request_group_id] += 1
-        else:
-            libraries_per_request_group[request_group_id] = 1
+        # Group by request_group_id and count the number of libraries in each group
+        # This is done by creating a dictionary where the keys are the request_group_ids and the values are the counts of libraries
+        logger.debug("Grouping libraries by request_group_id")
+        libraries_per_request_group = {}
+        for library in libraries:
+            request_group_id = library["request_group_id"]
+            if request_group_id in libraries_per_request_group:
+                libraries_per_request_group[request_group_id] += 1
+            else:
+                libraries_per_request_group[request_group_id] = 1
+    except Exception as e:
+        logger.error(f"Error in average_number_of_libraries_per_requirement: {e}")
 
+        libraries_per_request_group = {}
     # Calculate the average number of libraries per request group
     # This is done by dividing the total number of libraries by the number of request groups
     # If there are no request groups, the average is set to 0
