@@ -165,7 +165,7 @@ async def get_libraries_with_most_vulnerabilities():
 async def number_of_vulnerabilities():
     logger.info("Starting to count vulnerabilities.")
     v_data = await db_ops.read_query(query=Select(Library))
-    logger.critical(f"Counted {type(v_data)} libraries.{v_data}")
+    logger.debug(f"Vulnerability Count: {type(v_data)} libraries.{v_data}")
     if isinstance(v_data, dict):
         return 0
     v_set = set()
