@@ -50,3 +50,19 @@ def test_weblinks():
     response = client.get(url)
     assert response.status_code == 200
     assert "<!DOCTYPE html >" in response.text
+
+
+# /pages/about
+def test_about():
+    url = "/pages/about"
+    response = client.get(url)
+    assert response.status_code == 200
+    assert "<!DOCTYPE html >" in response.text
+
+
+# /pages/data
+def test_data():
+    url = "/pages/data"
+    response = client.get(url)
+    assert response.status_code == 200
+    assert "<!DOCTYPE html >" in response.text
