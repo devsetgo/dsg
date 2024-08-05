@@ -60,9 +60,7 @@ async def root():
 async def index(request: Request):
     try:
         cool_stuff = await db_ops.read_query(
-            Select(WebLinks)
-            .limit(8)
-            .order_by(WebLinks.date_created.desc())
+            Select(WebLinks).limit(8).order_by(WebLinks.date_created.desc())
         )
         cool_stuff = [thing.to_dict() for thing in cool_stuff]
         cool_stuff = await update_timezone_for_dates(

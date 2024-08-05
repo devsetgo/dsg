@@ -332,9 +332,7 @@ async def add_categories():
 
     cat: list = ["technology", "news", "sites", "programming", "woodworking", "other"]
     user_name = settings.admin_user.get_secret_value()
-    await db_ops.read_one_record(
-        Select(Users).where(Users.user_name == user_name)
-    )
+    await db_ops.read_one_record(Select(Users).where(Users.user_name == user_name))
 
     for c in cat:
         logger.info(f"adding system category {c}")

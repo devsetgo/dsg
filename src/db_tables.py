@@ -35,7 +35,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    event,
+    event,LargeBinary
 )
 from sqlalchemy.orm import class_mapper, relationship
 
@@ -227,9 +227,9 @@ class Notes(schema_base, async_db.Base):
 
     mood = Column(String(500), unique=False, index=True)
     mood_analysis = Column(String(500), unique=False, index=True)
-    _note = Column(Text, unique=False, index=True, nullable=False)
+    _note = Column(LargeBinary, unique=False, index=True, nullable=False)
+    _summary = Column(LargeBinary, unique=False, index=True)
     tags = Column(JSON)
-    _summary = Column(String(500), unique=False, index=True)
     word_count = Column(Integer)
     character_count = Column(Integer)
     ai_fix = Column(Boolean, default=False)
