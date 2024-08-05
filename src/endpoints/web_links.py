@@ -56,28 +56,31 @@ async def list_of_web_links(
     user_timezone = request.session.get("timezone", None)
     if user_timezone is None:
         user_timezone = "America/New_York"
+    # try:
+    #     query = Select(WebLinks).limit(10).offset(0)
+    #     weblinks = await db_ops.read_query(query=query)
 
-    query = Select(WebLinks).limit(10).offset(0)
-    weblinks = await db_ops.read_query(query=query)
-
-    if isinstance(weblinks, str):
-        logger.error(f"Unexpected result from read_query: {weblinks}")
-        weblinks = []
-    else:
-        weblinks = [link.to_dict() for link in weblinks]
-    # offset date_created and date_updated to user's timezone
-    for link in weblinks:
-        link["date_created"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=link["date_created"],
-            friendly_string=True,
-        )
-        link["date_updated"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=link["date_updated"],
-            friendly_string=True,
-        )
-    context = {"page": "weblinks", "request": request}#, "weblinks": weblinks}
+    #     if isinstance(weblinks, str):
+    #         logger.error(f"Unexpected result from read_query: {weblinks}")
+    #         weblinks = []
+    #     else:
+    #         weblinks = [link.to_dict() for link in weblinks]
+    #     # offset date_created and date_updated to user's timezone
+    #     for link in weblinks:
+    #         link["date_created"] = await date_functions.timezone_update(
+    #             user_timezone=user_timezone,
+    #             date_time=link["date_created"],
+    #             friendly_string=True,
+    #         )
+    #         link["date_updated"] = await date_functions.timezone_update(
+    #             user_timezone=user_timezone,
+    #             date_time=link["date_updated"],
+    #             friendly_string=True,
+    #     )
+    # except Exception as e:
+    #     logger.error(f"Error retrieving weblinks: {e}")
+    #     weblinks = []
+    context = {"page": "weblinks", "request": request}  # , "weblinks": weblinks}
     return templates.TemplateResponse(
         request=request, name="/weblinks/index.html", context=context
     )
@@ -124,11 +127,7 @@ async def read_weblinks_pagination(
     query = Select(WebLinks).where(
         or_(
             WebLinks.name.contains(search_term) if search_term else True,
-            (
-                WebLinks.description.contains(search_term)
-                if search_term
-                else True
-            ),
+            (WebLinks.description.contains(search_term) if search_term else True),
         )
     )
 
@@ -137,16 +136,11 @@ async def read_weblinks_pagination(
         start_date = datetime.strptime(start_date, "%Y-%m-%d")
         end_date = datetime.strptime(end_date, "%Y-%m-%d")
         query = query.where(
-            (WebLinks.date_created >= start_date)
-            & (WebLinks.date_created <= end_date)
+            (WebLinks.date_created >= start_date) & (WebLinks.date_created <= end_date)
         )
     # order and limit the results
     offset = (page - 1) * limit
-    query = (
-        query.order_by(WebLinks.date_created.desc())
-        .limit(limit)
-        .offset(offset)
-    )
+    query = query.order_by(WebLinks.date_created.desc()).limit(limit).offset(offset)
     weblinks = await db_ops.read_query(query=query)
     logger.debug(f"weblinks returned from pagination query {weblinks}")
     if isinstance(weblinks, str):
@@ -187,17 +181,18 @@ async def read_weblinks_pagination(
         else None
     )
     logger.info(f"Found {found} weblinks")
-    context={"page": "weblinks",
-            "weblinks": weblinks,
-            "found": found,
-            "weblinks_count": weblinks_count,
-            "total_pages": total_pages,
-            "start_count": offset + 1,
-            "current_count": offset + current_count,
-            "current_page": page,
-            "prev_page_url": prev_page_url,
-            "next_page_url": next_page_url,
-        }
+    context = {
+        "page": "weblinks",
+        "weblinks": weblinks,
+        "found": found,
+        "weblinks_count": weblinks_count,
+        "total_pages": total_pages,
+        "start_count": offset + 1,
+        "current_count": offset + current_count,
+        "current_page": page,
+        "prev_page_url": prev_page_url,
+        "next_page_url": next_page_url,
+    }
     return templates.TemplateResponse(
         request=request,
         name="/weblinks/pagination.html",
@@ -210,7 +205,7 @@ async def new_link(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="/weblinks/new.html",
-        context={"page": "weblinks","request": request},
+        context={"page": "weblinks", "request": request},
     )
 
 
@@ -247,5 +242,3 @@ async def create_link(
     logger.info(f"Created weblinks with ID: {data.pkid}")
 
     return RedirectResponse(url=f"/weblink/view/{data.pkid}", status_code=302)
-
-

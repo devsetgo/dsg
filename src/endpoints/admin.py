@@ -129,13 +129,16 @@ async def admin_categories_table(
 
     for post in post_count:
         post = post.to_dict()
-        category_count[post['category'].lower()] += 1
+        category_count[post["category"].lower()] += 1
 
     for it in it_count:
         it = it.to_dict()
-        category_count[it['category'].lower()] += 1
+        category_count[it["category"].lower()] += 1
 
-    category_count_list = [{'category': category, 'count': count} for category, count in category_count.items()]
+    category_count_list = [
+        {"category": category, "count": count}
+        for category, count in category_count.items()
+    ]
     logger.debug(category_count_list)
     context = {"categories": categories, "category_count_list": category_count_list}
     logger.debug(f"categories-table: {context}")
@@ -148,7 +151,6 @@ async def admin_categories_table(
 async def admin_category_edit(
     request: Request, category_id: str = None, user_info: dict = Depends(check_login)
 ):
-
     context = {"categories": None, "rand": secrets.token_urlsafe(2)}
     if category_id is not None:
         query = Select(Categories).where(Categories.pkid == category_id)
@@ -185,7 +187,6 @@ async def add_edit_category(
 
     context = {"category_data": None}
     if "category_id" in form and form["category_id"] != "":
-
         category_id = form["category_id"]
         # Fetch the old data
         old_data = await db_ops.read_one_record(
