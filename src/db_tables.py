@@ -33,10 +33,10 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    LargeBinary,
     String,
     Text,
     event,
-    LargeBinary,
 )
 from sqlalchemy.orm import class_mapper, relationship
 
@@ -361,6 +361,20 @@ class Requirement(schema_base, async_db.Base):
 
     def to_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+
+
+class APIMetrics(schema_base, async_db.Base):
+    __tablename__ = "api_metrics"
+    __tableargs__ = {
+        "comment": "Stores API metrics data including request and response data"
+    }
+    metric_data = Column(JSON)
+    api_name = Column(String, index=True)
+
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 
 # class JobApplications(schema_base, async_db.Base):
