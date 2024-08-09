@@ -13,4 +13,4 @@ pre-commit==3.8.0 #  From 3.7.1 |   Vulnerabilities: None
 pytest==8.3.2 #   Vulnerabilities: None
 pytest-cov==5.0.0 #   Vulnerabilities: None
 ruff==0.5.6 #  From 0.5.5 |   Vulnerabilities: None
-
+pyright

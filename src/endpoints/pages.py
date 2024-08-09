@@ -153,21 +153,14 @@ async def get_data_page(request: Request):
     )
 
 
+
 @router.get("/public-debt")
 async def public_debt(request: Request):
     debt_list = await get_public_debt()
-
     last_year = None
+
     for d in debt_list:
         year_hold = d["tot_pub_debt_out_amt"]
-
-        # if d["debt_held_public_amt"] != 'null':
-        #     d["debt_held_public_amt"] = "{:,.2f}".format(float(d["debt_held_public_amt"]))
-
-        # if d["intragov_hold_amt"] != 'null':
-        #     d["intragov_hold_amt"] = "{:,.2f}".format(float(d["intragov_hold_amt"]))
-
-        # d["tot_pub_debt_out_amt"] = "{:,.2f}".format(float(d["tot_pub_debt_out_amt"]))
 
         if last_year is not None:
             d["debt_growth"] = round(

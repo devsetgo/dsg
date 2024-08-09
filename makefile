@@ -58,6 +58,9 @@ cleanup: autoflake ruff isort  # Run isort, ruff, and autoflake
 compile:  # Compile http_request.c into a shared library
 	gcc -shared -o http_request.so http_request.c -lcurl -fPIC
 
+docker-login:  # Login to docker hub
+	docker login
+
 docker-beta-run:  # Run docker container
 	docker run -p 5000:5000 dsg:beta-$(TIMESTAMP)
 
@@ -93,8 +96,10 @@ run-dev:  # Run the FastAPI application in development mode with hot-reloading
 
 run-local:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.local .env
+	@echo "Do you want to delete the SQLite database at /workspaces/dsg/sqlite_db/dsg_local.db? (y/N): " && read ans && [ "$$ans" = "y" ] && rm -f /workspaces/dsg/sqlite_db/dsg_local.db || echo "Database not deleted."
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
 
+	
 run-plocal:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.plocal .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}

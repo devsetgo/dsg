@@ -5,6 +5,12 @@
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"runArgs": [
+		"--init",
+		"--privileged",
+		"-v",
+		"/var/run/docker.sock:/var/run/docker.sock"
+	],
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {
 			"nodeGypDependencies": true,
@@ -14,22 +20,14 @@
 			"version": "latest"
 		}
 	},
-
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// This can be used to network with other containers or the host.
-	"forwardPorts": [5000, 5432, 32080],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip3 install --upgrade pip setuptools wheel && pip3 install -r requirements.txt", //--use-deprecated=legacy-resolver",
-	"postStartCommand": "pip install -r requirements/dev.txt", // Add this line to install requirements.txt after container start
-	// Configure tool-specific properties.
+	"forwardPorts": [
+		5000,
+		5432,
+		32080
+	],
+	"postCreateCommand": "pip3 install --upgrade pip setuptools wheel && pip3 install -r requirements/dev.txt && sudo chmod 666 /var/run/docker.sock",
 	"customizations": {
-		// Configure properties specific to VS Code.
 		"vscode": {
-			// Set *default* container specific settings.json values on container create.
 			"settings": {
 				"python.defaultInterpreterPath": "/usr/local/bin/python",
 				"python.formatting.autopep8Path": "/usr/local/py-utils/bin/autopep8",
@@ -37,7 +35,6 @@
 				"python.formatting.yapfPath": "/usr/local/py-utils/bin/yapf",
 				"python.testing.pytestPath": "/usr/local/py-utils/bin/pytest"
 			},
-			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
 				"GitHub.copilot",
 				"GitHub.copilot-chat",
@@ -62,6 +59,7 @@
 				"ms-python.isort",
 				"ms-python.pylint",
 				"ms-python.python",
+				"ms-azuretools.vscode-docker",
 				"ms-toolsai.jupyter",
 				"ms-toolsai.jupyter-keymap",
 				"ms-vscode.makefile-tools",
@@ -84,8 +82,7 @@
 				"ms-python.black-formatter"
 			]
 		}
-	},
-
+	}
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	"remoteUser": "vscode"
+	// "remoteUser": "vscode"
 }
