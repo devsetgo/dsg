@@ -89,6 +89,9 @@ isort:  # Sort imports using isort
 	isort $(SERVICE_PATH)
 	isort $(TESTS_PATH)
 
+pyright:  # Run pyright
+	pyright
+
 run-dev:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.dev .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
