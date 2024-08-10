@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This module contains functions to interact with various public APIs and 
+This module contains functions to interact with various public APIs and
 perform operations related to API metrics.
 
 Functions:
@@ -21,14 +21,14 @@ Author:
     Mike Ryan
     MIT Licensed
 """
-from typing import List, Dict, Optional
 import calendar
 import datetime
 import time
+from typing import Dict, List, Optional
 
 from httpx import AsyncClient
 from loguru import logger
-from sqlalchemy import Select,select
+from sqlalchemy import select
 from unsync import unsync
 
 from ..db_tables import APIMetrics
@@ -43,7 +43,7 @@ async def get_public_debt() -> Optional[List[Dict[str, str]]]:
 
     This function checks if there are existing metrics for the "debt_to_penny" API.
     If no existing metrics are found, it generates a list of dates for the second
-    Wednesday of January from 1995 to 2024. It also calculates the date of the 
+    Wednesday of January from 1995 to 2024. It also calculates the date of the
     most recent Wednesday and makes API calls for each date to fetch public debt data.
     The fetched data is then saved to the database.
 
@@ -97,7 +97,7 @@ async def get_public_debt() -> Optional[List[Dict[str, str]]]:
     else:
         data = existing["metric_data"]
         logger.debug(f"Data retrieved from database: {data}")
-    
+
     return data
 
 
@@ -119,10 +119,10 @@ async def debt_api_call(debt_date: str) -> Optional[Dict[str, str]]:
         or None if no data is available or an error occurs.
     """
     url: str = f"https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny?filter=record_date:eq:{debt_date}"
-    
+
     try:
         # Make an asynchronous HTTP GET request
-        response: httpx.Response = await client.get(url)
+        response = await client.get(url)
         resp: Dict = response.json()
         logger.debug(f"Debt API call response: {resp} for date {debt_date}")
 
