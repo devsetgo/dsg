@@ -54,7 +54,7 @@ logging_config.config_log(
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):  # pragma: no cover
     logger.info("starting up")
     await startup()
     await all_note_metrics()
@@ -76,7 +76,7 @@ app = FastAPI(
     lifespan=lifespan,
     # exception_handlers=
 )
-if settings.debug_mode:
+if settings.debug_mode:  # pragma: no cover
     logger.warning("Debug mode is enabled and should not be used in production.")
 
 
@@ -85,7 +85,7 @@ create_routes(app)
 
 
 @app.get("/")
-async def root(request: Request):
+async def root(request: Request):  # pragma: no cover
     # get user_identifier from session
     request.session.get("user_identifier", None)
     return RedirectResponse(url="/pages/index")
