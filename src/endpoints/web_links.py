@@ -211,16 +211,18 @@ async def create_link(
     summary = await ai.get_url_summary(url=url, sentence_length=20)
     title = await ai.get_url_title(url=url)
     logger.debug(f"Received summary from AI: {summary}")
+
     # Create the post
     link = WebLinks(
-        title=title,
-        summary=summary,
+        title=title,        summary=summary['summary'],
         url=url,
         user_id=user_identifier,
         category=category,
     )
+
     data = await db_ops.create_one(link)
     if isinstance(data, dict):
+
         logger.error(f"Error creating link: {data}")
         return RedirectResponse(url="/error/418", status_code=302)
 
@@ -307,7 +309,7 @@ async def edit_weblink(
     logger.debug(f"Received summary from AI: {summary}")
     weblink_update = {
         "title": title,
-        "summary": summary,
+        "summary": summary['summary'],
     }
 
     data = await db_ops.update_one(table=WebLinks, record_id=pkid, new_values=weblink_update)

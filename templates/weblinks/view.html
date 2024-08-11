@@ -109,7 +109,7 @@
                         <h3 class="card-title mb-0">{{ weblink.title | title }}</h3>
                         <div class="d-flex align-items-center ml-auto">
                             {% if request.session.is_admin is true %}
-                            <a href="/weblinks/update/{{weblink.pkid}}" class="btn btn-success ml-2" title="Send to AI Fix">
+                            <a href="/weblinks/update/{{weblink.pkid}}" class="btn btn-success ml-2" title="Send to AI Fix" hx-get="/weblinks/update/{{weblink.pkid}}" hx-indicator=".htmx-indicator">
                                 <i class="fa-solid fa-robot" style="color:{{ 'red' if weblink.ai_fix else 'black' }};"></i>
                             </a>
                             {% endif %}
@@ -122,7 +122,7 @@
                                     <a class="nav-link active" id="details-tab" data-toggle="tab" href="#details" role="tab" aria-controls="details" aria-selected="true">Details</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="false">Info</a>
+                                    <a class="nav-link" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="false">Website Image</a>
                                 </li>
                             </ul>
                             <div class="tab-content">
