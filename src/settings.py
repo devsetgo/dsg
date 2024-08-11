@@ -171,7 +171,7 @@ class Settings(BaseSettings):
 def get_settings():
     # Function to get an instance of the Settings class. The results are cached
     # to improve performance.
-    logger.debug(f"Settings: {Settings().dict()}")
+    logger.debug(f"Settings: {Settings().model_dump()}")
     return Settings()
 
 
