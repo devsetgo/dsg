@@ -348,22 +348,22 @@ async def analyze_post(content: str, temperature: float = temperature) -> dict:
 
 async def get_url_summary(
     url: str, temperature: float = temperature, sentence_length: int = 2
-) -> dict:
+) -> Dict[str, str]:
     """
-    Gets a summary of the given url.
+    Gets a summary of the given URL using the OpenAI API.
 
     Args:
-        url (str): The url to summarize.
-        temperature (float, optional): The temperature to use for the OpenAI API. Defaults to temperature.
-        sentence_length (int, optional): The length of the summary in sentences. Defaults to 1.
+        url (str): The URL to summarize.
+        temperature (float, optional): The temperature setting for the OpenAI API. Defaults to the value of `temperature`.
+        sentence_length (int, optional): The length of the summary in sentences. Defaults to 2.
 
     Returns:
-        dict: A dictionary containing the summary.
+        Dict[str, str]: A dictionary containing the summary.
     """
     logger.info("Starting get_url_summary function")
 
     # Create the prompt for the OpenAI API
-    prompt = f"Please summarize the url and provide {sentence_length} concise sentence in length as a summary for the URL"
+    prompt = f"Please summarize the URL and provide {sentence_length} concise sentence(s) in length as a summary for the URL"
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
@@ -383,20 +383,30 @@ async def get_url_summary(
     logger.debug(f"summary content: {response_content}")
 
     # Store the summary in a dictionary
-    response_dict = response_content
+    response_dict = {"summary": response_content}
     logger.info("Finished get_url_summary function")
 
     return response_dict
 
 
 async def get_url_title(
-    url: str, temperature: float = temperature, sentence_length: int = 1
-) -> dict:
+    url: str, temperature: float = 0.7, sentence_length: int = 1
+) -> str:
+    """
+    Generates a new title from the website's full title HTML tag using the OpenAI API.
 
+    Args:
+        url (str): The URL of the website to generate the title from.
+        temperature (float, optional): The temperature setting for the OpenAI API. Defaults to 0.7.
+        sentence_length (int, optional): The length of the sentence to generate. Defaults to 1.
+
+    Returns:
+        str: The generated title after removing quotation marks.
+    """
     logger.info("Starting get_url_summary function")
 
     # Create the prompt for the OpenAI API
-    prompt = f"Get the exact title from the website url and output it without any additional information."# and shorten {sentence_length} sentence if longer than 100 character."
+    prompt = "Create a new title from the websites full title html tag and format as 'Full Title from Website Name'"
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
@@ -418,5 +428,17 @@ async def get_url_title(
     # Store the summary in a dictionary
     response_dict = response_content
     logger.info("Finished get_url_title function")
+    text = strip_quotation_marks(response_dict)
+    return text
 
-    return response_dict
+def strip_quotation_marks(text: str) -> str:
+    """
+    Removes various types of quotation marks from the given text.
+
+    Args:
+        text (str): The input string from which quotation marks will be removed.
+
+    Returns:
+        str: The input string with all quotation marks removed.
+    """
+    return text.replace('"', '').replace("'", "").replace("“", "").replace("”", "").replace("‘", "").replace("’", "")

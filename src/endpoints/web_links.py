@@ -28,16 +28,16 @@ API Endpoints:
 Usage:
     This module is designed to be integrated into a FastAPI application, providing a backend API for listing weblinks. It can be used in web applications that require content curation and discovery features, with the ability to filter and paginate through large sets of data.
 """
-from datetime import datetime
 from base64 import b64encode
+from datetime import datetime
 
-from fastapi import APIRouter, Depends, Query, Request, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select, asc, func, or_
-from ..functions import link_preview
+
 from ..db_tables import Categories, WebLinks
-from ..functions import ai, date_functions
+from ..functions import ai, date_functions, link_preview
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
 
@@ -57,7 +57,10 @@ async def list_of_web_links(
     if user_timezone is None:
         user_timezone = "America/New_York"
 
-    context = {"page": "weblinks", "request": request}
+
+    weblinks_metrics = await link_preview.get_weblink_metrics()
+    print(weblinks_metrics)
+    context = {"page": "weblinks", "weblinks_metrics": weblinks_metrics}
     return templates.TemplateResponse(
         request=request, name="/weblinks/index.html", context=context
     )
@@ -292,10 +295,10 @@ async def edit_weblink(
     #     return RedirectResponse(url="/error/418", status_code=302)
     # else:
     data = data.to_dict()
-    
+
     url = data["url"]
-    
-    
+
+
     logger.debug(f"Editing content for URL: {url}")
 
     # Get summary from OpenAI
@@ -306,9 +309,9 @@ async def edit_weblink(
         "title": title,
         "summary": summary,
     }
-    
+
     data = await db_ops.update_one(table=WebLinks, record_id=pkid, new_values=weblink_update)
-    
+
     if isinstance(data, dict):
         logger.error(f"Error creating link: {data}")
         return RedirectResponse(url="/error/418", status_code=302)
