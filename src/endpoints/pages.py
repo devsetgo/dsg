@@ -153,7 +153,6 @@ async def get_data_page(request: Request):
     )
 
 
-
 @router.get("/public-debt")
 async def public_debt(request: Request):
     debt_list = await get_public_debt()

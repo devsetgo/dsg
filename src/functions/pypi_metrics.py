@@ -170,7 +170,7 @@ async def number_of_vulnerabilities():
         return 0
     v_set = set()
     for v in v_data:
-        
+
         if len(v.vulnerability) > 1:
             for vulnerability in v.vulnerability:
                 for alias in vulnerability["aliases"]:
