@@ -68,8 +68,12 @@ async def get_categories():
         .where(Categories.is_post == True)
         .order_by(asc(Categories.name))
     )
-    cat_list = [cat.to_dict()["name"] for cat in categories]
-    return cat_list
+    try:
+        cat_list = [cat.to_dict()["name"] for cat in categories]
+        return cat_list
+    except Exception as e:
+        logger.error(f"Error getting categories: {e}")
+        return []
 
 
 @router.get("/delete/{post_id}")
@@ -316,25 +320,35 @@ async def read_posts_pagination(
         logger.error(f"Unexpected result from read_query: {posts}")
         posts = []
     else:
-        posts = [post.to_dict() for post in posts]
-    # offset date_created and date_updated to user's timezone
-    for post in posts:
-        post["date_created"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=post["date_created"],
-            friendly_string=True,
-        )
-        post["date_updated"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=post["date_updated"],
-            friendly_string=True,
-        )
+        try:
+            posts = [post.to_dict() for post in posts]
+            # offset date_created and date_updated to user's timezone
+            for post in posts:
+                post["date_created"] = await date_functions.timezone_update(
+                    user_timezone=user_timezone,
+                    date_time=post["date_created"],
+                    friendly_string=True,
+                )
+                post["date_updated"] = await date_functions.timezone_update(
+                    user_timezone=user_timezone,
+                    date_time=post["date_updated"],
+                    friendly_string=True,
+                )
+        except Exception as e:
+            logger.error(f"Error converting posts to dict: {e}")
+            posts = []
+
     found = len(posts)
+
     posts_count = await db_ops.count_query(query=query)
+    if isinstance(posts_count, dict):
+        posts_count = 0
 
     current_count = found
-
-    total_pages = -(-posts_count // limit)  # Ceiling division
+    try:
+        total_pages = -(-posts_count // limit)  # Ceiling division
+    except ZeroDivisionError:
+        total_pages = 0
     # Generate the URLs for the previous and next pages
     prev_page_url = (
         f"/posts/pagination?page={page - 1}&"

@@ -20,6 +20,13 @@ def test_index():
     assert "<!DOCTYPE html >" in response.text
 
 
+def test_category_endpoint():
+    url = "/posts/categories"
+    response = client.get(url)
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
 # /pypi/check
 def test_pypi_check():
     url = "/pypi/check"
@@ -42,6 +49,13 @@ def test_posts():
     response = client.get(url)
     assert response.status_code == 200
     assert "<!DOCTYPE html >" in response.text
+
+
+def test_posts_pagination():
+    url = "/posts/pagination?search_term=test&category=News&start_date=2024-08-12&end_date=2024-08-16"
+    response = client.get(url)
+    assert response.status_code == 200
+    # assert "<!DOCTYPE html >" in response.text
 
 
 # /weblinks/
