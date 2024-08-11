@@ -38,6 +38,7 @@ from pydantic import (  # For validating data
     Field,
     SecretStr,
     root_validator,
+    model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -148,7 +149,8 @@ class Settings(BaseSettings):
     create_demo_notes: bool = False
     create_demo_notes_qty: int = 0
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def parse_database_driver(cls, values):
         db_driver = values.get("db_driver")
         if isinstance(db_driver, str):
