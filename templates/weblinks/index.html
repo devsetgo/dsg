@@ -13,6 +13,8 @@
        <!-- hx onload -->
       <div class="row" hx-get="/weblinks/pagination" hx-trigger="load" hx-target="#links-data"
         hx-indicator=".htmx-indicator">
+        <!-- Search WebLinks Form -->
+         {% include 'weblinks/search-form.html' %} <!-- Includes the search form -->
         <!-- Begin WebLinks Section -->
         <div class="row" id="links-data"></div>
         <!-- End WebLinks Section -->

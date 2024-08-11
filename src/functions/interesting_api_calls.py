@@ -54,7 +54,9 @@ async def get_public_debt() -> Optional[List[Dict[str, str]]]:
     dates_list: List[str] = []
 
     # Check for existing metrics
-    existing: Optional[Dict[str, str]] = await check_for_updated_metrics(api_name="debt_to_penny")
+    existing: Optional[Dict[str, str]] = await check_for_updated_metrics(
+        api_name="debt_to_penny"
+    )
 
     if existing is None:
         # Generate dates for the second Wednesday of January from 1995 to 2024
@@ -72,7 +74,9 @@ async def get_public_debt() -> Optional[List[Dict[str, str]]]:
         # Calculate the date of the most recent Wednesday
         current_date: datetime.datetime = datetime.datetime.now()
         days_to_subtract: int = (current_date.weekday() - 2) % 7 + 7
-        last_wednesday: datetime.datetime = current_date - datetime.timedelta(days=days_to_subtract)
+        last_wednesday: datetime.datetime = current_date - datetime.timedelta(
+            days=days_to_subtract
+        )
         last_wednesday_str: str = last_wednesday.strftime("%Y-%m-%d")
         dates_list.append(last_wednesday_str)
         dates_list.sort()
@@ -83,12 +87,16 @@ async def get_public_debt() -> Optional[List[Dict[str, str]]]:
         debt_list = [task.result() for task in tasks]
 
         # Filter out None values from debt_list before sorting
-        filtered_debt_list: List[Dict[str, str]] = [debt for debt in debt_list if debt is not None]
+        filtered_debt_list: List[Dict[str, str]] = [
+            debt for debt in debt_list if debt is not None
+        ]
 
         logger.info(f"Debt API call time taken: {time.time() - t0:.3f} seconds")
 
         # Sort the data by record_date
-        data: List[Dict[str, str]] = sorted(filtered_debt_list, key=lambda d: d["record_date"])
+        data: List[Dict[str, str]] = sorted(
+            filtered_debt_list, key=lambda d: d["record_date"]
+        )
 
         # Save the data to the database
         api_data: APIMetrics = APIMetrics(api_name="debt_to_penny", metric_data=data)
@@ -118,7 +126,9 @@ async def debt_api_call(debt_date: str) -> Optional[Dict[str, str]]:
         Optional[Dict[str, str]]: A dictionary containing the public debt data for the specified date,
         or None if no data is available or an error occurs.
     """
-    url: str = f"https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny?filter=record_date:eq:{debt_date}"
+    url: str = (
+        f"https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny?filter=record_date:eq:{debt_date}"
+    )
 
     try:
         # Make an asynchronous HTTP GET request

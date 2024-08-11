@@ -387,3 +387,36 @@ async def get_url_summary(
     logger.info("Finished get_url_summary function")
 
     return response_dict
+
+
+async def get_url_title(
+    url: str, temperature: float = temperature, sentence_length: int = 1
+) -> dict:
+
+    logger.info("Starting get_url_summary function")
+
+    # Create the prompt for the OpenAI API
+    prompt = f"Get the exact title from the website url and output it without any additional information."# and shorten {sentence_length} sentence if longer than 100 character."
+
+    # Send the prompt to the OpenAI API
+    chat_completion = await client.chat.completions.create(
+        model="gpt-3.5-turbo-1106",
+        messages=[
+            {
+                "role": "system",
+                "content": prompt,
+            },
+            {"role": "user", "content": url},
+        ],
+        temperature=temperature,
+    )
+
+    # Extract the content from the response
+    response_content = chat_completion.choices[0].message.content
+    logger.debug(f"title content: {response_content}")
+
+    # Store the summary in a dictionary
+    response_dict = response_content
+    logger.info("Finished get_url_title function")
+
+    return response_dict
