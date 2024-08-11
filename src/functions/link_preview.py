@@ -101,7 +101,7 @@ async def capture_full_page_screenshot(url: str, pkid: str) -> bytes:
 
 async def get_weblink_metrics():
     # create a dictionary counting the number of weblinks, number of weblinks per category
-    response = {"weblink_count": 0, "weblink_category_count": {}}
+    response = {"weblink_count": 0, "weblink_category_count": None}
 
     try:
         data = await db_ops.read_query(Select(WebLinks))
