@@ -37,7 +37,6 @@ from pydantic import (  # For validating data
     EmailStr,
     Field,
     SecretStr,
-    root_validator,
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
