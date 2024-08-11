@@ -3,17 +3,16 @@
 
 """
 
-from ..resources import db_ops
-from loguru import logger
-from sqlalchemy import Select, asc, func, or_
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-import io
-from ..db_tables import WebLinks
-
 import httpx
+from loguru import logger
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from sqlalchemy import Select
+from webdriver_manager.chrome import ChromeDriverManager
+
+from ..db_tables import WebLinks
+from ..resources import db_ops
 
 client = httpx.AsyncClient()
 
@@ -30,17 +29,16 @@ async def url_status(url: str) -> bool:
 
     try:
         response = await client.get(url)
-        print(response.status_code)
         if response.status_code < 400:
             return True
         return False
-    except Exception as e:
+    except Exception:
         return True
 
 
 async def save_preview_image(pkid: str, image: bytes):
     try:
-        update = await db_ops.update_one(
+        await db_ops.update_one(
             table=WebLinks,
             new_values={
                 "image_preview_data": image,
@@ -99,3 +97,26 @@ async def capture_full_page_screenshot(url: str, pkid: str) -> bytes:
         await save_preview_image(pkid=pkid, image=screenshot_as_bytes)
     finally:
         driver.quit()
+
+
+async def get_weblink_metrics():
+    # create a dictionary counting the number of weblinks, number of weblinks per category
+    response = {"weblink_count": 0, "weblink_category_count": {}}
+
+    try:
+        data = await db_ops.read_query(Select(WebLinks))
+
+        response["weblink_count"] = len(data)
+
+        # count each category in data and store in response
+        for item in data:
+            if item.category not in response["weblink_category_count"]:
+                response["weblink_category_count"][item.category] = 1
+            else:
+                response["weblink_category_count"][item.category] += 1
+
+        return response
+    except Exception as e:
+        error: str = f"Error getting weblink metrics: {e}"
+        logger.error(error)
+        return response

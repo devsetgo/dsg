@@ -1,32 +1,22 @@
-{% extends "base.html" %} <!-- Extends the base HTML layout -->
-{% block page_title %}| WebLinks{% endblock %} <!-- Sets the page title -->
-{% block page_stylesheet %} <!-- Starts the block for page-specific stylesheets -->
+{% extends "base.html" %}
+{% block page_title %}| WebLinks{% endblock %}
+{% block page_stylesheet %}
+<!-- page stylesheets-->
 <style>
-    /* Style for the modal */
     .modal {
         display: none;
-        /* Hidden by default */
         position: fixed;
-        /* Stay in place */
         z-index: 1;
-        /* Sit on top */
         padding-top: 60px;
-        /* Location of the box */
         left: 0;
         top: 0;
         width: 100%;
-        /* Full width */
         height: 100%;
-        /* Full height */
         overflow: auto;
-        /* Enable scroll if needed */
         background-color: rgb(0, 0, 0);
-        /* Fallback color */
         background-color: rgba(0, 0, 0, 0.9);
-        /* Black w/ opacity */
     }
 
-    /* Modal Content (image) */
     .modal-content {
         margin: auto;
         display: block;
@@ -34,7 +24,6 @@
         max-width: 1000px;
     }
 
-    /* Caption of Modal Image */
     .caption {
         margin: auto;
         display: block;
@@ -46,7 +35,6 @@
         height: 150px;
     }
 
-    /* Add Animation */
     .modal-content,
     .caption {
         -webkit-animation-name: zoom;
@@ -75,7 +63,6 @@
         }
     }
 
-    /* The Close Button */
     .close {
         position: absolute;
         top: 15px;
@@ -93,7 +80,6 @@
         cursor: pointer;
     }
 
-    /* Close Button inside Modal */
     .close-btn {
         display: block;
         margin: 20px auto;
@@ -109,96 +95,125 @@
         background-color: #bbb;
     }
 </style>
-{% endblock %} <!-- Ends the block for page-specific stylesheets -->
-{% block page_breadcrumb %} WebLinks{% endblock %} <!-- Sets the breadcrumb -->
-{% block page_head_title %}WebLinks{% endblock %} <!-- Sets the page head title -->
-{% block body %} <!-- Starts the block for the body of the page -->
-<section> <!-- Starts a section -->
-    <!-- Main content -->
-    <div class="content">
-<div class="container-fluid">
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title">{{ weblink.title | title }}</h5>
-            {% if request.session.is_admin is true %}
-            <a href="/weblinks/update/{{weblink.pkid}}" class="btn btn-success ml-2" title="Send to AI Fix">
-                <i class="fa-solid fa-robot" style="color:{{ 'red' if weblink.ai_fix else 'black' }};"></i>
-            </a>
-            {% endif %}
-        </div>
-        <div class="card-body">
-            <div class="mb-3">
-                <label>WebLink: {{link_status}}</label>
-                <br>
-                <a href="{{ weblink.url }}" target="_blank">{{ weblink.title | title }}</a> 
-                Link: {% if link_status %}
-                <i class="fa-solid fa-check" style="color: green;" title="Link Working"></i>
-                {% else %}
-                <i class="fa-solid fa-times" style="color: red;" title="Link Not Working"></i>
-                {% endif %}
-            </div>
-            <div class="mb-3">
-                <label>Summary:</label>
-                <br>
-                {{ weblink.summary }}
-            </div>
-            <div class="row d-flex justify-content-between mb-3">
-                <div class="col-md-4">
-                    <label>Date Created:</label>
-                    <span>{{ weblink.date_created }}</span>
+{% endblock %}
+{% block page_breadcrumb %} WebLinks{% endblock %}
+{% block page_head_title %}WebLinks{% endblock %}
+{% block body %}
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary" style="margin: 20px;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">{{ weblink.title | title }}</h3>
+                        <div class="d-flex align-items-center ml-auto">
+                            {% if request.session.is_admin is true %}
+                            <a href="/weblinks/update/{{weblink.pkid}}" class="btn btn-success ml-2" title="Send to AI Fix">
+                                <i class="fa-solid fa-robot" style="color:{{ 'red' if weblink.ai_fix else 'black' }};"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="details-tab" data-toggle="tab" href="#details" role="tab" aria-controls="details" aria-selected="true">Details</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="false">Info</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="details" role="tabpanel" aria-labelledby="details-tab">
+                                    <div class="row" style="padding: 20px; margin: 10px;background-color: #e9ecef;">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>URL:</label>
+                                                <p><a href="{{ weblink.url }}" target="_blank">{{ weblink.title | title }}</a></p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Summary:</label>
+                                                <p>{{ weblink.summary }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Link Status:</label>
+                                                <p>{% if link_status %}
+                                                    <i class="fa-solid fa-check" style="color: green;" title="Link Working"></i>
+                                                    {% else %}
+                                                    <i class="fa-solid fa-times" style="color: red;" title="Link Not Working"></i>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Date Created:</label>
+                                                <p>{{ weblink.date_created }}</p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Date Updated:</label>
+                                                <p>{{ weblink.date_updated }}</p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Category:</label>
+                                                <p>{{ weblink.category }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane" id="info" role="tabpanel" aria-labelledby="info-tab">
+                                    <div class="row" style="padding: 20px; margin: 10px;background-color: #e9ecef;">
+                                        <div class="col-md-6">
+                                            <label>Image:</label>
+                                            <br>
+                                            {{page_image|safe}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="row" style="padding: 20px; margin: 10px;background-color: #f8f9fa;">
+                                <!-- Additional content can go here -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label>Date Updated:</label>
-                    <span>{{ weblink.date_updated }}</span>
-                </div>
-                <div class="col-md-4">
-                    <label>Category:</label>
-                    <span>{{ weblink.category }}</span>
-                </div>
-            </div>
-            <div class="mb-3">
-                <label>Image:</label>
-                <br>
-                {{page_image|safe}}
             </div>
         </div>
     </div>
+</section>
+<!-- The Modal -->
+<div id="myModal" class="modal">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <img class="modal-content" id="modalImage">
+    <div class="caption" id="caption"></div>
+    <button class="close-btn" onclick="closeModal()">Close</button>
 </div>
-    </div>
+{% endblock %}
+{% block page_sidebar_content %}
+<div class="p-3">
+    <h5>Title</h5>
+    <p>Sidebar content</p>
+</div>
+{% endblock %}
+{% block page_scripts %}
+<!-- page scripts-->
+<script>
+    function openModal(img) {
+        var modal = document.getElementById("myModal");
+        var modalImg = document.getElementById("modalImage");
+        var captionText = document.getElementById("caption");
+        modal.style.display = "block";
+        modalImg.src = img.src;
+        captionText.innerHTML = img.alt;
+    }
 
-    <!-- The Modal -->
-    <div id="myModal" class="modal">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <img class="modal-content" id="modalImage">
-        <div class="caption" id="caption"></div>
-        <button class="close-btn" onclick="closeModal()">Close</button>
-    </div>
-
-    {% endblock %}
-    {% block page_sidebar_content %}
-    <!-- blank and demo script adds page configuration example -->
-    <!-- <div class="p-3">
-  <h5>Title</h5>
-  <p>Sidebar content</p>
-</div> -->
-    {% endblock %}
-    {% block page_scripts %}
-    <!-- page scripts-->
-    <script>
-        // Open the Modal
-        function openModal(img) {
-            var modal = document.getElementById("myModal");
-            var modalImg = document.getElementById("modalImage");
-            var captionText = document.getElementById("caption");
-            modal.style.display = "block";
-            modalImg.src = img.src;
-            captionText.innerHTML = img.alt;
-        }
-
-        // Close the Modal
-        function closeModal() {
-            var modal = document.getElementById("myModal");
-            modal.style.display = "none";
-        }
-    </script>
-    {% endblock %}
+    function closeModal() {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "none";
+    }
+</script>
+{% endblock %}
