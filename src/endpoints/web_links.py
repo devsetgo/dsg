@@ -59,7 +59,6 @@ async def list_of_web_links(
 
 
     weblinks_metrics = await link_preview.get_weblink_metrics()
-    print(weblinks_metrics)
     context = {"page": "weblinks", "weblinks_metrics": weblinks_metrics}
     return templates.TemplateResponse(
         request=request, name="/weblinks/index.html", context=context

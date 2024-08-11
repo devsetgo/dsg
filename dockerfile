@@ -8,8 +8,8 @@ WORKDIR /app
 LABEL maintainer='Mike Ryan'
 LABEL github_repo='https://github.com/devsetgo/dsg'
 
-# Install gcc and other dependencies
-RUN apt-get update && apt-get -y install gcc wget gnupg unzip
+# Install gcc, curl, and other dependencies
+RUN apt-get update && apt-get -y install gcc wget gnupg unzip curl
 
 # Install Google Chrome
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
@@ -18,9 +18,10 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add
     && apt-get install -y google-chrome-stable
 
 # Install ChromeDriver
-RUN CHROME_DRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE` \
+RUN CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) \
     && wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
-    && unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
+    && unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/ \
+    && rm /tmp/chromedriver.zip
 
 # Copy the current directory contents into the container at /app
 COPY . /app
@@ -28,7 +29,6 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --upgrade pip setuptools
 RUN pip install --no-cache-dir -r requirements/prd.txt
-
 
 # Create a user and set file permissions
 RUN useradd -m -r dsgUser && chown -R dsgUser /app
