@@ -431,6 +431,7 @@ async def get_url_title(
     text = strip_quotation_marks(response_dict)
     return text
 
+
 def strip_quotation_marks(text: str) -> str:
     """
     Removes various types of quotation marks from the given text.
@@ -441,4 +442,11 @@ def strip_quotation_marks(text: str) -> str:
     Returns:
         str: The input string with all quotation marks removed.
     """
-    return text.replace('"', '').replace("'", "").replace("“", "").replace("”", "").replace("‘", "").replace("’", "")
+    return (
+        text.replace('"', "")
+        .replace("'", "")
+        .replace("“", "")
+        .replace("”", "")
+        .replace("‘", "")
+        .replace("’", "")
+    )

@@ -77,8 +77,7 @@ class Users(schema_base, async_db.Base):
     # )  # Password of the user
     provider = Column(String, unique=False)
     # timezone of the user, should default to new york
-    my_timezone = Column(String, unique=False, index=True,
-                         default="America/New_York")
+    my_timezone = Column(String, unique=False, index=True, default="America/New_York")
     # If the user is active
     is_active = Column(Boolean, default=True, nullable=False)
     # If the user is an admin
@@ -89,8 +88,7 @@ class Users(schema_base, async_db.Base):
     # site_access = Column(
     #     Boolean, default=False, nullable=False
     # )  # If the user has access to the site
-    date_last_login = Column(DateTime, unique=False,
-                             index=True)  # Last login date
+    date_last_login = Column(DateTime, unique=False, index=True)  # Last login date
     # failed_login_attempts = Column(Integer, default=0)  # Failed login attempts
     is_locked = Column(
         Boolean, default=False, index=True, nullable=False
@@ -110,8 +108,7 @@ class Users(schema_base, async_db.Base):
 
     # Define the child relationship to the WebLinks class
 
-    web_links = relationship(
-        "WebLinks", back_populates="users", cascade="all,delete")
+    web_links = relationship("WebLinks", back_populates="users", cascade="all,delete")
     posts = relationship("Posts", back_populates="user", cascade="all,delete")
     # categories = relationship(
     #     "Categories", back_populates="users", cascade="all,delete"
@@ -192,15 +189,21 @@ class WebLinks(schema_base, async_db.Base):
         }
 
     def update_ai_fix(self):
-        self.ai_fix = self.image_preview_data is None or self.title is None or self.summary is None
+        self.ai_fix = (
+            self.image_preview_data is None
+            or self.title is None
+            or self.summary is None
+        )
+
 
 # Event listener for before insert
-@event.listens_for(WebLinks, 'before_insert')
+@event.listens_for(WebLinks, "before_insert")
 def before_insert_listener(mapper, connection, target):
     target.update_ai_fix()
 
+
 # Event listener for before update
-@event.listens_for(WebLinks, 'before_update')
+@event.listens_for(WebLinks, "before_update")
 def before_update_listener(mapper, connection, target):
     target.update_ai_fix()
 
@@ -211,8 +214,7 @@ class Categories(schema_base, async_db.Base):
 
     # Define the columns of the table
     name = Column(String(50), unique=False, index=True)  # name of item
-    description = Column(String(500), unique=False,
-                         index=True)  # description of item
+    description = Column(String(500), unique=False, index=True)  # description of item
     # If the category is for posts
     is_post = Column(Boolean, default=False, index=True)
     is_weblink = Column(
@@ -264,8 +266,7 @@ class Notes(schema_base, async_db.Base):
     word_count = Column(Integer)
     character_count = Column(Integer)
     ai_fix = Column(Boolean, default=False)
-    user_id = Column(String, ForeignKey("users.pkid"),
-                     nullable=False, index=True)
+    user_id = Column(String, ForeignKey("users.pkid"), nullable=False, index=True)
     users = relationship("Users", back_populates="notes")
 
     # def __init__(self, note):
