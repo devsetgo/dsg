@@ -16,6 +16,7 @@ from ..resources import db_ops
 
 client = httpx.AsyncClient()
 
+
 async def url_status(url: str) -> bool:
     """
     Checks the status of the given URL.

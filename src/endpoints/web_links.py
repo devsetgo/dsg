@@ -57,7 +57,6 @@ async def list_of_web_links(
     if user_timezone is None:
         user_timezone = "America/New_York"
 
-
     weblinks_metrics = await link_preview.get_weblink_metrics()
     context = {"page": "weblinks", "weblinks_metrics": weblinks_metrics}
     return templates.TemplateResponse(
@@ -100,8 +99,7 @@ async def read_weblinks_pagination(
         user_timezone = "America/New_York"
 
     logger.info(
-        f"Searching for term: {search_term}, start_date: {
-            start_date}, end_date: {end_date}"
+        f"Searching for term: {search_term}, start_date: {start_date}, end_date: {end_date}"
     )
     # find search_term in columns: note, mood, tags, summary
     query = Select(WebLinks).where(
@@ -213,7 +211,8 @@ async def create_link(
 
     # Create the post
     link = WebLinks(
-        title=title,        summary=summary['summary'],
+        title=title,
+        summary=summary["summary"],
         url=url,
         user_id=user_identifier,
         category=category,
@@ -221,7 +220,6 @@ async def create_link(
 
     data = await db_ops.create_one(link)
     if isinstance(data, dict):
-
         logger.error(f"Error creating link: {data}")
         return RedirectResponse(url="/error/418", status_code=302)
 
@@ -299,7 +297,6 @@ async def edit_weblink(
 
     url = data["url"]
 
-
     logger.debug(f"Editing content for URL: {url}")
 
     # Get summary from OpenAI
@@ -308,10 +305,12 @@ async def edit_weblink(
     logger.debug(f"Received summary from AI: {summary}")
     weblink_update = {
         "title": title,
-        "summary": summary['summary'],
+        "summary": summary["summary"],
     }
 
-    data = await db_ops.update_one(table=WebLinks, record_id=pkid, new_values=weblink_update)
+    data = await db_ops.update_one(
+        table=WebLinks, record_id=pkid, new_values=weblink_update
+    )
 
     if isinstance(data, dict):
         logger.error(f"Error creating link: {data}")
