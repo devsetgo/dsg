@@ -4,8 +4,8 @@ async-lru==2.0.4 # Vulnerabilities: None
 cryptography==43.0.0 # Vulnerabilities: None
 devsetgo-lib[all]==0.14.1 # From 0.14.0 | Vulnerabilities: None
 email-validator==2.2.0 # Vulnerabilities: None
-fastapi[all]==0.112.2 # From 0.112.0 | Vulnerabilities: None
 fastapi-sso==0.15.0 # Vulnerabilities: None
+fastapi[all]==0.112.2 # From 0.112.0 | Vulnerabilities: None
 granian==1.5.2 # Vulnerabilities: None
 httpx-auth==0.22.0 # Vulnerabilities: None
 openai==1.42.0 # From 1.40.2 | Vulnerabilities: None
