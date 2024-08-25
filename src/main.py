@@ -36,7 +36,7 @@ from loguru import logger
 from .app_middleware import add_middleware
 from .app_routes import create_routes
 from .functions.notes_metrics import all_note_metrics
-from .resources import startup
+from .resources import startup, shutdown
 from .settings import settings
 
 logging_config.config_log(
@@ -59,8 +59,7 @@ async def lifespan(app: FastAPI):  # pragma: no cover
     await startup()
     await all_note_metrics()
     yield
-    logger.info("shutting down")
-
+    await shutdown()
 
 # Create an instance of the FastAPI class
 app = FastAPI(
@@ -79,13 +78,28 @@ app = FastAPI(
 if settings.debug_mode:  # pragma: no cover
     logger.warning("Debug mode is enabled and should not be used in production.")
 
-
+# add middleware and routes to the application
 add_middleware(app)
+# create routes
 create_routes(app)
 
-
 @app.get("/")
-async def root(request: Request):  # pragma: no cover
-    # get user_identifier from session
-    request.session.get("user_identifier", None)
+async def root(request: Request) -> RedirectResponse:  # pragma: no cover
+    """
+    Root endpoint that redirects to the index page.
+
+    This asynchronous function performs the following tasks:
+    - Retrieves the 'user_identifier' from the session, if it exists.
+    - Redirects the user to the '/pages/index' URL.
+
+    Args:
+        request (Request): The request object containing session data.
+
+    Returns:
+        RedirectResponse: A response that redirects the user to the '/pages/index' URL.
+    """
+    # Retrieve 'user_identifier' from the session, if it exists
+    user_identifier = request.session.get("user_identifier", None)
+    
+    # Redirect the user to the '/pages/index' URL
     return RedirectResponse(url="/pages/index")

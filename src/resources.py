@@ -167,6 +167,7 @@ async def shutdown() -> None:
     logger.info("disconnected from database")
     print("That's all folks!")
 
+
 async def add_system_data() -> None:
     """
     Add system data to the database.
