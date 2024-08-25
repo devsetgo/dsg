@@ -61,6 +61,7 @@ async def lifespan(app: FastAPI):  # pragma: no cover
     yield
     await shutdown()
 
+
 # Create an instance of the FastAPI class
 app = FastAPI(
     title="DevSetGo.com",  # The title of the API
@@ -83,6 +84,7 @@ add_middleware(app)
 # create routes
 create_routes(app)
 
+
 @app.get("/")
 async def root(request: Request) -> RedirectResponse:  # pragma: no cover
     """
@@ -100,6 +102,6 @@ async def root(request: Request) -> RedirectResponse:  # pragma: no cover
     """
     # Retrieve 'user_identifier' from the session, if it exists
     user_identifier = request.session.get("user_identifier", None)
-    
+
     # Redirect the user to the '/pages/index' URL
     return RedirectResponse(url="/pages/index")

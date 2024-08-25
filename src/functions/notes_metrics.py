@@ -32,7 +32,7 @@ async def all_note_metrics():
         note_list = [note.to_dict() for note in notes]
     except Exception as e:
         logger.error(e)
-        note_list:list =[]
+        note_list: list = []
 
     # Initialize an empty list to store unique user IDs
     user_list: list = []

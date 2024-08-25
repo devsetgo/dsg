@@ -51,6 +51,7 @@ db_ops = database_operations.DatabaseOperations(async_db)
 # Log the completion of database setup
 logger.info("database setup complete")
 
+
 async def startup() -> None:
     """
     Start up the application.
@@ -365,11 +366,12 @@ async def add_user() -> Dict[str, Any]:
         Dict[str, Any]: A dictionary containing the user's data.
     """
     logger.info("adding system user")
-    
+
     # Generate a random user name
     import secrets
+
     user_name: str = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
-    
+
     # Define possible roles and randomly assign them to the user
     roles: List[str] = ["notes", "web_links", "job_applications", "developer", "posts"]
     role_data: Dict[str, bool] = {}
@@ -389,19 +391,19 @@ async def add_user() -> Dict[str, Any]:
         is_locked=random.choice([True, False]),
         date_last_login=datetime.utcnow(),
     )
-    
+
     try:
         # Attempt to add the user to the database
         await db_ops.create_one(user)
-        
+
         # Retrieve the user from the database
         user = await db_ops.read_one_record(
             Select(Users).where(Users.user_name == user_name)
         )
-        
+
         # Log the user's full name
         logger.info(user.full_name)
-        
+
         # Return the user's data as a dictionary
         return user.to_dict()
 
@@ -430,9 +432,11 @@ async def add_categories() -> None:
     Returns:
         None
     """
-    
+
     # Count the number of existing categories in the database
-    cat_number: int = await db_ops.count_query(query=Select(func.count(Categories.pkid)))
+    cat_number: int = await db_ops.count_query(
+        query=Select(func.count(Categories.pkid))
+    )
 
     # If categories already exist, log the information and return
     if cat_number != 0:
@@ -440,7 +444,15 @@ async def add_categories() -> None:
         return
 
     # List of categories to be added, sorted alphabetically
-    cat: List[str] = ["humor", "news", "other", "programming", "science", "technology", "woodworking"]
+    cat: List[str] = [
+        "humor",
+        "news",
+        "other",
+        "programming",
+        "science",
+        "technology",
+        "woodworking",
+    ]
     user_name: str = settings.admin_user.get_secret_value()
 
     # Retrieve the admin user record
@@ -566,17 +578,17 @@ async def add_posts() -> None:
     """
     # Get the admin user name from the settings
     user_name: str = settings.admin_user.get_secret_value()
-    
+
     # Get the user record for 'admin'
     user: Users = await db_ops.read_one_record(
         Select(Users).where(Users.user_name == user_name)
     )
-    
+
     # Retrieve all categories from the database
     categories: List[Categories] = await db_ops.read_query(Select(Categories))
     categories_dict: List[Dict[str, Any]] = [cat.to_dict() for cat in categories]
     cat_list: List[str] = [cat["name"] for cat in categories_dict]
-    
+
     # Check if there are any existing posts in the database
     posts: List[Posts] = await db_ops.read_query(Select(Posts))
     if len(posts) == 0:
@@ -584,7 +596,9 @@ async def add_posts() -> None:
         for _ in tqdm(range(5), desc="creating demo posts", leave=False):
             rand_cat: int = random.randint(0, len(cat_list) - 1)
             tags: List[str] = [silly.noun() for _ in range(random.randint(2, 5))]
-            date_created: datetime = datetime.now(UTC) - timedelta(days=random.randint(1, 700))
+            date_created: datetime = datetime.now(UTC) - timedelta(
+                days=random.randint(1, 700)
+            )
             post = Posts(
                 title=silly.sentence(),
                 content=silly.markdown(length=random.randint(30, 60)),
