@@ -32,11 +32,13 @@ from sqlalchemy import (
     Column,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     LargeBinary,
     String,
     Text,
     event,
+    func,
 )
 from sqlalchemy.orm import class_mapper, relationship
 
@@ -254,13 +256,14 @@ class NoteMetrics(schema_base, async_db.Base):
         return data
 
 
+
 class Notes(schema_base, async_db.Base):
     __tablename__ = "notes"
     __tableargs__ = {"comment": "Notes that the user writes"}
 
     mood = Column(String(500), unique=False, index=True)
     mood_analysis = Column(String(500), unique=False, index=True)
-    _note = Column(LargeBinary, unique=False, index=True, nullable=False)
+    _note = Column(LargeBinary, unique=False, nullable=False)  # Removed index=True
     _summary = Column(LargeBinary, unique=False, index=True)
     tags = Column(JSON)
     word_count = Column(Integer)
@@ -320,6 +323,10 @@ class Notes(schema_base, async_db.Base):
             # Decide on the action: raise, ignore, or another approach
             return error
 
+    __table_args__ = (
+        Index('ix_notes__note_hash', func.md5(_note)),
+    )
+
 
 @event.listens_for(Notes, "before_insert")
 @event.listens_for(Notes, "before_update")
@@ -345,8 +352,6 @@ def note_on_change(mapper, connection, target):
 
     # if target.note:  # Check if the note is not None
     #     target.note = encrypt_text(target.note)
-
-
 class LibraryName(async_db.Base):
     __tablename__ = "library_names"
     __tableargs__ = {"comment": "Stores unique library names"}

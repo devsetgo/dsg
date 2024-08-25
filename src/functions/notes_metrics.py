@@ -28,7 +28,11 @@ async def all_note_metrics():
     notes = await db_ops.read_query(query=query)
 
     # Convert each note to a dictionary
-    note_list = [note.to_dict() for note in notes]
+    try:
+        note_list = [note.to_dict() for note in notes]
+    except Exception as e:
+        logger.error(e)
+        note_list:list =[]
 
     # Initialize an empty list to store unique user IDs
     user_list: list = []
