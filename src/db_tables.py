@@ -23,7 +23,7 @@ Usage:
     This module is intended to be imported wherever database ORM models are required within the application, such as in database initialization scripts, CRUD operation handlers, and when performing queries or updates to the database.
 """
 import re
-
+from typing import Tuple, Union, Optional, List, Dict, Any
 from dsg_lib.async_database_functions import base_schema
 from loguru import logger
 from sqlalchemy import (
@@ -274,6 +274,14 @@ class Notes(schema_base, async_db.Base):
     # def __init__(self, note):
     #     self._note = encrypt_text(note)  # Encrypt and store the note internally
 
+    if settings.db_driver.startswith("postgres"):
+        __table_args__ = (
+            Index("ix_notes__note_hash", func.md5(_note)),
+            {"schema": "public"},
+        )
+    else:
+        __table_args__ = ()
+
     def to_dict(self):
         data = {
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
@@ -321,8 +329,6 @@ class Notes(schema_base, async_db.Base):
             logger.error(error)
             # Decide on the action: raise, ignore, or another approach
             return error
-
-    __table_args__ = (Index("ix_notes__note_hash", func.md5(_note)),)
 
 
 @event.listens_for(Notes, "before_insert")

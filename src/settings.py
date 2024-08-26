@@ -53,8 +53,8 @@ class DatabaseDriverEnum(str, Enum):
     postgresql = "postgresql+asyncpg"
     sqlite = "sqlite+aiosqlite"
     memory = "sqlite+aiosqlite:///:memory:?cache=shared"
-    mysql = "mysql+aiomysql"
-    oracle = "oracle+cx_oracle"
+    # mysql = "mysql+aiomysql"
+    # oracle = "oracle+cx_oracle"
 
     model_config = ConfigDict(use_enum_values=True, extra="allow")
 
