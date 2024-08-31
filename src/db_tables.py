@@ -270,7 +270,7 @@ class Notes(schema_base, async_db.Base):
     ai_fix = Column(Boolean, default=False)
     user_id = Column(String, ForeignKey("users.pkid"), nullable=False, index=True)
     users = relationship("Users", back_populates="notes")
-
+    demo_created = Column(Integer, default=0, index=True)
     # def __init__(self, note):
     #     self._note = encrypt_text(note)  # Encrypt and store the note internally
 
@@ -334,6 +334,7 @@ class Notes(schema_base, async_db.Base):
 @event.listens_for(Notes, "before_insert")
 @event.listens_for(Notes, "before_update")
 def note_on_change(mapper, connection, target):
+
     target.word_count = len(target.note.split())
     target.character_count = len(target.note)
 
@@ -352,9 +353,10 @@ def note_on_change(mapper, connection, target):
         if pattern.search(tag) or " " in tag:
             target.ai_fix = True  # Set ai_fix to True if an illegal character is found
             break
+    if target.demo_created == 1:
+        target.ai_fix = True
+        target.demo_created = 2
 
-    # if target.note:  # Check if the note is not None
-    #     target.note = encrypt_text(target.note)
 
 
 class LibraryName(async_db.Base):
