@@ -326,6 +326,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
             tags=tags,
             mood_analysis=mood_analysis_choice,
             user_id=user_id,
+            demo_created=1,
             date_created=date_created,
             date_updated=date_updated,
         )
@@ -360,6 +361,7 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
             note=note_text,
             summary=summary,
             tags=tags,
+            demo_created=1,
             mood_analysis=mood_analysis_choice,
             user_id=user_id,
             date_created=date_created,
