@@ -4,7 +4,7 @@
   <thead>
     <tr>
       <th>User Name</th>
-      <th>Count</th>
+      <th>Fix Count</th>
       <th>Last Date</th>
     </tr>
   </thead>
@@ -12,7 +12,7 @@
     {% for data in user_note_count %}
     <tr>
       <td>
-        <a href="/admin/note-ai-check/{{data.user_id}}">{{data.user_id}}</a>
+        <a href="/admin/note-ai-check/{{data.user_id}}">{{data.user_name}}</a>
       </td>
       <td>
         {{data.count}}
@@ -23,12 +23,13 @@
   </tbody>
   <tfoot>
     <tr>
-        <th>User Name</th>
-        <th>Count</th>
-        <th>Last Date</th>
+      <th>User Name</th>
+      <th>Fix Count</th>
+      <th>Last Date</th>
     </tr>
   </tfoot>
 </table>
+
 <script>
   $(function () {
     $('#aiFixNeeded').DataTable({

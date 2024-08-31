@@ -44,7 +44,7 @@ from fastapi import (
 from fastapi.responses import HTMLResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select, and_
-
+from sqlalchemy.orm import aliased
 # , FailedLoginAttempts,JobApplications
 from ..db_tables import Categories, Notes, Posts, Users, WebLinks
 from ..functions import date_functions, note_import
@@ -428,7 +428,7 @@ async def admin_note_ai_check(
 
     # Create a query to select notes that need AI check
     query = Select(Notes).where(Notes.ai_fix == True)
-
+    
     # Execute the query and get the results
     notes = await db_ops.read_query(query=query)
 
@@ -437,6 +437,7 @@ async def admin_note_ai_check(
     # create a list of User IDs with a count of notes [{user_id: user_id, user_name: user_name, count: count, last_note_date: last_note_date}]
     user_note_count = []
     for note in notes:
+        
         user_id = note["user_id"]
         # user_name = note["user_name"]
         note_date = note["date_created"]
@@ -457,6 +458,13 @@ async def admin_note_ai_check(
                     "last_note_date": note_date,
                 }
             )
+    for user in user_note_count:
+        user_id = user["user_id"]
+        query = Select(Users).where(Users.pkid == user_id)
+        user_data = await db_ops.read_one_record(query=query)
+        user_data = user_data.to_dict()
+        user['user_name'] = user_data['user_name']
+    
     # Log the number of retrieved notes
     logger.debug(f"Retrieved {len(notes)} notes for AI check")
 
