@@ -388,7 +388,7 @@ async def add_user() -> Optional[Dict[str, Any]]:
     # Generate a random username using silly and secrets libraries
     import secrets
     user_name: str = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
-
+    email:str= silly.email()
     # Define possible roles for the user
     roles: List[str] = ["notes", "web_links", "job_applications", "developer", "posts"]
     role_data: Dict[str, bool] = {}
@@ -403,6 +403,7 @@ async def add_user() -> Optional[Dict[str, Any]]:
         first_name=f"{silly.verb()}",
         last_name=f"{silly.noun()}",
         user_name=user_name,
+        email=email,
         # password=hashed_password,  # Uncomment and set hashed password if needed
         is_active=random.choice([True, False]),
         is_admin=random.choice([True, False]),
