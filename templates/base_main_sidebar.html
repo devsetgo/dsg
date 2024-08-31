@@ -13,16 +13,14 @@
     {% include "admin/nav.html" %}
     {% include "base_nav_developer.html" %}
     {% endif %}
-    <ul>
-      <li class="nav-item">
-        <form action="/users/logout" method="GET">
-          <p> &nbsp;</p>
-          <button class="btn btn-block btn-outline-warning" type="submit"><i class="fas fa-sign-out-alt nav-icon"></i>
-            Logout</button>
-        </form>
-      </li>
-    </ul>
+    <!-- Sidebar Logout-->
+    <p> &nbsp;</p>
+    <form action="/users/logout" method="GET">
+
+      <button class="btn btn-block btn-outline-warning" type="submit"><i class="fas fa-sign-out-alt nav-icon"></i>
+        Logout</button>
+    </form>
     {% endif %}
-    <!-- Sidebar user panel (optional) -->
-    <!-- /.sidebar -->
+  </div>
+  <!-- /.sidebar.logout -->
 </aside>
