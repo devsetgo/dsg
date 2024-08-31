@@ -36,7 +36,7 @@ from loguru import logger
 from .app_middleware import add_middleware
 from .app_routes import create_routes
 from .functions.notes_metrics import all_note_metrics
-from .resources import startup, shutdown
+from .resources import shutdown, startup
 from .settings import settings
 
 logging_config.config_log(
@@ -101,7 +101,7 @@ async def root(request: Request) -> RedirectResponse:  # pragma: no cover
         RedirectResponse: A response that redirects the user to the '/pages/index' URL.
     """
     # Retrieve 'user_identifier' from the session, if it exists
-    user_identifier = request.session.get("user_identifier", None)
+    request.session.get("user_identifier", None)
 
     # Redirect the user to the '/pages/index' URL
     return RedirectResponse(url="/pages/index")

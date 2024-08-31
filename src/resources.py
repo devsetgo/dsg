@@ -36,7 +36,8 @@ License:
 import os
 import random
 from datetime import UTC, datetime, timedelta
-from typing import List, Optional, Tuple, Union, Dict, Any
+from typing import Any, Dict, List, Optional
+
 import silly
 import spacy
 from dsg_lib.async_database_functions import database_operations
@@ -50,6 +51,7 @@ from .db_init import async_db
 from .db_tables import Categories, Notes, Posts, Users, WebLinks
 from .functions.models import RoleEnum
 from .settings import settings
+
 # templates and static files
 templates = Jinja2Templates(directory="templates")
 statics = StaticFiles(directory="static")
@@ -82,7 +84,7 @@ async def startup() -> None:
     """
     # Log the startup process
     logger.info("starting up services")
-    
+
     # Check the database for existing tables
     logger.info("checking database for tables")
     tables: List[str] = await db_ops.get_table_names()
@@ -91,7 +93,7 @@ async def startup() -> None:
     # Create database tables if they don't exist
     await async_db.create_tables()
     logger.info("database tables created")
-    
+
     # Log the names of the tables that have been created
     tables = await db_ops.get_table_names()
     logger.info(f"tables {tables} have been created")
@@ -242,7 +244,7 @@ async def add_admin() -> Optional[Dict[str, Any]]:
     # Check if the settings indicate to create an admin user
     if settings.create_admin_user is True:
         logger.warning("Creating admin user")
-        
+
         # Retrieve admin user credentials from settings
         user_name = settings.admin_user.get_secret_value()
         settings.admin_password.get_secret_value()
@@ -382,11 +384,11 @@ async def add_user() -> Optional[Dict[str, Any]]:
         Optional[Dict[str, Any]]: A dictionary representation of the created user, or None if an error occurs.
     """
     logger.info("adding system user")
-    
+
     # Generate a random username using silly and secrets libraries
     import secrets
     user_name: str = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
-    
+
     # Define possible roles for the user
     roles: List[str] = ["notes", "web_links", "job_applications", "developer", "posts"]
     role_data: Dict[str, bool] = {}
@@ -408,11 +410,11 @@ async def add_user() -> Optional[Dict[str, Any]]:
         is_locked=random.choice([True, False]),
         date_last_login=datetime.utcnow(),
     )
-    
+
     try:
         # Attempt to create the user in the database
         await db_ops.create_one(user)
-        
+
         # Retrieve the created user from the database
         user = await db_ops.read_one_record(
             Select(Users).where(Users.user_name == user_name)

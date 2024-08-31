@@ -550,6 +550,7 @@ async def read_notes_pagination(
         notes = []
     else:
         notes = [note.to_dict() for note in notes]
+
     # offset date_created and date_updated to user's timezone
     notes = await date_functions.update_timezone_for_dates(
         data=notes, user_timezone=user_timezone
@@ -573,6 +574,7 @@ async def read_notes_pagination(
         if page < total_pages
         else None
     )
+
     logger.info(f"Found {found} notes for user {user_identifier}")
     return templates.TemplateResponse(
         request=request,
