@@ -42,6 +42,7 @@ from pydantic import (  # For validating data
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from . import __version__
 
+
 class SameSiteEnum(str, Enum):
     Lax = "Lax"
     Strict = "Strict"
