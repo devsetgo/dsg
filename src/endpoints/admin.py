@@ -52,6 +52,8 @@ from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
 from ..functions.models import RoleEnum
 from ..resources import db_ops, templates
+from ..functions import link_preview
+
 
 router = APIRouter()
 
@@ -427,19 +429,23 @@ async def admin_note_ai_check(
     logger.debug(f"User identifier: {user_identifier}")
 
     # Create a query to select notes that need AI check
-    query = Select(Notes).where(Notes.ai_fix == True)
+    notes_query = Select(Notes).where(Notes.ai_fix == True)
 
     # Execute the query and get the results
-    notes = await db_ops.read_query(query=query)
-
+    notes = await db_ops.read_query(query=notes_query)
     notes = [note.to_dict() for note in notes]
 
-    # create a list of User IDs with a count of notes [{user_id: user_id, user_name: user_name, count: count, last_note_date: last_note_date}]
+    # Create a query to select weblinks that need AI check
+    weblinks_query = Select(WebLinks).where(WebLinks.ai_fix == True)
+
+    # Execute the query and get the results
+    weblinks = await db_ops.read_query(query=weblinks_query)
+    weblinks = [weblink.to_dict() for weblink in weblinks]
+
+    # Log the number of retrieved notes and weblinks
     user_note_count = []
     for note in notes:
-
         user_id = note["user_id"]
-        # user_name = note["user_name"]
         note_date = note["date_created"]
         found = False
         for user in user_note_count:
@@ -456,27 +462,46 @@ async def admin_note_ai_check(
                     "user_name": None,
                     "count": 1,
                     "last_note_date": note_date,
+                    "weblinks_ai_fix_count": 0,  # Initialize weblinks count
                 }
             )
+
+    # Query to get the weblinks with ai_fix set to True
+    weblinks_query = Select(WebLinks).where(WebLinks.ai_fix == True)
+    weblinks = await db_ops.read_query(query=weblinks_query)
+    weblinks = [weblink.to_dict() for weblink in weblinks]
+
+    # Update user_note_count with weblinks count
+    for weblink in weblinks:
+        user_id = weblink["user_id"]
+        for user in user_note_count:
+            if user["user_id"] == user_id:
+                user["weblinks_ai_fix_count"] += 1
+                break
+
     for user in user_note_count:
         user_id = user["user_id"]
         query = Select(Users).where(Users.pkid == user_id)
         user_data = await db_ops.read_one_record(query=query)
         user_data = user_data.to_dict()
-        user['user_name'] = user_data['user_name']
+        user["user_name"] = user_data["user_name"]
 
-    # Log the number of retrieved notes
+    # Log the number of retrieved notes and weblinks
     logger.debug(f"Retrieved {len(notes)} notes for AI check")
+    logger.debug(f"Retrieved {len(weblinks)} weblinks for AI check")
 
     # Create the context for the template
     context = {
         "page": "admin",
         "user_identifier": user_identifier,
         "notes": notes,
+        "weblinks": weblinks,
         "user_note_count": user_note_count,
     }
+
     # Log the end of the process
     logger.info("Finished processing note AI check for admin")
+
     # Render the template and return the response
     return templates.TemplateResponse(
         request=request, name="/admin/note_ai_check.html", context=context
@@ -502,5 +527,31 @@ async def admin_note_ai_check_user(
     # print(list_of_ids)
     background_tasks.add_task(
         note_import.process_ai, user_identifier=user_id, list_of_ids=list_of_ids
+    )
+    return RedirectResponse(url="/admin", status_code=302)
+
+
+# weblink-fix for user
+@router.get("/weblink-fix/{user_id}")
+async def admin_weblink_fix_user(
+    user_id: str,
+    background_tasks: BackgroundTasks,
+    user_info: dict = Depends(check_login),
+):
+
+    query = Select(WebLinks).where(
+        and_(WebLinks.user_id == user_id, WebLinks.ai_fix == True)
+    )
+
+    # Execute the query and get the results
+    links = await db_ops.read_query(query=query)
+    links = [link.to_dict() for link in links]
+    list_of_ids: list = []
+    for link in links:
+        list_of_ids.append(link["pkid"])
+
+    background_tasks.add_task(
+        link_preview.update_weblinks_ai,
+        list_of_ids=list_of_ids,
     )
     return RedirectResponse(url="/admin", status_code=302)

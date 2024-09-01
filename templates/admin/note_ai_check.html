@@ -4,7 +4,8 @@
   <thead>
     <tr>
       <th>User Name</th>
-      <th>Fix Count</th>
+      <th>Note Fix Count</th>
+      <th>Weblinks Fix Count</th>
       <th>Last Date</th>
     </tr>
   </thead>
@@ -12,10 +13,13 @@
     {% for data in user_note_count %}
     <tr>
       <td>
-        <a href="/admin/note-ai-check/{{data.user_id}}">{{data.user_name}}</a>
+        {{data.user_name}}</a>
       </td>
       <td>
-        {{data.count}}
+        <a href="/admin/note-ai-check/{{data.user_id}}">{{data.count}}</a>
+      </td>
+      <td>
+        <a href="/admin/weblink-fix/{{data.user_id}}">{{data.weblinks_ai_fix_count}}</a>
       </td>
       <td>{{data.last_note_date}}</td>
     </tr>
@@ -24,7 +28,8 @@
   <tfoot>
     <tr>
       <th>User Name</th>
-      <th>Fix Count</th>
+      <th>Note Fix Count</th>
+      <th>Weblinks Fix Count</th>
       <th>Last Date</th>
     </tr>
   </tfoot>
