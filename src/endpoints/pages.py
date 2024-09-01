@@ -55,15 +55,17 @@ async def root():
     logger.info("Redirecting to OpenAPI docs")
     return RedirectResponse(url="/pages/index")
 
+
 @router.get("/app-info")
 async def app_info(request: Request):
     context = {
         "version": settings.version,
+        "release_env": settings.release_env,
     }
+    logger.info("App Info page accessed")
     return templates.TemplateResponse(
         request=request, name="app-info.html", context=context
     )
-
 
 
 @router.get("/index")
