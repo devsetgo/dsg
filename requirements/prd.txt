@@ -8,7 +8,7 @@ fastapi[all]==0.112.0 #  From 0.111.1 |   Vulnerabilities: None
 fastapi-sso==0.15.0 #   Vulnerabilities: None
 granian==1.5.2 #  From 1.5.1 |   Vulnerabilities: None
 httpx-auth==0.22.0 #   Vulnerabilities: None
-openai==1.38.0 #  From 1.37.1 |   Vulnerabilities: None
+openai==1.43.0 #  From 1.37.1 |   Vulnerabilities: None
 pydantic[email]==2.8.2 #   Vulnerabilities: None
 PyJWT[crypto]==2.9.0 #  From 2.8.0 |   Vulnerabilities: None
 python-dateutil==2.9.0.post0 #   Vulnerabilities: None
