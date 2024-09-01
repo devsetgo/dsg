@@ -49,7 +49,7 @@ logging_config.config_log(
     log_format=None,
     log_serializer=settings.log_serializer,
     log_diagnose=settings.log_diagnose,
-    intercept_standard_logging=False,
+    intercept_standard_logging=settings.log_intercept_standard_logging,
 )
 
 
@@ -66,7 +66,7 @@ async def lifespan(app: FastAPI):  # pragma: no cover
 app = FastAPI(
     title="DevSetGo.com",  # The title of the API
     description="Website for devsetgo.com",  # A brief description of the API
-    version="2.0",  # The version of the API
+    version=settings.version,  # The version of the API
     docs_url="/docs",  # The URL where the API documentation will be served
     redoc_url="/redoc",  # The URL where the ReDoc documentation will be served
     openapi_url="/openapi.json",  # The URL where the OpenAPI schema will be served
