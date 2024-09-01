@@ -7,7 +7,7 @@ coverage-badge==1.1.2 #  From 1.1.1 |   Vulnerabilities: None
 genbadge[all]==1.1.1 #   Vulnerabilities: None
 isort==5.13.2 #   Vulnerabilities: None
 mkdocs-gen-files==0.5.0 #   Vulnerabilities: None
-mkdocs-material==9.5.31 #  From 9.5.30 |   Vulnerabilities: None
+mkdocs-material==9.5.34 #  From 9.5.30 |   Vulnerabilities: None
 mkdocstrings[python]==0.25.2 #   Vulnerabilities: None
 pre-commit==3.8.0 #  From 3.7.1 |   Vulnerabilities: None
 pytest==8.3.2 #   Vulnerabilities: None
