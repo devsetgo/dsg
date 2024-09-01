@@ -65,6 +65,7 @@ db_ops = database_operations.DatabaseOperations(async_db)
 # Log the completion of the database setup
 logger.info("database setup complete")
 
+
 async def startup() -> None:
     """
     Start up the application.
@@ -230,7 +231,6 @@ async def add_system_data() -> None:
             await add_demo_data(qty=20)
 
 
-
 async def add_admin() -> Optional[Dict[str, Any]]:
     """
     Create an admin user if the settings indicate to do so.
@@ -286,7 +286,9 @@ async def add_admin() -> Optional[Dict[str, Any]]:
             return None
 
 
-async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qty) -> None:
+async def add_notes(
+    user_id: str, qty_notes: int = settings.create_demo_notes_qty
+) -> None:
     """
     Add demo notes for a given user.
 
@@ -335,7 +337,9 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         await db_ops.create_one(note)
 
     # Create notes with random dates within the last X years
-    for _ in tqdm(range(qty_notes), desc=f"creating demo notes for {user_id}", leave=False):
+    for _ in tqdm(
+        range(qty_notes), desc=f"creating demo notes for {user_id}", leave=False
+    ):
         mood: str = random.choice(moods)
         mood_analysis_choice: str = random.choice(mood_analysis)
 
@@ -347,7 +351,9 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         # Generate a random date within the last X years
         days_in_three_years: int = 365 * 12
         random_number_of_days: int = random.randrange(days_in_three_years)
-        date_created: datetime = datetime.now(UTC) - timedelta(days=random_number_of_days)
+        date_created: datetime = datetime.now(UTC) - timedelta(
+            days=random_number_of_days
+        )
 
         # Make date_updated the same as date_created or 3-15 days later
         days_to_add: int = random.choice([0] + list(range(3, 16)))
@@ -387,8 +393,9 @@ async def add_user() -> Optional[Dict[str, Any]]:
 
     # Generate a random username using silly and secrets libraries
     import secrets
+
     user_name: str = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
-    email:str= silly.email()
+    email: str = silly.email()
     # Define possible roles for the user
     roles: List[str] = ["notes", "web_links", "job_applications", "developer", "posts"]
     role_data: Dict[str, bool] = {}
@@ -444,7 +451,16 @@ async def add_categories():
         logger.info("system categories already added")
         return
 
-    cat: list = ["news", "other", "programming", "science", "sites","science", "technology", "woodworking"]
+    cat: list = [
+        "news",
+        "other",
+        "programming",
+        "science",
+        "sites",
+        "science",
+        "technology",
+        "woodworking",
+    ]
     user_name = settings.admin_user.get_secret_value()
     await db_ops.read_one_record(Select(Users).where(Users.user_name == user_name))
 
@@ -465,7 +481,6 @@ async def add_categories():
 
     for d in data:
         logger.info(f"category name: {d.name}")
-
 
 
 async def add_web_links():
@@ -523,7 +538,6 @@ async def add_web_links():
     # Log the title, category, URL, and summary of each item
     for thing in all_things:
         logger.info(f"{thing.title}, {thing.category}, {thing.url}, {thing.summary}")
-
 
 
 async def add_posts():
