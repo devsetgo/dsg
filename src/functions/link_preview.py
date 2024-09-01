@@ -10,9 +10,10 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from sqlalchemy import Select
 from webdriver_manager.chrome import ChromeDriverManager
-
+from tqdm import tqdm
 from ..db_tables import WebLinks
 from ..resources import db_ops
+from ..functions import ai
 
 client = httpx.AsyncClient()
 
@@ -121,3 +122,56 @@ async def get_weblink_metrics():
         error: str = f"Error getting weblink metrics: {e}"
         logger.error(error)
         return response
+
+
+async def update_weblinks_ai(list_of_ids: list):
+
+    # for pkid in tqdm(list_of_ids):
+    #     print(pkid)
+    tasks = [
+        update_weblinks(pkid=pkid)
+        for pkid in tqdm(list_of_ids, ascii=False, leave=True, desc="Sending Weblinks")
+    ]
+    results = [task.result() for task in tqdm(tasks, ascii=False, leave=True, desc="Updating Weblinks")]
+    logger.info(f"Weblink AI Fix Results: {results}")
+    return None
+
+
+from unsync import unsync
+
+
+@unsync
+async def update_weblinks(pkid: str):
+    try:
+        data = await db_ops.read_one_record(
+            Select(WebLinks).where(WebLinks.pkid == pkid)
+        )
+
+        if isinstance(data, dict):
+            logger.error(f"Error creating link: {data}")
+        else:
+            summary = await ai.get_url_summary(url=data.url, sentence_length=20)
+            title = await ai.get_url_title(url=data.url)
+            logger.debug(f"Received summary from AI: {summary}")
+            weblink_update = {
+                "title": title,
+                "summary": summary["summary"],
+            }
+
+            data = await db_ops.update_one(
+                table=WebLinks, record_id=pkid, new_values=weblink_update
+            )
+
+            if isinstance(data, dict):
+                logger.error(f"Error updating weblink: {data}")
+
+            data =data.to_dict()
+            logger.debug(f"Created weblinks: {data['url']}")
+            logger.info(f"Created weblinks with ID: {pkid}")
+
+            await capture_full_page_screenshot(url=data['url'], pkid=pkid)
+            return "complete"
+    except Exception as e:
+        error = f"Error updating weblinks: {e}"
+        logger.error(error)
+        return "error"
