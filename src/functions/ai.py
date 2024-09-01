@@ -406,7 +406,7 @@ async def get_url_title(
     logger.info("Starting get_url_summary function")
 
     # Create the prompt for the OpenAI API
-    prompt = "Create a new title from the websites full title html tag and format as 'Full Title from Website Name'"
+    prompt = "Create a new title from the websites full title html tag and format as 'Full Title from Website Name'. If not possible provide a title that is a simple single sentence in length."
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
