@@ -40,7 +40,7 @@ from pydantic import (  # For validating data
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
+from . import __version__
 
 class SameSiteEnum(str, Enum):
     Lax = "Lax"
@@ -85,6 +85,7 @@ class Settings(BaseSettings):
     date_run: datetime = datetime.utcnow()
     # application settings
     release_env: str = "prd"
+    version: str = __version__
     debug_mode: bool = False
     # logging settings
     logging_directory: str = "log"
@@ -95,6 +96,7 @@ class Settings(BaseSettings):
     log_backtrace: bool = False
     log_serializer: bool = False
     log_diagnose: bool = False
+    log_intercept_standard_logging: bool = False
     # session management
     max_failed_login_attempts: int = 5
     session_secret_key: str = secrets.token_hex(32)  # Generate a random secret key

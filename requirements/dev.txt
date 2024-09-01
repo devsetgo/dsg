@@ -1,16 +1,17 @@
 -r prd.txt
-autoflake==2.3.1 # Vulnerabilities: None
-autopep8==2.3.1 # Vulnerabilities: None
-black==24.8.0 # Vulnerabilities: None
-bump-pydantic==0.8.0 # Vulnerabilities: None
-coverage-badge==1.1.2 # Vulnerabilities: None
-genbadge[all]==1.1.1 # Vulnerabilities: None
-isort==5.13.2 # Vulnerabilities: None
-mkdocs-gen-files==0.5.0 # Vulnerabilities: None
-mkdocs-material==9.5.33 # From 9.5.31 | Vulnerabilities: None
-mkdocstrings[python]==0.25.2 # Vulnerabilities: None
-pre-commit==3.8.0 # Vulnerabilities: None
-pyright==1.1.377 # From 1.1.375 | Vulnerabilities: None
-pytest==8.3.2 # Vulnerabilities: None
-pytest-cov==5.0.0 # Vulnerabilities: None
-ruff==0.6.2 # From 0.5.7 | Vulnerabilities: None
+autoflake==2.3.1 #   Vulnerabilities: None
+autopep8==2.3.1 #   Vulnerabilities: None
+black==24.8.0 #   Vulnerabilities: None
+bump-pydantic==0.8.0 #   Vulnerabilities: None
+calver==2022.6.26 #   Vulnerabilities: None
+coverage-badge==1.1.2 #   Vulnerabilities: None
+genbadge[all]==1.1.1 #   Vulnerabilities: None
+isort==5.13.2 #   Vulnerabilities: None
+mkdocs-gen-files==0.5.0 #   Vulnerabilities: None
+mkdocs-material==9.5.34 #  From 9.5.33 |   Vulnerabilities: None
+mkdocstrings[python]==0.25.2 #   Vulnerabilities: None
+pre-commit==3.8.0 #   Vulnerabilities: None
+pyright==1.1.378 #   Vulnerabilities: None
+pytest==8.3.2 #   Vulnerabilities: None
+pytest-cov==5.0.0 #   Vulnerabilities: None
+ruff==0.6.3 #   Vulnerabilities: None

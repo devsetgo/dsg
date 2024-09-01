@@ -65,7 +65,9 @@ docker-beta-run:  # Run docker container
 	docker run -p 5000:5000 dsg:beta-$(TIMESTAMP)
 
 docker-beta-build:  # Build docker image
-	docker build --no-cache -t dsg:beta-$(TIMESTAMP) .
+	python3 /workspaces/dsg/scripts/calver_update.py
+
+#docker build --no-cache -t dsg:beta-$(TIMESTAMP) .
 
 docker-beta-push:  # Push beta test image to docker hub
 	docker tag dsg:beta-$(TIMESTAMP) mikeryan56/dsg:beta-$(TIMESTAMP)
