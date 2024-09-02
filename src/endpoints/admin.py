@@ -47,13 +47,11 @@ from sqlalchemy import Select, and_
 
 # , FailedLoginAttempts,JobApplications
 from ..db_tables import Categories, Notes, Posts, Users, WebLinks
-from ..functions import date_functions, note_import
+from ..functions import date_functions, link_preview, note_import
 from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
 from ..functions.models import RoleEnum
 from ..resources import db_ops, templates
-from ..functions import link_preview
-
 
 router = APIRouter()
 

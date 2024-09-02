@@ -40,6 +40,7 @@ from pydantic import (  # For validating data
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from . import __version__
 
 

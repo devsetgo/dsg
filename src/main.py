@@ -26,6 +26,7 @@ Functions:
 Usage:
     This module is executed to start the FastAPI application, setting up logging, middleware, routes, and handling the application's lifespan events. It configures the application with a title, description, version, and documentation URLs, and initializes it with specified settings for debugging, middleware, and routes.
 """
+import signal
 from contextlib import asynccontextmanager
 
 from dsg_lib.common_functions import logging_config
@@ -83,6 +84,14 @@ if settings.debug_mode:  # pragma: no cover
 add_middleware(app)
 # create routes
 create_routes(app)
+
+# Define a signal handler for the WINCH signal
+def handle_winch(signum, frame):
+    logger.info("Received WINCH signal")
+
+# Register the signal handler
+signal.signal(signal.SIGWINCH, handle_winch)
+
 
 
 @app.get("/")
