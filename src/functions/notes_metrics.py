@@ -109,7 +109,7 @@ async def update_notes_metrics(user_id: str):
             user_id=user_id,
         )
         result = await db_ops.create_one(note_metrics)
-        
+
 
     else:
         note_metrics = {
@@ -126,7 +126,7 @@ async def update_notes_metrics(user_id: str):
         result = await db_ops.update_one(
             table=NoteMetrics, record_id=metric_data.pkid, new_values=note_metrics
         )
-        
+
     logger.debug(result)
 
 

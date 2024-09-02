@@ -25,7 +25,6 @@ import time
 from typing import Any, Dict, NoReturn
 
 from dsg_lib.fastapi_functions import http_codes, system_health_endpoints
-
 # from fastapi import FastAPI, Request, HTTPException, status
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
@@ -128,6 +127,8 @@ def create_routes(app: FastAPI) -> NoReturn:
 
         # Redirect to the error page for the status code
         return RedirectResponse(url=f"/error/{error_code}")
+
+
 
     # Include the routers for the admin, devtools, interesting things, blog posts, notes, pages, pypi, and users endpoints
     # The prefix argument specifies the path that the routes will be mounted at

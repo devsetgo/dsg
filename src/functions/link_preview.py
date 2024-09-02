@@ -9,11 +9,13 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from sqlalchemy import Select
-from webdriver_manager.chrome import ChromeDriverManager
 from tqdm import tqdm
+from unsync import unsync
+from webdriver_manager.chrome import ChromeDriverManager
+
 from ..db_tables import WebLinks
-from ..resources import db_ops
 from ..functions import ai
+from ..resources import db_ops
 
 client = httpx.AsyncClient()
 
@@ -137,9 +139,6 @@ async def update_weblinks_ai(list_of_ids: list):
     ]
     logger.info(f"Weblink AI Fix Results: {results}")
     return None
-
-
-from unsync import unsync
 
 
 @unsync

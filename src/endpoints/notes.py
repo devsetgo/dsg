@@ -153,7 +153,7 @@ async def get_note_counts(
 
     logger.debug(f"User {user_identifier} fetched note counts: {note_metrics}")
     logger.info(f"User {user_identifier} metrics retrieved")
-    
+
     return templates.TemplateResponse(
         request=request,
         name="/notes/metrics.html",
