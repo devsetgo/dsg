@@ -19,13 +19,34 @@
 {% block body %}
 <!-- Main content -->
 <section class="content">
+
   <div class="row" style="margin-top: 20px;">
     <div class="col-md-12">
-      <div class="row" id="debtData" hx-get="/pages/public-debt" hx-trigger="load">
-        Loading...
+      <!-- Nav tabs -->
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" data-toggle="tab" href="#debtDataTab" role="tab">Debt Data</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#weatherDataTab" role="tab">Weather Data</a>
+        </li>
+      </ul>
+  
+      <!-- Tab panes -->
+      <div class="tab-content">
+        <div class="tab-pane active" id="debtDataTab" role="tabpanel">
+          <div class="row" id="debtData" hx-get="/pages/public-debt" hx-trigger="load">
+            Loading...
+          </div>
+        </div>
+        <div class="tab-pane" id="weatherDataTab" role="tabpanel">
+          My Weather Station... I'll work on the API calls at some point.
+          {% include "api/weather.html" %}
+        </div>
       </div>
     </div>
   </div>
+
 </section>
 <!-- /.content-wrapper -->
 </div>

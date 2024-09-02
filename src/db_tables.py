@@ -245,7 +245,7 @@ class NoteMetrics(schema_base, async_db.Base):
     note_count = Column(Integer, default=0)
     mood_metric = Column(JSON)
     metrics = Column(JSON)
-
+    ai_fix_count = Column(Integer, default=0)
     total_unique_tag_count = Column(Integer, default=0)
     users = relationship("Users", back_populates="note_metrics")
 
@@ -334,7 +334,6 @@ class Notes(schema_base, async_db.Base):
 @event.listens_for(Notes, "before_insert")
 @event.listens_for(Notes, "before_update")
 def note_on_change(mapper, connection, target):
-
     target.word_count = len(target.note.split())
     target.character_count = len(target.note)
 

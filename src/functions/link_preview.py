@@ -125,14 +125,16 @@ async def get_weblink_metrics():
 
 
 async def update_weblinks_ai(list_of_ids: list):
-
     # for pkid in tqdm(list_of_ids):
     #     print(pkid)
     tasks = [
         update_weblinks(pkid=pkid)
         for pkid in tqdm(list_of_ids, ascii=False, leave=True, desc="Sending Weblinks")
     ]
-    results = [task.result() for task in tqdm(tasks, ascii=False, leave=True, desc="Updating Weblinks")]
+    results = [
+        task.result()
+        for task in tqdm(tasks, ascii=False, leave=True, desc="Updating Weblinks")
+    ]
     logger.info(f"Weblink AI Fix Results: {results}")
     return None
 
@@ -165,11 +167,11 @@ async def update_weblinks(pkid: str):
             if isinstance(data, dict):
                 logger.error(f"Error updating weblink: {data}")
 
-            data =data.to_dict()
+            data = data.to_dict()
             logger.debug(f"Created weblinks: {data['url']}")
             logger.info(f"Created weblinks with ID: {pkid}")
 
-            await capture_full_page_screenshot(url=data['url'], pkid=pkid)
+            await capture_full_page_screenshot(url=data["url"], pkid=pkid)
             return "complete"
     except Exception as e:
         error = f"Error updating weblinks: {e}"
