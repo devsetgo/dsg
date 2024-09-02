@@ -76,19 +76,22 @@ async def admin_dashboard(
 
 
 async def get_list_of_users(user_timezone: str):
-    query = Select(Users)
-    users = await db_ops.read_query(query=query)
-    users = [user.to_dict() for user in users]
+    try:
+        query = Select(Users)
+        users = await db_ops.read_query(query=query)
+        users = [user.to_dict() for user in users]
 
-    for user in users:
-        for k, _v in user.items():
-            if k.startswith("date_"):
-                user[k] = await date_functions.timezone_update(
-                    user_timezone=user_timezone,
-                    date_time=user[k],
-                    friendly_string=True,
-                )
-
+        for user in users:
+            for k, _v in user.items():
+                if k.startswith("date_"):
+                    user[k] = await date_functions.timezone_update(
+                        user_timezone=user_timezone,
+                        date_time=user[k],
+                        friendly_string=True,
+                    )
+    except Exception as e:
+        logger.error(f"Error fetching users: {e}")
+        users = []
     return users
 
 
@@ -538,7 +541,6 @@ async def admin_weblink_fix_user(
     background_tasks: BackgroundTasks,
     user_info: dict = Depends(check_login),
 ):
-
     query = Select(WebLinks).where(
         and_(WebLinks.user_id == user_id, WebLinks.ai_fix == True)
     )

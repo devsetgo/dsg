@@ -48,7 +48,7 @@ def add_middleware(app: FastAPI) -> NoReturn:
     # Add GZipMiddleware for response compression
     # This middleware will compress responses for all requests that can handle it
     # The minimum_size argument specifies the minimum size a response must be before it can be compressed
-    app.add_middleware(GZipMiddleware, minimum_size=1000)
+    app.add_middleware(GZipMiddleware, minimum_size=500)
 
     # Add SessionMiddleware for managing user sessions
     # The secret_key argument is used to sign the session cookie

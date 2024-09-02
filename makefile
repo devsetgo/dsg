@@ -1,6 +1,8 @@
 # Shell
 SHELL := /bin/bash
 # Variables
+__version__ = "beta-2024-09-01-21"
+
 PYTHON = python3
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
@@ -62,19 +64,23 @@ docker-login:  # Login to docker hub
 	docker login
 
 docker-beta-run:  # Run docker container
-	docker run -p 5000:5000 dsg:beta-$(TIMESTAMP)
+	docker run -p 5000:5000 dsg:$(__version__)
 
 docker-beta-build:  # Build docker image
-	python3 /workspaces/dsg/scripts/calver_update.py
-
-#docker build --no-cache -t dsg:beta-$(TIMESTAMP) .
+	docker build --no-cache -t dsg:$(__version__) .
 
 docker-beta-push:  # Push beta test image to docker hub
-	docker tag dsg:beta-$(TIMESTAMP) mikeryan56/dsg:beta-$(TIMESTAMP)
-	docker push mikeryan56/dsg:beta-$(TIMESTAMP)
+	docker tag dsg:$(__version__) mikeryan56/dsg:$(__version__)
+	docker push mikeryan56/dsg:$(__version__)
 
 docker-beta-bp: docker-beta-build docker-beta-push
 
+bump-calver-beta:  # Bump the beta version number in the Makefile
+	python3 /home/mike/dsg/scripts/calver_update.py --build --beta
+
+bump-calver:  # Bump the version number in the Makefile
+	python3 /home/mike/dsg/scripts/calver_update.py --build
+	
 flake8:  # Run flake8 and output report
 	flake8 --tee . > _flake8Report.txt
 
