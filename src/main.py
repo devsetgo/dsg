@@ -85,13 +85,14 @@ add_middleware(app)
 # create routes
 create_routes(app)
 
+
 # Define a signal handler for the WINCH signal
 def handle_winch(signum, frame):
     logger.info("Received WINCH signal")
 
+
 # Register the signal handler
 signal.signal(signal.SIGWINCH, handle_winch)
-
 
 
 @app.get("/")

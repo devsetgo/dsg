@@ -33,14 +33,15 @@ RUN pip install --no-cache-dir -r requirements/prd.txt
 # Create a user and set file permissions
 RUN useradd -m -r dsgUser && chown -R dsgUser /app
 
-# Create the shared directory and set permissions
-RUN mkdir -p /shared/spacy_models && chown -R dsgUser /shared/spacy_models
+# # Create the shared directory and set permissions
+# RUN mkdir -p /shared/spacy_models && chown -R dsgUser /shared/spacy_models
+# RUN mkdir -p /log && chown -R dsgUser /log
 
 # Switch to the new user
 USER dsgUser
 
 # Install spaCy and other dependencies
-RUN pip install spacy
+# RUN pip install spacy
 
 # Set environment variables
 ENV release_env=prd

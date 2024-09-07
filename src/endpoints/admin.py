@@ -520,6 +520,9 @@ async def admin_note_ai_check_user(
 
     # Execute the query and get the results
     notes = await db_ops.read_query(query=query)
+    if isinstance(notes, dict):
+        logger.error(f"Error fetching notes: {notes}")
+        raise HTTPException(status_code=404, detail="No notes found for user")
     notes = [note.to_dict() for note in notes]
     list_of_ids: list = []
     for note in notes:

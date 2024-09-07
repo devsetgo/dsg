@@ -1,13 +1,17 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime
 import re
 import click
 import os
 
+
 def get_current_date():
     return datetime.now().strftime("%Y-%m-%d")
 
+
 def get_current_datetime_version():
     return datetime.now().strftime("%Y-%m-%d-%H%M")
+
 
 def get_build_version(init_file):
     current_date = get_current_date()
@@ -17,7 +21,10 @@ def get_build_version(init_file):
     try:
         with open(init_file, "r") as file:
             content = file.read()
-            version_match = re.search(r'__version__\s*=\s*["\'](?:beta-)?(\d{4}-\d{2}-\d{2})-(\d+)["\']', content)
+            version_match = re.search(
+                r'__version__\s*=\s*["\'](?:beta-)?(\d{4}-\d{2}-\d{2})-(\d{3})["\']',
+                content,
+            )
             if version_match:
                 last_date, last_count = version_match.groups()
                 last_count = int(last_count)
@@ -26,7 +33,8 @@ def get_build_version(init_file):
     except FileNotFoundError:
         print(f"{init_file} not found")
 
-    return f"{current_date}-{build_count}"
+    return f"{current_date}-{build_count:03}"
+
 
 def update_version_in_files(new_version, files):
     version_pattern = re.compile(r'(__version__\s*=\s*["\'])(.*?)(["\'])')
@@ -40,9 +48,10 @@ def update_version_in_files(new_version, files):
         except FileNotFoundError:
             print(f"{file_path} not found")
 
+
 @click.command()
-@click.option('--beta', is_flag=True, help='Use beta versioning')
-@click.option('--build', is_flag=True, help='Use build count versioning')
+@click.option("--beta", is_flag=True, help="Use beta versioning")
+@click.option("--build", is_flag=True, help="Use build count versioning")
 def main(beta, build):
     # List of files to update
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -76,6 +85,7 @@ def main(beta, build):
     update_version_in_files(new_version, files_to_update)
 
     print(f"Updated version to {new_version} in specified files.")
+
 
 if __name__ == "__main__":
     main()
