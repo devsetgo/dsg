@@ -1,2 +1,2 @@
 # -*- coding: utf-8 -*-
-__version__ = "beta-2024-09-06-007"
+__version__ = "beta-2024-09-07-001"
