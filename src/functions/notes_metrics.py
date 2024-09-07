@@ -97,6 +97,8 @@ async def update_notes_metrics(user_id: str):
     metrics = await get_metrics(user_identifier=user_id, user_timezone="UTC")
     ai_fix_count = await get_ai_fix_count(notes=notes)
 
+    # print(f"AI Fix Count: {ai_fix_count}")
+
     if metric_data is None:
         note_metrics = NoteMetrics(
             word_count=note_counts["word_count"],
@@ -109,8 +111,6 @@ async def update_notes_metrics(user_id: str):
             user_id=user_id,
         )
         result = await db_ops.create_one(note_metrics)
-
-
     else:
         note_metrics = {
             "word_count": note_counts["word_count"],
@@ -122,12 +122,14 @@ async def update_notes_metrics(user_id: str):
             "user_id": user_id,
             "aix_fix_count": ai_fix_count,
         }
+
         # Update the database
         result = await db_ops.update_one(
             table=NoteMetrics, record_id=metric_data.pkid, new_values=note_metrics
         )
 
     logger.debug(result)
+    # print(result.to_dict())
 
 
 async def get_metrics(user_identifier: str, user_timezone: str):
@@ -151,7 +153,6 @@ async def get_metrics(user_identifier: str, user_timezone: str):
             notes=notes
         ),
         "tags_common": await get_tag_count(notes=notes),
-
     }
     logger.info("Metrics retrieved successfully for user: {}", user_identifier)
     return metrics
@@ -160,10 +161,12 @@ async def get_metrics(user_identifier: str, user_timezone: str):
 async def get_ai_fix_count(notes: list):
     fix_count = 0
     for note in notes:
-        if note['ai_fix'] == True:
+        if note["ai_fix"] == True:
             fix_count += 1
     logger.debug(f"AI Fix Count: {fix_count}")
+
     return fix_count
+
 
 async def get_note_counts(notes: list):
     logger.info("Calculating note counts")

@@ -26,6 +26,10 @@
 		32080
 	],
 	"postCreateCommand": "pip3 install --upgrade pip setuptools wheel && pip3 install -r requirements/dev.txt && sudo chmod 666 /var/run/docker.sock",
+	"postStartCommand": "python3 scripts/spacy_install.py",
+	"remoteEnv": {
+        "SPACY_MODEL_PATH": "/workspaces/dsg/spacy_models"
+    },
 	"customizations": {
 		"vscode": {
 			"settings": {

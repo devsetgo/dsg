@@ -33,13 +33,11 @@ Author:
 License:
     MIT License
 """
-import os
 import random
 from datetime import UTC, datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 import silly
-import spacy
 from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -105,52 +103,26 @@ async def startup() -> None:
         # Add system data if no users are found
         await add_system_data()
 
-    # Download the specified spaCy model for NLP tasks
-    model_name = "xx_ent_wiki_sm"
-    download_spacy_model(model_name)
 
+# Download the specified spaCy model for NLP tasks
+# model_name = "xx_ent_wiki_sm"
+# nlp = load_spacy_model(model_name)
 
-def download_spacy_model(model_name: str) -> None:
-    """
-    Downloads the specified spaCy model if it is not already installed.
+# def load_spacy_model(model_name: str):
+#     try:
+#         # Try to load the model
+#         model = spacy.load(model_name)
+#         logger.info(f"Model '{model_name}' loaded successfully.")
+#     except Exception as e:
+#         # If the model is not found, download it
+#         logger.error(e)
+#         print(e)
+#         logger.info(f"Model '{model_name}' not found. Downloading...")
+#         spacy.cli.download(model_name)
+#         model = spacy.load(model_name)
+#         logger.info(f"Model '{model_name}' downloaded and loaded successfully.")
+#     return model
 
-    This function checks for the presence of a flag file in the /tmp directory
-    to determine if the model has been downloaded previously. If the model is not
-    found, it attempts to download and install the model. Upon successful download,
-    a flag file is created to indicate the model's availability for future checks.
-
-    Args:
-        model_name (str): The name of the spaCy model to download, e.g., "xx_ent_wiki_sm".
-
-    Returns:
-        None
-    """
-    # Path to a flag file which indicates whether the model has been downloaded
-    flag_file_path = f"/tmp/{model_name}_downloaded.flag"
-
-    # Check if the flag file exists, indicating the model has already been downloaded
-    if os.path.exists(flag_file_path):
-        logger.info(f"Model '{model_name}' is already installed. No download needed.")
-        return
-
-    try:
-        # Attempt to load the model to check if it's already installed
-        spacy.load(model_name)
-        logger.info(f"Model '{model_name}' found. No download needed.")
-    except OSError:
-        # Model not installed, proceed with download
-        logger.info(f"Model '{model_name}' not found. Starting download...")
-        try:
-            # Download the spaCy model
-            spacy.cli.download(model_name)
-            logger.info(f"Model '{model_name}' downloaded successfully.")
-
-            # Create a flag file to indicate the model has been downloaded
-            with open(flag_file_path, "w") as f:
-                f.write("Downloaded")
-        except Exception as e:
-            # Log any error during the download process
-            logger.error(f"Failed to download model '{model_name}'. Error: {e}")
 
 
 async def shutdown() -> None:

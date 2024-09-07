@@ -147,7 +147,7 @@ async def update_weblinks(pkid: str):
         data = await db_ops.read_one_record(
             Select(WebLinks).where(WebLinks.pkid == pkid)
         )
-
+        logger.debug(f"Received data from DB: {data}")
         if isinstance(data, dict):
             logger.error(f"Error creating link: {data}")
         else:
@@ -158,11 +158,11 @@ async def update_weblinks(pkid: str):
                 "title": title,
                 "summary": summary["summary"],
             }
-
+            logger.debug(f"Updating weblinks: {weblink_update}")
             data = await db_ops.update_one(
                 table=WebLinks, record_id=pkid, new_values=weblink_update
             )
-
+            logger.debug(f"Updated weblinks: {data}")
             if isinstance(data, dict):
                 logger.error(f"Error updating weblink: {data}")
 

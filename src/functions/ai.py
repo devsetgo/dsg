@@ -16,10 +16,9 @@ import re
 from functools import lru_cache
 from typing import Dict, List
 
-import spacy
 from loguru import logger
+from nameparser import HumanName
 from openai import AsyncOpenAI
-from spacy.language import Language
 
 from src.settings import settings
 
@@ -94,7 +93,7 @@ async def get_tags(
     logger.info("Starting get_tags function")
 
     # Create the prompt for the OpenAI API
-    prompt = f"For the following text create a python style list between 1 to {keyword_limit} 'one word' keywords to be stored as a python list and cannot be a persons name: {content}"
+    prompt = f"For the following text create a python style list between 1 to {keyword_limit} 'single word' keywords to be stored as a python list and cannot be a persons name: {content}"
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
@@ -117,12 +116,14 @@ async def get_tags(
     match = re.search(r"\[.*\]", response_content)
     if match:
         response_content = match.group(0)
+
     else:
         logger.error(
             f"Error: Unable to extract a list from response_content: {response_content}"
         )
         response_content = "[]"
 
+    logger.debug(response_content)
     # Convert string representation of list to list
     try:
         response_content = ast.literal_eval(response_content)
@@ -140,20 +141,43 @@ async def get_tags(
     response_dict = {"tags": response_content}
     logger.info("Finished get_tags function")
     resp = tag_check(response_dict)
+    logger.debug(response_dict)
     return resp
 
 
+# @lru_cache(maxsize=128)
+# def load_model() -> Language:
+#     """
+#     Load and cache the multi-language spaCy model to improve performance.
+
+#     Returns:
+#         The loaded spaCy Language model.
+#     """
+#     model_name = "xx_ent_wiki_sm"
+#     try:
+#         # Load the multi-language model
+#         nlp = spacy.load(model_name)
+#         logger.info(f"Model '{model_name}' loaded successfully.")
+#     except OSError as e:
+#         logger.error(f"Failed to load model '{model_name}': {e}")
+#         raise
+#     return nlp
+
 @lru_cache(maxsize=128)
-def load_model() -> Language:
+def name_check(name: str) -> bool:
     """
-    Load and cache the multi-language spaCy model to improve performance.
+    Check if the text is a person's name using the nameparser library.
+
+    Args:
+        name: The text to be checked.
 
     Returns:
-        The loaded spaCy Language model.
+        True if the text is recognized as a person's name, False otherwise.
     """
-    # Load the multi-language model
-    nlp = spacy.load("xx_ent_wiki_sm")
-    return nlp
+    parsed_name = HumanName(name)
+    # Check if the parsed name has at least a first name and a last name
+    return bool(parsed_name.first and parsed_name.last)
+
 
 
 def tag_check(tags: Dict[str, List[str]]) -> Dict[str, List[str]]:
@@ -168,15 +192,11 @@ def tag_check(tags: Dict[str, List[str]]) -> Dict[str, List[str]]:
         where any recognized person names have been removed.
     """
     # Load the multi-language model
-    nlp = load_model()
+
     tag_list = tags["tags"]
-    filtered_tags = []
-    for tag in tag_list:
-        # Process each tag through the spaCy model
-        doc = nlp(tag)
-        # Filter out tags recognized as person names ("PER")
-        if not any(ent.label_ == "PER" for ent in doc.ents):
-            filtered_tags.append(tag)
+    logger.debug(tag_list)
+    filtered_tags = [tag for tag in tag_list if not name_check(tag)]
+    logger.debug(filtered_tags)
     return {"tags": filtered_tags}
 
 
