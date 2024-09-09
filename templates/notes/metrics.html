@@ -6,10 +6,9 @@
                 <span class="info-box-icon"><i class="fas fa-file-alt"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Notes</span>
-                    <span class="info-box-number">{{ '{:,}'.format(note_metrics.note_count) }}</span>
+                    <span class="info-box-number">{{ '{:,}'.format(note_metrics.note_count) if note_metrics.note_count else 0 }}</span>
                 </div>
             </div>
-
             <div class="info-box bg-navy col-md-3">
                 <span class="info-box-icon"><i class="fas fa-file-word"></i></span>
                 <div class="info-box-content">
@@ -17,7 +16,6 @@
                     <span class="info-box-number">{{ '{:,}'.format(note_metrics.word_count) if note_metrics.word_count else 0 }}</span>
                 </div>
             </div>
-
             <div class="info-box bg-olive col-md-3">
                 <span class="info-box-icon"><i class="fas fa-file-alt"></i></span>
                 <div class="info-box-content">
@@ -43,7 +41,6 @@
                     <span class="info-box-number">{{ '{:,}'.format(note_metrics.mood_metric.positive if note_metrics.mood_metric.positive else 0)}}</span>
                 </div>
             </div>
-
             <div class="info-box bg-warning">
                 <span class="info-box-icon"><i class="far fa-meh"></i></span>
                 <div class="info-box-content">
@@ -51,12 +48,18 @@
                     <span class="info-box-number">{{ '{:,}'.format(note_metrics.mood_metric.neutral if note_metrics.mood_metric.neutral else 0)}}</span>
                 </div>
             </div>
-
             <div class="info-box bg-danger">
                 <span class="info-box-icon"><i class="far fa-frown"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Negative Mood Count</span>
                     <span class="info-box-number">{{ '{:,}'.format(note_metrics.mood_metric.negative if note_metrics.mood_metric.negative else 0)}}</span>
+                </div>
+            </div>
+            <div class="info-box bg-secondary">
+                <span class="info-box-icon"><i class="far fa-frown"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">AI Fix Count</span>
+                    <span class="info-box-number">{{ '{:,}'.format(note_metrics.ai_fix_count if note_metrics.ai_fix_count else 0)}}</span>
                 </div>
             </div>
         </div>

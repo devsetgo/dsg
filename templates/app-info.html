@@ -1,0 +1,4 @@
+<small>
+    <strong>Version:</strong> {{version}}<br>
+    {% if request.session.is_admin is true %}<strong>Release Env:</strong> {{release_env|title}}<br>{%endif%}
+</small>

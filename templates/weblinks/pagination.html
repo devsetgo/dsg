@@ -12,7 +12,7 @@
       <div class="card mb-3 shadow-sm">
         <div class="card-body">
           <h5 class="card-title">
-            <a href="/weblinks/{{ data.pkid }}" class="text">{{ data.title|title }}</a>
+            <a href="/weblinks/view/{{ data.pkid }}" class="text">{{ data.title|title }}</a>
           </h5>
           <p class="card-text">
             URL: <a href="{{ data.url }}" target="_blank" class="text-primary">Link</a>
@@ -20,10 +20,11 @@
           <p class="card-text">{{ data.summary|truncate(150, end='...') }}</p>
           <p class="card-text">
             <small class="text-muted">{{ data.date_created }}</small><br>
+            {% if request.session.is_admin is true %}
             <small class="text-muted">
-              <strong>Words:</strong> {{ data.word_count }} | 
-              <strong>Characters:</strong> {{ data.character_count }}
+              AI Fix: <strong>{{ data.ai_fix }}</strong>
             </small>
+            {% endif %}
           </p>
         </div>
       </div>

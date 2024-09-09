@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block page_title %}| WebLinks{% endblock %}
+{% block page_stylesheet %}
+<!-- page stylesheets-->
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        padding-top: 60px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.9);
+    }
+
+    .modal-content {
+        margin: auto;
+        display: block;
+        width: 90%;
+        max-width: 1000px;
+    }
+
+    .caption {
+        margin: auto;
+        display: block;
+        width: 80%;
+        max-width: 1000px;
+        text-align: center;
+        color: #ccc;
+        padding: 10px 0;
+        height: 150px;
+    }
+
+    .modal-content,
+    .caption {
+        -webkit-animation-name: zoom;
+        -webkit-animation-duration: 0.6s;
+        animation-name: zoom;
+        animation-duration: 0.6s;
+    }
+
+    @-webkit-keyframes zoom {
+        from {
+            -webkit-transform: scale(0)
+        }
+
+        to {
+            -webkit-transform: scale(1)
+        }
+    }
+
+    @keyframes zoom {
+        from {
+            transform: scale(0.1)
+        }
+
+        to {
+            transform: scale(1)
+        }
+    }
+
+    .close {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #f1f1f1;
+        font-size: 40px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: #bbb;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .close-btn {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background-color: #f1f1f1;
+        color: #000;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .close-btn:hover {
+        background-color: #bbb;
+    }
+</style>
+{% endblock %}
+{% block page_breadcrumb %} WebLinks{% endblock %}
+{% block page_head_title %}WebLinks{% endblock %}
+{% block body %}
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary" style="margin: 20px;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">{{ weblink.title | title }}</h3>
+                        <div class="d-flex align-items-center ml-auto">
+                            {% if request.session.is_admin is true %}
+                            <a href="/weblinks/update/{{weblink.pkid}}" class="btn btn-success ml-2" title="Send to AI Fix" hx-get="/weblinks/update/{{weblink.pkid}}" hx-indicator=".htmx-indicator">
+                                <i class="fa-solid fa-robot" style="color:{{ 'red' if weblink.ai_fix else 'black' }};"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="details-tab" data-toggle="tab" href="#details" role="tab" aria-controls="details" aria-selected="true">Details</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="false">Website Image</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="details" role="tabpanel" aria-labelledby="details-tab">
+                                    <div class="row" style="padding: 20px; margin: 10px;background-color: #e9ecef;">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>URL:</label>
+                                                <p><a href="{{ weblink.url }}" target="_blank">{{ weblink.title | title }}</a></p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Summary:</label>
+                                                <p>{{ weblink.summary }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Link Status:</label>
+                                                <p>{% if link_status %}
+                                                    <i class="fa-solid fa-check" style="color: green;" title="Link Working"></i>
+                                                    {% else %}
+                                                    <i class="fa-solid fa-times" style="color: red;" title="Link Not Working"></i>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Date Created:</label>
+                                                <p>{{ weblink.date_created }}</p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Date Updated:</label>
+                                                <p>{{ weblink.date_updated }}</p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Category:</label>
+                                                <p>{{ weblink.category }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane" id="info" role="tabpanel" aria-labelledby="info-tab">
+                                    <div class="row" style="padding: 20px; margin: 10px;background-color: #e9ecef;">
+                                        <div class="col-md-6">
+                                            <label>Image:</label>
+                                            <br>
+                                            {{page_image|safe}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="row" style="padding: 20px; margin: 10px;background-color: #f8f9fa;">
+                                <!-- Additional content can go here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- The Modal -->
+<div id="myModal" class="modal">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <img class="modal-content" id="modalImage">
+    <div class="caption" id="caption"></div>
+    <button class="close-btn" onclick="closeModal()">Close</button>
+</div>
+{% endblock %}
+{% block page_sidebar_content %}
+<div class="p-3">
+    <h5>Title</h5>
+    <p>Sidebar content</p>
+</div>
+{% endblock %}
+{% block page_scripts %}
+<!-- page scripts-->
+<script>
+    function openModal(img) {
+        var modal = document.getElementById("myModal");
+        var modalImg = document.getElementById("modalImage");
+        var captionText = document.getElementById("caption");
+        modal.style.display = "block";
+        modalImg.src = img.src;
+        captionText.innerHTML = img.alt;
+    }
+
+    function closeModal() {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "none";
+    }
+</script>
+{% endblock %}

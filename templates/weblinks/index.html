@@ -9,10 +9,14 @@
   <!-- Main content -->
   <div class="content">
     <div class="container-fluid">
-      <!-- Small boxes (Stat box) -->
+      <!-- being weblink metrics -->
+      {% include 'weblinks/metrics.html' %}
+      <!-- End weblink metrics -->
        <!-- hx onload -->
       <div class="row" hx-get="/weblinks/pagination" hx-trigger="load" hx-target="#links-data"
         hx-indicator=".htmx-indicator">
+        <!-- Search WebLinks Form -->
+         {% include 'weblinks/search-form.html' %} <!-- Includes the search form -->
         <!-- Begin WebLinks Section -->
         <div class="row" id="links-data"></div>
         <!-- End WebLinks Section -->

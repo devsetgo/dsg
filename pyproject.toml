@@ -31,6 +31,44 @@ Repository = "https://github.com/devsetgo/dsg"
 [project.scripts]
 # Add your scripts here if any
 
+[tool.pyright]
+# Enable type checking
+typeCheckingMode = "strict"
+
+# Specify the Python version
+pythonVersion = "3.12"
+
+# Define the paths to include for type checking
+include = ["src", "test"]
+
+# Define the paths to exclude from type checking
+exclude = [
+    "unreleased/*",
+    "scripts/*",
+    "coverage.xml",
+    "coverage-badge.svg",
+]
+
+# Enable/disable specific Pyright settings
+reportMissingImports = true
+reportMissingTypeStubs = true
+reportOptionalSubscript = false
+reportOptionalMemberAccess = false
+reportOptionalCall = false
+reportOptionalIterable = false
+reportOptionalContextManager = false
+reportOptionalOperand = false
+reportGeneralTypeIssues = true
+reportUnnecessaryTypeIgnoreComment = true
+reportUnnecessaryTypeIgnoreCommentSeverity = "warning"
+reportUnusedImport = true
+reportUnusedClass = true
+reportUnusedFunction = true
+reportUnusedVariable = true
+reportDuplicateImport = true
+reportPrivateUsage = true
+
+
 [tool.ruff]
 # Same as Black.
 line-length = 100

@@ -37,9 +37,11 @@ from pydantic import (  # For validating data
     EmailStr,
     Field,
     SecretStr,
-    root_validator,
+    model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from . import __version__
 
 
 class SameSiteEnum(str, Enum):
@@ -53,8 +55,8 @@ class DatabaseDriverEnum(str, Enum):
     postgresql = "postgresql+asyncpg"
     sqlite = "sqlite+aiosqlite"
     memory = "sqlite+aiosqlite:///:memory:?cache=shared"
-    mysql = "mysql+aiomysql"
-    oracle = "oracle+cx_oracle"
+    # mysql = "mysql+aiomysql"
+    # oracle = "oracle+cx_oracle"
 
     model_config = ConfigDict(use_enum_values=True, extra="allow")
 
@@ -73,6 +75,7 @@ class Settings(BaseSettings):
         ..., description="For sqlite it should be folder path 'folder/filename"
     )
     phrase: SecretStr = Field(..., description="substitution cipher")
+    spacy_model_path:str = Field("/app/spacy_models", description="Spacy model path")
     echo: bool = Field(True, description="Enable echo")
     future: bool = Field(True, description="Enable future")
     pool_pre_ping: bool = Field(False, description="Enable pool_pre_ping")
@@ -85,6 +88,7 @@ class Settings(BaseSettings):
     date_run: datetime = datetime.utcnow()
     # application settings
     release_env: str = "prd"
+    version: str = __version__
     debug_mode: bool = False
     # logging settings
     logging_directory: str = "log"
@@ -95,6 +99,7 @@ class Settings(BaseSettings):
     log_backtrace: bool = False
     log_serializer: bool = False
     log_diagnose: bool = False
+    log_intercept_standard_logging: bool = False
     # session management
     max_failed_login_attempts: int = 5
     session_secret_key: str = secrets.token_hex(32)  # Generate a random secret key
@@ -148,7 +153,8 @@ class Settings(BaseSettings):
     create_demo_notes: bool = False
     create_demo_notes_qty: int = 0
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def parse_database_driver(cls, values):
         db_driver = values.get("db_driver")
         if isinstance(db_driver, str):
@@ -171,7 +177,7 @@ class Settings(BaseSettings):
 def get_settings():
     # Function to get an instance of the Settings class. The results are cached
     # to improve performance.
-    logger.debug(f"Settings: {Settings().dict()}")
+    logger.debug(f"Settings: {Settings().model_dump()}")
     return Settings()
 
 

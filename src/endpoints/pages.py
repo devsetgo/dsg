@@ -56,13 +56,23 @@ async def root():
     return RedirectResponse(url="/pages/index")
 
 
+@router.get("/app-info")
+async def app_info(request: Request):
+    context = {
+        "version": settings.version,
+        "release_env": settings.release_env,
+    }
+    logger.info("App Info page accessed")
+    return templates.TemplateResponse(
+        request=request, name="app-info.html", context=context
+    )
+
+
 @router.get("/index")
 async def index(request: Request):
     try:
         cool_stuff = await db_ops.read_query(
-            Select(WebLinks)
-            .limit(8)
-            .order_by(WebLinks.date_created.desc())
+            Select(WebLinks).limit(8).order_by(WebLinks.date_created.desc())
         )
         cool_stuff = [thing.to_dict() for thing in cool_stuff]
         cool_stuff = await update_timezone_for_dates(
@@ -158,18 +168,10 @@ async def get_data_page(request: Request):
 @router.get("/public-debt")
 async def public_debt(request: Request):
     debt_list = await get_public_debt()
-
     last_year = None
+
     for d in debt_list:
         year_hold = d["tot_pub_debt_out_amt"]
-
-        # if d["debt_held_public_amt"] != 'null':
-        #     d["debt_held_public_amt"] = "{:,.2f}".format(float(d["debt_held_public_amt"]))
-
-        # if d["intragov_hold_amt"] != 'null':
-        #     d["intragov_hold_amt"] = "{:,.2f}".format(float(d["intragov_hold_amt"]))
-
-        # d["tot_pub_debt_out_amt"] = "{:,.2f}".format(float(d["tot_pub_debt_out_amt"]))
 
         if last_year is not None:
             d["debt_growth"] = round(

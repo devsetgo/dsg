@@ -28,16 +28,16 @@ API Endpoints:
 Usage:
     This module is designed to be integrated into a FastAPI application, providing a backend API for listing weblinks. It can be used in web applications that require content curation and discovery features, with the ability to filter and paginate through large sets of data.
 """
+from base64 import b64encode
 from datetime import datetime
 
-# from pytz import timezone, UTC
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select, asc, func, or_
 
 from ..db_tables import Categories, WebLinks
-from ..functions import ai, date_functions
+from ..functions import ai, date_functions, link_preview
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
 
@@ -57,27 +57,8 @@ async def list_of_web_links(
     if user_timezone is None:
         user_timezone = "America/New_York"
 
-    query = Select(WebLinks).limit(10).offset(0)
-    weblinks = await db_ops.read_query(query=query)
-
-    if isinstance(weblinks, str):
-        logger.error(f"Unexpected result from read_query: {weblinks}")
-        weblinks = []
-    else:
-        weblinks = [link.to_dict() for link in weblinks]
-    # offset date_created and date_updated to user's timezone
-    for link in weblinks:
-        link["date_created"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=link["date_created"],
-            friendly_string=True,
-        )
-        link["date_updated"] = await date_functions.timezone_update(
-            user_timezone=user_timezone,
-            date_time=link["date_updated"],
-            friendly_string=True,
-        )
-    context = {"page": "weblinks", "request": request}#, "weblinks": weblinks}
+    weblinks_metrics = await link_preview.get_weblink_metrics()
+    context = {"page": "weblinks", "weblinks_metrics": weblinks_metrics}
     return templates.TemplateResponse(
         request=request, name="/weblinks/index.html", context=context
     )
@@ -123,12 +104,8 @@ async def read_weblinks_pagination(
     # find search_term in columns: note, mood, tags, summary
     query = Select(WebLinks).where(
         or_(
-            WebLinks.name.contains(search_term) if search_term else True,
-            (
-                WebLinks.description.contains(search_term)
-                if search_term
-                else True
-            ),
+            WebLinks.summary.contains(search_term) if search_term else True,
+            (WebLinks.title.contains(search_term) if search_term else True),
         )
     )
 
@@ -137,16 +114,13 @@ async def read_weblinks_pagination(
         start_date = datetime.strptime(start_date, "%Y-%m-%d")
         end_date = datetime.strptime(end_date, "%Y-%m-%d")
         query = query.where(
-            (WebLinks.date_created >= start_date)
-            & (WebLinks.date_created <= end_date)
+            (WebLinks.date_created >= start_date) & (WebLinks.date_created <= end_date)
         )
+    if category:
+        query = query.where(WebLinks.category == category)
     # order and limit the results
     offset = (page - 1) * limit
-    query = (
-        query.order_by(WebLinks.date_created.desc())
-        .limit(limit)
-        .offset(offset)
-    )
+    query = query.order_by(WebLinks.date_created.desc()).limit(limit).offset(offset)
     weblinks = await db_ops.read_query(query=query)
     logger.debug(f"weblinks returned from pagination query {weblinks}")
     if isinstance(weblinks, str):
@@ -187,17 +161,18 @@ async def read_weblinks_pagination(
         else None
     )
     logger.info(f"Found {found} weblinks")
-    context={"page": "weblinks",
-            "weblinks": weblinks,
-            "found": found,
-            "weblinks_count": weblinks_count,
-            "total_pages": total_pages,
-            "start_count": offset + 1,
-            "current_count": offset + current_count,
-            "current_page": page,
-            "prev_page_url": prev_page_url,
-            "next_page_url": next_page_url,
-        }
+    context = {
+        "page": "weblinks",
+        "weblinks": weblinks,
+        "found": found,
+        "weblinks_count": weblinks_count,
+        "total_pages": total_pages,
+        "start_count": offset + 1,
+        "current_count": offset + current_count,
+        "current_page": page,
+        "prev_page_url": prev_page_url,
+        "next_page_url": next_page_url,
+    }
     return templates.TemplateResponse(
         request=request,
         name="/weblinks/pagination.html",
@@ -210,12 +185,13 @@ async def new_link(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="/weblinks/new.html",
-        context={"page": "weblinks","request": request},
+        context={"page": "weblinks", "request": request},
     )
 
 
 @router.post("/new")
 async def create_link(
+    background_tasks: BackgroundTasks,
     request: Request,
     user_info: dict = Depends(check_login),
 ):
@@ -224,20 +200,24 @@ async def create_link(
     form = await request.form()
     category = form["category"]
     url = form["url"]
-    title = form["title"]
+    # title = form["title"]
 
     logger.debug(f"Received category: {category} and content: {url}")
 
     # Get summary from OpenAI
-    summary = await ai.get_url_summary(url=url, sentence_length=2)
+    summary = await ai.get_url_summary(url=url, sentence_length=20)
+    title = await ai.get_url_title(url=url)
     logger.debug(f"Received summary from AI: {summary}")
+
     # Create the post
     link = WebLinks(
         title=title,
-        summary=summary,
+        summary=summary["summary"],
+        url=url,
         user_id=user_identifier,
         category=category,
     )
+
     data = await db_ops.create_one(link)
     if isinstance(data, dict):
         logger.error(f"Error creating link: {data}")
@@ -246,6 +226,101 @@ async def create_link(
     logger.debug(f"Created weblinks: {link}")
     logger.info(f"Created weblinks with ID: {data.pkid}")
 
-    return RedirectResponse(url=f"/weblink/view/{data.pkid}", status_code=302)
+    # await link_preview.capture_full_page_screenshot(url=url, pkid=data.pkid)
+    background_tasks.add_task(
+        link_preview.capture_full_page_screenshot, url=url, pkid=data.pkid
+    )
+    return RedirectResponse(url=f"/weblinks/view/{data.pkid}", status_code=302)
 
 
+# get weblink by pkid
+@router.get("/view/{pkid}")
+async def view_weblink(
+    request: Request,
+    pkid: str,
+    # user_info: dict = Depends(check_login),
+):
+    user_timezone = request.session.get("timezone", None)
+    if user_timezone is None:
+        user_timezone = "America/New_York"
+
+    link = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
+    link = link.to_dict()
+
+    link["date_created"] = await date_functions.timezone_update(
+        user_timezone=user_timezone,
+        date_time=link["date_created"],
+        friendly_string=True,
+    )
+    link["date_updated"] = await date_functions.timezone_update(
+        user_timezone=user_timezone,
+        date_time=link["date_updated"],
+        friendly_string=True,
+    )
+    encoded_image = ""
+    if link["image_preview_data"] is not None:
+        encoded_image = b64encode(link["image_preview_data"]).decode("utf-8")
+
+    link_status = await link_preview.url_status(url=link["url"])
+
+    context = {
+        "page": "weblinks",
+        "weblink": link,
+        "page_image": (
+            f'<img src="data:image/png;base64,{encoded_image}" alt="{link["title"]}" class="img-thumbnail" style="width: 700px; cursor: pointer;" onclick="openModal(this)"/>'
+            if encoded_image
+            else ""
+        ),
+        "link_status": link_status,
+    }
+    return templates.TemplateResponse(
+        request=request, name="/weblinks/view.html", context=context
+    )
+
+
+@router.get("/update/{pkid}")
+async def edit_weblink(
+    background_tasks: BackgroundTasks,
+    pkid: str,
+    request: Request,
+    # user_info: dict = Depends(check_login),
+):
+    # user_identifier = user_info["user_identifier"]
+
+    data = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
+
+    # if isinstance(data, dict) ==  False:
+    #     logger.error(f"Error reading link: {data}")
+    #     return RedirectResponse(url="/error/418", status_code=302)
+    # else:
+    data = data.to_dict()
+
+    url = data["url"]
+
+    logger.debug(f"Editing content for URL: {url}")
+
+    # Get summary from OpenAI
+    summary = await ai.get_url_summary(url=url, sentence_length=20)
+    title = await ai.get_url_title(url=url)
+    logger.debug(f"Received summary from AI: {summary}")
+    weblink_update = {
+        "title": title,
+        "summary": summary["summary"],
+    }
+
+    data = await db_ops.update_one(
+        table=WebLinks, record_id=pkid, new_values=weblink_update
+    )
+
+    if isinstance(data, dict):
+        logger.error(f"Error creating link: {data}")
+        return RedirectResponse(url="/error/418", status_code=302)
+
+    logger.debug(f"Created weblinks: {url}")
+    logger.info(f"Created weblinks with ID: {data.pkid}")
+
+    # await link_preview.capture_full_page_screenshot(url=url, pkid=data.pkid)
+    background_tasks.add_task(
+        link_preview.capture_full_page_screenshot, url=url, pkid=data.pkid
+    )
+    return RedirectResponse(url=f"/weblinks/view/{data.pkid}", status_code=302)

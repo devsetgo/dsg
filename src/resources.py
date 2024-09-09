@@ -11,6 +11,21 @@ Module Attributes:
 
 Functions:
     startup: Initializes the resources required by the application, ensuring they are ready for use when the application starts. This function is asynchronous to accommodate the initialization of resources that may require IO operations, such as database connections.
+    add_notes: Adds demo notes for a given user, generating notes with random moods, mood analyses, tags, and timestamps.
+    add_admin: Creates an admin user if the settings indicate to do so, with specified roles and logs the creation process.
+
+Imports:
+    os: Provides a way of using operating system dependent functionality.
+    random: Implements pseudo-random number generators for various distributions.
+    datetime: Supplies classes for manipulating dates and times.
+    silly: Generates random text for testing purposes.
+    spacy: Industrial-strength Natural Language Processing (NLP) with Python and Cython.
+    database_operations: Contains asynchronous database operation functions.
+    StaticFiles: Handles the serving of static files.
+    Jinja2Templates: Manages the rendering of HTML templates.
+    logger: Logging library for Python.
+    Select, func: SQLAlchemy functions for database operations.
+    tqdm: Provides a fast, extensible progress bar for loops and other operations.
 
 Author:
     Mike Ryan
@@ -18,12 +33,11 @@ Author:
 License:
     MIT License
 """
-import os
 import random
 from datetime import UTC, datetime, timedelta
+from typing import Any, Dict, List, Optional
 
 import silly
-import spacy
 from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -40,115 +54,130 @@ from .settings import settings
 templates = Jinja2Templates(directory="templates")
 statics = StaticFiles(directory="static")
 
+# Log the initialization of database operations
 logger.info("setting up database operations")
+
+# Initialize the database operations with the async database instance
 db_ops = database_operations.DatabaseOperations(async_db)
+
+# Log the completion of the database setup
 logger.info("database setup complete")
 
 
-async def startup():
+async def startup() -> None:
     """
-    This function is used to start up the application.
+    Start up the application.
 
-    It's an asynchronous function, which means it can be used with the `await` keyword.
-
-    The function does the following:
+    This asynchronous function initializes the application by performing the following tasks:
     - Logs that the services are starting up.
-    - Checks the database for tables.
+    - Checks the database for existing tables.
     - Creates the database tables if they don't exist.
     - Logs the names of the tables that have been created.
-    - Adds system data to the database.
+    - Adds system data to the database if no users are found.
+    - Downloads the specified spaCy model for NLP tasks.
 
     This function is typically called when the application starts up.
-    """
-    logger.info("starting up services")
-    logger.info("checking database for tables")
-    tables = await db_ops.get_table_names()
-    logger.info(f"creating database tables {tables}")
-
-    # if tables.__len__() == 0:
-    await async_db.create_tables()
-    logger.info("database tables created")
-    tables = await db_ops.get_table_names()
-    logger.info(f"tables {tables} have been created")
-
-    user = await db_ops.read_query(Select(Users))
-    if len(user) == 0:
-        await add_system_data()
-
-    model_name = "xx_ent_wiki_sm"
-    download_spacy_model(model_name)
-
-
-def download_spacy_model(model_name: str):
-    """
-    Downloads the specified spaCy model if it is not already installed.
-
-    This function checks for the presence of a flag file in the /tmp directory
-    to determine if the model has been downloaded previously. If the model is not
-    found, it attempts to download and install the model. Upon successful download,
-    a flag file is created to indicate the model's availability for future checks.
-
-    Args:
-        model_name (str): The name of the spaCy model to download, e.g., "xx_ent_wiki_sm".
 
     Returns:
         None
     """
-    # Path to a flag file which indicates whether the model has been downloaded
-    flag_file_path = f"/tmp/{model_name}_downloaded.flag"
+    # Log the startup process
+    logger.info("starting up services")
 
-    # Check if the flag file exists, indicating the model has already been downloaded
-    if os.path.exists(flag_file_path):
-        logger.info(f"Model '{model_name}' is already installed. No download needed.")
-        return
+    # Check the database for existing tables
+    logger.info("checking database for tables")
+    tables: List[str] = await db_ops.get_table_names()
+    logger.info(f"creating database tables {tables}")
 
-    try:
-        # Attempt to load the model to check if it's already installed
-        spacy.load(model_name)
-        logger.info(f"Model '{model_name}' found. No download needed.")
-    except OSError:
-        # Model not installed, proceed with download
-        logger.info(f"Model '{model_name}' not found. Starting download...")
-        try:
-            spacy.cli.download(model_name)
-            logger.info(f"Model '{model_name}' downloaded successfully.")
+    # Create database tables if they don't exist
+    await async_db.create_tables()
+    logger.info("database tables created")
 
-            # Create a flag file to indicate the model has been downloaded
-            with open(flag_file_path, "w") as f:
-                f.write("Downloaded")
-        except Exception as e:
-            # Log any error during the download process
-            logger.error(f"Failed to download model '{model_name}'. Error: {e}")
+    # Log the names of the tables that have been created
+    tables = await db_ops.get_table_names()
+    logger.info(f"tables {tables} have been created")
+
+    # Check if there are any users in the database
+    user = await db_ops.read_query(Select(Users))
+    if len(user) == 0:
+        # Add system data if no users are found
+        await add_system_data()
 
 
-async def shutdown():
+# Download the specified spaCy model for NLP tasks
+# model_name = "xx_ent_wiki_sm"
+# nlp = load_spacy_model(model_name)
+
+# def load_spacy_model(model_name: str):
+#     try:
+#         # Try to load the model
+#         model = spacy.load(model_name)
+#         logger.info(f"Model '{model_name}' loaded successfully.")
+#     except Exception as e:
+#         # If the model is not found, download it
+#         logger.error(e)
+#         print(e)
+#         logger.info(f"Model '{model_name}' not found. Downloading...")
+#         spacy.cli.download(model_name)
+#         model = spacy.load(model_name)
+#         logger.info(f"Model '{model_name}' downloaded and loaded successfully.")
+#     return model
+
+
+
+async def shutdown() -> None:
     """
-    This function is used to shut down the application.
-    It's an asynchronous function, which means it can be used with the `await` keyword.
-    The function does the following:
+    Shut down the application.
+
+    This asynchronous function is responsible for gracefully shutting down the application.
+    It performs the following tasks:
     - Logs that the services are shutting down.
     - Disconnects from the database.
-    This function is typically called when the application is shutting down.
-    """
 
+    This function is typically called when the application is shutting down.
+
+    Returns:
+        None
+    """
     # Log that the services are shutting down
     logger.info("shutting down services")
 
     # Disconnect from the database
     logger.info("disconnecting from database")
+    await async_db.disconnect()
 
 
-async def add_system_data():
-    if settings.create_admin_user is True:
+async def add_system_data() -> None:
+    """
+    Add system data to the application.
+
+    This asynchronous function initializes the system data based on the settings.
+    It performs the following tasks:
+    - Creates an admin user if specified in the settings.
+    - Creates demo notes for the admin user if specified and not in production environment.
+    - Creates demo users and their notes if specified and not in production environment.
+    - Creates base categories if specified and not in production environment.
+    - Creates demo data including web links and posts if specified and not in production environment.
+
+    This function is typically called during the startup process to ensure the system
+    has the necessary initial data.
+
+    Returns:
+        None
+    """
+    # Check if an admin user should be created
+    if settings.create_admin_user:
         logger.warning("Creating admin user")
-        data = await add_admin()  # Create an admin user
+        data: Optional[Dict[str, Any]] = await add_admin()  # Create an admin user
 
-        if settings.release_env.lower() != "prd":
-            if settings.create_demo_notes is True:
-                await add_notes(user_id=data["pkid"])  # Create notes for the admin user
+        # Check if demo notes should be created for the admin user
+        if settings.release_env.lower() != "prd" and settings.create_demo_notes:
+            await add_notes(user_id=data["pkid"])  # Create notes for the admin user
 
+    # Check if the environment is not production
     if settings.release_env.lower() != "prd":
-        if settings.create_demo_user is True:
+        # Check if demo users should be created
+        if settings.create_demo_user:
             logger.warning("Creating demo user")
             for _ in tqdm(
                 range(settings.create_demo_users_qty),
@@ -158,11 +187,13 @@ async def add_system_data():
                 data = await add_user()  # Create a demo user
                 await add_notes(user_id=data["pkid"])  # Create notes for the loop user
 
-        if settings.create_base_categories is True:
+        # Check if base categories should be created
+        if settings.create_base_categories:
             logger.warning("Creating base categories")
             await add_categories()  # Create base categories
 
-        if settings.create_demo_data is True:
+        # Check if demo data should be created
+        if settings.create_demo_data:
             logger.warning("Creating demo data")
             await add_web_links()  # Create demo data
             await add_posts()
@@ -172,31 +203,48 @@ async def add_system_data():
             await add_demo_data(qty=20)
 
 
-async def add_admin():
+async def add_admin() -> Optional[Dict[str, Any]]:
+    """
+    Create an admin user if the settings indicate to do so.
+
+    This asynchronous function checks the settings to determine if an admin user should be created.
+    If so, it creates the admin user with the specified roles and logs the creation process.
+
+    Returns:
+        Optional[Dict[str, Any]]: A dictionary representation of the created admin user, or None if an error occurs.
+    """
+    # Check if the settings indicate to create an admin user
     if settings.create_admin_user is True:
-        logger.warning("creating admin user")
+        logger.warning("Creating admin user")
+
+        # Retrieve admin user credentials from settings
         user_name = settings.admin_user.get_secret_value()
         settings.admin_password.get_secret_value()
 
+        # Define roles for the admin user
         add_roles = {}
         for role in RoleEnum:
             add_roles[role] = True
 
-        # hashed_password = hash_password(password)
+        # Create a new Users instance for the admin user
         user = Users(
             first_name="Admin",
             last_name="User",
             user_name=user_name,
-            # password=hashed_password,
+            # password=hashed_password,  # Uncomment and set hashed password if needed
             email=settings.admin_email,
             my_timezone=settings.default_timezone,
             is_active=True,
             is_admin=True,
             roles=add_roles,
         )
+
         try:
+            # Attempt to create the admin user in the database
             res = await db_ops.create_one(user)
-            logger.debug(f"add admin {res.to_dict()}")
+            logger.debug(f"Admin user created: {res.to_dict()}")
+
+            # Retrieve the created admin user from the database
             user = await db_ops.read_one_record(
                 Select(Users).where(Users.user_name == user_name)
             )
@@ -204,58 +252,84 @@ async def add_admin():
             logger.warning(f"Admin created: {user.full_name}")
             return user.to_dict()
         except Exception as e:
+            # Log any errors that occur during the creation process
             logger.error(e)
             print(e)
+            return None
 
 
-async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qty):
-    moods = ["positive", "neutral", "negative"]
-    mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
+async def add_notes(
+    user_id: str, qty_notes: int = settings.create_demo_notes_qty
+) -> None:
+    """
+    Add demo notes for a given user.
 
+    This asynchronous function creates a specified quantity of demo notes for a user.
+    It generates notes with random moods, mood analyses, tags, and timestamps. Some notes
+    are created with the same date for both creation and update, while others have a random
+    update date.
+
+    Args:
+        user_id (str): The ID of the user for whom the notes are being created.
+        qty_notes (int, optional): The quantity of demo notes to create. Defaults to settings.create_demo_notes_qty.
+
+    Returns:
+        None
+    """
+    # Define possible moods and mood analyses
+    moods: List[str] = ["positive", "neutral", "negative"]
+    mood_analysis: List[str] = [mood[0] for mood in settings.mood_analysis_weights]
+
+    # Create notes with the same date for both creation and update
     for i in tqdm(range(5), desc=f"same day notes for {user_id}", leave=False):
-        mood = random.choice(moods)
-        mood_analysis_choice = random.choice(mood_analysis)
+        mood: str = random.choice(moods)
+        mood_analysis_choice: str = random.choice(mood_analysis)
 
-        length = random.randint(5, 20)
-        note = silly.paragraph(length=length)
-        summary = note[:50]
-        tags = list({silly.adjective() for x in range(1, 4)})
+        length: int = random.randint(5, 20)
+        note_text: str = silly.paragraph(length=length)
+        summary: str = note_text[:50]
+        tags: List[str] = list({silly.adjective() for _ in range(1, 4)})
 
         # Make date_updated the same as date_created or 3-15 days later
-        date_created = datetime.now(UTC) - timedelta(days=365 * i)
+        date_created: datetime = datetime.now(UTC) - timedelta(days=365 * i)
+        date_updated: datetime = date_created
 
-        date_updated = date_created
+        # Create the note
         note = Notes(
-            mood="positive",
-            note=f"{user_id} This is a note that was created in the past",
-            summary="Past Note",
-            tags=list({silly.adjective() for x in range(1, 4)}),
-            mood_analysis="positive",
+            mood=mood,
+            note=note_text,
+            summary=summary,
+            tags=tags,
+            mood_analysis=mood_analysis_choice,
             user_id=user_id,
+            demo_created=1,
             date_created=date_created,
             date_updated=date_updated,
         )
         await db_ops.create_one(note)
 
+    # Create notes with random dates within the last X years
     for _ in tqdm(
         range(qty_notes), desc=f"creating demo notes for {user_id}", leave=False
     ):
-        mood = random.choice(moods)
-        mood_analysis_choice = random.choice(mood_analysis)
+        mood: str = random.choice(moods)
+        mood_analysis_choice: str = random.choice(mood_analysis)
 
-        length = random.randint(5, 20)
-        note = silly.paragraph(length=length)
-        summary = note[:50]
-        tags = list({silly.adjective() for x in range(1, 4)})
+        length: int = random.randint(5, 20)
+        note_text: str = silly.paragraph(length=length)
+        summary: str = note_text[:50]
+        tags: List[str] = list({silly.adjective() for _ in range(1, 4)})
 
         # Generate a random date within the last X years
-        days_in_three_years = 365 * 12
-        random_number_of_days = random.randrange(days_in_three_years)
-        date_created = datetime.now(UTC) - timedelta(days=random_number_of_days)
+        days_in_three_years: int = 365 * 12
+        random_number_of_days: int = random.randrange(days_in_three_years)
+        date_created: datetime = datetime.now(UTC) - timedelta(
+            days=random_number_of_days
+        )
 
         # Make date_updated the same as date_created or 3-15 days later
-        days_to_add = random.choice([0] + list(range(3, 16)))
-        date_updated = date_created + timedelta(days=days_to_add)
+        days_to_add: int = random.choice([0] + list(range(3, 16)))
+        date_updated: datetime = date_created + timedelta(days=days_to_add)
 
         # Convert the timezone-aware datetimes to timezone-naive datetimes
         date_created = date_created.replace(tzinfo=None)
@@ -264,54 +338,73 @@ async def add_notes(user_id: str, qty_notes: int = settings.create_demo_notes_qt
         # Create the note
         note = Notes(
             mood=mood,
-            note=note,
+            note=note_text,
             summary=summary,
             tags=tags,
+            demo_created=1,
             mood_analysis=mood_analysis_choice,
             user_id=user_id,
             date_created=date_created,
             date_updated=date_updated,
         )
-        # demo_notes.append(note)
         await db_ops.create_one(note)
 
 
-async def add_user():
+async def add_user() -> Optional[Dict[str, Any]]:
+    """
+    Add a system user.
+
+    This asynchronous function creates a new user with random attributes such as
+    first name, last name, username, roles, and status flags. It logs the process
+    of adding the user and returns a dictionary representation of the created user.
+
+    Returns:
+        Optional[Dict[str, Any]]: A dictionary representation of the created user, or None if an error occurs.
+    """
     logger.info("adding system user")
-    # hashed_password = hash_password("password")
+
+    # Generate a random username using silly and secrets libraries
     import secrets
 
-    user_name = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
-    roles = ["notes", "web_links", "job_applications", "developer", "posts"]
-    role_data = {}
+    user_name: str = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
+    email: str = silly.email()
+    # Define possible roles for the user
+    roles: List[str] = ["notes", "web_links", "job_applications", "developer", "posts"]
+    role_data: Dict[str, bool] = {}
 
+    # Randomly assign roles to the user
     for role in roles:
         if random.choice([True, False]):
             role_data[role] = random.choice([True, False])
 
+    # Create a new Users instance with random attributes
     user = Users(
         first_name=f"{silly.verb()}",
         last_name=f"{silly.noun()}",
         user_name=user_name,
-        # password=hashed_password,
+        email=email,
+        # password=hashed_password,  # Uncomment and set hashed password if needed
         is_active=random.choice([True, False]),
         is_admin=random.choice([True, False]),
         roles=role_data,
         is_locked=random.choice([True, False]),
         date_last_login=datetime.utcnow(),
     )
+
     try:
+        # Attempt to create the user in the database
         await db_ops.create_one(user)
+
+        # Retrieve the created user from the database
         user = await db_ops.read_one_record(
             Select(Users).where(Users.user_name == user_name)
         )
         logger.info(user.full_name)
         return user.to_dict()
-
     except Exception as e:
+        # Log any errors that occur during the creation process
         logger.error(e)
-
-    # return user.pkid
+        return None
 
 
 async def add_categories():
@@ -330,11 +423,18 @@ async def add_categories():
         logger.info("system categories already added")
         return
 
-    cat: list = ["technology", "news", "sites", "programming", "woodworking", "other"]
+    cat: list = [
+        "news",
+        "other",
+        "programming",
+        "science",
+        "sites",
+        "science",
+        "technology",
+        "woodworking",
+    ]
     user_name = settings.admin_user.get_secret_value()
-    await db_ops.read_one_record(
-        Select(Users).where(Users.user_name == user_name)
-    )
+    await db_ops.read_one_record(Select(Users).where(Users.user_name == user_name))
 
     for c in cat:
         logger.info(f"adding system category {c}")

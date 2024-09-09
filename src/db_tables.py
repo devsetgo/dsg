@@ -32,10 +32,13 @@ from sqlalchemy import (
     Column,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
+    LargeBinary,
     String,
     Text,
     event,
+    func,
 )
 from sqlalchemy.orm import class_mapper, relationship
 
@@ -61,8 +64,10 @@ class Users(schema_base, async_db.Base):
     __tableargs__ = {"comment": "Users of the application"}
 
     # Define the columns of the table
-    first_name = Column(String, unique=False, index=True)  # First name of the user
-    last_name = Column(String, unique=False, index=True)  # Last name of the user
+    # First name of the user
+    first_name = Column(String, unique=False, index=True)
+    # Last name of the user
+    last_name = Column(String, unique=False, index=True)
     user_name = Column(
         String, unique=True, index=True, nullable=False
     )  # Last name of the user
@@ -75,8 +80,10 @@ class Users(schema_base, async_db.Base):
     provider = Column(String, unique=False)
     # timezone of the user, should default to new york
     my_timezone = Column(String, unique=False, index=True, default="America/New_York")
-    is_active = Column(Boolean, default=True, nullable=False)  # If the user is active
-    is_admin = Column(Boolean, default=False, nullable=False)  # If the user is an admin
+    # If the user is active
+    is_active = Column(Boolean, default=True, nullable=False)
+    # If the user is an admin
+    is_admin = Column(Boolean, default=False, nullable=False)
     update_by = Column(
         String, unique=False, index=True
     )  # Last user to update the record
@@ -164,8 +171,16 @@ class WebLinks(schema_base, async_db.Base):
     url = Column(String, unique=False, index=True)  # url of item
     category = Column(String, unique=False, index=True)  # category of item
     public = Column(Boolean, default=False)  # If the item is public
+    image_preview_data = Column(
+        LargeBinary,
+        nullable=True,
+        comment="Binary data of the image preview of the webpage",
+    )
+    ai_fix = Column(Boolean, default=False)
+
     # Define the parent relationship to the User class
-    user_id = Column(String, ForeignKey("users.pkid"))  # Foreign key to the User table
+    # Foreign key to the User table
+    user_id = Column(String, ForeignKey("users.pkid"))
     users = relationship(
         "Users", back_populates="web_links"
     )  # Relationship to the Users class
@@ -175,6 +190,25 @@ class WebLinks(schema_base, async_db.Base):
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
 
+    def update_ai_fix(self):
+        self.ai_fix = (
+            self.image_preview_data is None
+            or self.title is None
+            or self.summary is None
+        )
+
+
+# Event listener for before insert
+@event.listens_for(WebLinks, "before_insert")
+def before_insert_listener(mapper, connection, target):
+    target.update_ai_fix()
+
+
+# Event listener for before update
+@event.listens_for(WebLinks, "before_update")
+def before_update_listener(mapper, connection, target):
+    target.update_ai_fix()
+
 
 class Categories(schema_base, async_db.Base):
     __tablename__ = "categories"  # Name of the table in the database
@@ -183,7 +217,8 @@ class Categories(schema_base, async_db.Base):
     # Define the columns of the table
     name = Column(String(50), unique=False, index=True)  # name of item
     description = Column(String(500), unique=False, index=True)  # description of item
-    is_post = Column(Boolean, default=False, index=True)  # If the category is for posts
+    # If the category is for posts
+    is_post = Column(Boolean, default=False, index=True)
     is_weblink = Column(
         Boolean, default=False, index=True
     )  # If the category is for interesting things
@@ -210,7 +245,7 @@ class NoteMetrics(schema_base, async_db.Base):
     note_count = Column(Integer, default=0)
     mood_metric = Column(JSON)
     metrics = Column(JSON)
-
+    ai_fix_count = Column(Integer, default=0)
     total_unique_tag_count = Column(Integer, default=0)
     users = relationship("Users", back_populates="note_metrics")
 
@@ -227,17 +262,25 @@ class Notes(schema_base, async_db.Base):
 
     mood = Column(String(500), unique=False, index=True)
     mood_analysis = Column(String(500), unique=False, index=True)
-    _note = Column(Text, unique=False, index=True, nullable=False)
+    _note = Column(LargeBinary, unique=False, nullable=False)  # Removed index=True
+    _summary = Column(LargeBinary, unique=False, index=True)
     tags = Column(JSON)
-    _summary = Column(String(500), unique=False, index=True)
     word_count = Column(Integer)
     character_count = Column(Integer)
     ai_fix = Column(Boolean, default=False)
     user_id = Column(String, ForeignKey("users.pkid"), nullable=False, index=True)
     users = relationship("Users", back_populates="notes")
-
+    demo_created = Column(Integer, default=0, index=True)
     # def __init__(self, note):
     #     self._note = encrypt_text(note)  # Encrypt and store the note internally
+
+    if settings.db_driver.startswith("postgres"):
+        __table_args__ = (
+            Index("ix_notes__note_hash", func.md5(_note)),
+            {"schema": "public"},
+        )
+    else:
+        __table_args__ = ()
 
     def to_dict(self):
         data = {
@@ -309,9 +352,9 @@ def note_on_change(mapper, connection, target):
         if pattern.search(tag) or " " in tag:
             target.ai_fix = True  # Set ai_fix to True if an illegal character is found
             break
-
-    # if target.note:  # Check if the note is not None
-    #     target.note = encrypt_text(target.note)
+    if target.demo_created == 1:
+        target.ai_fix = True
+        target.demo_created = 2
 
 
 class LibraryName(async_db.Base):
@@ -357,6 +400,18 @@ class Requirement(schema_base, async_db.Base):
     host_ip = Column(String, index=True)
     header_data = Column(JSON)
     user_agent = Column(String)
+
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+
+class APIMetrics(schema_base, async_db.Base):
+    __tablename__ = "api_metrics"
+    __tableargs__ = {
+        "comment": "Stores API metrics data including request and response data"
+    }
+    metric_data = Column(JSON)
+    api_name = Column(String, index=True)
 
     def to_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}

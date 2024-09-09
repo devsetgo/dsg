@@ -149,7 +149,7 @@ def create_routes(app: FastAPI) -> NoReturn:
         include_in_schema=True,
     )
 
-    @app.get("/error/{error_code}")
+    @app.get("/error/{error_code}", include_in_schema=False)
     async def error_page(request: Request, error_code: int) -> Dict[str, Any]:
         """
         Returns an error page for the specified error code.

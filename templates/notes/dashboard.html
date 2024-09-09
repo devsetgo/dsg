@@ -54,7 +54,9 @@
                 aria-labelledby="custom-tabs-four-dash-tab">
                 <div class="container-fluid">
                   <div hx-get="/notes/metrics/counts" hx-trigger="load" hx-indicator=".htmx-indicator">Loading....</div>
+                  {% if request.session.is_admin is true %}
                   {% include 'notes/data-block.html' %}
+                  {% endif %}
                   {% include 'notes/charting.html' %}
                 </div>
               </div>

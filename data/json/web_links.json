@@ -8,7 +8,7 @@
     {
         "title": "Pypi Checker",
         "summary": "Get the latest version of Python libraries.",
-        "url": "/pypi",
+        "url": "https://devsetgo.com/pypi/check",
         "category": "programming"
     },
     {
