@@ -20,7 +20,6 @@ services:
       - "traefik.http.routers.dsg-test-secured.entrypoints=web-secured"
       - "traefik.http.routers.dsg-test-secured.tls.certresolver=mytlschallenge"
     volumes:
-      - shared-spacy-models:/shared/spacy_models
       - log-volume:/app/log
     deploy:
       replicas: 2
@@ -29,27 +28,15 @@ services:
         delay: 30s
       restart_policy:
         condition: on-failure
-  
-  # filebeat:
-  #   image: docker.elastic.co/beats/filebeat:8.15.0
-  #   user: root
-  #   volumes:
-  #     - /log:/log
-  #     - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
-  #   networks:
-  #     - elk
+
 networks:
   web:
     external: true
   postgresql_db_network:
     external: true
-  # elk:
-  #   external: true
 
 volumes:
   devsetgoTest:
     external: false
-  shared-spacy-models:
-    driver: local
   log-volume:
     driver: local
