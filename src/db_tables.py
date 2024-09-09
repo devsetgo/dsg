@@ -233,7 +233,7 @@ class Categories(schema_base, async_db.Base):
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
         }
 
-
+# TODO: Recreate as a view
 class NoteMetrics(schema_base, async_db.Base):
     __tablename__ = "note_metrics"
 
