@@ -17,6 +17,7 @@ Author:
 """
 import base64
 import hashlib
+import traceback
 
 from cryptography.fernet import Fernet
 from loguru import logger
@@ -68,8 +69,9 @@ def encrypt_text(text: str) -> bytes:
     except Exception as e:
         error = f"Encryption failed: {e}"
         logger.error(error)
+        logger.error(f"Exception type: {type(e).__name__}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         raise EncryptionError(error)  # Raise an EncryptionError with the error message
-
 
 def decrypt_text(text: bytes) -> str:
     """
@@ -92,12 +94,12 @@ def decrypt_text(text: bytes) -> str:
     """
     try:
         decrypted_bytes = pipe.decrypt(text)  # Decrypt the input bytes
-        decrypted_text = decrypted_bytes.decode(
-            "utf-8"
-        )  # Convert decrypted bytes back to string
+        decrypted_text = decrypted_bytes.decode("utf-8")  # Convert decrypted bytes back to string
         logger.debug("Text decrypted successfully.")
         return decrypted_text
     except Exception as e:
         error = f"Decryption failed: {e}"
         logger.error(error)
+        logger.error(f"Exception type: {type(e).__name__}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         raise DecryptionError(error)  # Raise a DecryptionError with the error message

@@ -26,6 +26,7 @@ Functions:
 Usage:
     This module is executed to start the FastAPI application, setting up logging, middleware, routes, and handling the application's lifespan events. It configures the application with a title, description, version, and documentation URLs, and initializes it with specified settings for debugging, middleware, and routes.
 """
+import signal
 from contextlib import asynccontextmanager
 
 from dsg_lib.common_functions import logging_config
@@ -36,7 +37,7 @@ from loguru import logger
 from .app_middleware import add_middleware
 from .app_routes import create_routes
 from .functions.notes_metrics import all_note_metrics
-from .resources import startup
+from .resources import shutdown, startup
 from .settings import settings
 
 logging_config.config_log(
@@ -49,24 +50,24 @@ logging_config.config_log(
     log_format=None,
     log_serializer=settings.log_serializer,
     log_diagnose=settings.log_diagnose,
-    intercept_standard_logging=False,
+    intercept_standard_logging=settings.log_intercept_standard_logging,
 )
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):  # pragma: no cover
     logger.info("starting up")
     await startup()
     await all_note_metrics()
     yield
-    logger.info("shutting down")
+    await shutdown()
 
 
 # Create an instance of the FastAPI class
 app = FastAPI(
     title="DevSetGo.com",  # The title of the API
     description="Website for devsetgo.com",  # A brief description of the API
-    version="2.0",  # The version of the API
+    version=settings.version,  # The version of the API
     docs_url="/docs",  # The URL where the API documentation will be served
     redoc_url="/redoc",  # The URL where the ReDoc documentation will be served
     openapi_url="/openapi.json",  # The URL where the OpenAPI schema will be served
@@ -76,16 +77,41 @@ app = FastAPI(
     lifespan=lifespan,
     # exception_handlers=
 )
-if settings.debug_mode:
+if settings.debug_mode:  # pragma: no cover
     logger.warning("Debug mode is enabled and should not be used in production.")
 
-
+# add middleware and routes to the application
 add_middleware(app)
+# create routes
 create_routes(app)
 
 
+# Define a signal handler for the WINCH signal
+def handle_winch(signum, frame):
+    logger.info("Received WINCH signal")
+
+
+# Register the signal handler
+signal.signal(signal.SIGWINCH, handle_winch)
+
+
 @app.get("/")
-async def root(request: Request):
-    # get user_identifier from session
+async def root(request: Request) -> RedirectResponse:  # pragma: no cover
+    """
+    Root endpoint that redirects to the index page.
+
+    This asynchronous function performs the following tasks:
+    - Retrieves the 'user_identifier' from the session, if it exists.
+    - Redirects the user to the '/pages/index' URL.
+
+    Args:
+        request (Request): The request object containing session data.
+
+    Returns:
+        RedirectResponse: A response that redirects the user to the '/pages/index' URL.
+    """
+    # Retrieve 'user_identifier' from the session, if it exists
     request.session.get("user_identifier", None)
+
+    # Redirect the user to the '/pages/index' URL
     return RedirectResponse(url="/pages/index")

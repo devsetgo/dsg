@@ -1,4 +1,4 @@
-<div class="col-md-10">
+<div class="col-md-12">
     <div class="card card-primary collapsed-card">
         <div class="card-header">
             <h3 class="card-title">Search Form</h3>
@@ -9,23 +9,30 @@
         </div>
         <div class="card-body">
             <!-- Begin Search Form -->
-            <form hx-get="/notes/pagination" hx-trigger="submit" hx-target="#notes-data" hx-indicator=".htmx-indicator">
+            <form hx-get="/weblinks/pagination" hx-trigger="submit" hx-target="#links-data"
+                hx-indicator=".htmx-indicator">
                 <div class="row">
                     <div class="col-md-4">
                         <label for="search_term">Search Term</label>
                         <input id="search_term" class="form-control" type="search" name="search_term"
                             placeholder="Begin Typing To Search Notes...">
                     </div>
-                    <!-- Mood input -->
                     <div class="col-md-4">
-                        <label for="mood">Mood</label>
-                        <select id="mood" class="form-control" name="mood">
-                            <option value="">Select Mood</option>
-                            <option value="positive">Positive</option>
-                            <option value="neutral">Neutral</option>
-                            <option value="negative">Negative</option>
+                        <label for="category" class="col-form-label">Category: </label>
+                        <select id="category" class="form-control" name="category" required>
+                            <option value="">Select Category</option>
                         </select>
                     </div>
+                    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+                    <script>
+                        $(document).ready(function () {
+                            $.getJSON('/posts/categories', function (data) {
+                                $.each(data, function (index, value) {
+                                    $('#category').append('<option value="' + value + '">' + value + '</option>');
+                                });
+                            });
+                        });
+                    </script>
                     <div class="col-md-4 d-flex align-items-end">
                         <button class="btn btn-primary" type="submit">Search</button>
                     </div>

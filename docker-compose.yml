@@ -1,20 +1,16 @@
 version: "3.3"
 
 services:
-  devsetgo:
-    image: mikeryan56/dsg:beta-24-06-01-2215
+  devsetgoTest:
+    image: mikeryan56/dsg:beta-2024-09-02-3
     env_file:
       - .env
-    container_name: "devsetgoTest"
     restart: always
     ports:
-      - "5000:5000"
-    volumes:
-      - devsetgo:/app
+      - "5000"
     networks:
       - web
-      - backend
-      - postgres_db_network
+      - postgresql_db_network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dsg-web-test.rule=Host(`test.devsetgo.com`)"
@@ -23,15 +19,24 @@ services:
       - "traefik.http.routers.dsg-test-secured.rule=Host(`test.devsetgo.com`)"
       - "traefik.http.routers.dsg-test-secured.entrypoints=web-secured"
       - "traefik.http.routers.dsg-test-secured.tls.certresolver=mytlschallenge"
+    volumes:
+      - log-volume:/app/log
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 30s
+      restart_policy:
+        condition: on-failure
 
 networks:
   web:
     external: true
-  backend:
-    external: true
-  postgres_db_network:
+  postgresql_db_network:
     external: true
 
 volumes:
-  devsetgo:
+  devsetgoTest:
     external: false
+  log-volume:
+    driver: local

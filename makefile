@@ -1,6 +1,8 @@
 # Shell
 SHELL := /bin/bash
 # Variables
+__version__ = "beta-2024-09-08-001"
+
 PYTHON = python3
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
@@ -58,17 +60,26 @@ cleanup: autoflake ruff isort  # Run isort, ruff, and autoflake
 compile:  # Compile http_request.c into a shared library
 	gcc -shared -o http_request.so http_request.c -lcurl -fPIC
 
+docker-login:  # Login to docker hub
+	docker login
+
 docker-beta-run:  # Run docker container
-	docker run -p 5000:5000 dsg:beta-$(TIMESTAMP)
+	docker run -p 5000:5000 dsg:$(__version__)
 
 docker-beta-build:  # Build docker image
-	docker build --no-cache -t dsg:beta-$(TIMESTAMP) .
+	docker build --no-cache -t dsg:$(__version__) .
 
 docker-beta-push:  # Push beta test image to docker hub
-	docker tag dsg:beta-$(TIMESTAMP) mikeryan56/dsg:beta-$(TIMESTAMP)
-	docker push mikeryan56/dsg:beta-$(TIMESTAMP)
+	docker tag dsg:$(__version__) mikeryan56/dsg:$(__version__)
+	docker push mikeryan56/dsg:$(__version__)
 
-docker-beta-bp: docker-beta-build docker-beta-push
+docker-beta-bp: docker-beta-build docker-beta-push 
+
+bump-calver-beta:  # Bump the beta version number in the Makefile
+	python3 /home/mike/dsg/scripts/calver_update.py --build --beta
+
+bump-calver:  # Bump the version number in the Makefile
+	python3 /home/mike/dsg/scripts/calver_update.py --build
 
 flake8:  # Run flake8 and output report
 	flake8 --tee . > _flake8Report.txt
@@ -86,6 +97,9 @@ isort:  # Sort imports using isort
 	isort $(SERVICE_PATH)
 	isort $(TESTS_PATH)
 
+pyright:  # Run pyright
+	pyright
+
 run-dev:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.dev .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
@@ -93,7 +107,9 @@ run-dev:  # Run the FastAPI application in development mode with hot-reloading
 
 run-local:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.local .env
+	@echo "Do you want to delete the SQLite database at /workspaces/dsg/sqlite_db/dsg_local.db? (y/N): " && read ans && [ "$$ans" = "y" ] && rm -f /workspaces/dsg/sqlite_db/dsg_local.db || echo "Database not deleted."
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
+
 
 run-plocal:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.plocal .env

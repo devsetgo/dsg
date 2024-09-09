@@ -58,7 +58,7 @@ from fastapi import (
 from fastapi.responses import RedirectResponse
 from loguru import logger
 from pytz import timezone
-from sqlalchemy import Select, Text, and_, between, cast, extract, or_
+from sqlalchemy import Select, Text, and_, between, cast, desc, extract, or_
 
 from ..db_tables import NoteMetrics, Notes
 from ..functions import ai, date_functions, note_import, notes_metrics
@@ -108,13 +108,13 @@ async def read_notes(
         now = datetime.utcnow()
 
         # Calculate the time one hour ago
-        one_hour_ago = now - timedelta(hours=1)
+        nth_hour_ago = now - timedelta(hours=0.25)
 
         # Get date_updated from note_metrics
         date_update = note_metrics["date_updated"]
 
         # Check if date_update is older than one hour
-        if date_update < one_hour_ago:
+        if date_update < nth_hour_ago:
             background_tasks.add_task(
                 notes_metrics.update_notes_metrics, user_id=user_identifier
             )
@@ -125,6 +125,7 @@ async def read_notes(
         "metrics": metrics,
         "note_metrics": note_metrics,
     }
+    # print(context["note_metrics"]["ai_fix_count"])
     return templates.TemplateResponse(
         request=request, name="/notes/dashboard.html", context=context
     )
@@ -153,6 +154,7 @@ async def get_note_counts(
 
     logger.debug(f"User {user_identifier} fetched note counts: {note_metrics}")
     logger.info(f"User {user_identifier} metrics retrieved")
+
     return templates.TemplateResponse(
         request=request,
         name="/notes/metrics.html",
@@ -414,7 +416,7 @@ async def get_note_issue(
         Select(Notes)
         .where(and_(Notes.user_id == user_identifier, Notes.ai_fix == True))
         .limit(200)
-    )
+    ).order_by(desc(Notes.date_created))
     notes = await db_ops.read_query(query=query)
 
     # offset date_created and date_updated to user's timezone
@@ -550,6 +552,7 @@ async def read_notes_pagination(
         notes = []
     else:
         notes = [note.to_dict() for note in notes]
+
     # offset date_created and date_updated to user's timezone
     notes = await date_functions.update_timezone_for_dates(
         data=notes, user_timezone=user_timezone
@@ -573,6 +576,7 @@ async def read_notes_pagination(
         if page < total_pages
         else None
     )
+
     logger.info(f"Found {found} notes for user {user_identifier}")
     return templates.TemplateResponse(
         request=request,
@@ -636,7 +640,7 @@ async def read_today_notes(
                 ),
             ),
         )
-    )
+    ).order_by(desc(Notes.date_created))
     notes = await db_ops.read_query(query=query)
 
     # offset date_created and date_updated to user's timezone

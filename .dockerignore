@@ -2,18 +2,21 @@
 .git
 .vscode
 __archive
+.pytest_cache
+.ruff_cache
 .devcontainer
 .sonarlint
-.ruff_cache
 htmlcov
 log/*.log
 logs/
 scripts/
 sqlite_db/*.db
 tests/
+/env-files
 .env.*
 .env_sample
 .env
+.coverage
 .pre-commit-config.yaml
 coverage.xml
 coverage.svg
@@ -21,3 +24,4 @@ LICENSE
 makefile
 README.md
 sonar-project.properties
+pyproject.toml

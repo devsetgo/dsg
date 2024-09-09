@@ -16,10 +16,9 @@ import re
 from functools import lru_cache
 from typing import Dict, List
 
-import spacy
 from loguru import logger
+from nameparser import HumanName
 from openai import AsyncOpenAI
-from spacy.language import Language
 
 from src.settings import settings
 
@@ -94,7 +93,7 @@ async def get_tags(
     logger.info("Starting get_tags function")
 
     # Create the prompt for the OpenAI API
-    prompt = f"For the following text create a python style list between 1 to {keyword_limit} 'one word' keywords to be stored as a python list and cannot be a persons name: {content}"
+    prompt = f"For the following text create a python style list between 1 to {keyword_limit} 'single word' keywords to be stored as a python list and cannot be a persons name: {content}"
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
@@ -117,12 +116,14 @@ async def get_tags(
     match = re.search(r"\[.*\]", response_content)
     if match:
         response_content = match.group(0)
+
     else:
         logger.error(
             f"Error: Unable to extract a list from response_content: {response_content}"
         )
         response_content = "[]"
 
+    logger.debug(response_content)
     # Convert string representation of list to list
     try:
         response_content = ast.literal_eval(response_content)
@@ -140,20 +141,43 @@ async def get_tags(
     response_dict = {"tags": response_content}
     logger.info("Finished get_tags function")
     resp = tag_check(response_dict)
+    logger.debug(response_dict)
     return resp
 
 
+# @lru_cache(maxsize=128)
+# def load_model() -> Language:
+#     """
+#     Load and cache the multi-language spaCy model to improve performance.
+
+#     Returns:
+#         The loaded spaCy Language model.
+#     """
+#     model_name = "xx_ent_wiki_sm"
+#     try:
+#         # Load the multi-language model
+#         nlp = spacy.load(model_name)
+#         logger.info(f"Model '{model_name}' loaded successfully.")
+#     except OSError as e:
+#         logger.error(f"Failed to load model '{model_name}': {e}")
+#         raise
+#     return nlp
+
 @lru_cache(maxsize=128)
-def load_model() -> Language:
+def name_check(name: str) -> bool:
     """
-    Load and cache the multi-language spaCy model to improve performance.
+    Check if the text is a person's name using the nameparser library.
+
+    Args:
+        name: The text to be checked.
 
     Returns:
-        The loaded spaCy Language model.
+        True if the text is recognized as a person's name, False otherwise.
     """
-    # Load the multi-language model
-    nlp = spacy.load("xx_ent_wiki_sm")
-    return nlp
+    parsed_name = HumanName(name)
+    # Check if the parsed name has at least a first name and a last name
+    return bool(parsed_name.first and parsed_name.last)
+
 
 
 def tag_check(tags: Dict[str, List[str]]) -> Dict[str, List[str]]:
@@ -168,15 +192,11 @@ def tag_check(tags: Dict[str, List[str]]) -> Dict[str, List[str]]:
         where any recognized person names have been removed.
     """
     # Load the multi-language model
-    nlp = load_model()
+
     tag_list = tags["tags"]
-    filtered_tags = []
-    for tag in tag_list:
-        # Process each tag through the spaCy model
-        doc = nlp(tag)
-        # Filter out tags recognized as person names ("PER")
-        if not any(ent.label_ == "PER" for ent in doc.ents):
-            filtered_tags.append(tag)
+    logger.debug(tag_list)
+    filtered_tags = [tag for tag in tag_list if not name_check(tag)]
+    logger.debug(filtered_tags)
     return {"tags": filtered_tags}
 
 
@@ -348,22 +368,22 @@ async def analyze_post(content: str, temperature: float = temperature) -> dict:
 
 async def get_url_summary(
     url: str, temperature: float = temperature, sentence_length: int = 2
-) -> dict:
+) -> Dict[str, str]:
     """
-    Gets a summary of the given url.
+    Gets a summary of the given URL using the OpenAI API.
 
     Args:
-        url (str): The url to summarize.
-        temperature (float, optional): The temperature to use for the OpenAI API. Defaults to temperature.
-        sentence_length (int, optional): The length of the summary in sentences. Defaults to 1.
+        url (str): The URL to summarize.
+        temperature (float, optional): The temperature setting for the OpenAI API. Defaults to the value of `temperature`.
+        sentence_length (int, optional): The length of the summary in sentences. Defaults to 2.
 
     Returns:
-        dict: A dictionary containing the summary.
+        Dict[str, str]: A dictionary containing the summary.
     """
     logger.info("Starting get_url_summary function")
 
     # Create the prompt for the OpenAI API
-    prompt = f"Please summarize the url and provide {sentence_length} concise sentence in length as a summary for the URL"
+    prompt = f"Please summarize the URL and provide {sentence_length} concise sentence(s) in length as a summary for the URL"
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
@@ -383,7 +403,70 @@ async def get_url_summary(
     logger.debug(f"summary content: {response_content}")
 
     # Store the summary in a dictionary
-    response_dict = response_content
+    response_dict = {"summary": response_content}
     logger.info("Finished get_url_summary function")
 
     return response_dict
+
+
+async def get_url_title(
+    url: str, temperature: float = 0.7, sentence_length: int = 1
+) -> str:
+    """
+    Generates a new title from the website's full title HTML tag using the OpenAI API.
+
+    Args:
+        url (str): The URL of the website to generate the title from.
+        temperature (float, optional): The temperature setting for the OpenAI API. Defaults to 0.7.
+        sentence_length (int, optional): The length of the sentence to generate. Defaults to 1.
+
+    Returns:
+        str: The generated title after removing quotation marks.
+    """
+    logger.info("Starting get_url_summary function")
+
+    # Create the prompt for the OpenAI API
+    prompt = "Create a new title from the websites full title html tag and format as 'Full Title from Website Name'. If not possible provide a title that is a simple single sentence in length."
+
+    # Send the prompt to the OpenAI API
+    chat_completion = await client.chat.completions.create(
+        model="gpt-3.5-turbo-1106",
+        messages=[
+            {
+                "role": "system",
+                "content": prompt,
+            },
+            {"role": "user", "content": url},
+        ],
+        temperature=temperature,
+    )
+
+    # Extract the content from the response
+    response_content = chat_completion.choices[0].message.content
+    logger.debug(f"title content: {response_content}")
+
+    # Store the summary in a dictionary
+    response_dict = response_content
+    logger.info("Finished get_url_title function")
+    text = strip_quotation_marks(response_dict)
+    return text
+
+
+def strip_quotation_marks(text: str) -> str:
+    """
+    Removes various types of quotation marks from the given text.
+
+    Args:
+        text (str): The input string from which quotation marks will be removed.
+
+    Returns:
+        str: The input string with all quotation marks removed.
+    """
+    return (
+        text.replace('"', "")
+        .replace("'", "")
+        .replace("“", "")
+        .replace("”", "")
+        .replace("‘", "")
+        .replace("’", "")
+    )

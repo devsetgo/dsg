@@ -27,14 +27,7 @@
         </div>
       </form>
     </li>
-
-    <li class="nav-item d-none d-sm-inline-block">
-      <a class="nav-link">
-        <span class="htmx-indicator">
-          <img src="{{ url_for('static' , path='/image/loading_4.gif') }}" height="20" width="200" /><strong> Processing...</strong>
-        </span>
-      </a>
-    </li>
+    {% include "base_progress_bar.html" %}
   </ul>
   {% include "base_navbar_user.html" %}
 </nav>

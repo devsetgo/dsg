@@ -47,7 +47,7 @@ from sqlalchemy import Select, and_
 
 # , FailedLoginAttempts,JobApplications
 from ..db_tables import Categories, Notes, Posts, Users, WebLinks
-from ..functions import date_functions, note_import
+from ..functions import date_functions, link_preview, note_import
 from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
 from ..functions.models import RoleEnum
@@ -74,19 +74,22 @@ async def admin_dashboard(
 
 
 async def get_list_of_users(user_timezone: str):
-    query = Select(Users)
-    users = await db_ops.read_query(query=query)
-    users = [user.to_dict() for user in users]
+    try:
+        query = Select(Users)
+        users = await db_ops.read_query(query=query)
+        users = [user.to_dict() for user in users]
 
-    for user in users:
-        for k, _v in user.items():
-            if k.startswith("date_"):
-                user[k] = await date_functions.timezone_update(
-                    user_timezone=user_timezone,
-                    date_time=user[k],
-                    friendly_string=True,
-                )
-
+        for user in users:
+            for k, _v in user.items():
+                if k.startswith("date_"):
+                    user[k] = await date_functions.timezone_update(
+                        user_timezone=user_timezone,
+                        date_time=user[k],
+                        friendly_string=True,
+                    )
+    except Exception as e:
+        logger.error(f"Error fetching users: {e}")
+        users = []
     return users
 
 
@@ -129,13 +132,16 @@ async def admin_categories_table(
 
     for post in post_count:
         post = post.to_dict()
-        category_count[post['category'].lower()] += 1
+        category_count[post["category"].lower()] += 1
 
     for it in it_count:
         it = it.to_dict()
-        category_count[it['category'].lower()] += 1
+        category_count[it["category"].lower()] += 1
 
-    category_count_list = [{'category': category, 'count': count} for category, count in category_count.items()]
+    category_count_list = [
+        {"category": category, "count": count}
+        for category, count in category_count.items()
+    ]
     logger.debug(category_count_list)
     context = {"categories": categories, "category_count_list": category_count_list}
     logger.debug(f"categories-table: {context}")
@@ -148,7 +154,6 @@ async def admin_categories_table(
 async def admin_category_edit(
     request: Request, category_id: str = None, user_info: dict = Depends(check_login)
 ):
-
     context = {"categories": None, "rand": secrets.token_urlsafe(2)}
     if category_id is not None:
         query = Select(Categories).where(Categories.pkid == category_id)
@@ -185,7 +190,6 @@ async def add_edit_category(
 
     context = {"category_data": None}
     if "category_id" in form and form["category_id"] != "":
-
         category_id = form["category_id"]
         # Fetch the old data
         old_data = await db_ops.read_one_record(
@@ -426,18 +430,23 @@ async def admin_note_ai_check(
     logger.debug(f"User identifier: {user_identifier}")
 
     # Create a query to select notes that need AI check
-    query = Select(Notes).where(Notes.ai_fix == True)
+    notes_query = Select(Notes).where(Notes.ai_fix == True)
 
     # Execute the query and get the results
-    notes = await db_ops.read_query(query=query)
-
+    notes = await db_ops.read_query(query=notes_query)
     notes = [note.to_dict() for note in notes]
 
-    # create a list of User IDs with a count of notes [{user_id: user_id, user_name: user_name, count: count, last_note_date: last_note_date}]
+    # Create a query to select weblinks that need AI check
+    weblinks_query = Select(WebLinks).where(WebLinks.ai_fix == True)
+
+    # Execute the query and get the results
+    weblinks = await db_ops.read_query(query=weblinks_query)
+    weblinks = [weblink.to_dict() for weblink in weblinks]
+
+    # Log the number of retrieved notes and weblinks
     user_note_count = []
     for note in notes:
         user_id = note["user_id"]
-        # user_name = note["user_name"]
         note_date = note["date_created"]
         found = False
         for user in user_note_count:
@@ -454,20 +463,46 @@ async def admin_note_ai_check(
                     "user_name": None,
                     "count": 1,
                     "last_note_date": note_date,
+                    "weblinks_ai_fix_count": 0,  # Initialize weblinks count
                 }
             )
-    # Log the number of retrieved notes
+
+    # Query to get the weblinks with ai_fix set to True
+    weblinks_query = Select(WebLinks).where(WebLinks.ai_fix == True)
+    weblinks = await db_ops.read_query(query=weblinks_query)
+    weblinks = [weblink.to_dict() for weblink in weblinks]
+
+    # Update user_note_count with weblinks count
+    for weblink in weblinks:
+        user_id = weblink["user_id"]
+        for user in user_note_count:
+            if user["user_id"] == user_id:
+                user["weblinks_ai_fix_count"] += 1
+                break
+
+    for user in user_note_count:
+        user_id = user["user_id"]
+        query = Select(Users).where(Users.pkid == user_id)
+        user_data = await db_ops.read_one_record(query=query)
+        user_data = user_data.to_dict()
+        user["user_name"] = user_data["user_name"]
+
+    # Log the number of retrieved notes and weblinks
     logger.debug(f"Retrieved {len(notes)} notes for AI check")
+    logger.debug(f"Retrieved {len(weblinks)} weblinks for AI check")
 
     # Create the context for the template
     context = {
         "page": "admin",
         "user_identifier": user_identifier,
         "notes": notes,
+        "weblinks": weblinks,
         "user_note_count": user_note_count,
     }
+
     # Log the end of the process
     logger.info("Finished processing note AI check for admin")
+
     # Render the template and return the response
     return templates.TemplateResponse(
         request=request, name="/admin/note_ai_check.html", context=context
@@ -485,6 +520,9 @@ async def admin_note_ai_check_user(
 
     # Execute the query and get the results
     notes = await db_ops.read_query(query=query)
+    if isinstance(notes, dict):
+        logger.error(f"Error fetching notes: {notes}")
+        raise HTTPException(status_code=404, detail="No notes found for user")
     notes = [note.to_dict() for note in notes]
     list_of_ids: list = []
     for note in notes:
@@ -493,5 +531,30 @@ async def admin_note_ai_check_user(
     # print(list_of_ids)
     background_tasks.add_task(
         note_import.process_ai, user_identifier=user_id, list_of_ids=list_of_ids
+    )
+    return RedirectResponse(url="/admin", status_code=302)
+
+
+# weblink-fix for user
+@router.get("/weblink-fix/{user_id}")
+async def admin_weblink_fix_user(
+    user_id: str,
+    background_tasks: BackgroundTasks,
+    user_info: dict = Depends(check_login),
+):
+    query = Select(WebLinks).where(
+        and_(WebLinks.user_id == user_id, WebLinks.ai_fix == True)
+    )
+
+    # Execute the query and get the results
+    links = await db_ops.read_query(query=query)
+    links = [link.to_dict() for link in links]
+    list_of_ids: list = []
+    for link in links:
+        list_of_ids.append(link["pkid"])
+
+    background_tasks.add_task(
+        link_preview.update_weblinks_ai,
+        list_of_ids=list_of_ids,
     )
     return RedirectResponse(url="/admin", status_code=302)
