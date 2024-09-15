@@ -19,10 +19,11 @@
         });
       </script>
       <div class="row" hx-get="/posts/pagination" hx-trigger="load" hx-target="#posts-data" hx-indicator=".htmx-indicator">
-        <div id="posts-data"></div>
+        <div class="row" id="posts-data"></div>
       </div>
     </div>
   </div>
+</section>
   {% endblock %}
   {% block page_sidebar_content %}
   <!-- blank and demo script adds page configuration example -->
