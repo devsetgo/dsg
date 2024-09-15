@@ -7,8 +7,8 @@
     crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 {% endblock %}
-{% block page_breadcrumb %} Notes / New{% endblock %}
-{% block page_head_title %}New Note{% endblock %}
+{% block page_breadcrumb %} Notes / Bulk{% endblock %}
+{% block page_head_title %}Bulk Note{% endblock %}
 {% block body %}
 <!-- Main content -->
 <section class="content">
@@ -19,21 +19,19 @@
                 <!-- general form elements -->
                 <div class="card card-primary" style="margin: 20px;">
                     <div class="card-header">
-                        <h3 class="card-title">Add a New Note</h3>
+                        <h3 class="card-title">Bulk Add Notes</h3>
                     </div>
                     <!-- /.card-header -->
                     <!-- form start -->
                     <div class="row">
                         <div class="col-12">
-                            <form action="/notes/bulk" method="post" enctype="multipart/form-data"
+                            <form action="/weblinks/bulk" method="post" enctype="multipart/form-data"
                                 hx-indicator=".htmx-indicator">
                                 <div class="form-group">
                                     <label for="csv_file">Upload CSV file:</label>
                                     <input type="file" class="form-control-file" id="csv_file" name="csv_file"
                                         accept=".csv">
                                 </div>
-
-
                                 <button type="submit" class="btn btn-primary">Submit</button>
                             </form>
                         </div>
