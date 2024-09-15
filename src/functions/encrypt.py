@@ -73,6 +73,7 @@ def encrypt_text(text: str) -> bytes:
         logger.error(f"Traceback: {traceback.format_exc()}")
         raise EncryptionError(error)  # Raise an EncryptionError with the error message
 
+
 def decrypt_text(text: bytes) -> str:
     """
     Decrypts bytes back into a text string using Fernet symmetric encryption.
@@ -94,7 +95,9 @@ def decrypt_text(text: bytes) -> str:
     """
     try:
         decrypted_bytes = pipe.decrypt(text)  # Decrypt the input bytes
-        decrypted_text = decrypted_bytes.decode("utf-8")  # Convert decrypted bytes back to string
+        decrypted_text = decrypted_bytes.decode(
+            "utf-8"
+        )  # Convert decrypted bytes back to string
         logger.debug("Text decrypted successfully.")
         return decrypted_text
     except Exception as e:
