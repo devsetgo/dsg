@@ -70,3 +70,12 @@ We use Alembic for database migration. Here are the steps to create and apply da
     You'll be prompted to enter the name of the revision to downgrade to.
 
 Remember to commit your migration scripts to version control along with the corresponding changes to your models.
+
+
+# Add Git credientials
+Store and add username and email to git config
+```bash
+git config --global credential.helper store
+git config --global user.name "Mike Ryan"
+git config --global user.email "mikeryan56@gmail.com"
+```
