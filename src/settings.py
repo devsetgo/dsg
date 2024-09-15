@@ -75,7 +75,7 @@ class Settings(BaseSettings):
         ..., description="For sqlite it should be folder path 'folder/filename"
     )
     phrase: SecretStr = Field(..., description="substitution cipher")
-    spacy_model_path:str = Field("/app/spacy_models", description="Spacy model path")
+    spacy_model_path: str = Field("/app/spacy_models", description="Spacy model path")
     echo: bool = Field(True, description="Enable echo")
     future: bool = Field(True, description="Enable future")
     pool_pre_ping: bool = Field(False, description="Enable pool_pre_ping")
@@ -152,6 +152,8 @@ class Settings(BaseSettings):
     create_demo_data: bool = False
     create_demo_notes: bool = False
     create_demo_notes_qty: int = 0
+    create_demo_posts: bool = False
+    create_demo_posts_qty: int = 0
 
     @model_validator(mode="before")
     @classmethod
