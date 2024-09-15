@@ -622,25 +622,33 @@ async def read_today_notes(
     #         between(Notes.date_created, start_date, end_date),
     #     )
     # )
-    query = Select(Notes).where(
-        and_(
-            Notes.user_id == user_identifier,
-            or_(
-                and_(
-                    extract("month", Notes.date_created) == start_date.month,
-                    between(
-                        extract("day", Notes.date_created), start_date.day, end_date.day
+    query = (
+        Select(Notes)
+        .where(
+            and_(
+                Notes.user_id == user_identifier,
+                or_(
+                    and_(
+                        extract("month", Notes.date_created) == start_date.month,
+                        between(
+                            extract("day", Notes.date_created),
+                            start_date.day,
+                            end_date.day,
+                        ),
+                    ),
+                    and_(
+                        extract("month", Notes.date_created) == end_date.month,
+                        between(
+                            extract("day", Notes.date_created),
+                            start_date.day,
+                            end_date.day,
+                        ),
                     ),
                 ),
-                and_(
-                    extract("month", Notes.date_created) == end_date.month,
-                    between(
-                        extract("day", Notes.date_created), start_date.day, end_date.day
-                    ),
-                ),
-            ),
+            )
         )
-    ).order_by(desc(Notes.date_created))
+        .order_by(desc(Notes.date_created))
+    )
     notes = await db_ops.read_query(query=query)
 
     # offset date_created and date_updated to user's timezone
