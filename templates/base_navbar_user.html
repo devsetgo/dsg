@@ -41,6 +41,13 @@
                 <i class="mr-2 fas fa-user-edit"> </i>
                 My Information
             </a>
+            {% if request.session.roles and request.session.roles.web_links %}
+            <div class="dropdown-divider"></div>
+            <a href="/weblinks/bulk" class="dropdown-item">
+                <i class="mr-2 fas fa-tint"> </i>
+                Bulk Load Weblinks
+            </a>
+            {% endif %}
             {% if request.session.roles and request.session.roles.notes %}
             <div class="dropdown-divider"></div>
             <a href="/notes/bulk" class="dropdown-item">
