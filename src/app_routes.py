@@ -25,6 +25,7 @@ import time
 from typing import Any, Dict, NoReturn
 
 from dsg_lib.fastapi_functions import http_codes, system_health_endpoints
+
 # from fastapi import FastAPI, Request, HTTPException, status
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
@@ -32,7 +33,17 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .endpoints import admin, blog_posts, devtools, notes, pages, pypi, users, web_links
+from .endpoints import (
+    admin,
+    blog_posts,
+    devtools,
+    services,
+    notes,
+    pages,
+    pypi,
+    users,
+    web_links,
+)
 from .resources import templates
 
 
@@ -173,6 +184,13 @@ def create_routes(app: FastAPI) -> NoReturn:
 
         # Return a template response with the error page and the context
         return templates.TemplateResponse("error/error-page.html", context)
+
+    app.include_router(
+        services.router,
+        prefix="/services/v1",
+        tags=["services"],
+        include_in_schema=True,
+    )
 
     app.include_router(
         web_links.router,

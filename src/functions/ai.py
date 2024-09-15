@@ -15,7 +15,7 @@ import ast
 import re
 from functools import lru_cache
 from typing import Dict, List
-
+from httpx import AsyncClient
 from loguru import logger
 from nameparser import HumanName
 from openai import AsyncOpenAI
@@ -145,24 +145,6 @@ async def get_tags(
     return resp
 
 
-# @lru_cache(maxsize=128)
-# def load_model() -> Language:
-#     """
-#     Load and cache the multi-language spaCy model to improve performance.
-
-#     Returns:
-#         The loaded spaCy Language model.
-#     """
-#     model_name = "xx_ent_wiki_sm"
-#     try:
-#         # Load the multi-language model
-#         nlp = spacy.load(model_name)
-#         logger.info(f"Model '{model_name}' loaded successfully.")
-#     except OSError as e:
-#         logger.error(f"Failed to load model '{model_name}': {e}")
-#         raise
-#     return nlp
-
 @lru_cache(maxsize=128)
 def name_check(name: str) -> bool:
     """
@@ -177,7 +159,6 @@ def name_check(name: str) -> bool:
     parsed_name = HumanName(name)
     # Check if the parsed name has at least a first name and a last name
     return bool(parsed_name.first and parsed_name.last)
-
 
 
 def tag_check(tags: Dict[str, List[str]]) -> Dict[str, List[str]]:
@@ -426,8 +407,8 @@ async def get_url_title(
     logger.info("Starting get_url_summary function")
 
     # Create the prompt for the OpenAI API
-    prompt = "Create a new title from the websites full title html tag and format as 'Full Title from Website Name'. If not possible provide a title that is a simple single sentence in length."
-
+    # prompt = "Create a new title from the websites full title html tag and format as 'Full Title from Website Name'. If not possible provide a title that is a simple single sentence in length."
+    prompt = f"Create a title for this websites. It should be only {sentence_length} sentence in length and cannot contain any persons name."
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
@@ -451,6 +432,24 @@ async def get_url_title(
     text = strip_quotation_marks(response_dict)
     return text
 
+async def get_html_title(url: str) -> str:
+    """
+    Get the title of a webpage from the HTML title tag.
+
+    Args:
+        url (str): The URL of the webpage.
+
+    Returns:
+        str: The title of the webpage.
+    """
+    async with AsyncClient() as client:
+        response = await client.get(url)
+        html = response.text
+        # Updated regular expression to match <title> tag with possible attributes
+        title = re.search(r"<title[^>]*>(.*?)</title>", html, re.DOTALL)
+        if title:
+            return title.group(1)
+        return "Not Found"
 
 def strip_quotation_marks(text: str) -> str:
     """
