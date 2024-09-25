@@ -121,7 +121,7 @@ async def get_weblink_metrics():
     except Exception as e:
         error: str = f"Error getting weblink metrics: {e}"
         logger.error(error)
-    
+
     print(response)
     return response
 

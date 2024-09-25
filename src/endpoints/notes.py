@@ -253,8 +253,9 @@ async def bulk_note(
     # read the file content
     file_content = await csv_file.read()
     file_content = file_content.decode("utf-8")
+    logger.debug(f"Received file content: {file_content}")
     csv_reader = csv.DictReader(io.StringIO(file_content))
-
+    logger.debug(f"Reading notes from file for user: {user_identifier}")
     # add the task to background tasks
     background_tasks.add_task(
         note_import.read_notes_from_file, csv_file=csv_reader, user_id=user_identifier

@@ -28,7 +28,7 @@ from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from loguru import logger
-from sqlalchemy import Select, Text, and_, asc, cast, or_
+from sqlalchemy import Select, and_, asc, or_
 
 from ..db_tables import Categories, Posts, Users
 from ..functions import ai, date_functions

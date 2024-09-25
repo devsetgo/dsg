@@ -15,6 +15,7 @@ import ast
 import re
 from functools import lru_cache
 from typing import Dict, List
+
 from httpx import AsyncClient
 from loguru import logger
 from nameparser import HumanName
