@@ -1,15 +1,12 @@
-from datetime import datetime
 
 # from pytz import timezone, UTC
-from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, Request
-from fastapi.responses import JSONResponse, ORJSONResponse, RedirectResponse
+from fastapi import APIRouter, Query
+from fastapi.responses import ORJSONResponse
 from loguru import logger
-from sqlalchemy import Select, Text, and_, asc, cast, or_
+from sqlalchemy import Select, asc
 
-from ..db_tables import Categories, Posts, Users
-from ..functions import ai, date_functions
-from ..functions.login_required import check_login
-from ..resources import db_ops, templates
+from ..db_tables import Categories
+from ..resources import db_ops
 
 router = APIRouter()
 

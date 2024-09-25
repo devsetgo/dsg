@@ -58,7 +58,7 @@ async def read_notes_from_file(csv_file: list, user_id: str):
     print("Beginning processing")
     # Validate the headers of the CSV file
     validation_result = validate_csv_headers(csv_file)
-
+    logger.debug(validation_result)
     # If the validation fails, log an error and return an error message
     if validation_result["status"] != "success":
         logger.error(validation_result)
@@ -67,7 +67,7 @@ async def read_notes_from_file(csv_file: list, user_id: str):
     # Create a copy of the CSV file and count the number of notes
     csv_file, csv_file_copy = itertools.tee(csv_file)
     note_count = sum(1 for _ in csv_file_copy)
-
+    logger.info(f"Number of notes to process: {note_count}")
     # Initialize a list to store the IDs of the notes that need AI processing
     ai_ids = []
     count = 0
@@ -104,6 +104,7 @@ async def read_notes_from_file(csv_file: list, user_id: str):
             user_id=user_id,
             ai_fix=True,
         )
+        logger.debug(note)
         # Store the note in the database
         data = await db_ops.create_one(note)
         data = data.to_dict()
@@ -111,6 +112,7 @@ async def read_notes_from_file(csv_file: list, user_id: str):
         # Add the ID of the note to the list of IDs for AI processing
         ai_ids.append(data["pkid"])
 
+    logger.info(f"Notes imoorted: {count}")
     # Process the notes with AI
     await process_ai(list_of_ids=ai_ids, user_identifier=user_id)
     # Update the notes metrics
@@ -217,7 +219,7 @@ def validate_csv_headers(csv_reader: csv.DictReader):
 
     # Get the actual headers from the CSV file
     headers = csv_reader.fieldnames
-
+    logger.debug(f"Headers: {headers}")
     # If the actual headers don't match the expected headers
     if headers != expected_headers:
         # Find the headers that are missing from the CSV file
@@ -236,6 +238,7 @@ def validate_csv_headers(csv_reader: csv.DictReader):
                 "extra_headers": extra_headers,
             }
         }
+        logger.error(data)
         return data
 
     # If the headers are correct, return a dictionary with the status

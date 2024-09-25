@@ -28,10 +28,8 @@ API Endpoints:
 Usage:
     This module is designed to be integrated into a FastAPI application, providing a backend API for listing weblinks. It can be used in web applications that require content curation and discovery features, with the ability to filter and paginate through large sets of data.
 """
-import csv
-import io
 from base64 import b64encode
-from datetime import UTC, datetime, timedelta
+from datetime import datetime
 
 from fastapi import (
     APIRouter,
@@ -75,7 +73,7 @@ async def list_of_web_links(
 
 
 @router.get("/bulk")
-async def bulk_note_form(
+async def bulk_weblink_form(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
@@ -85,7 +83,7 @@ async def bulk_note_form(
 
 
 @router.post("/bulk")
-async def bulk_note(
+async def bulk_weblink(
     background_tasks: BackgroundTasks,
     request: Request,
     csv_file: UploadFile = File(...),

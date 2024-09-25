@@ -5,24 +5,16 @@ Author:
     Mike Ryan
     MIT Licensed
 """
-import io
-import asyncio
 import csv
-import itertools
-from datetime import datetime
+import io
 
-from dateutil.parser import parse
-from dateutil.tz import UTC
 from loguru import logger
-from pydantic import BaseModel
 from sqlalchemy import Select
 from tqdm import tqdm
-from tqdm.asyncio import tqdm as async_tqdm
 
 from ..db_tables import WebLinks
 from ..functions import ai, link_preview
 from ..resources import db_ops
-
 
 # class WebLink(BaseModel):
 #     user_id: str
@@ -52,7 +44,7 @@ async def read_weblinks_from_file(csv_content: str, user_identifier: str):
         data = await db_ops.create_one(link)
         logger.debug(data.pkid)
         link_pkids.append(data.pkid)
-    
+
     logger.debug(link_pkids)
     await ai_process_pkids(link_pkids)
     await loop_pkids_for_images(link_pkids)
@@ -73,7 +65,7 @@ async def ai_process_pkids(pkids: list):
 
         link_update = {
                     "ai_fix": False,
-            
+
                 }
         # title = await ai.get_html_title(record.url)
         logger.info(f"Processed link {record.pkid}")
@@ -82,7 +74,7 @@ async def ai_process_pkids(pkids: list):
 
         if record.title == "Processing":
             link_update['title'] = await ai.get_url_title(record.url)
-        
+
         logger.info(link_update)
         data = await db_ops.update_one(
             table=WebLinks, record_id=pkid, new_values=link_update
