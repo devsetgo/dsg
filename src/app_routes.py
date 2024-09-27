@@ -32,7 +32,17 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .endpoints import admin, blog_posts, devtools, notes, pages, pypi, users, web_links
+from .endpoints import (
+    admin,
+    blog_posts,
+    devtools,
+    notes,
+    pages,
+    pypi,
+    services,
+    users,
+    web_links,
+)
 from .resources import templates
 
 
@@ -173,6 +183,13 @@ def create_routes(app: FastAPI) -> NoReturn:
 
         # Return a template response with the error page and the context
         return templates.TemplateResponse("error/error-page.html", context)
+
+    app.include_router(
+        services.router,
+        prefix="/services/v1",
+        tags=["services"],
+        include_in_schema=True,
+    )
 
     app.include_router(
         web_links.router,

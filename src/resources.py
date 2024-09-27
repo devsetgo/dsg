@@ -90,6 +90,8 @@ async def startup() -> None:
     logger.info(f"creating database tables {tables}")
 
     # Create database tables if they don't exist
+    # if tables == []:
+    logger.info("creating database tables")
     await async_db.create_tables()
     logger.info("database tables created")
 
@@ -102,27 +104,6 @@ async def startup() -> None:
     if len(user) == 0:
         # Add system data if no users are found
         await add_system_data()
-
-
-# Download the specified spaCy model for NLP tasks
-# model_name = "xx_ent_wiki_sm"
-# nlp = load_spacy_model(model_name)
-
-# def load_spacy_model(model_name: str):
-#     try:
-#         # Try to load the model
-#         model = spacy.load(model_name)
-#         logger.info(f"Model '{model_name}' loaded successfully.")
-#     except Exception as e:
-#         # If the model is not found, download it
-#         logger.error(e)
-#         print(e)
-#         logger.info(f"Model '{model_name}' not found. Downloading...")
-#         spacy.cli.download(model_name)
-#         model = spacy.load(model_name)
-#         logger.info(f"Model '{model_name}' downloaded and loaded successfully.")
-#     return model
-
 
 
 async def shutdown() -> None:
@@ -168,11 +149,13 @@ async def add_system_data() -> None:
     # Check if an admin user should be created
     if settings.create_admin_user:
         logger.warning("Creating admin user")
-        data: Optional[Dict[str, Any]] = await add_admin()  # Create an admin user
+        # Create an admin user
+        data: Optional[Dict[str, Any]] = await add_admin()
 
         # Check if demo notes should be created for the admin user
         if settings.release_env.lower() != "prd" and settings.create_demo_notes:
-            await add_notes(user_id=data["pkid"])  # Create notes for the admin user
+            # Create notes for the admin user
+            await add_notes(user_id=data["pkid"])
 
     # Check if the environment is not production
     if settings.release_env.lower() != "prd":
@@ -185,7 +168,8 @@ async def add_system_data() -> None:
                 leave=True,
             ):
                 data = await add_user()  # Create a demo user
-                await add_notes(user_id=data["pkid"])  # Create notes for the loop user
+                # Create notes for the loop user
+                await add_notes(user_id=data["pkid"])
 
         # Check if base categories should be created
         if settings.create_base_categories:
@@ -278,10 +262,11 @@ async def add_notes(
     """
     # Define possible moods and mood analyses
     moods: List[str] = ["positive", "neutral", "negative"]
-    mood_analysis: List[str] = [mood[0] for mood in settings.mood_analysis_weights]
+    mood_analysis: List[str] = [mood[0]
+                                for mood in settings.mood_analysis_weights]
 
     # Create notes with the same date for both creation and update
-    for i in tqdm(range(5), desc=f"same day notes for {user_id}", leave=False):
+    for i in tqdm(range(settings.create_demo_notes_qty), desc=f"same day notes for {user_id}", leave=False):
         mood: str = random.choice(moods)
         mood_analysis_choice: str = random.choice(mood_analysis)
 
@@ -366,10 +351,12 @@ async def add_user() -> Optional[Dict[str, Any]]:
     # Generate a random username using silly and secrets libraries
     import secrets
 
-    user_name: str = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
+    user_name: str = f"{silly.plural()}-{silly.noun()
+                                         }{secrets.token_hex(2)}".lower()
     email: str = silly.email()
     # Define possible roles for the user
-    roles: List[str] = ["notes", "web_links", "job_applications", "developer", "posts"]
+    roles: List[str] = ["notes", "web_links",
+                        "job_applications", "developer", "posts"]
     role_data: Dict[str, bool] = {}
 
     # Randomly assign roles to the user
@@ -467,11 +454,11 @@ async def add_web_links():
     for item in my_stuff:
         # Query the database for each item by name
         data = await db_ops.read_query(
-            Select(WebLinks).where(WebLinks.title == item["title"])
+            Select(WebLinks).where(WebLinks.title == item.get("title", "processing"))
         )
         # If the item already exists in the database, log a message and return
         if len(data) > 0:
-            logger.info(f"system item {item['title']} already added")
+            logger.info(f"system item {item.get("title", "processing")} already added")
             return
     user_name = settings.admin_user.get_secret_value()
     # Get the user record for 'admin'
@@ -483,19 +470,21 @@ async def add_web_links():
     for item in my_stuff:
         # Get the category record for the current item
         category = await db_ops.read_one_record(
-            Select(Categories).where(Categories.name == str(item["category"]).title())
+            Select(Categories).where(Categories.name ==
+                                     str(item["category"]).title())
         )
         # Log the category name
         logger.info(category.name)
         # Log a message indicating that the current item is being added
-        logger.info(f"adding system item {item['title']}")
+        logger.info(f"adding system item {item.get("title", "processing")}")
         # Create a new WebLinks instance with the item details
         thing = WebLinks(
-            title=item["title"],
-            summary=item["summary"],
+            title=item.get("title", "processing"),
+            summary=item.get("summary", "processing"),
             url=item["url"],
             user_id=user.pkid,
             category=category.name,
+            ai_fix=True,
         )
         # Try to add the new item to the database
         try:
@@ -509,7 +498,8 @@ async def add_web_links():
     all_things = await db_ops.read_query(Select(WebLinks))
     # Log the title, category, URL, and summary of each item
     for thing in all_things:
-        logger.info(f"{thing.title}, {thing.category}, {thing.url}, {thing.summary}")
+        logger.info(f"{thing.title}, {thing.category}, {
+                    thing.url}, {thing.summary}")
 
 
 async def add_posts():
@@ -523,10 +513,11 @@ async def add_posts():
     cat_list = [cat["name"] for cat in categories]
     posts = await db_ops.read_query(Select(Posts))
     if len(posts) == 0:
-        for _ in tqdm(range(5), desc="creating demo posts", leave=False):
+        for _ in tqdm(range(settings.create_demo_posts_qty), desc="creating demo posts", leave=False):
             rand_cat = random.randint(0, len(cat_list) - 1)
             tags = [silly.noun() for _ in range(random.randint(2, 5))]
-            date_created = datetime.now(UTC) - timedelta(days=random.randint(1, 700))
+            date_created = datetime.now(
+                UTC) - timedelta(days=random.randint(1, 700))
             post = Posts(
                 title=silly.sentence(),
                 content=silly.markdown(length=random.randint(30, 60)),

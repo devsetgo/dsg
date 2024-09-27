@@ -253,8 +253,9 @@ async def bulk_note(
     # read the file content
     file_content = await csv_file.read()
     file_content = file_content.decode("utf-8")
+    logger.debug(f"Received file content: {file_content}")
     csv_reader = csv.DictReader(io.StringIO(file_content))
-
+    logger.debug(f"Reading notes from file for user: {user_identifier}")
     # add the task to background tasks
     background_tasks.add_task(
         note_import.read_notes_from_file, csv_file=csv_reader, user_id=user_identifier
@@ -622,25 +623,33 @@ async def read_today_notes(
     #         between(Notes.date_created, start_date, end_date),
     #     )
     # )
-    query = Select(Notes).where(
-        and_(
-            Notes.user_id == user_identifier,
-            or_(
-                and_(
-                    extract("month", Notes.date_created) == start_date.month,
-                    between(
-                        extract("day", Notes.date_created), start_date.day, end_date.day
+    query = (
+        Select(Notes)
+        .where(
+            and_(
+                Notes.user_id == user_identifier,
+                or_(
+                    and_(
+                        extract("month", Notes.date_created) == start_date.month,
+                        between(
+                            extract("day", Notes.date_created),
+                            start_date.day,
+                            end_date.day,
+                        ),
+                    ),
+                    and_(
+                        extract("month", Notes.date_created) == end_date.month,
+                        between(
+                            extract("day", Notes.date_created),
+                            start_date.day,
+                            end_date.day,
+                        ),
                     ),
                 ),
-                and_(
-                    extract("month", Notes.date_created) == end_date.month,
-                    between(
-                        extract("day", Notes.date_created), start_date.day, end_date.day
-                    ),
-                ),
-            ),
+            )
         )
-    ).order_by(desc(Notes.date_created))
+        .order_by(desc(Notes.date_created))
+    )
     notes = await db_ops.read_query(query=query)
 
     # offset date_created and date_updated to user's timezone

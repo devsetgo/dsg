@@ -1,7 +1,7 @@
 # Shell
 SHELL := /bin/bash
 # Variables
-__version__ = "beta-2024-09-08-001"
+__version__ = "2024-09-22-003"
 
 PYTHON = python3
 PIP = $(PYTHON) -m pip
@@ -63,17 +63,17 @@ compile:  # Compile http_request.c into a shared library
 docker-login:  # Login to docker hub
 	docker login
 
-docker-beta-run:  # Run docker container
+docker-run:  # Run docker container
 	docker run -p 5000:5000 dsg:$(__version__)
 
-docker-beta-build:  # Build docker image
+docker-build:  # Build docker image
 	docker build --no-cache -t dsg:$(__version__) .
 
-docker-beta-push:  # Push beta test image to docker hub
+docker-push:  # Push beta test image to docker hub
 	docker tag dsg:$(__version__) mikeryan56/dsg:$(__version__)
 	docker push mikeryan56/dsg:$(__version__)
 
-docker-beta-bp: docker-beta-build docker-beta-push 
+docker-all: docker-build docker-push 
 
 bump-calver-beta:  # Bump the beta version number in the Makefile
 	python3 /home/mike/dsg/scripts/calver_update.py --build --beta
@@ -129,6 +129,10 @@ run-test:  # Run the FastAPI application in development mode with hot-reloading
 run-stage:  # Run the FastAPI application in production mode
 	cp env-files/.env.stage .env
 	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --log-level ${LOG_LEVEL}
+
+run-prd:  # Run the FastAPI application in production mode
+	cp env-files/.env.server .env
+	uvicorn ${SERVICE_PATH}.main:app --port 5000 --workers 1 --log-level debug
 
 run-gdev:  # Run the FastAPI application in development mode with hot-reloading using granian
 	cp env-files/.env.dev .env

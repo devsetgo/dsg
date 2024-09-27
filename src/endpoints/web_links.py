@@ -31,13 +31,21 @@ Usage:
 from base64 import b64encode
 from datetime import datetime
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    Query,
+    Request,
+    UploadFile,
+)
 from fastapi.responses import JSONResponse, RedirectResponse
 from loguru import logger
 from sqlalchemy import Select, asc, func, or_
 
 from ..db_tables import Categories, WebLinks
-from ..functions import ai, date_functions, link_preview
+from ..functions import ai, date_functions, link_import, link_preview
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
 
@@ -64,6 +72,44 @@ async def list_of_web_links(
     )
 
 
+@router.get("/bulk")
+async def bulk_weblink_form(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    return templates.TemplateResponse(
+        request=request, name="weblinks/bulk.html", context={"demo_note": None}
+    )
+
+
+@router.post("/bulk")
+async def bulk_weblink(
+    background_tasks: BackgroundTasks,
+    request: Request,
+    csv_file: UploadFile = File(...),
+    user_info: dict = Depends(check_login),
+):
+    user_identifier = user_info["user_identifier"]
+    # user_identifier =  request.session.get("user_identifier")
+    user_info["timezone"]
+
+    # read the file content
+    file_content = await csv_file.read()
+    file_content = file_content.decode("utf-8")
+
+    # await link_import.read_weblinks_from_file(
+    #     csv_content=file_content, user_identifier=user_identifier
+    # )
+    # Add the task to background tasks
+    background_tasks.add_task(
+        link_import.read_weblinks_from_file, csv_content=file_content, user_identifier=user_identifier
+    )
+    logger.info("Added task to background tasks")
+
+    # redirect to /notes
+    return RedirectResponse(url="/weblinks", status_code=302)
+
+
 @router.get("/categories", response_class=JSONResponse)
 async def get_categories():
     categories = await db_ops.read_query(
@@ -83,7 +129,7 @@ async def read_weblinks_pagination(
     end_date: str = Query(None, description="End date"),
     category: str = Query(None, description="Category"),
     page: int = Query(1, description="Page number"),
-    limit: int = Query(10, description="Number of weblinks per page"),
+    limit: int = Query(12, description="Number of weblinks per page"),
     # user_info: dict = Depends(check_login),
 ):
     query_params = {

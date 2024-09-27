@@ -234,6 +234,7 @@ class Categories(schema_base, async_db.Base):
         }
 
 
+# TODO: Recreate as a view
 class NoteMetrics(schema_base, async_db.Base):
     __tablename__ = "note_metrics"
 

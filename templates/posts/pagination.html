@@ -9,16 +9,18 @@
   <div class="col-md-12 mb-4 p-2">
     <div class="card">
       <div class="card-body">
-        <h5 class="card-title"><a href="/posts/view/{{post.pkid}}" class="card-link"><strong>{{ post.title|title }}</strong></a></h5>
+        <h5 class="card-title"><a href="/posts/view/{{post.pkid}}" class="card-link"><strong>{{ post.title|title
+              }}</strong></a></h5>
         <p class="card-text">
-          {{ post.content|truncate(500, end='...') }}
-          {% if post.content|length > 500 %}
-              <a href="/posts/view/{{post.pkid}}">Read more</a>
+          {{ post.content|truncate(2000, end='...') }}
+          {% if post.content|length > 2000 %}
+          <a href="/posts/view/{{post.pkid}}">Read more</a>
           {% endif %}
-      </p>
+        </p>
       </div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item">Tags: {% for tag in post.tags %}<a href="/posts/?search_term={{tag}}">{{ tag|capitalize }}</a>{% if not loop.last %}, {%
+        <li class="list-group-item">Tags: {% for tag in post.tags %}<a href="/posts/?search_term={{tag}}">{{
+            tag|capitalize }}</a>{% if not loop.last %}, {%
           endif %}{%
           endfor %}</li>
       </ul>
@@ -33,5 +35,4 @@
   {% endfor %}
 </div>
 {% include 'posts/page-controls.html' %}
-{{prev_page_url}}
 <!-- End Pagination Template -->
