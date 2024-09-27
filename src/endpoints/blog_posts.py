@@ -28,7 +28,7 @@ from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from loguru import logger
-from sqlalchemy import Select, Text, and_, asc, cast, or_
+from sqlalchemy import Select, and_, asc, or_
 
 from ..db_tables import Categories, Posts, Users
 from ..functions import ai, date_functions
@@ -50,7 +50,7 @@ async def get_user_name(user_id: str):
 async def list_of_posts(
     request: Request,
     offset: int = Query(0, description="Offset for pagination"),
-    limit: int = Query(100, description="Limit for pagination"),
+    limit: int = Query(10, description="Limit for pagination"),
     tag: str = Query(None, description="Tag search"),
     category: str = Query(None, description="Category to search by"),
     # user_info: dict = Depends(check_login),
@@ -275,7 +275,8 @@ async def read_posts_pagination(
     end_date: str = Query(None, description="End date"),
     category: str = Query(None, description="Category"),
     page: int = Query(1, description="Page number"),
-    limit: int = Query(20, description="Number of posts per page"),
+    limit: int = Query(5, description="Number of posts per page"),
+    # user_info: dict = Depends(check_login),
 ):
     query_params = {
         "search_term": search_term,
@@ -290,20 +291,16 @@ async def read_posts_pagination(
         user_timezone = "America/New_York"
 
     logger.info(
-        f"Searching for term: {search_term}, start_date: {start_date}, end_date: {end_date}, category: {category}, user_timezone: {user_timezone}"
+        f"Searching for term: {search_term}, start_date: {start_date}, end_date: {end_date}"
     )
-    # find search_term in columns: post, mood, tags, summary
+    # find search_term in columns: note, mood, tags, summary
     query = Select(Posts).where(
         or_(
-            Posts.title.contains(search_term) if search_term else True,
-            Posts.content.contains(search_term) if search_term else True,
-            cast(Posts.tags, Text).contains(search_term) if search_term else True,
+            Posts.summary.contains(search_term) if search_term else True,
+            (Posts.title.contains(search_term) if search_term else True),
         )
     )
 
-    # filter by category
-    if category is not None:
-        query = query.where(Posts.category == category.lower())
     # filter by date range
     if start_date and end_date:
         start_date = datetime.strptime(start_date, "%Y-%m-%d")
@@ -311,6 +308,8 @@ async def read_posts_pagination(
         query = query.where(
             (Posts.date_created >= start_date) & (Posts.date_created <= end_date)
         )
+    if category:
+        query = query.where(Posts.category == category)
     # order and limit the results
     offset = (page - 1) * limit
     query = query.order_by(Posts.date_created.desc()).limit(limit).offset(offset)
@@ -320,35 +319,26 @@ async def read_posts_pagination(
         logger.error(f"Unexpected result from read_query: {posts}")
         posts = []
     else:
-        try:
-            posts = [post.to_dict() for post in posts]
-            # offset date_created and date_updated to user's timezone
-            for post in posts:
-                post["date_created"] = await date_functions.timezone_update(
-                    user_timezone=user_timezone,
-                    date_time=post["date_created"],
-                    friendly_string=True,
-                )
-                post["date_updated"] = await date_functions.timezone_update(
-                    user_timezone=user_timezone,
-                    date_time=post["date_updated"],
-                    friendly_string=True,
-                )
-        except Exception as e:
-            logger.error(f"Error converting posts to dict: {e}")
-            posts = []
-
+        posts = [post.to_dict() for post in posts]
+    # offset date_created and date_updated to user's timezone
+    for post in posts:
+        post["date_created"] = await date_functions.timezone_update(
+            user_timezone=user_timezone,
+            date_time=post["date_created"],
+            friendly_string=True,
+        )
+        post["date_updated"] = await date_functions.timezone_update(
+            user_timezone=user_timezone,
+            date_time=post["date_updated"],
+            friendly_string=True,
+        )
     found = len(posts)
-
-    posts_count = await db_ops.count_query(query=query)
-    if isinstance(posts_count, dict):
-        posts_count = 0
+    count_query = Select(Posts)
+    posts_count = await db_ops.count_query(query=count_query)
 
     current_count = found
-    try:
-        total_pages = -(-posts_count // limit)  # Ceiling division
-    except ZeroDivisionError:
-        total_pages = 0
+
+    total_pages = -(-posts_count // limit)  # Ceiling division
     # Generate the URLs for the previous and next pages
     prev_page_url = (
         f"/posts/pagination?page={page - 1}&"
@@ -356,7 +346,6 @@ async def read_posts_pagination(
         if page > 1
         else None
     )
-
     next_page_url = (
         f"/posts/pagination?page={page + 1}&"
         + "&".join(f"{k}={v}" for k, v in query_params.items() if v)
@@ -364,22 +353,23 @@ async def read_posts_pagination(
         else None
     )
     logger.info(f"Found {found} posts")
+    context = {
+        "page": "posts",
+        "posts": posts,
+        "found": found,
+        "posts_count": posts_count,
+        "total_pages": total_pages,
+        "start_count": offset + 1,
+        "current_count": offset + current_count,
+        "current_page": page,
+        "prev_page_url": prev_page_url,
+        "next_page_url": next_page_url,
+    }
     return templates.TemplateResponse(
         request=request,
         name="/posts/pagination.html",
-        context={
-            "posts": posts,
-            "found": found,
-            "posts_count": posts_count,
-            "total_pages": total_pages,
-            "start_count": offset + 1,
-            "current_count": offset + current_count,
-            "current_page": page,
-            "prev_page_url": prev_page_url,
-            "next_page_url": next_page_url,
-        },
+        context=context,
     )
-
 
 # get /item/{id}
 @router.get("/view/{post_id}")

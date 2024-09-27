@@ -58,10 +58,13 @@
     </div> -->
       </aside>
       <!-- /.control-sidebar -->
-
     </div>
     <!-- ./wrapper -->
-    <!-- REQUIRED SCRIPTS -->
+    <!-- Main Footer -->
+    {% include "base_footer.html" %}
+ 
+</body>
+   <!-- REQUIRED SCRIPTS -->
 
     <!-- jQuery -->
     <script src="{{ url_for('static' , path='plugins/jquery/jquery.min.js') }}"></script>
@@ -84,8 +87,5 @@
       src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     {% block page_scripts %}{% endblock %}
-    <!-- Main Footer -->
-    {% include "base_footer.html" %}
-</body>
-
+    
 </html>

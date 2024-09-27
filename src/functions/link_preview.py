@@ -105,11 +105,10 @@ async def capture_full_page_screenshot(url: str, pkid: str) -> bytes:
 
 async def get_weblink_metrics():
     # create a dictionary counting the number of weblinks, number of weblinks per category
-    response = {"weblink_count": 0, "weblink_category_count": None}
+    response = {"weblink_count": 0, "weblink_category_count": {}}
 
     try:
         data = await db_ops.read_query(Select(WebLinks))
-
         response["weblink_count"] = len(data)
 
         # count each category in data and store in response
@@ -119,11 +118,12 @@ async def get_weblink_metrics():
             else:
                 response["weblink_category_count"][item.category] += 1
 
-        return response
     except Exception as e:
         error: str = f"Error getting weblink metrics: {e}"
         logger.error(error)
-        return response
+
+    print(response)
+    return response
 
 
 async def update_weblinks_ai(list_of_ids: list):

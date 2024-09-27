@@ -7,8 +7,8 @@
     crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 {% endblock %}
-{% block page_breadcrumb %} Notes / New{% endblock %}
-{% block page_head_title %}New Note{% endblock %}
+{% block page_breadcrumb %} Notes / Bulk{% endblock %}
+{% block page_head_title %}Bulk Note{% endblock %}
 {% block body %}
 <!-- Main content -->
 <section class="content">
@@ -19,7 +19,7 @@
                 <!-- general form elements -->
                 <div class="card card-primary" style="margin: 20px;">
                     <div class="card-header">
-                        <h3 class="card-title">Add a New Note</h3>
+                        <h3 class="card-title">Bulk Add Notes</h3>
                     </div>
                     <!-- /.card-header -->
                     <!-- form start -->
@@ -32,8 +32,6 @@
                                     <input type="file" class="form-control-file" id="csv_file" name="csv_file"
                                         accept=".csv">
                                 </div>
-
-
                                 <button type="submit" class="btn btn-primary">Submit</button>
                             </form>
                         </div>
@@ -60,17 +58,17 @@
                                     <tr>
                                         <td>Sample Note 1</td>
                                         <td>Positive</td>
-                                        <td>8/18/2013 19:35</td>
+                                        <td>YYYY-MM-DD HH:MM:SS</td>
                                     </tr>
                                     <tr>
                                         <td>Sample Note 2</td>
                                         <td>Neutral</td>
-                                        <td>8/19/2013 19:35</td>
+                                        <td>YYYY-MM-DD HH:MM:SS</td>
                                     </tr>
                                     <tr>
                                         <td>Sample Note 3</td>
                                         <td>Negative</td>
-                                        <td>8/20/2013 19:35</td>
+                                        <td>YYYY-MM-DD HH:MM:SS</td>
                                     </tr>
                                 </tbody>
                                 <tfoot>
