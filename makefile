@@ -1,7 +1,7 @@
 # Shell
 SHELL := /bin/bash
 # Variables
-__version__ = "2024-09-22-003"
+__version__ = 2024-10-18-001
 
 PYTHON = python3
 PIP = $(PYTHON) -m pip
