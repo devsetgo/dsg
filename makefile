@@ -1,7 +1,11 @@
 # Shell
 SHELL := /bin/bash
 # Variables
+<<<<<<< HEAD
 __version__ = "2024-11-23-001"
+=======
+__version__ = 2024-10-18-001
+>>>>>>> e6fd261 (Bump version to 2024-10-18-001)
 
 PYTHON = python3
 PIP = $(PYTHON) -m pip
