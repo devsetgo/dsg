@@ -18,6 +18,6 @@ selenium==4.25.0 # From 4.24.0 | Vulnerabilities: None
 silly==1.1.0 # Vulnerabilities: None
 spacy==3.7.6 # Vulnerabilities: None
 starlette-authlib==0.3.2 # From 0.3.1 | Vulnerabilities: None
-tqdm==4.66.5 # Vulnerabilities: None
+tqdm==4.66.6 # Vulnerabilities: None
 unsync==1.4.0 # Vulnerabilities: None
 webdriver-manager==4.0.2 # Vulnerabilities: None
