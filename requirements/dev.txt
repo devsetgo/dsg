@@ -9,7 +9,7 @@ genbadge[all]==1.1.1 # Vulnerabilities: None
 isort==5.13.2 # Vulnerabilities: None
 mkdocs-gen-files==0.5.0 # Vulnerabilities: None
 mkdocs-material==9.5.41 # From 9.5.34 | Vulnerabilities: None
-mkdocstrings[python]==0.26.1 # Vulnerabilities: None
+mkdocstrings[python]==0.26.2 # Vulnerabilities: None
 pre-commit==3.8.0 # Vulnerabilities: None
 pyright==1.1.382.post1 # From 1.1.380 | Vulnerabilities: None
 pytest==8.3.3 # Vulnerabilities: None
