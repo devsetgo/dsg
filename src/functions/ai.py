@@ -433,6 +433,7 @@ async def get_url_title(
     text = strip_quotation_marks(response_dict)
     return text
 
+
 async def get_html_title(url: str) -> str:
     """
     Get the title of a webpage from the HTML title tag.
@@ -451,6 +452,7 @@ async def get_html_title(url: str) -> str:
         if title:
             return title.group(1)
         return "Not Found"
+
 
 def strip_quotation_marks(text: str) -> str:
     """
