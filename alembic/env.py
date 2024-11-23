@@ -4,7 +4,7 @@ from logging.config import fileConfig
 import os
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.ext.asyncio import async_engine_from_config, create_async_engine
 
 from alembic import context
 
@@ -43,7 +43,9 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = os.getenv("DATABASE_URL")
+    if not url:
+        raise ValueError("DATABASE_URL environment variable is not set.")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -69,12 +71,12 @@ async def run_async_migrations() -> None:
 
     # Fetch the DATABASE_URL from the environment variables
     url = os.getenv("DATABASE_URL")
+    if not url:
+        raise ValueError("DATABASE_URL environment variable is not set.")
 
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+    connectable = create_async_engine(
+        url,
         poolclass=pool.NullPool,
-        url=url,  # Use the DATABASE_URL from the environment variables
     )
 
     async with connectable.connect() as connection:
