@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import spacy
 import os
 import shutil
@@ -13,10 +14,10 @@ target_dir.mkdir(parents=True, exist_ok=True)
 # Create a temporary directory for downloading the model
 with tempfile.TemporaryDirectory() as temp_dir:
     temp_dir_path = Path(temp_dir)
-    
+
     # Download the model to the temporary directory
     spacy.cli.download("xx_ent_wiki_sm")
-    
+
     # Find the downloaded model directory using "starts with" approach
     default_model_dir = None
     for model_dir in temp_dir_path.iterdir():

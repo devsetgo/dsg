@@ -126,9 +126,7 @@ async def debt_api_call(debt_date: str) -> Optional[Dict[str, str]]:
         Optional[Dict[str, str]]: A dictionary containing the public debt data for the specified date,
         or None if no data is available or an error occurs.
     """
-    url: str = (
-        f"https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny?filter=record_date:eq:{debt_date}"
-    )
+    url: str = f"https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny?filter=record_date:eq:{debt_date}"
 
     try:
         # Make an asynchronous HTTP GET request

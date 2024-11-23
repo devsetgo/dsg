@@ -52,7 +52,7 @@ def test_posts():
 
 
 def test_posts_pagination():
-    url = "/posts/pagination?search_term=test&category=News&start_date=2024-08-12&end_date=2024-08-16"
+    url = "/posts/pagination?search_term=&category=News&start_date=2024-11-10&end_date=2024-11-15"
     response = client.get(url)
     assert response.status_code == 200
     # assert "<!DOCTYPE html>" in response.text

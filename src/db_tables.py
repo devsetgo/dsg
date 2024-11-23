@@ -168,6 +168,7 @@ class WebLinks(schema_base, async_db.Base):
     # Define the columns of the table
     title = Column(String, unique=False, index=True)  # name of item
     summary = Column(String, unique=False, index=True)  # description of item
+    comment = Column(String, unique=False, index=True)  # comment about the link
     url = Column(String, unique=False, index=True)  # url of item
     category = Column(String, unique=False, index=True)  # category of item
     public = Column(Boolean, default=False)  # If the item is public
