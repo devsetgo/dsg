@@ -75,6 +75,7 @@ class Settings(BaseSettings):
         ..., description="For sqlite it should be folder path 'folder/filename"
     )
     phrase: SecretStr = Field(..., description="substitution cipher")
+    salt: SecretStr = Field(..., description="salt for key derivation")
     spacy_model_path: str = Field("/app/spacy_models", description="Spacy model path")
     echo: bool = Field(True, description="Enable echo")
     future: bool = Field(True, description="Enable future")
