@@ -1,13 +1,8 @@
 alembic==1.13.3 # Vulnerabilities: None
 argon2-cffi==23.1.0 # Vulnerabilities: None
 async-lru==2.0.4 # Vulnerabilities: None
-<<<<<<< HEAD
-cryptography==43.0.3 # Vulnerabilities: None
-devsetgo-lib[all]==0.14.4 # From 0.14.3 | Vulnerabilities: None
-=======
 cryptography==43.0.3 # From 43.0.1 | Vulnerabilities: None
 devsetgo-lib[all]==0.14.4 # Vulnerabilities: None
->>>>>>> 41c35ba (adding calendar version with my new library)
 email-validator==2.2.0 # Vulnerabilities: None
 fastapi-sso==0.15.0 # Vulnerabilities: None
 fastapi[all]==0.115.2 # From 0.115.0 | Vulnerabilities: None
@@ -21,14 +16,7 @@ python-dateutil==2.9.0.post0 # Vulnerabilities: None
 pytz==2024.2 # Vulnerabilities: None
 selenium==4.25.0 # Vulnerabilities: None
 silly==1.1.0 # Vulnerabilities: None
-<<<<<<< HEAD
-spacy==3.7.6 # Vulnerabilities: None
-starlette-authlib==0.3.2 # From 0.3.1 | Vulnerabilities: None
-tqdm==4.66.6 # Vulnerabilities: None
-=======
-spacy==3.8.2 # From 3.7.6 | Vulnerabilities: None
 starlette-authlib==0.3.4 # From 0.3.2 | Vulnerabilities: None
 tqdm==4.66.5 # Vulnerabilities: None
->>>>>>> 41c35ba (adding calendar version with my new library)
 unsync==1.4.0 # Vulnerabilities: None
 webdriver-manager==4.0.2 # Vulnerabilities: None

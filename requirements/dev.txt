@@ -15,8 +15,4 @@ pre-commit==4.0.1 # From 3.8.0 | Vulnerabilities: None
 pyright==1.1.385 # From 1.1.382.post0 | Vulnerabilities: None
 pytest==8.3.3 # Vulnerabilities: None
 pytest-cov==5.0.0 # Vulnerabilities: None
-<<<<<<< HEAD
-ruff==0.7.1 # From 0.6.5 | Vulnerabilities: None
-=======
 ruff==0.7.0 # From 0.6.7 | Vulnerabilities: None
->>>>>>> 932e0b5 (adding calendar version with my new library)
