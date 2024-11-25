@@ -558,3 +558,31 @@ async def admin_weblink_fix_user(
         list_of_ids=list_of_ids,
     )
     return RedirectResponse(url="/admin", status_code=302)
+
+
+@router.get("/export-notes", response_class=HTMLResponse)
+async def export_notes(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    user_identifier = user_info["user_identifier"]
+    user_info["timezone"]
+    user_info["is_admin"]
+
+    # Fetch all notes from the database with user_name
+    query = (
+        Select(Notes)
+        .join(Users, Notes.user_id == Users.pkid)
+    )
+    result = await db_ops.read_query(query=query)
+    notes = [note.to_dict() for note in result]
+    # Render the template with the data
+    context = {
+        "page": "admin",
+        "user_identifier": user_identifier,
+        "notes": notes,
+    }
+
+    return templates.TemplateResponse(
+        request=request, name="/admin/export-notes.html", context=context
+    )
