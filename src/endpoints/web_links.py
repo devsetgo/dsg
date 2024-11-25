@@ -249,7 +249,10 @@ async def create_link(
     category = form["category"]
     url = form["url"]
     comment = form["comment"]
-    # title = form["title"]
+
+    if comment == "":
+        comment = None
+    
 
     logger.debug(f"Received category: {category} and content: {url}")
 
