@@ -76,7 +76,6 @@ class Settings(BaseSettings):
     )
     phrase: SecretStr = Field(..., description="substitution cipher")
     salt: SecretStr = Field(..., description="salt for key derivation")
-    spacy_model_path: str = Field("/app/spacy_models", description="Spacy model path")
     echo: bool = Field(True, description="Enable echo")
     future: bool = Field(True, description="Enable future")
     pool_pre_ping: bool = Field(False, description="Enable pool_pre_ping")
