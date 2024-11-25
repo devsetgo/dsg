@@ -1,0 +1,78 @@
+
+<p>All Notes</p>
+
+<table id="allNotes" class="table table-striped" style="width:100%">
+  <thead>
+    <tr>
+      <th>PKID</th>
+      <th>User ID</th>
+      <th>Mood</th>
+      <th>Mood Analysis</th>
+      <th>Note</th>
+      <th>Summary</th>
+      <th>Tags</th>
+      <th>Word Count</th>
+      <th>Character Count</th>
+      <th>Date Created</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for note in notes %}
+    <tr>
+      <td>{{note.pkid}}</td>
+      <td>{{note.user_id}}</td>
+      <td>{{note.mood}}</td>
+      <td>{{note.mood_analysis}}</td>
+      <td>{{note.note}}</td>
+      <td>{{note.summary}}</td>
+      <td>{{note.tags}}</td>
+      <td>{{note.word_count}}</td>
+      <td>{{note.character_count}}</td>
+      <td>{{note.date_created}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th>PKID</th>
+      <th>User ID</th>
+      <th>Mood</th>
+      <th>Mood Analysis</th>
+      <th>Note</th>
+      <th>Summary</th>
+      <th>Tags</th>
+      <th>Word Count</th>
+      <th>Character Count</th>
+      <th>Date Created</th>
+    </tr>
+  </tfoot>
+</table>
+
+<script>
+  $(function () {
+    $('#allNotes').DataTable({
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+      dom: 'Bfrtip',
+      buttons: [
+        {
+          extend: 'copy',
+          title: 'Notes'
+        },
+        {
+          extend: 'csv',
+          title: 'Notes',
+          filename: 'notes'
+        },
+        {
+          extend: 'print',
+          title: 'Notes'
+        }
+      ]
+    });
+  });
+</script>

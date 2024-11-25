@@ -33,6 +33,11 @@
                   aria-controls="custom-tabs-four-access" aria-selected="false" hx-trigger="click"
                   hx-indicator=".htmx-indicator">Access</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" id="notes-export-tab" data-toggle="pill" href="#custom-tabs-four-notes-export"
+                  role="tab" aria-controls="custom-tabs-four-notes-export" aria-selected="false" hx-trigger="click"
+                  hx-indicator=".htmx-indicator">Notes Export</a>
+              </li>
             </ul>
           </div>
           <div class="card-body">
@@ -85,11 +90,18 @@
                   </tfoot>
                 </table>
               </div>
+              <div class="tab-pane fade" id="custom-tabs-four-notes-export" role="tabpanel"
+                aria-labelledby="custom-tabs-four-notes-export-tab">
+                <div hx-get="/admin/export-notes" hx-trigger="load" hx-swap="innerHTML">
+                  <!-- Content will be loaded here by HTMX -->
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 </section>
 {% endblock %}
 {% block page_sidebar_content %}
@@ -145,7 +157,7 @@
       "info": true,
       "autoWidth": true,
       dom: 'Bfrtip',
-      buttons: ['copy', 'csv','pdf']
+      buttons: ['copy', 'csv', 'pdf']
     });
   });
 </script>
