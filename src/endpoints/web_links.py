@@ -102,7 +102,9 @@ async def bulk_weblink(
     # )
     # Add the task to background tasks
     background_tasks.add_task(
-        link_import.read_weblinks_from_file, csv_content=file_content, user_identifier=user_identifier
+        link_import.read_weblinks_from_file,
+        csv_content=file_content,
+        user_identifier=user_identifier,
     )
     logger.info("Added task to background tasks")
 
@@ -246,7 +248,11 @@ async def create_link(
     form = await request.form()
     category = form["category"]
     url = form["url"]
-    # title = form["title"]
+    comment = form["comment"]
+
+    if comment == "":
+        comment = None
+    
 
     logger.debug(f"Received category: {category} and content: {url}")
 
@@ -259,6 +265,7 @@ async def create_link(
     link = WebLinks(
         title=title,
         summary=summary["summary"],
+        comment=comment,
         url=url,
         user_id=user_identifier,
         category=category,
@@ -329,16 +336,12 @@ async def edit_weblink(
     background_tasks: BackgroundTasks,
     pkid: str,
     request: Request,
-    # user_info: dict = Depends(check_login),
+    user_info: dict = Depends(check_login),
 ):
     # user_identifier = user_info["user_identifier"]
 
     data = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
 
-    # if isinstance(data, dict) ==  False:
-    #     logger.error(f"Error reading link: {data}")
-    #     return RedirectResponse(url="/error/418", status_code=302)
-    # else:
     data = data.to_dict()
 
     url = data["url"]
@@ -366,6 +369,56 @@ async def edit_weblink(
     logger.info(f"Created weblinks with ID: {data.pkid}")
 
     # await link_preview.capture_full_page_screenshot(url=url, pkid=data.pkid)
+    background_tasks.add_task(
+        link_preview.capture_full_page_screenshot, url=url, pkid=data.pkid
+    )
+    return RedirectResponse(url=f"/weblinks/view/{data.pkid}", status_code=302)
+
+
+@router.get("/update/comment/{pkid}")
+async def get_update_comment(
+    pkid: str,
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    user_identifier = user_info["user_identifier"]
+
+    link = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
+    link = link.to_dict()
+    context = {
+        "weblink": link,
+    }
+    return templates.TemplateResponse(
+        request=request, name="/weblinks/edit-comment.html", context=context
+    )
+
+
+@router.post("/update/comment/{pkid}")
+async def update_comment(
+    background_tasks: BackgroundTasks,
+    pkid: str,
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    form = await request.form()
+    comment = form["comment"]
+    url = form["url"]
+    logger.debug(f"Received comment: {comment}")
+
+    weblink_update = {
+        "comment": comment,
+    }
+
+    data = await db_ops.update_one(
+        table=WebLinks, record_id=pkid, new_values=weblink_update
+    )
+
+    if isinstance(data, dict):
+        logger.error(f"Error updating link: {data}")
+        return RedirectResponse(url="/error/418", status_code=302)
+
+    logger.debug(f"Updated weblinks: {pkid}")
+    logger.info(f"Updated weblinks with ID: {data.pkid}")
     background_tasks.add_task(
         link_preview.capture_full_page_screenshot, url=url, pkid=data.pkid
     )

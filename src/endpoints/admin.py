@@ -130,13 +130,25 @@ async def admin_categories_table(
 
     category_count = defaultdict(int)
 
-    for post in post_count:
-        post = post.to_dict()
-        category_count[post["category"].lower()] += 1
+    if isinstance(post_count, list):
+        for post in post_count:
+            if hasattr(post, "to_dict"):
+                post = post.to_dict()
+                category_count[post["category"].lower()] += 1
+            else:
+                logger.error(f"Unexpected type in post_count: {type(post)}")
+    else:
+        logger.error(f"post_count is not a list: {post_count}")
 
-    for it in it_count:
-        it = it.to_dict()
-        category_count[it["category"].lower()] += 1
+    if isinstance(it_count, list):
+        for it in it_count:
+            if hasattr(it, "to_dict"):
+                it = it.to_dict()
+                category_count[it["category"].lower()] += 1
+            else:
+                logger.error(f"Unexpected type in it_count: {type(it)}")
+    else:
+        logger.error(f"it_count is not a list: {it_count}")
 
     category_count_list = [
         {"category": category, "count": count}
@@ -148,7 +160,6 @@ async def admin_categories_table(
     return templates.TemplateResponse(
         request=request, name="/admin/categories-table.html", context=context
     )
-
 
 @router.get("/category-edit", response_class=HTMLResponse)
 async def admin_category_edit(

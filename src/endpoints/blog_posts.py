@@ -314,12 +314,14 @@ async def read_posts_pagination(
     offset = (page - 1) * limit
     query = query.order_by(Posts.date_created.desc()).limit(limit).offset(offset)
     posts = await db_ops.read_query(query=query)
-    logger.debug(f"posts returned from pagination query {posts}")
-    if isinstance(posts, str):
+
+    if isinstance(posts, list):
+        logger.debug(f"posts returned from pagination query {posts}")
+        posts = [post.to_dict() for post in posts]
+    else:
         logger.error(f"Unexpected result from read_query: {posts}")
         posts = []
-    else:
-        posts = [post.to_dict() for post in posts]
+
     # offset date_created and date_updated to user's timezone
     for post in posts:
         post["date_created"] = await date_functions.timezone_update(
@@ -335,7 +337,10 @@ async def read_posts_pagination(
     found = len(posts)
     count_query = Select(Posts)
     posts_count = await db_ops.count_query(query=count_query)
-
+    logger.debug(f"Database Response for post_count: {posts_count}")
+    if isinstance(posts_count, dict) and "error" in posts_count:
+        posts_count = 0
+    logger.debug(f"POST COUNT {posts_count}")
     current_count = found
 
     total_pages = -(-posts_count // limit)  # Ceiling division
@@ -370,6 +375,7 @@ async def read_posts_pagination(
         name="/posts/pagination.html",
         context=context,
     )
+
 
 # get /item/{id}
 @router.get("/view/{post_id}")

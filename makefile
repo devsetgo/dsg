@@ -1,8 +1,7 @@
 # Shell
 SHELL := /bin/bash
 # Variables
-__version__ = "2024-11-23-001"
-
+__version__ = "2024-11-26-002"
 PYTHON = python3
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
@@ -30,15 +29,27 @@ alembic-init: # Initialize Alembic
 	alembic init alembic
 
 alembic-migrate: # Migrate database using Alembic
+	cp env-files/.env.test .env && \
+	./scripts/env.sh && \
+	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
+	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
 	alembic upgrade head
 
 alembic-rev: # Create a new revision file
 	cp env-files/.env.test .env && \
 	./scripts/env.sh && \
-	export DATABASE_URL=`cat /tmp/db_url.txt` && \
-	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL"
-	@read -p "Enter revision name: " name; \
+	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
+	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
+	read -p "Enter revision name: " name; \
 	alembic revision --autogenerate -m "$$name"
+
+alembic-current: # Show the current revision
+	cp env-files/.env.test .env && \
+	./scripts/env.sh && \
+	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
+	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
+	alembic current
+
 
 alembic-downgrade: # Downgrade database using Alembic
 	@read -p "Enter revision name: " name; \
@@ -57,6 +68,9 @@ cache:  # Clean pycache
 
 cleanup: autoflake ruff isort  # Run isort, ruff, and autoflake
 
+clear-pycache: ## Clear pycache
+	find . -name '__pycache__' -exec rm -rf {} +
+
 compile:  # Compile http_request.c into a shared library
 	gcc -shared -o http_request.so http_request.c -lcurl -fPIC
 
@@ -73,13 +87,13 @@ docker-push:  # Push beta test image to docker hub
 	docker tag dsg:$(__version__) mikeryan56/dsg:$(__version__)
 	docker push mikeryan56/dsg:$(__version__)
 
-docker-all: docker-build docker-push 
+docker-all: docker-build docker-push
 
 bump-calver-beta:  # Bump the beta version number in the Makefile
 	python3 /home/mike/dsg/scripts/calver_update.py --build --beta
 
 bump-calver:  # Bump the version number in the Makefile
-	python3 /home/mike/dsg/scripts/calver_update.py --build
+	python3 /workspaces/dsg/scripts/calver_update.py --build
 
 flake8:  # Run flake8 and output report
 	flake8 --tee . > _flake8Report.txt
@@ -147,10 +161,19 @@ run-grdev:  # Run the FastAPI application in development mode with hot-reloading
 	granian --interface rsgi ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
 
 test:  # Run tests and generate coverage report
+	cp .env .env-temp
+	cp env-files/.env.pytest .env
 	pre-commit run -a
 	PYTHONPATH=. pytest
 	sed -i 's|<source>/workspaces/dsg</source>|<source>/github/workspace/dsg</source>|' /workspaces/dsg/coverage.xml
 	genbadge coverage -i /workspaces/dsg/coverage.xml
+	cp .env-temp .env
+	rm .env-temp
+	rm sqlite_db/dsg_pytest.db
+
+
+
+tests: test ## Run tests and generate coverage report
 
 ruff: ## Format Python code with Ruff
 	ruff check --fix --exit-non-zero-on-fix --show-fixes $(SERVICE_PATH)
