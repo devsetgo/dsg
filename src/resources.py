@@ -262,11 +262,14 @@ async def add_notes(
     """
     # Define possible moods and mood analyses
     moods: List[str] = ["positive", "neutral", "negative"]
-    mood_analysis: List[str] = [mood[0]
-                                for mood in settings.mood_analysis_weights]
+    mood_analysis: List[str] = [mood[0] for mood in settings.mood_analysis_weights]
 
     # Create notes with the same date for both creation and update
-    for i in tqdm(range(settings.create_demo_notes_qty), desc=f"same day notes for {user_id}", leave=False):
+    for i in tqdm(
+        range(settings.create_demo_notes_qty),
+        desc=f"same day notes for {user_id}",
+        leave=False,
+    ):
         mood: str = random.choice(moods)
         mood_analysis_choice: str = random.choice(mood_analysis)
 
@@ -354,12 +357,10 @@ async def add_user() -> Optional[Dict[str, Any]]:
     # Generate a random username using silly and secrets libraries
     import secrets
 
-    user_name: str = f"{silly.plural()}-{silly.noun()
-                                         }{secrets.token_hex(2)}".lower()
+    user_name: str = f"{silly.plural()}-{silly.noun()}{secrets.token_hex(2)}".lower()
     email: str = silly.email()
     # Define possible roles for the user
-    roles: List[str] = ["notes", "web_links",
-                        "job_applications", "developer", "posts"]
+    roles: List[str] = ["notes", "web_links", "job_applications", "developer", "posts"]
     role_data: Dict[str, bool] = {}
 
     # Randomly assign roles to the user
@@ -459,10 +460,11 @@ async def add_web_links():
         data = await db_ops.read_query(
             Select(WebLinks).where(WebLinks.title == item.get("title", "processing"))
         )
-        # If the item already exists in the database, log a message and return
+        # If the item already exists in the database, log a message and continue
         if len(data) > 0:
-            logger.info(f"system item {item.get("title", "processing")} already added")
-            return
+            logger.info(f"system item {item.get('title', 'processing')} already added")
+            continue
+
     user_name = settings.admin_user.get_secret_value()
     # Get the user record for 'admin'
     user = await db_ops.read_one_record(
@@ -473,13 +475,12 @@ async def add_web_links():
     for item in my_stuff:
         # Get the category record for the current item
         category = await db_ops.read_one_record(
-            Select(Categories).where(Categories.name ==
-                                     str(item["category"]).title())
+            Select(Categories).where(Categories.name == str(item["category"]).title())
         )
         # Log the category name
         logger.info(category.name)
         # Log a message indicating that the current item is being added
-        logger.info(f"adding system item {item.get("title", "processing")}")
+        logger.info(f"adding system item {item.get('title', 'processing')}")
         # Create a new WebLinks instance with the item details
         thing = WebLinks(
             title=item.get("title", "processing"),
@@ -501,8 +502,7 @@ async def add_web_links():
     all_things = await db_ops.read_query(Select(WebLinks))
     # Log the title, category, URL, and summary of each item
     for thing in all_things:
-        logger.info(f"{thing.title}, {thing.category}, {
-                    thing.url}, {thing.summary}")
+        logger.info(f"{thing.title}, {thing.category}, {thing.url}, {thing.summary}")
 
 
 async def add_posts():
@@ -516,11 +516,14 @@ async def add_posts():
     cat_list = [cat["name"] for cat in categories]
     posts = await db_ops.read_query(Select(Posts))
     if len(posts) == 0:
-        for _ in tqdm(range(settings.create_demo_posts_qty), desc="creating demo posts", leave=False):
+        for _ in tqdm(
+            range(settings.create_demo_posts_qty),
+            desc="creating demo posts",
+            leave=False,
+        ):
             rand_cat = random.randint(0, len(cat_list) - 1)
             tags = [silly.noun() for _ in range(random.randint(2, 5))]
-            date_created = datetime.now(
-                UTC) - timedelta(days=random.randint(1, 700))
+            date_created = datetime.now(UTC) - timedelta(days=random.randint(1, 700))
             post = Posts(
                 title=silly.sentence(),
                 content=silly.markdown(length=random.randint(30, 60)),

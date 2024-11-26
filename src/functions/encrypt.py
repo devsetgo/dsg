@@ -1,20 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Module for encrypting and decrypting text using Fernet symmetric encryption.
-
-This module provides functionality to encrypt and decrypt text strings. It uses
-Fernet symmetric encryption, which ensures that data encrypted using a key can
-only be decrypted using the same key. The key is derived from a passphrase
-using PBKDF2 HMAC SHA-256, and then encoded to a URL-safe base64 format.
-
-Functions:
-    encrypt_text(text: str) -> bytes: Encrypts a text string into bytes.
-    decrypt_text(text: bytes) -> str: Decrypts bytes back into a text string.
-
-Author:
-    Mike Ryan
-    MIT Licensed
-"""
 import base64
 import hashlib
 import traceback
@@ -33,13 +16,15 @@ class DecryptionError(Exception):
     """Exception raised for errors during the decryption process."""
 
 
-# Original phrase
+# Original phrase and salt
 phrase: bytes = settings.phrase.get_secret_value().encode("utf-8")
+salt: bytes = settings.salt.get_secret_value().encode("utf-8")
+
 # Generate a 32-byte key using PBKDF2 HMAC SHA-256
-key: bytes = hashlib.pbkdf2_hmac("sha256", phrase, b"salt", 100000)
+key: bytes = hashlib.pbkdf2_hmac("sha256", phrase, salt, 100000)
 # Encode the key to make it url-safe base64-encoded
 encoded_key: bytes = base64.urlsafe_b64encode(key)
-pipe: Fernet = Fernet(key=encoded_key)  # Corrected to use encoded_key
+pipe: Fernet = Fernet(key=encoded_key)
 
 
 def encrypt_text(text: str) -> bytes:
