@@ -1,7 +1,7 @@
 # Shell
 SHELL := /bin/bash
 # Variables
-__version__ = "2024-11-25-001"
+__version__ = "2024-11-26-001"
 PYTHON = python3
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
@@ -93,7 +93,7 @@ bump-calver-beta:  # Bump the beta version number in the Makefile
 	python3 /home/mike/dsg/scripts/calver_update.py --build --beta
 
 bump-calver:  # Bump the version number in the Makefile
-	python3 /home/mike/dsg/scripts/calver_update.py --build
+	python3 /workspaces/dsg/scripts/calver_update.py --build
 
 flake8:  # Run flake8 and output report
 	flake8 --tee . > _flake8Report.txt

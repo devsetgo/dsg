@@ -337,9 +337,10 @@ async def read_posts_pagination(
     found = len(posts)
     count_query = Select(Posts)
     posts_count = await db_ops.count_query(query=count_query)
-    if "error" in posts_count:
+    logger.debug(f"Database Response for post_count: {posts_count}")
+    if isinstance(posts_count, dict) and "error" in posts_count:
         posts_count = 0
-    logger.critical(f"POST COUNT {posts_count}")
+    logger.debug(f"POST COUNT {posts_count}")
     current_count = found
 
     total_pages = -(-posts_count // limit)  # Ceiling division
