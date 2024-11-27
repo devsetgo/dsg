@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="13" time="11.202" timestamp="2024-11-27T01:44:08.874563+00:00" hostname="d3924799c488"><testcase classname="tests.test_pages" name="test_root" time="0.775" /><testcase classname="tests.test_pages" name="test_index" time="0.136" /><testcase classname="tests.test_pages" name="test_category_endpoint" time="0.060" /><testcase classname="tests.test_pages" name="test_pypi_check" time="0.051" /><testcase classname="tests.test_pages" name="test_pypi_index" time="1.029" /><testcase classname="tests.test_pages" name="test_posts" time="0.051" /><testcase classname="tests.test_pages" name="test_posts_pagination" time="0.202" /><testcase classname="tests.test_pages" name="test_weblinks" time="0.121" /><testcase classname="tests.test_pages" name="test_about" time="0.624" /><testcase classname="tests.test_pages" name="test_data" time="0.062" /><testcase classname="tests.test_post" name="test_get_posts" time="0.039" /><testcase classname="tests.test_post" name="test_edit_post" time="0.378"><failure message="httpx.TooManyRedirects: Exceeded maximum allowed redirects.">tests/test_post.py:39: in test_edit_post
+    response = test_client.post(f"/posts/edit/{post_id}", data=post_data)
+/home/vscode/.local/lib/python3.12/site-packages/starlette/testclient.py:593: in post
+    return super().post(
+/home/vscode/.local/lib/python3.12/site-packages/httpx/_client.py:1157: in post
+    return self.request(
+/home/vscode/.local/lib/python3.12/site-packages/starlette/testclient.py:484: in request
+    return super().request(
+/home/vscode/.local/lib/python3.12/site-packages/httpx/_client.py:837: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+/home/vscode/.local/lib/python3.12/site-packages/httpx/_client.py:926: in send
+    response = self._send_handling_auth(
+/home/vscode/.local/lib/python3.12/site-packages/httpx/_client.py:954: in _send_handling_auth
+    response = self._send_handling_redirects(
+/home/vscode/.local/lib/python3.12/site-packages/httpx/_client.py:984: in _send_handling_redirects
+    raise TooManyRedirects(
+E   httpx.TooManyRedirects: Exceeded maximum allowed redirects.</failure></testcase><testcase classname="tests.test_users" name="test_login" time="0.082" /></testsuite></testsuites>

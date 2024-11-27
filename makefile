@@ -169,9 +169,7 @@ test:  # Run tests and generate coverage report
 	genbadge coverage -i /workspaces/dsg/coverage.xml
 	cp .env-temp .env
 	rm .env-temp
-	rm sqlite_db/dsg_pytest.db
-
-
+	# rm sqlite_db/dsg_pytest.db
 
 tests: test ## Run tests and generate coverage report
 

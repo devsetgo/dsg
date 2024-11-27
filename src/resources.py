@@ -34,7 +34,7 @@ License:
     MIT License
 """
 import random
-from datetime import UTC, datetime, timedelta,timezone
+from datetime import UTC, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import silly
@@ -281,9 +281,10 @@ async def add_notes(
         # Ensure the date is within a valid range
         max_days = 365 * 10  # Limit to 10 years in the past
         days_offset = min(365 * i, max_days)
-        date_created: datetime = datetime.now(timezone.utc) - timedelta(days=days_offset)
+        date_created: datetime = datetime.now(timezone.utc) - timedelta(
+            days=days_offset
+        )
         date_updated: datetime = date_created
-
 
         # Create the note
         note = Notes(

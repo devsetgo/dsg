@@ -252,7 +252,6 @@ async def create_link(
 
     if comment == "":
         comment = None
-    
 
     logger.debug(f"Received category: {category} and content: {url}")
 
