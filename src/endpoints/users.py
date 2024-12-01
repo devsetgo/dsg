@@ -189,13 +189,13 @@ github_sso = GithubSSO(
 
 @router.get("/github-login")
 async def github_login():
-    with github_sso:
+    async with github_sso:
         return await github_sso.get_login_redirect()
 
 
 @router.get("/callback")
 async def github_callback(request: Request):
-    with github_sso:
+    async with github_sso:
         user = await github_sso.verify_and_process(request)
 
     user_stored = await db_ops.read_one_record(
