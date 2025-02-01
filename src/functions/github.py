@@ -48,7 +48,7 @@ async def call_github_repos() -> list:
     data = r.json()
 
     # Log the data
-    logger.info(data)
+    logger.debug(data)
 
     # Check if the rate limit has been exceeded
     if "message" in data:
