@@ -153,8 +153,8 @@ run-gdev:  # Run the FastAPI application in development mode with hot-reloading 
 	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
 
 run-gprd:  # Run the FastAPI application in production mode using granian
-	cp env-files/.env.prd .env
-	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --log-level ${LOG_LEVEL}
+	cp env-files/.env.dev .env
+	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --workers 8 --log-level ${LOG_LEVEL}
 
 run-grdev:  # Run the FastAPI application in development mode with hot-reloading using granian and rsgi interface
 	cp env-files/.env.dev .env
