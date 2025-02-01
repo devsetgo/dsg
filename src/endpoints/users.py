@@ -180,7 +180,7 @@ async def get_user_info(
     )
 
 
-github_sso = GithubSSO(
+sso = GithubSSO(
     settings.github_client_id,
     settings.github_client_secret.get_secret_value(),
     f"{settings.github_call_back_domain}/users/callback",
@@ -189,14 +189,14 @@ github_sso = GithubSSO(
 
 @router.get("/github-login")
 async def github_login():
-    async with github_sso:
-        return await github_sso.get_login_redirect()
+    async with sso:
+        return await sso.get_login_redirect()
 
 
 @router.get("/callback")
 async def github_callback(request: Request):
-    async with github_sso:
-        user = await github_sso.verify_and_process(request)
+    async with sso:
+        user = await sso.verify_and_process(request)
 
     user_stored = await db_ops.read_one_record(
         Select(Users).where(Users.user_name == user.display_name)
