@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # FILE: conftest.py
 import pytest
 from fastapi.testclient import TestClient
@@ -7,10 +8,12 @@ from src.resources import db_ops
 from datetime import datetime, timedelta
 import json
 
+
 @pytest.fixture(scope="module")
 def test_client():
     client = TestClient(app)
     yield client
+
 
 @pytest.fixture(scope="module")
 async def mock_user():
@@ -29,6 +32,7 @@ async def mock_user():
     # Clean up the mock user from the database
     await db_ops.delete_one(Users, user.pkid)
 
+
 @pytest.fixture(scope="module")
 async def mock_login(test_client, mock_user):
     # Mock the login process by setting cookies
@@ -38,7 +42,7 @@ async def mock_login(test_client, mock_user):
         "is_active": mock_user.is_active,
         "is_admin": mock_user.is_admin,
         "timezone": mock_user.my_timezone,
-        "exp": (datetime.now() + timedelta(minutes=30)).timestamp()
+        "exp": (datetime.now() + timedelta(minutes=30)).timestamp(),
     }
     test_client.cookies.set("session", json.dumps(session_data))
     yield

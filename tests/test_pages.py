@@ -3,6 +3,7 @@
 from fastapi.testclient import TestClient
 
 from src.main import app
+from loguru import logger
 
 client = TestClient(app)
 
@@ -24,6 +25,7 @@ def test_category_endpoint():
     url = "/posts/categories"
     response = client.get(url)
     assert response.status_code == 200
+    logger.critical(f"category_endpoint: {response.json()}")
     assert isinstance(response.json(), list)
 
 
