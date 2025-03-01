@@ -14,7 +14,7 @@ pydantic[email]==2.10.3 # Vulnerabilities: None
 PyJWT[crypto]==2.10.1 # Vulnerabilities: None
 python-dateutil==2.9.0.post0 # Vulnerabilities: None
 pytz==2024.2 # Vulnerabilities: None
-selenium==4.27.1 # From 4.26.1 | Vulnerabilities: None
+selenium==4.29.0 # From 4.26.1 | Vulnerabilities: None
 silly==1.1.0 # Vulnerabilities: None
 starlette-authlib==0.3.4 # Vulnerabilities: None
 tqdm==4.67.1 # Vulnerabilities: None
