@@ -15,5 +15,5 @@ pre-commit==4.1.0 # Vulnerabilities: None
 pyright==1.1.389 # Vulnerabilities: None
 pytest==8.3.3 # Vulnerabilities: None
 pytest-cov==6.0.0 # Vulnerabilities: None
-ruff==0.8.1 # Vulnerabilities: None
+ruff==0.9.9 # Vulnerabilities: None
 
