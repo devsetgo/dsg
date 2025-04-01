@@ -4,7 +4,7 @@ autopep8==2.3.2 # Vulnerabilities: None
 black==24.10.0 # Vulnerabilities: None
 bump-pydantic==0.8.0 # Vulnerabilities: None
 bumpcalver==2024.12.14.1 # Vulnerabilities: None
-calver==2022.6.26 # Vulnerabilities: None
+calver==2025.3.31 # Vulnerabilities: None
 coverage-badge==1.1.2 # Vulnerabilities: None
 genbadge[all]==1.1.1 # Vulnerabilities: None
 isort==6.0.1 # Vulnerabilities: None
