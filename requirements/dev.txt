@@ -3,19 +3,19 @@ autoflake==2.3.1 # Vulnerabilities: None
 autopep8==2.3.2 # Vulnerabilities: None
 black==25.1.0 # Vulnerabilities: None
 bump-pydantic==0.8.0 # Vulnerabilities: None
-bumpcalver==2025.4.12.1 # From 2024.12.14.1 | Vulnerabilities: None
-calver==2025.4.2 # From 2022.6.26 | Vulnerabilities: None
+bumpcalver==2025.4.12.1 # Vulnerabilities: None
+calver==2025.4.17 # From 2025.4.2 | Vulnerabilities: None
 coverage-badge==1.1.2 # Vulnerabilities: None
-genbadge[all]==1.1.2 # From 1.1.1 | Vulnerabilities: None
-isort==6.0.1 # From 6.0.0 | Vulnerabilities: None
+genbadge[all]==1.1.2 # Vulnerabilities: None
+isort==6.0.1 # Vulnerabilities: None
 mkdocs-gen-files==0.5.0 # Vulnerabilities: None
-mkdocs-material==9.6.11 # From 9.6.5 | Vulnerabilities: None
-mkdocstrings[python]==0.29.1 # From 0.28.1 | Vulnerabilities: None
-pre-commit==4.2.0 # From 4.1.0 | Vulnerabilities: None
-pyright==1.1.399 # From 1.1.394 | Vulnerabilities: None
-pytest==8.3.5 # From 8.3.4 | Vulnerabilities: None
-pytest-asyncio==0.26.0 # From 0.25.3 | Vulnerabilities: None
-pytest-cov==6.1.1 # From 6.0.0 | Vulnerabilities: None
+mkdocs-material==9.6.14 # From 9.6.11 | Vulnerabilities: None
+mkdocstrings[python]==0.29.1 # Vulnerabilities: None
+pre-commit==4.2.0 # Vulnerabilities: None
+pyright==1.1.401 # From 1.1.399 | Vulnerabilities: None
+pytest==8.3.5 # Vulnerabilities: None
+pytest-asyncio==1.0.0 # From 0.26.0 | Vulnerabilities: None
+pytest-cov==6.1.1 # Vulnerabilities: None
 pytest-html==4.1.1 # Vulnerabilities: None
-pytest-xdist==3.6.1 # Vulnerabilities: None
-ruff==0.11.5 # From 0.9.7 | Vulnerabilities: None
+pytest-xdist==3.7.0 # From 3.6.1 | Vulnerabilities: None
+ruff==0.11.11 # From 0.11.5 | Vulnerabilities: None
