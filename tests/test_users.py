@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # FILE: test_users.py
-import pytest
 from fastapi.testclient import TestClient
-from loguru import logger
 
 from src.main import app
 
