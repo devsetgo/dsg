@@ -43,8 +43,10 @@ from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from loguru import logger
-from sqlalchemy import Select, func, update
+from sqlalchemy import Select, func
 from tqdm import tqdm
+
+from src.functions.ai import get_summary
 
 from .db_init import async_db
 from .db_tables import Categories, Notes, Posts, Users, WebLinks
@@ -131,14 +133,11 @@ async def shutdown() -> None:
     await async_db.disconnect()
 
 
-            
-from src.functions.ai import get_summary
-
 async def run_markdown_conversion():
 
     query_notes = Select(Notes)
     notes = await db_ops.read_query(query_notes)
-    
+
     for note in notes:
         tbd_note =  note.to_dict()
         note_md = tbd_note['note']
@@ -148,13 +147,13 @@ async def run_markdown_conversion():
             # Convert Markdown to HTML
             html_note = await convert_markdown_to_html(note_md)
             # Update the note with the converted HTML
-            
+
             # print(f"MARKDOWN ##################################################")
             # print(note_md)
             # print(f"HTML ##################################################")
             # print(html_note)
             # # Save the updated note back to the database
-            
+
             summary = await get_summary(content=html_note, sentence_length=1)
             print(f"Summary: {summary}")
             state = await db_ops.update_one(Notes, pkid, {"note": html_note, "summary": summary})
@@ -174,13 +173,13 @@ async def run_markdown_conversion():
             # Convert Markdown to HTML
             html_post = await convert_markdown_to_html(post_md)
             # Update the post with the converted HTML
-            
+
             # print(f"MARKDOWN ##################################################")
             # print(post_md)
             # print(f"HTML ##################################################")
             # print(html_post)
             # Save the updated post back to the database
-            
+
             summary = await get_summary(content=html_post, sentence_length=1)
             print(f"Summary: {summary}")
             state = await db_ops.update_one(Posts, pkid, {"content": html_post, "summary": summary})
@@ -195,7 +194,7 @@ async def convert_markdown_to_html(markdown_text: str) -> str:
     html_text = markdown.markdown(markdown_text)
 
     return html_text
-    
+
 
 async def add_system_data() -> None:
     """
@@ -606,9 +605,6 @@ async def add_posts():
             try:
                 data = await db_ops.create_one(post)
                 logger.info(f"adding demo posts {data}")
-            except Exception as e:
-                # If there's an error while adding the item, log the error
-                logger.error(e)
             except Exception as e:
                 # If there's an error while adding the item, log the error
                 logger.error(e)
