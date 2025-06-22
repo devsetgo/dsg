@@ -2,8 +2,9 @@
 # FILE: test_users.py
 import pytest
 from fastapi.testclient import TestClient
-from src.main import app
 from loguru import logger
+
+from src.main import app
 
 client = TestClient(app, follow_redirects=True)
 

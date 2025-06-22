@@ -181,12 +181,12 @@ async def update_post(
 
     # Get the new data from the form
     form = await request.form()
-
+    print(form)
     # Initialize the updated data dictionary with the current date and time
     updated_data = {"date_updated": datetime.utcnow()}
 
     # List of fields to update
-    fields = ["mood", "post", "tags", "summary", "mood_analysis"]
+    fields = ["mood", "content", "tags", "summary", "mood_analysis"]
     # Compare the old data to the new data
     for field in fields:
         new_value = form.get(field)
@@ -199,6 +199,7 @@ async def update_post(
                     new_value = [new_value]
             updated_data[field] = new_value
 
+    print(f"Updated data: {updated_data}")
     # Update the database
     data = await db_ops.update_one(
         table=Posts, record_id=post_id, new_values=updated_data

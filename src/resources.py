@@ -24,7 +24,7 @@ Imports:
     StaticFiles: Handles the serving of static files.
     Jinja2Templates: Manages the rendering of HTML templates.
     logger: Logging library for Python.
-    Select, func: SQLAlchemy functions for database operations.
+    Select, func, update: SQLAlchemy functions for database operations.
     tqdm: Provides a fast, extensible progress bar for loops and other operations.
 
 Author:
@@ -37,12 +37,13 @@ import random
 from datetime import UTC, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
+import markdown
 import silly
 from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from loguru import logger
-from sqlalchemy import Select, func
+from sqlalchemy import Select, func, update
 from tqdm import tqdm
 
 from .db_init import async_db
@@ -105,6 +106,8 @@ async def startup() -> None:
         # Add system data if no users are found
         await add_system_data()
 
+    if settings.convert_markdown_to_html:
+        await run_markdown_conversion()
 
 async def shutdown() -> None:
     """
@@ -127,6 +130,72 @@ async def shutdown() -> None:
     logger.info("disconnecting from database")
     await async_db.disconnect()
 
+
+            
+from src.functions.ai import get_summary
+
+async def run_markdown_conversion():
+
+    query_notes = Select(Notes)
+    notes = await db_ops.read_query(query_notes)
+    
+    for note in notes:
+        tbd_note =  note.to_dict()
+        note_md = tbd_note['note']
+        pkid = tbd_note['pkid']
+        # summary = tbd_note['summary']
+        if note_md:
+            # Convert Markdown to HTML
+            html_note = await convert_markdown_to_html(note_md)
+            # Update the note with the converted HTML
+            
+            # print(f"MARKDOWN ##################################################")
+            # print(note_md)
+            # print(f"HTML ##################################################")
+            # print(html_note)
+            # # Save the updated note back to the database
+            
+            summary = await get_summary(content=html_note, sentence_length=1)
+            print(f"Summary: {summary}")
+            state = await db_ops.update_one(Notes, pkid, {"note": html_note, "summary": summary})
+            logger.info(f"Note {pkid} converted to HTML {state}")
+        else:
+            logger.warning(f"Note {pkid} is empty, skipping conversion")
+
+    query_posts = Select(Posts)
+    posts = await db_ops.read_query(query_posts)
+
+    for post in posts:
+        tbd_post = post.to_dict()
+        post_md = tbd_post['content']
+        pkid = tbd_post['pkid']
+        # summary = tbd_post['summary']
+        if post_md:
+            # Convert Markdown to HTML
+            html_post = await convert_markdown_to_html(post_md)
+            # Update the post with the converted HTML
+            
+            # print(f"MARKDOWN ##################################################")
+            # print(post_md)
+            # print(f"HTML ##################################################")
+            # print(html_post)
+            # Save the updated post back to the database
+            
+            summary = await get_summary(content=html_post, sentence_length=1)
+            print(f"Summary: {summary}")
+            state = await db_ops.update_one(Posts, pkid, {"content": html_post, "summary": summary})
+            logger.info(f"Post {pkid} converted to HTML {state}")
+        else:
+            logger.warning(f"Post {pkid} is empty, skipping conversion")
+
+
+async def convert_markdown_to_html(markdown_text: str) -> str:
+
+    # Convert Markdown to HTML using the markdown library
+    html_text = markdown.markdown(markdown_text)
+
+    return html_text
+    
 
 async def add_system_data() -> None:
     """
@@ -274,7 +343,7 @@ async def add_notes(
         mood_analysis_choice: str = random.choice(mood_analysis)
 
         length: int = random.randint(5, 20)
-        note_text: str = silly.paragraph(length=length)
+        note_text: str = silly.markdown(length=length)
         summary: str = note_text[:50]
         tags: List[str] = list({silly.adjective() for _ in range(1, 4)})
 
@@ -540,3 +609,8 @@ async def add_posts():
             except Exception as e:
                 # If there's an error while adding the item, log the error
                 logger.error(e)
+            except Exception as e:
+                # If there's an error while adding the item, log the error
+                logger.error(e)
+
+
