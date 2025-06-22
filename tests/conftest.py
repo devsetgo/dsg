@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 # FILE: conftest.py
+import json
+from datetime import datetime, timedelta
+
 import pytest
 from fastapi.testclient import TestClient
-from src.main import app
+
 from src.db_tables import Users
+from src.main import app
 from src.resources import db_ops
-from datetime import datetime, timedelta
-import json
 
 
 @pytest.fixture(scope="module")

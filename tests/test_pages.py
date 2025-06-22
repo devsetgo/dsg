@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from fastapi.testclient import TestClient
+from loguru import logger
 
 from src.main import app
-from loguru import logger
 
 client = TestClient(app)
 

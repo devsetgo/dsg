@@ -2,11 +2,12 @@
 # FILE: test_posts.py
 import pytest
 from fastapi.testclient import TestClient
+from loguru import logger
+from sqlalchemy import Select
+
+from src.db_tables import Posts
 from src.main import app
 from src.resources import db_ops
-from sqlalchemy import Select
-from src.db_tables import Posts
-from loguru import logger
 
 client = TestClient(app, follow_redirects=True)
 
