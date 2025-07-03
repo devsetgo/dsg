@@ -9,13 +9,13 @@ coverage-badge==1.1.2 # Vulnerabilities: None
 genbadge[all]==1.1.2 # Vulnerabilities: None
 isort==6.0.1 # Vulnerabilities: None
 mkdocs-gen-files==0.5.0 # Vulnerabilities: None
-mkdocs-material==9.6.14 # Vulnerabilities: None
+mkdocs-material==9.6.15 # From 9.6.14 | Vulnerabilities: None
 mkdocstrings[python]==0.29.1 # Vulnerabilities: None
 pre-commit==4.2.0 # Vulnerabilities: None
-pyright==1.1.402 # From 1.1.401 | Vulnerabilities: None
-pytest==8.4.1 # From 8.3.5 | Vulnerabilities: None
+pyright==1.1.402 # Vulnerabilities: None
+pytest==8.4.1 # Vulnerabilities: None
 pytest-asyncio==1.0.0 # Vulnerabilities: None
-pytest-cov==6.2.1 # From 6.1.1 | Vulnerabilities: None
+pytest-cov==6.2.1 # Vulnerabilities: None
 pytest-html==4.1.1 # Vulnerabilities: None
-pytest-xdist==3.7.0 # Vulnerabilities: None
-ruff==0.12.0 # From 0.11.11 | Vulnerabilities: None
+pytest-xdist==3.8.0 # From 3.7.0 | Vulnerabilities: None
+ruff==0.12.2 # From 0.12.0 | Vulnerabilities: None
