@@ -42,10 +42,14 @@
                                 <p>
                                 <h2>{{post.title|title}}</h2>
                                 </p>
-                                <p>By <strong>{{post.full_name | title}}</strong> | Created: {{post.date_created}} | Category: <a
-                                        href="/posts/?category={{post.category}}">{{post.category |capitalize}}</a></p>
+                                <p>By <strong>{{post.full_name | title}}</strong> | Created: {{post.date_created}} |
+                                    Category: <a href="/posts/?category={{post.category}}">{{post.category
+                                        |capitalize}}</a></p>
                             </div>
-                            {% include "posts/post_view_md.html" %}
+                            <div class="col-md-12">
+                                {{ post.content | safe}}
+                                <div id="postDisplay"></div>
+                            </div>
                             <p>Word Count: {{post.word_count}}</p>
                             <p>Tags: {% for tag in post.tags %}<a href="/posts/?search_term={{tag}}">{{ tag|capitalize
                                     }}</a>{% if not loop.last %}, {%

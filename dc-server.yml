@@ -1,0 +1,49 @@
+version: "3.3"
+
+services:
+  devsetgoMain:
+    image: mikeryan56/dsg:2025-04-13-001
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - "5000"
+    networks:
+      - web
+      - postrgresql_db_network
+    labels:
+      - "traefik.http.middlewares.dsg-main-https.redirectscheme.scheme=https"
+      #### Labels define the behavior and rules of the traefik proxy for this container ####
+      - "traefik.enable=true" # <== Enable traefik to proxy this container
+      - "traefik.http.routers.dsg-main-web.rule=Host(`www.devsetgo.com`, `devsetgo.com`)" # <== Your Domain Name goes here for the http rule
+      - "traefik.http.routers.dsg-main-web.entrypoints=web" # <== Defining the entrypoint for http, **ref: line 30
+      - "traefik.http.routers.dsg-main-web.middlewares=redirect@file" # <== This is a middleware to redirect to https
+      - "traefik.http.routers.dsg-main-secured.rule=Host(`www.devsetgo.com`, `devsetgo.com`)" # <== Your Domain Name for the https rule
+      - "traefik.http.routers.dsg-main-secured.entrypoints=web-secured" # <== Defining entrypoint for https, **ref: line 31
+      - "traefik.http.routers.dsg-main-secured.tls.certresolver=mytlschallenge" # <== Defining certsresolvers for https
+
+    volumes:
+      - log-volume:/app/log
+    # deploy:
+    #   replicas: 2
+    #   update_config:
+    #     parallelism: 1
+    #     delay: 30s
+    #   restart_policy:
+    #     condition: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/health/status || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+networks:
+  web:
+    external: true
+  postrgresql_db_network:
+    external: true
+
+volumes:
+  devsetgoMain:
+    external: false
+  log-volume:
+    driver: local

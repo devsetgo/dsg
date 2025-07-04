@@ -161,6 +161,7 @@ async def admin_categories_table(
         request=request, name="/admin/categories-table.html", context=context
     )
 
+
 @router.get("/category-edit", response_class=HTMLResponse)
 async def admin_category_edit(
     request: Request, category_id: str = None, user_info: dict = Depends(check_login)
@@ -581,10 +582,7 @@ async def export_notes(
     user_info["is_admin"]
 
     # Fetch all notes from the database with user_name
-    query = (
-        Select(Notes)
-        .join(Users, Notes.user_id == Users.pkid)
-    )
+    query = Select(Notes).join(Users, Notes.user_id == Users.pkid)
     result = await db_ops.read_query(query=query)
     notes = [note.to_dict() for note in result]
     # Render the template with the data
