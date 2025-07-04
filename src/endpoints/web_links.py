@@ -252,7 +252,6 @@ async def create_link(
 
     if comment == "":
         comment = None
-    
 
     logger.debug(f"Received category: {category} and content: {url}")
 
@@ -381,7 +380,7 @@ async def get_update_comment(
     request: Request,
     user_info: dict = Depends(check_login),
 ):
-    user_identifier = user_info["user_identifier"]
+    user_info["user_identifier"]
 
     link = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
     link = link.to_dict()

@@ -2,6 +2,7 @@
 note.json
 new_note.json
 __archive/
+.env-temp
 .env
 .env.*
 _venv/

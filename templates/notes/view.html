@@ -58,7 +58,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="summaryInput">Summary</label>
-                                                <p>{{ note.summary }}</p>
+                                                <p>{{ note.summary | safe }}</p>
                                             </div>
                                             <div class="form-group">
                                                 <label for="tags">Tags</label>
@@ -100,7 +100,7 @@
                         <div class="col-12">
                             <!-- Begin Note Section -->
                             <div class="row" style="padding: 20px; margin: 10px;background-color: #f8f9fa;">
-                                {% include "notes/note_view_md.html" %}
+                                {% include "notes/note_view_html.html" %}
                             </div>
                             <!-- End Note Section -->
                         </div>
