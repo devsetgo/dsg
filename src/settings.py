@@ -155,6 +155,8 @@ class Settings(BaseSettings):
     create_demo_posts: bool = False
     create_demo_posts_qty: int = 0
 
+    convert_markdown_to_html: bool = False
+
     @model_validator(mode="before")
     @classmethod
     def parse_database_driver(cls, values):

@@ -12,7 +12,7 @@
         <h5 class="card-title"><a href="/posts/view/{{post.pkid}}" class="card-link"><strong>{{ post.title|title
               }}</strong></a></h5>
         <p class="card-text">
-          {{ post.content|truncate(2000, end='...') }}
+          {{ post.content|truncate(2000, end='...')|safe }}
           {% if post.content|length > 2000 %}
           <a href="/posts/view/{{post.pkid}}">Read more</a>
           {% endif %}
