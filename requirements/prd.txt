@@ -1,4 +1,4 @@
-alembic==1.16.2 # Vulnerabilities: None
+alembic==1.16.4 # Vulnerabilities: None
 argon2-cffi==25.1.0 # Vulnerabilities: None
 async-lru==2.0.5 # Vulnerabilities: None
 cryptography==45.0.5 # From 45.0.4 | Vulnerabilities: None
