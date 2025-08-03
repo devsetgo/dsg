@@ -111,25 +111,22 @@ file_type = "makefile"
 variable = "__version__"
 version_standard = "default"
 
+
 [tool.ruff.lint]
-select = ["C", "F", "E", "W", "B"]
-ignore = ["C901", "E501", "B017", "B904", "B008", "E712", "I"]
+select = [ "C", "F", "E", "W", "B",]
+ignore = [ "C901", "E501", "B017", "B904", "B008", "I",]
 
 [tool.ruff.format]
 indent-style = "space"
 quote-style = "single"
 
 [tool.coverage.run]
-source = ["src"]
-omit = ["setup.py", "_venv/*", "tests/*", "examples/*"]
+source = [ "bumpcalver",]
+omit = [ "setup.py", "_venv/*", "tests/*", "examples/*",]
 
 [tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "if __name__",
-    "def main",
-    "import_sqlalchemy",
-]
+exclude_lines = [ "pragma: no cover", "if __name__",]
+
 
 [tool.pytest.ini_options]
 norecursedirs = ["/tests"]
