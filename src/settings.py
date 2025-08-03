@@ -24,7 +24,10 @@ Usage:
     This module is intended to be imported and instantiated at the application startup to configure and validate the application settings. The `Settings` instance can then be used throughout the application to access configuration values.
 """
 import secrets  # For generating secure random numbers
-from datetime import datetime  # A Python library used for working with dates and times
+from datetime import (
+    datetime,
+    UTC,
+)  # A Python library used for working with dates and times
 from enum import (
     Enum,  # For creating enumerations, which are a set of symbolic names bound to unique constant values
 )
@@ -85,7 +88,7 @@ class Settings(BaseSettings):
     pool_timeout: Optional[int] = Field(None, description="Set pool_timeout")
 
     # Set the current date and time when the application is run
-    date_run: datetime = datetime.utcnow()
+    date_run: datetime = datetime.now(UTC)
     # application settings
     release_env: str = "prd"
     version: str = __version__
