@@ -17,5 +17,11 @@ pytest==8.4.1 # Vulnerabilities: None
 pytest-asyncio==1.1.0 # From 1.0.0 | Vulnerabilities: None
 pytest-cov==6.2.1 # Vulnerabilities: None
 pytest-html==4.1.1 # Vulnerabilities: None
+<<<<<<< HEAD
 pytest-xdist==3.8.0 # Vulnerabilities: None
 ruff==0.12.7 # From 0.12.2 | Vulnerabilities: None
+=======
+pytest-xdist==3.8.0 # From 3.7.0 | Vulnerabilities: None
+ruff==0.12.2 # From 0.12.0 | Vulnerabilities: None
+
+>>>>>>> c76e81c8cb19529f26f607a3586795d580e37419
