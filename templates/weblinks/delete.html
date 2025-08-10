@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block page_title %}| WebLinks{% endblock %}
+{% block page_stylesheet %}
+<!-- page stylesheets-->
+{% endblock %}
+{% block page_breadcrumb %} WebLinks / Delete{% endblock %}
+{% block page_head_title %}Delete WebLink{% endblock %}
+{% block body %}
+<!-- Main content -->
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- left column -->
+      <div class="col-12">
+        <!-- general form elements -->
+        <div class="card card-primary">
+          <div class="card-header">
+            <h3 class="card-title">Delete WebLink</h3>
+          </div>
+          <!-- /.card-header -->
+          <!-- form start -->
+          <div class="row">
+            <div class="col-12">
+              <!-- Begin WebLink Section -->
+              <div class="row" style="padding: 20px; margin: 10px;background-color: #f8f9fa;">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Title:</label>
+                    <p>{{ weblink.title }}</p>
+                  </div>
+                  <div class="form-group">
+                    <label>URL:</label>
+                    <p><a href="{{ weblink.url }}" target="_blank">{{ weblink.url }}</a></p>
+                  </div>
+                  <div class="form-group">
+                    <label>Summary:</label>
+                    <p>{{ weblink.summary }}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Comment:</label>
+                    <p>{{ weblink.comment }}</p>
+                  </div>
+                  <div class="form-group">
+                    <label>Category:</label>
+                    <p>{{ weblink.category }}</p>
+                  </div>
+                  <div class="form-group">
+                    <label>Date Created:</label>
+                    <p>{{ weblink.date_created }}</p>
+                  </div>
+                </div>
+              </div>
+              <!-- End WebLink Section -->
+            </div>
+          </div>
+          <div class="row" style="padding: 20px; margin: 10px; background-color: #ffcccc;">
+            <div class="alert alert-danger" role="alert">
+              <strong>Warning: Deleting a weblink cannot be undone.</strong>
+            </div>
+            <form action="/weblinks/delete/{{weblink.pkid}}" method="post">
+              <div class="form-group">
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="deleteConfirm" name="deleteConfirm" required>
+                  <label class="custom-control-label" for="deleteConfirm">Confirm Deletion</label>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-danger">Delete WebLink</button>
+              <a href="/weblinks/view/{{weblink.pkid}}" class="btn btn-secondary">Cancel</a>
+            </form>
+          </div>
+          <!-- /.col -->
+        </div>
+      </div>
+      <!-- /.card -->
+    </div>
+    <!-- /.row -->
+  </div>
+  <!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+{% endblock %}
+{% block page_sidebar_content %}
+<div class="p-3">
+  <h5>Actions</h5>
+  <p>Use this page to permanently delete a weblink.</p>
+</div>
+{% endblock %}
+{% block page_scripts %}
+<!-- page scripts-->
+{% endblock %}

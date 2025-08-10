@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-
-"""
+""" """
 
 import httpx
 from loguru import logger
