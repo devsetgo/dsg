@@ -1,7 +1,7 @@
 # Shell
 SHELL := /bin/bash
 # Variables
-__version__ = "2025-07-03-003"
+__version__ = "2025-08-10-001"
 PYTHON = python3
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
@@ -89,10 +89,10 @@ docker-push:  # Push beta test image to docker hub
 
 docker-all: docker-build docker-push
 
-bump-calver-beta:  # Bump the beta version number in the Makefile
+bump-beta:  # Bump the beta version number in the Makefile
 	python3 /home/mike/dsg/scripts/calver_update.py --build --beta
 
-bump-calver:  # Bump the version number in the Makefile
+bump:  # Bump the version number in the Makefile
 	python3 /workspaces/dsg/scripts/calver_update.py --build
 
 flake8:  # Run flake8 and output report
@@ -160,23 +160,47 @@ run-grdev:  # Run the FastAPI application in development mode with hot-reloading
 	cp env-files/.env.dev .env
 	granian --interface rsgi ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
 
-test:  # Run tests and generate coverage report
-	cp .env .env-temp
-	cp env-files/.env.pytest .env
+# Install test dependencies
+install-test-deps:
+	pip install pytest pytest-cov pytest-asyncio pytest-mock httpx
+
+# Testing commands
+test: ## Run the project's tests
 	pre-commit run -a
-	PYTHONPATH=. pytest
-	sed -i 's|<source>/workspaces/dsg</source>|<source>/github/workspace/dsg</source>|' /workspaces/dsg/coverage.xml
-	genbadge coverage -i /workspaces/dsg/coverage.xml
-	cp .env-temp .env
-	rm .env-temp
-	# rm sqlite_db/dsg_pytest.db
+	pytest
+	sed -i 's|<source>.*</source>|<source>$(REPONAME)</source>|' coverage.xml
+	genbadge coverage -i coverage.xml
+	genbadge tests -i report.xml
+# flake8 src tests examples | tee htmlcov/_flake8Report.txt
 
-tests: test ## Run tests and generate coverage report
+tests: test ## Run the project's tests
 
-ruff: ## Format Python code with Ruff
-	ruff check --fix --exit-non-zero-on-fix --show-fixes $(SERVICE_PATH)
-	ruff check --fix --exit-non-zero-on-fix --show-fixes $(TESTS_PATH)
+# test:
+# 	pytest tests/ -v
 
+# test-cov:
+# 	pytest tests/ --cov=src --cov-report=html --cov-report=term-missing
 
-kill: ## Kill the server
-	kill -9 $(lsof -t -i:5000)
+# test-cov-threshold:
+# 	pytest tests/ --cov=src --cov-fail-under=85
+
+# test-fast:
+# 	pytest tests/ -x --ff
+
+# test-debug:
+# 	pytest tests/ -v -s --pdb
+
+clean-test:
+	rm -rf .pytest_cache
+	rm -rf htmlcov
+	rm -f .coverage
+
+# Run a specific test file
+test-file:
+	pytest tests/$(FILE) -v
+
+# Run tests with specific marker
+test-marker:
+	pytest tests/ -m $(MARKER) -v
+
+.PHONY: test test-cov test-cov-threshold test-fast test-debug clean-test install-test-deps test-file test-marker

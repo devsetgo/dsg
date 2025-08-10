@@ -80,9 +80,7 @@ async def update_notes_metrics(user_id: str):
 
     query_metric = Select(NoteMetrics).where(NoteMetrics.user_id == user_id)
     metric_data = await db_ops.read_one_record(query=query_metric)
-    # query = select(*[column for column in Notes.__table__.c if column.key != '_note' or column.key != '_summary'])\
-    # .where(Notes.user_id == user_id)\
-    # .limit(100000)
+
     query = Select(Notes).where(Notes.user_id == user_id)
     notes = await db_ops.read_query(query=query)
 
@@ -96,8 +94,6 @@ async def update_notes_metrics(user_id: str):
 
     metrics = await get_metrics(user_identifier=user_id, user_timezone="UTC")
     ai_fix_count = await get_ai_fix_count(notes=notes)
-
-    # print(f"AI Fix Count: {ai_fix_count}")
 
     if metric_data is None:
         note_metrics = NoteMetrics(
@@ -120,7 +116,7 @@ async def update_notes_metrics(user_id: str):
             "total_unique_tag_count": total_unique_tag_count,
             "metrics": metrics,
             "user_id": user_id,
-            "aix_fix_count": ai_fix_count,
+            "ai_fix_count": ai_fix_count,
         }
 
         # Update the database
@@ -129,7 +125,6 @@ async def update_notes_metrics(user_id: str):
         )
 
     logger.debug(result)
-    # print(result.to_dict())
 
 
 async def get_metrics(user_identifier: str, user_timezone: str):
@@ -317,7 +312,7 @@ async def mood_trend_by_mean_month(notes: list):
 
         mood = note["mood"].lower()
         if mood not in mood_values:
-            mood = "neutral"
+            mood = "neutral"  # Default to neutral if mood not recognized
         result[month_year] += mood_values[mood]
         count[month_year] += 1
 
@@ -376,7 +371,7 @@ async def mood_trend_by_median_month(notes: list):
         month_year = note["date_created"].strftime("%Y-%m")
         mood = note["mood"].lower()
         if mood not in mood_values:
-            mood = "neutral"
+            mood = "neutral"  # Default to neutral if mood not recognized
         result[month_year].append(mood_values[mood])
 
     for month_year in result:
@@ -406,9 +401,8 @@ async def mood_trend_by_rolling_mean_month(notes: list):
         month_year = note["date_created"].strftime("%Y-%m")
         mood = note["mood"].lower()
         if mood not in mood_values:
-            mood = "neutral"
+            mood = "neutral"  # Default to neutral if mood not recognized
         result[month_year] += mood_values[mood]
-
         count[month_year] += 1
 
     for month_year in result:
@@ -424,6 +418,12 @@ async def mood_trend_by_rolling_mean_month(notes: list):
 
     # Calculate 3-month rolling average
     months = deque(maxlen=3)
+    for month_year, avg in result.items():
+        months.append(avg)
+        rolling_avg[month_year] = round(sum(months) / len(months), 3)
+
+    logger.info("Mood trend by month calculated successfully")
+    return rolling_avg
     for month_year, avg in result.items():
         months.append(avg)
         if len(months) == 3:
