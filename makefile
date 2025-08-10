@@ -1,7 +1,7 @@
 # Shell
 SHELL := /bin/bash
 # Variables
-__version__ = "2025-07-03-003"
+__version__ = "2025-08-10-001"
 PYTHON = python3
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
@@ -89,10 +89,10 @@ docker-push:  # Push beta test image to docker hub
 
 docker-all: docker-build docker-push
 
-bump-calver-beta:  # Bump the beta version number in the Makefile
+bump-beta:  # Bump the beta version number in the Makefile
 	python3 /home/mike/dsg/scripts/calver_update.py --build --beta
 
-bump-calver:  # Bump the version number in the Makefile
+bump:  # Bump the version number in the Makefile
 	python3 /workspaces/dsg/scripts/calver_update.py --build
 
 flake8:  # Run flake8 and output report
