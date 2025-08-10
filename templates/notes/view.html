@@ -58,20 +58,39 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="summaryInput">Summary</label>
+                                                {% if note.summary == "Processing..." %}
+                                                <p class="text-muted">
+                                                    <i class="fas fa-spinner fa-spin"></i> Processing...
+                                                    <small class="text-info">(AI analysis in progress)</small>
+                                                </p>
+                                                {% else %}
                                                 <p>{{ note.summary | safe }}</p>
+                                                {% endif %}
                                             </div>
                                             <div class="form-group">
                                                 <label for="tags">Tags</label>
+                                                {% if note.tags|length == 0 and note.summary == "Processing..." %}
+                                                <p class="text-muted">
+                                                    <i class="fas fa-spinner fa-spin"></i> Processing...
+                                                </p>
+                                                {% else %}
                                                 <p>{% for tag in note.tags %}{{ tag|capitalize }}{% if not loop.last %},
                                                     {%
                                                     endif %}{%
                                                     endfor %}</p>
+                                                {% endif %}
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label><strong>Mood Analysis:</strong></label>
+                                                {% if note.mood_analysis == "processing" %}
+                                                <p class="text-muted">
+                                                    <i class="fas fa-spinner fa-spin"></i> Processing...
+                                                </p>
+                                                {% else %}
                                                 <p>{{ note.mood_analysis |capitalize}}</p>
+                                                {% endif %}
                                             </div>
                                             <div class="form-group">
                                                 <label><strong>Current Mood:</strong></label>
@@ -125,4 +144,12 @@
 {% endblock %}
 {% block page_scripts %}
 <!-- page scripts-->
+{% if note.summary == "Processing..." or note.mood_analysis == "processing" %}
+<script>
+// Auto-refresh the page when AI processing is in progress
+setTimeout(function() {
+    location.reload();
+}, 5000); // Refresh every 5 seconds
+</script>
+{% endif %}
 {% endblock %}
