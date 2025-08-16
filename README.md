@@ -27,49 +27,67 @@ END $$;
 
 # Database Migration
 
-We use Alembic for database migration. Here are the steps to create and apply database migrations:
+We use Alembic for database migration management. The project has been initialized with a baseline migration that represents the current database schema state.
 
-1. **Initialize Alembic**
+## Available Commands
 
-    If you haven't already, initialize Alembic in your project:
+### Check Current Migration Status
+```bash
+make alembic-current
+```
+Shows which migration is currently applied to the database.
 
-    ```bash
-    make alembic-init
-    ```
+### View Migration History
+```bash
+make alembic-history
+```
+Displays all available migrations and their status.
 
-    This will create a new directory named `alembic` in your project root, which contains your migration scripts.
+### Create a New Migration
+```bash
+make alembic-rev
+```
+After making changes to your SQLAlchemy models in `src/db_tables.py`, run this command to generate a new migration. You'll be prompted to enter a descriptive name for the migration (e.g., "add_user_bio_field", "create_audit_table").
 
-2. **Create a New Migration**
+### Apply Migrations
+```bash
+make alembic-migrate
+```
+Applies all pending migrations to upgrade your database to the latest schema version.
 
-    After you've made changes to your SQLAlchemy models, you can create a new migration script with:
+### Downgrade Database
+```bash
+make alembic-downgrade
+```
+Downgrades your database to a previous migration. You'll be prompted to enter the revision name to downgrade to.
 
-    ```bash
-    make alembic-rev
-    ```
+## Workflow Example
 
-    You'll be prompted to enter a name for the migration. This name should describe the changes you've made.
+1. **Make changes to your models** in `src/db_tables.py`
+2. **Generate a migration**:
+   ```bash
+   make alembic-rev
+   # Enter descriptive name when prompted
+   ```
+3. **Review the generated migration** in `alembic/versions/` before applying
+4. **Apply the migration**:
+   ```bash
+   make alembic-migrate
+   ```
 
-3. **Apply Migrations**
+## Important Notes
 
-    To apply the migrations to your database, run:
+- **Always review generated migrations** before applying them, especially in production
+- **Test migrations on development databases** first
+- **Backup your database** before applying migrations in production
+- **Commit migration files** to version control along with model changes
+- The project uses a baseline migration approach for existing databases
 
-    ```bash
-    make alembic-migrate
-    ```
+## Configuration
 
-    This will upgrade your database to the latest version.
-
-4. **Downgrade Database**
-
-    If you need to downgrade your database to a previous version, you can use:
-
-    ```bash
-    make alembic-downgrade
-    ```
-
-    You'll be prompted to enter the name of the revision to downgrade to.
-
-Remember to commit your migration scripts to version control along with the corresponding changes to your models.
+- Alembic configuration: `alembic.ini`
+- Environment setup: `alembic/env.py` (configured for async database operations)
+- Database URL is automatically set from environment variables via `scripts/env.sh`
 
 
 # Add Git credientials
