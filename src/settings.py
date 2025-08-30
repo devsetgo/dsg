@@ -26,7 +26,7 @@ Usage:
 import secrets  # For generating secure random numbers
 from datetime import (
     datetime,
-    UTC,
+    timezone,
 )  # A Python library used for working with dates and times
 from enum import (
     Enum,  # For creating enumerations, which are a set of symbolic names bound to unique constant values
@@ -88,7 +88,7 @@ class Settings(BaseSettings):
     pool_timeout: Optional[int] = Field(None, description="Set pool_timeout")
 
     # Set the current date and time when the application is run
-    date_run: datetime = datetime.now(UTC)
+    date_run: datetime = datetime.now(timezone.utc)
     # application settings
     release_env: str = "prd"
     version: str = __version__
