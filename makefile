@@ -33,7 +33,7 @@ alembic-migrate: # Migrate database using Alembic
 	./scripts/env.sh && \
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
 	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
-	alembic upgrade head
+	/home/mike/dsg/.venv/bin/python -m alembic upgrade head
 
 alembic-rev: # Create a new revision file
 	cp env-files/.env.test .env && \
@@ -41,14 +41,28 @@ alembic-rev: # Create a new revision file
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
 	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
 	read -p "Enter revision name: " name; \
-	alembic revision --autogenerate -m "$$name"
+	/home/mike/dsg/.venv/bin/python -m alembic revision --autogenerate -m "$$name"
 
 alembic-current: # Show the current revision
 	cp env-files/.env.test .env && \
 	./scripts/env.sh && \
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
 	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
-	alembic current
+	/home/mike/dsg/.venv/bin/python -m alembic current
+
+alembic-history: # Show migration history
+	cp env-files/.env.test .env && \
+	./scripts/env.sh && \
+	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
+	/home/mike/dsg/.venv/bin/python -m alembic history
+
+alembic-stamp: # Stamp the database with a specific revision
+	cp env-files/.env.test .env && \
+	./scripts/env.sh && \
+	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
+	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
+	read -p "Enter revision ID: " rev; \
+	/home/mike/dsg/.venv/bin/python -m alembic stamp "$$rev"
 
 
 alembic-downgrade: # Downgrade database using Alembic
