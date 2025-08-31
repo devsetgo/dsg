@@ -1,6 +1,6 @@
 [project]
 name = "dsg"
-version = "2025-08-31-004"
+version = "2025-08-31-005"
 requires-python = ">=3.12"
 description = "DevSetGo website"
 readme = "README.md"
