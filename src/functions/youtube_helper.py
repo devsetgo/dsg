@@ -25,11 +25,14 @@ from loguru import logger
 from openai import AsyncOpenAI
 
 from src.settings import settings
+from .ai import get_model_temperature
 
 client = AsyncOpenAI(
     api_key=settings.openai_key.get_secret_value(),
 )
 
+# Use the same model as the main AI module
+openai_model = "gpt-5-nano"  # or get this from settings if needed
 temperature = 0.2
 
 
@@ -169,7 +172,7 @@ async def get_youtube_summary(url: str, sentence_length: int = 2) -> Dict[str, s
 
     try:
         chat_completion = await client.chat.completions.create(
-            model="gpt-3.5-turbo-1106",
+            model=openai_model,
             messages=[
                 {
                     "role": "system",
@@ -177,7 +180,7 @@ async def get_youtube_summary(url: str, sentence_length: int = 2) -> Dict[str, s
                 },
                 {"role": "user", "content": content},
             ],
-            temperature=temperature,
+            temperature=get_model_temperature(openai_model, temperature),
         )
 
         response_content = chat_completion.choices[0].message.content

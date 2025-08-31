@@ -14,7 +14,7 @@ Author:
 import ast
 import re
 from functools import lru_cache
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from httpx import AsyncClient
 from loguru import logger
@@ -35,6 +35,25 @@ mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
 
 timeout = 10
 temperature = 0.2
+
+
+def get_model_temperature(model: str, requested_temperature: Optional[float] = None) -> float:
+    """
+    Get the appropriate temperature for the given model.
+    
+    Args:
+        model (str): The OpenAI model name
+        requested_temperature (Optional[float], optional): The requested temperature
+        
+    Returns:
+        float: The temperature to use for the model
+    """
+    # gpt-5-nano only supports temperature = 1 (default)
+    if model == "gpt-5-nano":
+        return 1.0
+    
+    # For other models, use requested temperature or default
+    return requested_temperature if requested_temperature is not None else temperature
 
 
 async def get_analysis(content: str, mood_process: str = None) -> dict:
@@ -109,7 +128,7 @@ async def get_tags(
             },
             {"role": "user", "content": content},
         ],
-        temperature=temperature,
+        temperature=get_model_temperature(openai_model, temperature),
     )
 
     # Extract the content from the response
@@ -282,7 +301,7 @@ async def get_summary(
             },
             {"role": "user", "content": content},
         ],
-        temperature=temperature,
+        temperature=get_model_temperature(openai_model, temperature),
     )
 
     # Extract the content from the response
@@ -322,7 +341,7 @@ async def get_mood_analysis(content: str, temperature: float = temperature) -> d
             },
             {"role": "user", "content": content},
         ],
-        temperature=temperature,
+        temperature=get_model_temperature(openai_model, temperature),
     )
 
     # Extract the content from the response
@@ -364,7 +383,7 @@ async def get_mood(content: str, temperature: float = temperature) -> dict:
             },
             {"role": "user", "content": content},
         ],
-        temperature=temperature,
+        temperature=get_model_temperature(openai_model, temperature),
     )
 
     # Extract the content from the response
@@ -455,7 +474,7 @@ async def get_url_summary(
             },
             {"role": "user", "content": url},
         ],
-        temperature=temperature,
+        temperature=get_model_temperature(openai_model, temperature),
     )
 
     # Extract the content from the response
@@ -505,7 +524,7 @@ async def get_url_title(
             },
             {"role": "user", "content": url},
         ],
-        temperature=temperature,
+        temperature=get_model_temperature(openai_model, temperature),
     )
 
     # Extract the content from the response

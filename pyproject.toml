@@ -1,17 +1,15 @@
 [project]
 name = "dsg"
-version = "2025-08-31-003"
-requires-python = ">=3.11"
+version = "2025-08-31-004"
+requires-python = ">=3.12"
 description = "DevSetGo website"
 readme = "README.md"
 classifiers = [ "License :: OSI Approved :: MIT License", "Programming Language :: Python", "Programming Language :: Python :: 3.12", "Operating System :: POSIX :: Linux", "Operating System :: POSIX",]
 [[project.authors]]
 name = "Mike Ryan"
-email = "mikeryan56@gmail.com"
 
 [[project.maintainers]]
 name = "Mike Ryan"
-email = "mikeryan56@gmail.com"
 
 [project.license]
 file = "LICENSE"
@@ -25,7 +23,7 @@ Repository = "https://github.com/devsetgo/dsg"
 
 [tool.pyright]
 typeCheckingMode = "strict"
-pythonVersion = "3.12"
+pythonVersion = "3.13"
 include = [ "src", "test",]
 exclude = [ "unreleased/*", "scripts/*", "coverage.xml", "coverage-badge.svg",]
 reportMissingImports = true
@@ -50,7 +48,7 @@ reportPrivateUsage = true
 line-length = 100
 indent-width = 4
 unsafe-fixes = true
-target-version = "py312"
+target-version = "py313"
 src = [ "src", "test",]
 exclude = [ "unreleased/*", "scripts/*", "coverage.xml", "coverage-badge.svg",]
 
