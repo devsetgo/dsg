@@ -28,6 +28,8 @@ client = AsyncOpenAI(
     api_key=settings.openai_key.get_secret_value(),
 )
 
+openai_model = "gpt-5-nano" # "gpt-3.5-turbo-1106"
+
 mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
 
 timeout = 10
@@ -98,7 +100,7 @@ async def get_tags(
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=openai_model,
         messages=[
             {
                 "role": "system",
@@ -203,7 +205,7 @@ async def get_summary(
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=openai_model,
         messages=[
             {
                 "role": "system",
@@ -243,7 +245,7 @@ async def get_mood_analysis(content: str, temperature: float = temperature) -> d
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=openai_model,
         messages=[
             {
                 "role": "system",
@@ -285,7 +287,7 @@ async def get_mood(content: str, temperature: float = temperature) -> dict:
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=openai_model,
         messages=[
             {
                 "role": "system",
@@ -376,7 +378,7 @@ async def get_url_summary(
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=openai_model,
         messages=[
             {
                 "role": "system",
@@ -426,7 +428,7 @@ async def get_url_title(
     prompt = f"Create a title for this websites. It should be only {sentence_length} sentence in length and cannot contain any persons name."
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=openai_model,
         messages=[
             {
                 "role": "system",
