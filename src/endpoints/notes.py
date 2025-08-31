@@ -42,7 +42,7 @@ Routes:
 """
 import csv
 import io
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # from pytz import timezone, UTC
 from fastapi import (
@@ -57,7 +57,6 @@ from fastapi import (
 )
 from fastapi.responses import RedirectResponse
 from loguru import logger
-from pytz import timezone
 from sqlalchemy import Select, Text, and_, between, cast, desc, extract, or_
 
 from ..db_tables import NoteMetrics, Notes
@@ -653,7 +652,7 @@ async def read_today_notes(
         return RedirectResponse(url="/users/login", status_code=302)
 
     # get today's date
-    today = datetime.now(UTC)
+    today = datetime.now(timezone.utc)
 
     # calculate the dates for 7 days before and after today
     start_date = today - timedelta(days=settings.history_range)
