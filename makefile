@@ -1,7 +1,7 @@
 # Shell
 SHELL := /bin/bash
 # Variables
-__version__ = 2025.08.30-001
+__version__ = 2025-08-30-002
 PYTHON = python3
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
@@ -23,7 +23,7 @@ DEV_REQUIREMENTS_PATH = requirements/dev.txt
 TIMESTAMP := $(shell date +'%y-%m-%d-%H%M')
 LOG_LEVEL := $(shell grep LOGGING_LEVEL .env | cut -d '=' -f2 | tr '[:upper:]' '[:lower:]')
 
-.PHONY: alembic-downgrade alembic-init alembic-migrate alembic-rev autoflake black cache cleanup compile dev docker-beta-bp docker-beta-build docker-beta-push docker-beta-run flake8 gdev gprd grdev help install install-dev isort prd run-dev run-gdev run-gprd run-grdev run-local run-prod run-real run-test test bump bump-beta bump-rc bump-release bump-custom bump-git bump-beta-git
+.PHONY: alembic-downgrade alembic-init alembic-migrate alembic-rev autoflake black cache cleanup compile dev docker-beta-bp docker-beta-build docker-beta-push docker-beta-run flake8 gdev gprd grdev help install install-dev isort kill prd run-dev run-gdev run-gprd run-grdev run-local run-prod run-real run-test test bump bump-beta bump-rc bump-release bump-custom bump-git bump-beta-git
 
 alembic-init: # Initialize Alembic
 	alembic init alembic
@@ -115,6 +115,11 @@ flake8:  # Run flake8 and output report
 
 help:  # Display available targets
 	@awk 'BEGIN {FS = ":  # "} /^[a-zA-Z_-]+:  # / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+kill:  # Kill any process running on the app port
+	@echo "Stopping any process running on port ${PORT}..."
+	@lsof -ti:${PORT} | xargs -r kill -9 || echo "No process found running on port ${PORT}"
+	@echo "Port ${PORT} is now free"
 
 install:  # Install required dependencies
 	$(PIP) install -r $(REQUIREMENTS_PATH)
