@@ -47,6 +47,7 @@ from sqlalchemy import Select, asc, func, or_
 
 from ..db_tables import Categories, WebLinks
 from ..functions import ai, date_functions, link_import, link_preview
+from ..functions.youtube_helper import extract_youtube_video_id, is_youtube_url
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
 
@@ -297,8 +298,14 @@ async def view_weblink(
     if user_timezone is None:
         user_timezone = "America/New_York"
 
-    link = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
-    link = link.to_dict()
+    link_obj = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
+    
+    # Store the is_youtube property before converting to dict
+    link_is_youtube = link_obj.is_youtube
+    link = link_obj.to_dict()
+    
+    # Add the is_youtube property to the dictionary
+    link["is_youtube"] = link_is_youtube
 
     link["date_created"] = await date_functions.timezone_update(
         user_timezone=user_timezone,
@@ -316,6 +323,13 @@ async def view_weblink(
 
     link_status = await link_preview.url_status(url=link["url"])
 
+    # Check if it's a YouTube link and generate embed URL
+    youtube_embed_url = ""
+    if is_youtube_url(link["url"]):
+        video_id = extract_youtube_video_id(link["url"])
+        if video_id:
+            youtube_embed_url = f"https://www.youtube.com/embed/{video_id}"
+
     context = {
         "page": "weblinks",
         "weblink": link,
@@ -325,6 +339,7 @@ async def view_weblink(
             else ""
         ),
         "link_status": link_status,
+        "youtube_embed_url": youtube_embed_url,
     }
     return templates.TemplateResponse(
         request=request, name="/weblinks/view.html", context=context

@@ -34,7 +34,7 @@ License:
     MIT License
 """
 import random
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import markdown
@@ -388,7 +388,7 @@ async def add_notes(
         # Generate a random date within the last X years
         days_in_three_years: int = 365 * 12
         random_number_of_days: int = random.randrange(days_in_three_years)
-        date_created: datetime = datetime.now(UTC) - timedelta(
+        date_created: datetime = datetime.now(timezone.utc) - timedelta(
             days=random_number_of_days
         )
 
@@ -597,7 +597,7 @@ async def add_posts():
         ):
             rand_cat = random.randint(0, len(cat_list) - 1)
             tags = [silly.noun() for _ in range(random.randint(2, 5))]
-            date_created = datetime.now(UTC) - timedelta(days=random.randint(1, 700))
+            date_created = datetime.now(timezone.utc) - timedelta(days=random.randint(1, 700))
             post = Posts(
                 title=silly.sentence(),
                 content=silly.markdown(length=random.randint(30, 60)),
