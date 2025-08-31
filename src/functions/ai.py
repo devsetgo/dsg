@@ -152,6 +152,7 @@ async def get_tags(
 # Convert names list to set for fast lookups (case insensitive)
 COMPREHENSIVE_NAMES = {name.lower() for name in names}
 
+
 @lru_cache(maxsize=128)
 def name_check(name: str) -> bool:
     """
