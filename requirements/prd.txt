@@ -1,21 +1,21 @@
-alembic==1.16.4 # Vulnerabilities: None
+alembic==1.16.5 # From 1.16.4 | Vulnerabilities: None
 argon2-cffi==25.1.0 # Vulnerabilities: None
 async-lru==2.0.5 # Vulnerabilities: None
-cryptography==45.0.6 # From 45.0.5 | Vulnerabilities: None
-devsetgo-lib[all]==2025.8.9.1 # From 2025.5.4.1 | Vulnerabilities: None
-email-validator==2.2.0 # Vulnerabilities: None
+cryptography==45.0.6 # Vulnerabilities: None
+devsetgo-lib[all]==2025.8.9.1 # Vulnerabilities: None
+email-validator==2.3.0 # From 2.2.0 | Vulnerabilities: None
 fastapi[all]==0.116.1 # Vulnerabilities: None
 fastapi-sso==0.18.0 # Vulnerabilities: None
-granian==2.5.0 # Vulnerabilities: None
+granian==2.5.1 # From 2.5.0 | Vulnerabilities: None
 httpx-auth==0.23.1 # Vulnerabilities: None
 Markdown==3.8.2 # Vulnerabilities: None
 nameparser==1.1.3 # Vulnerabilities: None
-openai==1.99.6 # From 1.98.0 | Vulnerabilities: None
+openai==1.102.0 # From 1.99.6 | Vulnerabilities: None
 pydantic[email]==2.11.7 # Vulnerabilities: None
 PyJWT[crypto]==2.10.1 # Vulnerabilities: None
 python-dateutil==2.9.0.post0 # Vulnerabilities: None
 pytz==2025.2 # Vulnerabilities: None
-selenium==4.34.2 # Vulnerabilities: None
+selenium==4.35.0 # From 4.34.2 | Vulnerabilities: None
 silly==1.1.0 # Vulnerabilities: None
 starlette-authlib==0.3.12 # Vulnerabilities: None
 tqdm==4.67.1 # Vulnerabilities: None
