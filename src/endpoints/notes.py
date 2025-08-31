@@ -69,10 +69,12 @@ from ..settings import settings
 router = APIRouter()
 
 
-async def process_ai_analysis_background(note_id: str, content: str, mood_process: str | None = None):
+async def process_ai_analysis_background(
+    note_id: str, content: str, mood_process: str | None = None
+):
     """
     Background task to process AI analysis for a note and update the database.
-    
+
     Args:
         note_id (str): The ID of the note to update
         content (str): The note content to analyze
@@ -80,13 +82,13 @@ async def process_ai_analysis_background(note_id: str, content: str, mood_proces
     """
     try:
         logger.info(f"Starting background AI analysis for note {note_id}")
-        
+
         # Get the analysis from AI
         analysis = await ai.get_analysis(content=content, mood_process=mood_process)
-        
+
         moods_list: list = [mood[0] for mood in settings.mood_analysis_weights]
         ai_fix = analysis["mood_analysis"] not in moods_list
-        
+
         # Prepare the update data
         update_data = {
             "tags": analysis["tags"]["tags"],
@@ -94,20 +96,22 @@ async def process_ai_analysis_background(note_id: str, content: str, mood_proces
             "mood_analysis": analysis["mood_analysis"],
             "ai_fix": ai_fix,
         }
-        
+
         # If mood analysis returned a mood, update it
         if analysis["mood"] is not None:
             update_data["mood"] = analysis["mood"]["mood"]
-        
+
         # Update the note in the database
         await db_ops.update_one(table=Notes, record_id=note_id, new_values=update_data)
-        
+
         logger.info(f"Completed background AI analysis for note {note_id}")
-        
+
     except Exception as e:
         logger.error(f"Error in background AI analysis for note {note_id}: {str(e)}")
         # Set ai_fix to True if there was an error
-        await db_ops.update_one(table=Notes, record_id=note_id, new_values={"ai_fix": True})
+        await db_ops.update_one(
+            table=Notes, record_id=note_id, new_values={"ai_fix": True}
+        )
 
 
 @router.get("/")
@@ -503,7 +507,7 @@ async def create_note(
     note_content = form["note"]
 
     logger.debug(f"Received mood: {mood} and note: {note_content}")
-    
+
     # Create the note immediately with minimal data
     # AI analysis will be done in the background
     note = Notes(
@@ -519,14 +523,12 @@ async def create_note(
 
     # Add background tasks for AI analysis and metrics update
     background_tasks.add_task(
-        process_ai_analysis_background, 
-        note_id=data.pkid, 
-        content=note_content
+        process_ai_analysis_background, note_id=data.pkid, content=note_content
     )
     background_tasks.add_task(
         notes_metrics.update_notes_metrics, user_id=user_identifier
     )
-    
+
     logger.debug("Created Note: data")
     logger.info(f"Created note with ID: {data.pkid}, AI analysis running in background")
 
