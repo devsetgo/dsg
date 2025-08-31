@@ -364,6 +364,13 @@ async def get_url_summary(
     """
     logger.info("Starting get_url_summary function")
 
+    # Check if it's a YouTube URL and handle it specially
+    from ..functions.youtube_helper import is_youtube_url, get_youtube_summary
+    
+    if is_youtube_url(url):
+        logger.info("Detected YouTube URL, using YouTube-specific handler")
+        return await get_youtube_summary(url, sentence_length)
+
     # Create the prompt for the OpenAI API
     prompt = f"Please summarize the URL and provide {sentence_length} concise sentence(s) in length as a summary for the URL"
 
@@ -405,7 +412,14 @@ async def get_url_title(
     Returns:
         str: The generated title after removing quotation marks.
     """
-    logger.info("Starting get_url_summary function")
+    logger.info("Starting get_url_title function")
+
+    # Check if it's a YouTube URL and handle it specially
+    from ..functions.youtube_helper import is_youtube_url, get_youtube_title
+    
+    if is_youtube_url(url):
+        logger.info("Detected YouTube URL, using YouTube-specific handler")
+        return await get_youtube_title(url)
 
     # Create the prompt for the OpenAI API
     # prompt = "Create a new title from the websites full title html tag and format as 'Full Title from Website Name'. If not possible provide a title that is a simple single sentence in length."

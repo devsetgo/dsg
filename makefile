@@ -1,7 +1,7 @@
 # Shell
 SHELL := /bin/bash
 # Variables
-__version__ = "2025-08-10-001"
+__version__ = 2025.08.30-001
 PYTHON = python3
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
@@ -23,7 +23,7 @@ DEV_REQUIREMENTS_PATH = requirements/dev.txt
 TIMESTAMP := $(shell date +'%y-%m-%d-%H%M')
 LOG_LEVEL := $(shell grep LOGGING_LEVEL .env | cut -d '=' -f2 | tr '[:upper:]' '[:lower:]')
 
-.PHONY: alembic-downgrade alembic-init alembic-migrate alembic-rev autoflake black cache cleanup compile dev docker-beta-bp docker-beta-build docker-beta-push docker-beta-run flake8 gdev gprd grdev help install install-dev isort prd run-dev run-gdev run-gprd run-grdev run-local run-prod run-real run-test test
+.PHONY: alembic-downgrade alembic-init alembic-migrate alembic-rev autoflake black cache cleanup compile dev docker-beta-bp docker-beta-build docker-beta-push docker-beta-run flake8 gdev gprd grdev help install install-dev isort prd run-dev run-gdev run-gprd run-grdev run-local run-prod run-real run-test test bump bump-beta bump-rc bump-release bump-custom bump-git bump-beta-git
 
 alembic-init: # Initialize Alembic
 	alembic init alembic
@@ -103,11 +103,12 @@ docker-push:  # Push beta test image to docker hub
 
 docker-all: docker-build docker-push
 
-bump-beta:  # Bump the beta version number in the Makefile
-	python3 /home/mike/dsg/scripts/calver_update.py --build --beta
+bump-beta:  # Bump the beta version number using bumpcalver
+	bumpcalver --build --beta
 
-bump:  # Bump the version number in the Makefile
-	python3 /workspaces/dsg/scripts/calver_update.py --build
+bump:  # Bump the version number using bumpcalver
+	bumpcalver --build --git-tag --auto-commit
+
 
 flake8:  # Run flake8 and output report
 	flake8 --tee . > _flake8Report.txt

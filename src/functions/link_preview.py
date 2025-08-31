@@ -55,13 +55,16 @@ async def save_preview_image(pkid: str, image: bytes):
 async def capture_full_page_screenshot(url: str, pkid: str) -> bytes:
     """
     Captures a full-page screenshot of the given URL and returns the image data as bytes.
+    For YouTube URLs, captures the video page with special handling.
 
     Args:
         url (str): The URL of the webpage to capture.
+        pkid (str): The primary key ID for the weblink.
 
     Returns:
         bytes: The image data of the screenshot.
     """
+    from .youtube_helper import is_youtube_url
 
     # Set up Chrome options
     chrome_options = Options()
@@ -77,14 +80,37 @@ async def capture_full_page_screenshot(url: str, pkid: str) -> bytes:
     )
     chrome_options.binary_location = "/usr/bin/google-chrome"  # Path to Chrome binary
 
+    # For YouTube URLs, add additional options to avoid bot detection
+    if is_youtube_url(url):
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        chrome_options.add_experimental_option('useAutomationExtension', False)
+
     # Initialize the Chrome driver
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()), options=chrome_options
     )
 
     try:
+        # For YouTube, execute script to remove automation indicators
+        if is_youtube_url(url):
+            driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+
         # Navigate to the URL
         driver.get(url)
+
+        # For YouTube, wait a bit longer and handle cookie acceptance
+        if is_youtube_url(url):
+            import time
+            time.sleep(3)  # Wait for page to load
+            
+            # Try to accept cookies if the banner appears
+            try:
+                cookie_button = driver.find_element("xpath", "//button[contains(text(), 'Accept') or contains(text(), 'I agree')]")
+                cookie_button.click()
+                time.sleep(1)
+            except:
+                pass  # Cookie banner might not appear
 
         # Set the window size to the full page
         total_height = driver.execute_script(
