@@ -22,13 +22,14 @@ from nameparser import HumanName
 from openai import AsyncOpenAI
 
 from src.settings import settings
+from ._names import names
 
 client = AsyncOpenAI(
     # This is the default and can be omitted
     api_key=settings.openai_key.get_secret_value(),
 )
 
-openai_model = "gpt-5-nano" # "gpt-3.5-turbo-1106"
+openai_model = "gpt-5-nano"  # "gpt-3.5-turbo-1106"
 
 mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
 
@@ -148,10 +149,15 @@ async def get_tags(
     return resp
 
 
+# Convert names list to set for fast lookups (case insensitive)
+COMPREHENSIVE_NAMES = {name.lower() for name in names}
+
+
 @lru_cache(maxsize=128)
 def name_check(name: str) -> bool:
     """
-    Check if the text is a person's name using the nameparser library.
+    Check if the text is a person's name using a comprehensive names database.
+    Prioritizes family names and includes technical word exceptions.
 
     Args:
         name: The text to be checked.
@@ -159,9 +165,72 @@ def name_check(name: str) -> bool:
     Returns:
         True if the text is recognized as a person's name, False otherwise.
     """
+    # Convert to lowercase for comparison
+    name_lower = name.lower().strip()
+
+    # Technical/common words that should never be filtered as names
+    # These take precedence over the names database
+    technical_words = {
+        "technology",
+        "programming",
+        "science",
+        "computer",
+        "software",
+        "data",
+        "code",
+        "algorithm",
+        "database",
+        "network",
+        "system",
+        "application",
+        "development",
+        "framework",
+        "library",
+        "api",
+        "web",
+        "mobile",
+        "cloud",
+        "security",
+        "testing",
+        "debugging",
+        "optimization",
+        "analysis",
+        "design",
+        "architecture",
+        "implementation",
+        "interface",
+        "protocol",
+        "server",
+        "client",
+        "backend",
+        "frontend",
+        "deployment",
+        "repository",
+        "version",
+        "configuration",
+        "documentation",
+        "performance",
+        "scalability",
+    }
+
+    # Check if it's a technical word first (should never be filtered)
+    if name_lower in technical_words:
+        return False
+
+    # Check against the comprehensive names database
+    if name_lower in COMPREHENSIVE_NAMES:
+        return True
+
+    # Use nameparser for compound names (first + last name combinations)
     parsed_name = HumanName(name)
-    # Check if the parsed name has at least a first name and a last name
-    return bool(parsed_name.first and parsed_name.last)
+    if parsed_name.first and parsed_name.last:
+        return True
+
+    # Check for title indicators (Mr., Mrs., Dr., etc.)
+    if parsed_name.title:
+        return True
+
+    return False
 
 
 def tag_check(tags: Dict[str, List[str]]) -> Dict[str, List[str]]:
@@ -368,7 +437,7 @@ async def get_url_summary(
 
     # Check if it's a YouTube URL and handle it specially
     from ..functions.youtube_helper import is_youtube_url, get_youtube_summary
-    
+
     if is_youtube_url(url):
         logger.info("Detected YouTube URL, using YouTube-specific handler")
         return await get_youtube_summary(url, sentence_length)
@@ -418,7 +487,7 @@ async def get_url_title(
 
     # Check if it's a YouTube URL and handle it specially
     from ..functions.youtube_helper import is_youtube_url, get_youtube_title
-    
+
     if is_youtube_url(url):
         logger.info("Detected YouTube URL, using YouTube-specific handler")
         return await get_youtube_title(url)
