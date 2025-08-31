@@ -65,6 +65,7 @@ def extract_youtube_video_id(url: str) -> str:
         r"(?:v=|\/)([0-9A-Za-z_-]{11}).*",  # Standard format
         r"(?:embed\/)([0-9A-Za-z_-]{11})",  # Embed format
         r"(?:youtu\.be\/)([0-9A-Za-z_-]{11})",  # Short format
+        r"(?:shorts\/)([0-9A-Za-z_-]{11})",  # YouTube Shorts format
     ]
 
     for pattern in patterns:
