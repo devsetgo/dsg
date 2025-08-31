@@ -107,7 +107,7 @@ bump-beta:  # Bump the beta version number using bumpcalver
 	bumpcalver --build --beta
 
 bump:  # Bump the version number using bumpcalver
-	bumpcalver --build --git-tag --auto-commit
+	bumpcalver --build --git-tag
 
 
 flake8:  # Run flake8 and output report
