@@ -84,7 +84,7 @@ async def capture_full_page_screenshot(url: str, pkid: str) -> bytes:
     if is_youtube_url(url):
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        chrome_options.add_experimental_option('useAutomationExtension', False)
+        chrome_options.add_experimental_option("useAutomationExtension", False)
 
     # Initialize the Chrome driver
     driver = webdriver.Chrome(
@@ -94,7 +94,9 @@ async def capture_full_page_screenshot(url: str, pkid: str) -> bytes:
     try:
         # For YouTube, execute script to remove automation indicators
         if is_youtube_url(url):
-            driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+            driver.execute_script(
+                "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+            )
 
         # Navigate to the URL
         driver.get(url)
@@ -102,11 +104,15 @@ async def capture_full_page_screenshot(url: str, pkid: str) -> bytes:
         # For YouTube, wait a bit longer and handle cookie acceptance
         if is_youtube_url(url):
             import time
+
             time.sleep(3)  # Wait for page to load
-            
+
             # Try to accept cookies if the banner appears
             try:
-                cookie_button = driver.find_element("xpath", "//button[contains(text(), 'Accept') or contains(text(), 'I agree')]")
+                cookie_button = driver.find_element(
+                    "xpath",
+                    "//button[contains(text(), 'Accept') or contains(text(), 'I agree')]",
+                )
                 cookie_button.click()
                 time.sleep(1)
             except:

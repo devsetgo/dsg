@@ -384,7 +384,7 @@ async def get_update_comment(
     user_info["user_identifier"]
 
     link = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
-    
+
     # Get categories for the dropdown
     categories = await db_ops.read_query(
         Select(Categories)
@@ -392,7 +392,7 @@ async def get_update_comment(
         .order_by(asc(func.lower(Categories.name)))
     )
     cat_list = [cat.to_dict()["name"] for cat in categories]
-    
+
     link = link.to_dict()
     context = {
         "weblink": link,
@@ -415,7 +415,9 @@ async def update_comment(
     url = form["url"]
     category = form["category"]
     public = form.get("public") is not None
-    logger.debug(f"Received comment: {comment}, url: {url}, category: {category}, public: {public}")
+    logger.debug(
+        f"Received comment: {comment}, url: {url}, category: {category}, public: {public}"
+    )
 
     weblink_update = {
         "comment": comment,
@@ -447,19 +449,21 @@ async def delete_weblink_form(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    
+
     # Check if the weblink exists and belongs to the user
     link = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
-    
+
     if link is None:
         logger.warning(f"No weblink found with ID: {pkid}")
         return RedirectResponse(url="/error/404", status_code=302)
-    
+
     # Check if user owns the weblink or is admin
     if link.user_id != user_identifier and not user_info.get("is_admin", False):
-        logger.warning(f"User {user_identifier} attempted to access weblink {pkid} owned by {link.user_id}")
+        logger.warning(
+            f"User {user_identifier} attempted to access weblink {pkid} owned by {link.user_id}"
+        )
         return RedirectResponse(url="/error/403", status_code=302)
-    
+
     context = {"weblink": link.to_dict()}
     return templates.TemplateResponse(
         request=request, name="weblinks/delete.html", context=context
@@ -473,44 +477,48 @@ async def delete_weblink(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    
+
     # Process the form data
     try:
         form = await request.form()
         delete_confirm = form.get("deleteConfirm")
-        
+
         if not delete_confirm:
             logger.warning(f"Delete confirmation not checked for weblink {pkid}")
             return RedirectResponse(url="/error/400", status_code=302)
-            
+
     except Exception as e:
         logger.error(f"Error processing form data for weblink delete {pkid}: {str(e)}")
         return RedirectResponse(url="/error/400", status_code=302)
-    
+
     # Check if the weblink exists and belongs to the user
     link = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
-    
+
     if link is None:
         logger.warning(f"No weblink found with ID: {pkid} for user: {user_identifier}")
         return RedirectResponse(url="/error/404", status_code=302)
-    
+
     # Check if user owns the weblink or is admin
     if link.user_id != user_identifier and not user_info.get("is_admin", False):
-        logger.warning(f"User {user_identifier} attempted to delete weblink {pkid} owned by {link.user_id}")
+        logger.warning(
+            f"User {user_identifier} attempted to delete weblink {pkid} owned by {link.user_id}"
+        )
         return RedirectResponse(url="/error/403", status_code=302)
-    
+
     try:
         # Attempt to delete the weblink
         result = await db_ops.delete_one(table=WebLinks, record_id=pkid)
-        
+
         # Check if the result indicates an error
         if isinstance(result, dict) and "error" in result:
             logger.error(f"Error deleting weblink {pkid}: {result}")
             return RedirectResponse(url="/error/500", status_code=302)
-        
-        logger.info(f"Successfully deleted weblink with ID: {pkid} by user: {user_identifier}")
+
+        logger.info(
+            f"Successfully deleted weblink with ID: {pkid} by user: {user_identifier}"
+        )
         return RedirectResponse(url="/weblinks", status_code=302)
-        
+
     except Exception as e:
         logger.error(f"Exception occurred while deleting weblink {pkid}: {str(e)}")
         return RedirectResponse(url="/error/500", status_code=302)
