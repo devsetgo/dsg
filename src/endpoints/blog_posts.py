@@ -64,9 +64,7 @@ async def list_of_posts(
 @router.get("/categories", response_class=JSONResponse)
 async def get_categories():
     categories = await db_ops.read_query(
-        Select(Categories)
-        .where(Categories.is_post == True)
-        .order_by(asc(Categories.name))
+        Select(Categories).where(Categories.is_post).order_by(asc(Categories.name))
     )
     try:
         cat_list = [cat.to_dict()["name"] for cat in categories]

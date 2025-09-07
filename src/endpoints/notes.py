@@ -459,7 +459,7 @@ async def get_note_issue(
 
     query = (
         Select(Notes)
-        .where(and_(Notes.user_id == user_identifier, Notes.ai_fix == True))
+        .where(and_(Notes.user_id == user_identifier, Notes.ai_fix))
         .limit(200)
     ).order_by(desc(Notes.date_created))
     notes = await db_ops.read_query(query=query)

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # FILE: test_users.py
-from fastapi.testclient import TestClient
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from fastapi.testclient import TestClient
 
 from src.main import app
 
@@ -24,10 +25,10 @@ class TestUsers:
     @pytest.mark.asyncio
     async def test_edit_user_form(self, client, bypass_auth, mock_user):
         """Test edit user form loads."""
-        with patch("src.endpoints.users.db_ops.read_one_record") as mock_read:
+        with patch("src.endpoints.users.db_ops.read_one_record"):
             mock_user_obj = MagicMock()
             mock_user_obj.to_dict.return_value = mock_user
-            mock_read = AsyncMock(return_value=mock_user_obj)
+            AsyncMock(return_value=mock_user_obj)
 
             response = client.get("/users/edit-user")
             assert response.status_code == 200

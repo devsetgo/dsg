@@ -156,7 +156,7 @@ async def get_metrics(user_identifier: str, user_timezone: str):
 async def get_ai_fix_count(notes: list):
     fix_count = 0
     for note in notes:
-        if note["ai_fix"] == True:
+        if note["ai_fix"]:
             fix_count += 1
     logger.debug(f"AI Fix Count: {fix_count}")
 

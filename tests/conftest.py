@@ -1,20 +1,15 @@
 # -*- coding: utf-8 -*-
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, patch, MagicMock
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, declarative_base
-import tempfile
-import os
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.main import app
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.orm import declarative_base
 
 # Import individual tables instead of Base
-from src.db_tables import Users, Notes, Posts, WebLinks, Categories
+from src.main import app
 from src.resources import db_ops
-from src.settings import settings
 
 # Create Base for testing with the correct import
 Base = declarative_base()
@@ -276,7 +271,7 @@ def bypass_auth():
     # Patch all the authentication functions
     with patch(
         "src.functions.login_required.check_login", side_effect=mock_check_login
-    ) as mock_login:
+    ):
         with patch(
             "src.functions.login_required.check_user_identifier",
             side_effect=mock_check_user_identifier,
@@ -308,15 +303,15 @@ def bypass_auth():
                         with patch(
                             "src.endpoints.notes.check_login",
                             return_value=mock_dependency(),
-                        ) as notes_dep:
+                        ):
                             with patch(
                                 "src.endpoints.blog_posts.check_login",
                                 return_value=mock_dependency(),
-                            ) as posts_dep:
+                            ):
                                 with patch(
                                     "src.endpoints.admin.check_login",
                                     return_value=mock_dependency(),
-                                ) as admin_dep:
+                                ):
                                     yield
 
 

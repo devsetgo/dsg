@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 
 
 class TestAdmin:
@@ -18,7 +19,7 @@ class TestAdmin:
         self, mock_users, client, bypass_admin_auth
     ):
         """Test admin dashboard loads for admin user."""
-        mock_users = AsyncMock(return_value=[{"user_name": "testuser"}])
+        AsyncMock(return_value=[{"user_name": "testuser"}])
 
         response = client.get("/admin/")
         assert response.status_code == 200
@@ -151,9 +152,9 @@ class TestAdmin:
 
     def test_admin_note_ai_check_user(self, client, bypass_admin_auth):
         """Test triggering AI check for specific user."""
-        with patch("src.endpoints.admin.db_ops.read_query") as mock_read:
+        with patch("src.endpoints.admin.db_ops.read_query"):
             mock_notes = [MagicMock(to_dict=lambda: {"pkid": "note-1"})]
-            mock_read = AsyncMock(return_value=mock_notes)
+            AsyncMock(return_value=mock_notes)
 
             response = client.get(
                 "/admin/note-ai-check/user-123", follow_redirects=False

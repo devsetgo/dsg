@@ -24,10 +24,10 @@ Usage:
     This module is intended to be imported and instantiated at the application startup to configure and validate the application settings. The `Settings` instance can then be used throughout the application to access configuration values.
 """
 import secrets  # For generating secure random numbers
-from datetime import (
+from datetime import (  # A Python library used for working with dates and times
     datetime,
     timezone,
-)  # A Python library used for working with dates and times
+)
 from enum import (
     Enum,  # For creating enumerations, which are a set of symbolic names bound to unique constant values
 )

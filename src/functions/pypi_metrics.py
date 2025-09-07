@@ -131,7 +131,7 @@ async def get_libraries_with_most_vulnerabilities():
             library.to_dict()
             for library in await db_ops.read_query(
                 query=Select(Library)
-                .where(Library.new_version_vulnerability == True)
+                .where(Library.new_version_vulnerability)
                 .options(joinedload(Library.library))
             )
         ]

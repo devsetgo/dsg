@@ -195,13 +195,13 @@ class WebLinks(schema_base, async_db.Base):
     def is_youtube(self) -> bool:
         """
         Check if the URL is from YouTube (youtube.com or youtu.be).
-        
+
         Returns:
             bool: True if the URL is from YouTube, False otherwise.
         """
         if not self.url:
             return False
-        
+
         url_lower = self.url.lower()
         return "youtube.com" in url_lower or "youtu.be" in url_lower
 
