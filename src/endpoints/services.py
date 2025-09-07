@@ -23,7 +23,7 @@ async def get_categories(category_name: str = Query(None, enum=cat_list)):
         else:
             categories = await db_ops.read_query(
                 Select(Categories)
-                .where(getattr(Categories, category_name) == True)
+                .where(getattr(Categories, category_name))
                 .order_by(asc(Categories.name))
             )
 

@@ -330,7 +330,7 @@ async def admin_update_user(
     new_password = form.get("new-password-entry")
 
     is_complex = check_password_complexity(password=new_password)
-    if is_complex == False:
+    if not is_complex:
         return Response(headers={"HX-Redirect": "/error/400"}, status_code=200)
 
     change_email_entry = form.get("change-email-entry")
@@ -442,14 +442,14 @@ async def admin_note_ai_check(
     logger.debug(f"User identifier: {user_identifier}")
 
     # Create a query to select notes that need AI check
-    notes_query = Select(Notes).where(Notes.ai_fix == True)
+    notes_query = Select(Notes).where(Notes.ai_fix)
 
     # Execute the query and get the results
     notes = await db_ops.read_query(query=notes_query)
     notes = [note.to_dict() for note in notes]
 
     # Create a query to select weblinks that need AI check
-    weblinks_query = Select(WebLinks).where(WebLinks.ai_fix == True)
+    weblinks_query = Select(WebLinks).where(WebLinks.ai_fix)
 
     # Execute the query and get the results
     weblinks = await db_ops.read_query(query=weblinks_query)
@@ -480,7 +480,7 @@ async def admin_note_ai_check(
             )
 
     # Query to get the weblinks with ai_fix set to True
-    weblinks_query = Select(WebLinks).where(WebLinks.ai_fix == True)
+    weblinks_query = Select(WebLinks).where(WebLinks.ai_fix)
     weblinks = await db_ops.read_query(query=weblinks_query)
     weblinks = [weblink.to_dict() for weblink in weblinks]
 
@@ -528,7 +528,7 @@ async def admin_note_ai_check_user(
     user_info: dict = Depends(check_login),
 ):
     # Create a query to select notes that need AI check
-    query = Select(Notes).where(and_(Notes.user_id == user_id, Notes.ai_fix == True))
+    query = Select(Notes).where(and_(Notes.user_id == user_id, Notes.ai_fix))
 
     # Execute the query and get the results
     notes = await db_ops.read_query(query=query)
@@ -554,9 +554,7 @@ async def admin_weblink_fix_user(
     background_tasks: BackgroundTasks,
     user_info: dict = Depends(check_login),
 ):
-    query = Select(WebLinks).where(
-        and_(WebLinks.user_id == user_id, WebLinks.ai_fix == True)
-    )
+    query = Select(WebLinks).where(and_(WebLinks.user_id == user_id, WebLinks.ai_fix))
 
     # Execute the query and get the results
     links = await db_ops.read_query(query=query)
