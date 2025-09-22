@@ -1,0 +1,4 @@
+ocrmypdf==16.10.4
+black
+isort
+autopep8

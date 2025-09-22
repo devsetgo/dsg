@@ -23,6 +23,14 @@ RUN CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_
     && unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/ \
     && rm /tmp/chromedriver.zip
 
+# Install all required dependencies for ocrmypdf functionality
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+	&& apt-get -y install --no-install-recommends \
+		tesseract-ocr \
+		unpaper \
+		ghostscript \
+	&& apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # Copy the current directory contents into the container at /app
 COPY . /app
 

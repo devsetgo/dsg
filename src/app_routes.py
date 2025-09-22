@@ -39,6 +39,7 @@ from .endpoints import (
     devtools,
     notes,
     pages,
+    pdf_tools,
     pypi,
     services,
     users,
@@ -217,6 +218,13 @@ def create_routes(app: FastAPI) -> NoReturn:
         prefix="/posts",
         tags=["posts"],
         include_in_schema=show_route,
+    )
+
+    app.include_router(
+        pdf_tools.router,
+        prefix="/pdf-tools",
+        tags=["pdf-tools"],
+        include_in_schema=True,
     )
 
     app.include_router(
