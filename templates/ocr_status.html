@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OCR Job Status</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="{{ url_for('static', path='plugins/fontawesome-free/css/all.min.css') }}">
+  <!-- AdminLTE Theme style -->
+  <link rel="stylesheet" href="{{ url_for('static', path='css/adminlte.min.css') }}">
+</head>
+
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+  
+  {% include "navigation.html" %}
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0">OCR Job Status</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Home</a></li>
+              <li class="breadcrumb-item"><a href="/ocr">OCR Dashboard</a></li>
+              <li class="breadcrumb-item active">Job Status</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="content">
+      <div class="container-fluid">
+        
+        {% if error %}
+        <!-- Error Message -->
+        <div class="row">
+          <div class="col-12">
+            <div class="alert alert-danger">
+              <h5><i class="icon fas fa-ban"></i> Error!</h5>
+              {{ error }}
+              {% if job_id %}
+                <br><strong>Job ID:</strong> <code>{{ job_id }}</code>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Try Again Form -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Check Another Job</h3>
+              </div>
+              <div class="card-body">
+                <form action="/ocr/status" method="post">
+                  <div class="form-group">
+                    <label for="jobId">Job ID</label>
+                    <div class="input-group">
+                      <input type="text" class="form-control" id="jobId" name="job_id" 
+                             placeholder="Enter your OCR job ID" value="{{ job_id if job_id else '' }}" required>
+                      <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">
+                          <i class="fas fa-search"></i> Check Status
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {% elif job %}
+        <!-- Job Status Display -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card card-primary">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="fas fa-info-circle"></i> Job Information
+                </h3>
+              </div>
+              <div class="card-body">
+                <dl class="row">
+                  <dt class="col-sm-3">Job ID:</dt>
+                  <dd class="col-sm-9"><code>{{ job.job_id }}</code></dd>
+                  
+                  <dt class="col-sm-3">Original Filename:</dt>
+                  <dd class="col-sm-9">{{ job.original_filename }}</dd>
+                  
+                  <dt class="col-sm-3">Status:</dt>
+                  <dd class="col-sm-9">
+                    {% if job.status == 'completed' %}
+                      <span class="badge badge-success badge-lg">
+                        <i class="fas fa-check-circle"></i> Completed
+                      </span>
+                    {% elif job.status == 'failed' %}
+                      <span class="badge badge-danger badge-lg">
+                        <i class="fas fa-times-circle"></i> Failed
+                      </span>
+                    {% elif job.status == 'processing' %}
+                      <span class="badge badge-warning badge-lg">
+                        <i class="fas fa-cog fa-spin"></i> Processing
+                      </span>
+                    {% else %}
+                      <span class="badge badge-secondary badge-lg">
+                        <i class="fas fa-clock"></i> {{ job.status|title }}
+                      </span>
+                    {% endif %}
+                  </dd>
+                  
+                  <dt class="col-sm-3">Created:</dt>
+                  <dd class="col-sm-9">
+                    {% if job.date_created %}
+                      {{ job.date_created.strftime('%Y-%m-%d %H:%M:%S UTC') }}
+                    {% else %}
+                      N/A
+                    {% endif %}
+                  </dd>
+                  
+                  {% if job.date_completed %}
+                  <dt class="col-sm-3">Completed:</dt>
+                  <dd class="col-sm-9">{{ job.date_completed.strftime('%Y-%m-%d %H:%M:%S UTC') }}</dd>
+                  {% endif %}
+                  
+                  {% if job.page_count %}
+                  <dt class="col-sm-3">Pages:</dt>
+                  <dd class="col-sm-9">{{ job.page_count }}</dd>
+                  {% endif %}
+                  
+                  {% if job.file_size_original %}
+                  <dt class="col-sm-3">Original Size:</dt>
+                  <dd class="col-sm-9">{{ job.file_size_original }}</dd>
+                  {% endif %}
+                  
+                  {% if job.file_size_converted %}
+                  <dt class="col-sm-3">Converted Size:</dt>
+                  <dd class="col-sm-9">{{ job.file_size_converted }}</dd>
+                  {% endif %}
+                  
+                  {% if job.processing_time %}
+                  <dt class="col-sm-3">Processing Time:</dt>
+                  <dd class="col-sm-9">{{ "%.2f"|format(job.processing_time) }} seconds</dd>
+                  {% endif %}
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                {% if job.status == 'completed' and job.can_download %}
+                  <a href="/ocr/job/{{ job.job_id }}/download" class="btn btn-success btn-lg">
+                    <i class="fas fa-download"></i> Download Converted PDF
+                  </a>
+                {% elif job.status == 'completed' and not job.can_download %}
+                  <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>File Expired:</strong> The converted file has been cleaned up and is no longer available for download.
+                    The system automatically removes files after a certain period to save storage space.
+                  </div>
+                {% elif job.status == 'processing' %}
+                  <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Processing in Progress:</strong> Your PDF is currently being processed. 
+                    This page will automatically refresh in 30 seconds to check for updates.
+                  </div>
+                  
+                  <button onclick="location.reload();" class="btn btn-primary">
+                    <i class="fas fa-sync-alt"></i> Refresh Status
+                  </button>
+                {% elif job.status == 'failed' %}
+                  <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <strong>Processing Failed:</strong>
+                    {% if job.error_message %}
+                      {{ job.error_message }}
+                    {% else %}
+                      The OCR processing failed. Please try uploading your PDF again.
+                    {% endif %}
+                  </div>
+                  
+                  <a href="/ocr" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Upload Another PDF
+                  </a>
+                {% endif %}
+                
+                <a href="/ocr" class="btn btn-secondary ml-2">
+                  <i class="fas fa-arrow-left"></i> Back to OCR Dashboard
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {% if job.error_message and job.status == 'failed' %}
+        <!-- Error Details -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card card-danger collapsed-card">
+              <div class="card-header">
+                <h3 class="card-title">Error Details</h3>
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <code>{{ job.error_message }}</code>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- Default state - should not happen but just in case -->
+        <div class="row">
+          <div class="col-12">
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              No job information to display.
+            </div>
+            <a href="/ocr" class="btn btn-primary">
+              <i class="fas fa-arrow-left"></i> Go to OCR Dashboard
+            </a>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  {% include "footer.html" %}
+</div>
+
+<!-- jQuery -->
+<script src="{{ url_for('static', path='plugins/jquery/jquery.min.js') }}"></script>
+<!-- Bootstrap 4 -->
+<script src="{{ url_for('static', path='plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<!-- AdminLTE App -->
+<script src="{{ url_for('static', path='js/adminlte.min.js') }}"></script>
+
+<script>
+// Auto refresh if job is still processing
+{% if job and job.status == 'processing' %}
+setTimeout(function() {
+    location.reload();
+}, 30000); // Refresh every 30 seconds
+{% endif %}
+
+// Collapse/expand card functionality
+$('[data-card-widget="collapse"]').click(function() {
+    $(this).closest('.card').toggleClass('collapsed-card');
+    let icon = $(this).find('i');
+    if (icon.hasClass('fa-plus')) {
+        icon.removeClass('fa-plus').addClass('fa-minus');
+    } else {
+        icon.removeClass('fa-minus').addClass('fa-plus');
+    }
+});
+</script>
+
+</body>
+</html>

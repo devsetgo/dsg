@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OCR PDF Converter - Dashboard</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="{{ url_for('static', path='plugins/fontawesome-free/css/all.min.css') }}">
+  <!-- AdminLTE Theme style -->
+  <link rel="stylesheet" href="{{ url_for('static', path='css/adminlte.min.css') }}">
+</head>
+
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+  
+  {% include "navigation.html" %}
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0">OCR PDF Converter</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Home</a></li>
+              <li class="breadcrumb-item active">OCR Dashboard</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="content">
+      <div class="container-fluid">
+        
+        {% if user_info.get("is_admin") %}
+        <!-- Admin View: Metrics Section -->
+        <div class="row">
+          <div class="col-12">
+            <h3>System Metrics</h3>
+          </div>
+        </div>
+        
+        <!-- Metrics Info Boxes -->
+        <div class="row">
+          <!-- Total Jobs -->
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+              <div class="inner">
+                <h3>{{ ocr_metrics.total_jobs }}</h3>
+                <p>Total OCR Jobs</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-file-pdf"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Completed Jobs -->
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+              <div class="inner">
+                <h3>{{ ocr_metrics.completed_jobs }}</h3>
+                <p>Completed Jobs</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Failed Jobs -->
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger">
+              <div class="inner">
+                <h3>{{ ocr_metrics.failed_jobs }}</h3>
+                <p>Failed Jobs</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-times-circle"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Processing Jobs -->
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+              <div class="inner">
+                <h3>{{ ocr_metrics.processing_jobs }}</h3>
+                <p>Processing Jobs</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-cog fa-spin"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Metrics -->
+        <div class="row">
+          <!-- Unique Users -->
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-primary">
+              <div class="inner">
+                <h3>{{ ocr_metrics.unique_users }}</h3>
+                <p>Unique Users</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Total Pages -->
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-secondary">
+              <div class="inner">
+                <h3>{{ ocr_metrics.total_pages }}</h3>
+                <p>Pages Processed</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-file-alt"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Success Rate -->
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-teal">
+              <div class="inner">
+                <h3>{{ ocr_metrics.success_rate }}%</h3>
+                <p>Success Rate</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Space Savings -->
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-indigo">
+              <div class="inner">
+                <h3>{{ ocr_metrics.space_savings }}%</h3>
+                <p>Space Savings</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-compress-alt"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Jobs Table -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Recent OCR Jobs</h3>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover">
+                    <thead>
+                      <tr>
+                        <th>Job ID</th>
+                        <th>User</th>
+                        <th>Filename</th>
+                        <th>Status</th>
+                        <th>Pages</th>
+                        <th>Processing Time</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for job in recent_jobs %}
+                      <tr>
+                        <td><code>{{ job.job_id }}</code></td>
+                        <td>{{ job.user_id }}</td>
+                        <td>{{ job.original_filename }}</td>
+                        <td>
+                          {% if job.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                          {% elif job.status == 'failed' %}
+                            <span class="badge bg-danger">Failed</span>
+                          {% elif job.status == 'processing' %}
+                            <span class="badge bg-warning">Processing</span>
+                          {% else %}
+                            <span class="badge bg-secondary">{{ job.status }}</span>
+                          {% endif %}
+                        </td>
+                        <td>{{ job.page_count or 0 }}</td>
+                        <td>{{ "%.2f"|format(job.processing_time or 0) }}s</td>
+                        <td>{{ job.date_created.strftime('%Y-%m-%d %H:%M') if job.date_created else '' }}</td>
+                        <td>
+                          {% if job.status == 'completed' %}
+                            <a href="/ocr/download/{{ job.job_id }}" class="btn btn-sm btn-primary">
+                              <i class="fas fa-download"></i> Download
+                            </a>
+                          {% endif %}
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        
+        <!-- Upload Section (Available to all users) -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card card-primary">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="fas fa-upload"></i> Upload PDF for OCR Processing
+                </h3>
+              </div>
+              <div class="card-body">
+                <form action="/ocr/upload" method="post" enctype="multipart/form-data" id="ocrUploadForm">
+                  <div class="form-group">
+                    <label for="file">Select PDF File</label>
+                    <div class="input-group">
+                      <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="file" name="file" accept=".pdf" required>
+                        <label class="custom-file-label" for="file">Choose file</label>
+                      </div>
+                    </div>
+                    <small class="form-text text-muted">Maximum file size: 50MB</small>
+                  </div>
+                  
+                  <div class="form-group">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="enhanceQuality" name="enhance_quality" checked>
+                      <label class="form-check-label" for="enhanceQuality">
+                        Enhance image quality (recommended)
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-cog"></i> Start OCR Processing
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Jobs Section (for non-admin users) -->
+        {% if not user_info.get("is_admin") %}
+        <div class="row">
+          <div class="col-12">
+            <h3>Your OCR Jobs</h3>
+          </div>
+        </div>
+        
+        <!-- User Metrics -->
+        <div class="row">
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+              <div class="inner">
+                <h3>{{ user_summary.user_jobs }}</h3>
+                <p>Your Total Jobs</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-file"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+              <div class="inner">
+                <h3>{{ user_summary.user_completed_jobs }}</h3>
+                <p>Completed</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-check"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger">
+              <div class="inner">
+                <h3>{{ user_summary.user_failed_jobs }}</h3>
+                <p>Failed</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-times"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-primary">
+              <div class="inner">
+                <h3>{{ user_summary.user_success_rate }}%</h3>
+                <p>Success Rate</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-chart-pie"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Job Status Check Form (for all users) -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card card-secondary">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="fas fa-search"></i> Check Job Status / Download
+                </h3>
+              </div>
+              <div class="card-body">
+                <form action="/ocr/status" method="post" id="statusCheckForm">
+                  <div class="form-group">
+                    <label for="jobId">Job ID</label>
+                    <div class="input-group">
+                      <input type="text" class="form-control" id="jobId" name="job_id" 
+                             placeholder="Enter your OCR job ID" required>
+                      <div class="input-group-append">
+                        <button type="submit" class="btn btn-secondary">
+                          <i class="fas fa-search"></i> Check Status
+                        </button>
+                      </div>
+                    </div>
+                    <small class="form-text text-muted">You received this ID when you uploaded your PDF</small>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Your Recent Jobs (for regular users) -->
+        {% if not user_info.get("is_admin") and user_summary.user_recent_jobs %}
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Your Recent Jobs</h3>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Job ID</th>
+                        <th>Filename</th>
+                        <th>Status</th>
+                        <th>Pages</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for job in user_summary.user_recent_jobs %}
+                      <tr>
+                        <td><code>{{ job.job_id }}</code></td>
+                        <td>{{ job.original_filename }}</td>
+                        <td>
+                          {% if job.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                          {% elif job.status == 'failed' %}
+                            <span class="badge bg-danger">Failed</span>
+                          {% elif job.status == 'processing' %}
+                            <span class="badge bg-warning">Processing</span>
+                          {% else %}
+                            <span class="badge bg-secondary">{{ job.status }}</span>
+                          {% endif %}
+                        </td>
+                        <td>{{ job.page_count or 0 }}</td>
+                        <td>{{ job.date_created.strftime('%Y-%m-%d %H:%M') if job.date_created else '' }}</td>
+                        <td>
+                          {% if job.status == 'completed' %}
+                            <a href="/ocr/download/{{ job.job_id }}" class="btn btn-sm btn-primary">
+                              <i class="fas fa-download"></i> Download
+                            </a>
+                          {% endif %}
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  {% include "footer.html" %}
+</div>
+
+<!-- jQuery -->
+<script src="{{ url_for('static', path='plugins/jquery/jquery.min.js') }}"></script>
+<!-- Bootstrap 4 -->
+<script src="{{ url_for('static', path='plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<!-- AdminLTE App -->
+<script src="{{ url_for('static', path='js/adminlte.min.js') }}"></script>
+
+<script>
+// File input custom label update
+$('.custom-file-input').on('change', function() {
+    let fileName = $(this).val().split('\\').pop();
+    $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+});
+
+// Upload form handling
+$('#ocrUploadForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    let fileInput = $('#file')[0];
+    if (fileInput.files.length === 0) {
+        alert('Please select a PDF file');
+        return;
+    }
+    
+    let file = fileInput.files[0];
+    if (file.size > 50 * 1024 * 1024) { // 50MB
+        alert('File size must be less than 50MB');
+        return;
+    }
+    
+    // Show loading state
+    $('button[type="submit"]').html('<i class="fas fa-spinner fa-spin"></i> Processing...').prop('disabled', true);
+    
+    // Submit form
+    this.submit();
+});
+
+// Status check form handling  
+$('#statusCheckForm').on('submit', function(e) {
+    let jobId = $('#jobId').val().trim();
+    if (jobId.length === 0) {
+        e.preventDefault();
+        alert('Please enter a job ID');
+        return;
+    }
+});
+
+// Auto refresh processing jobs every 30 seconds
+setTimeout(function() {
+    if ($('.badge.bg-warning:contains("Processing")').length > 0) {
+        location.reload();
+    }
+}, 30000);
+</script>
+
+</body>
+</html>
