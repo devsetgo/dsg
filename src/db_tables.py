@@ -435,25 +435,25 @@ class APIMetrics(schema_base, async_db.Base):
 
 class OCRJob(schema_base, async_db.Base):
     __tablename__ = "ocr_jobs"
-    __tableargs__ = {
-        "comment": "Tracks OCR PDF conversion jobs"
-    }
-    
+    __tableargs__ = {"comment": "Tracks OCR PDF conversion jobs"}
+
     user_id = Column(String, ForeignKey("users.pkid"), nullable=False, index=True)
     job_id = Column(String, unique=True, nullable=False, index=True)  # UUID for the job
     original_filename = Column(String, nullable=False)  # Original uploaded filename
     original_filepath = Column(String, nullable=False)  # Path to original PDF
     converted_filepath = Column(String, nullable=True)  # Path to converted PDF
-    status = Column(String, default="pending", index=True)  # pending, processing, completed, failed
+    status = Column(
+        String, default="pending", index=True
+    )  # pending, processing, completed, failed
     error_message = Column(Text, nullable=True)  # Error details if failed
     file_size_original = Column(Integer, nullable=True)  # Size in bytes
     file_size_converted = Column(Integer, nullable=True)  # Size in bytes
     processing_duration = Column(Integer, nullable=True)  # Duration in seconds
     cleanup_after = Column(DateTime, nullable=False, index=True)  # When to delete files
-    
+
     # Relationship
     user = relationship("Users", backref="ocr_jobs")
-    
+
     def to_dict(self):
         return {
             c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns

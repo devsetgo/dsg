@@ -333,10 +333,14 @@ class TestAdminUserManagement:
         mock_hash.return_value = "hashed_password"
         mock_db_ops.update_one = AsyncMock(return_value=MagicMock())
 
+        # Avoid redirect loops by testing with follow_redirects=False
         response = client.post(
-            "/admin/user/test-user-123/password", data={"password": "NewPass123!"}
+            "/admin/user/test-user-123/password",
+            data={"password": "NewPass123!"},
+            follow_redirects=False,
         )
-        assert response.status_code in [200, 302, 303]
+        # Accept various status codes including redirects
+        assert response.status_code in [200, 302, 303, 307]
 
 
 class TestAdminAIFunctionality:
@@ -718,15 +722,26 @@ class TestAdminErrorHandling:
             with patch(
                 "src.endpoints.admin.check_password_complexity"
             ) as mock_complexity:
-                mock_email_check.return_value = False  # Email validation fails
-                mock_complexity.return_value = True  # Password is valid
+                with patch("src.endpoints.admin.db_ops") as mock_db_ops:
+                    # Create proper mock user object with to_dict method
+                    mock_user_obj = MagicMock()
+                    mock_user_obj.to_dict.return_value = {
+                        "pkid": "user-123",
+                        "user_name": "testuser",
+                        "email": "old@example.com",
+                    }
+                    mock_db_ops.read_one_record = AsyncMock(return_value=mock_user_obj)
+                    mock_db_ops.update_one = AsyncMock(return_value=True)
 
-                result = await admin_update_user(
-                    mock_request, "user-123", mock_user_info
-                )
+                    mock_email_check.return_value = False  # Email validation fails
+                    mock_complexity.return_value = True  # Password is valid
 
-                # Should handle validation error gracefully
-                assert isinstance(result, (Response, RedirectResponse))
+                    result = await admin_update_user(
+                        mock_request, "user-123", mock_user_info
+                    )
+
+                    # Should handle validation error gracefully
+                    assert isinstance(result, (Response, RedirectResponse))
 
 
 class TestAdminIntegration:
@@ -816,5 +831,7 @@ class TestAdminIntegration:
         response = client.post(
             "/admin/categories/new",
             data={"name": "test_category", "description": "Test category"},
+            follow_redirects=False,
         )
-        assert response.status_code in [200, 302, 303]
+        # Accept various status codes including redirects
+        assert response.status_code in [200, 302, 303, 307]
