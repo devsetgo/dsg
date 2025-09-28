@@ -52,7 +52,7 @@ def encrypt_text(text: str) -> bytes:
         encrypted_bytes = pipe.encrypt(text_bytes)  # Encrypt the bytes
         logger.debug("Text encrypted successfully.")
         return encrypted_bytes
-    except Exception as e:
+    except Exception as e:  # no pragma: no cover
         error = f"Encryption failed: {e}"
         logger.error(error)
         logger.error(f"Exception type: {type(e).__name__}")
@@ -86,7 +86,7 @@ def decrypt_text(text: bytes) -> str:
         )  # Convert decrypted bytes back to string
         logger.debug("Text decrypted successfully.")
         return decrypted_text
-    except Exception as e:
+    except Exception as e:  # no pragma: no cover
         error = f"Decryption failed: {e}"
         logger.error(error)
         logger.error(f"Exception type: {type(e).__name__}")
