@@ -22,7 +22,9 @@ class TestNotesCore:
     @pytest.mark.asyncio
     @patch("src.endpoints.notes.db_ops")
     @patch("src.endpoints.notes.notes_metrics")
-    async def test_notes_dashboard_authorized(self, mock_metrics, mock_db_ops, client, bypass_auth):
+    async def test_notes_dashboard_authorized(
+        self, mock_metrics, mock_db_ops, client, bypass_auth
+    ):
         """Test notes dashboard loads for authenticated user."""
         # Mock note metrics
         mock_metrics_data = MagicMock()
@@ -31,7 +33,8 @@ class TestNotesCore:
             "word_count": 100,
             "character_count": 500,
             "metrics": {"mood_analysis": {"positive": 3, "negative": 2}},
-            "date_updated": datetime.utcnow() - timedelta(hours=2)  # Old enough to trigger update
+            "date_updated": datetime.utcnow()
+            - timedelta(hours=2),  # Old enough to trigger update
         }
         mock_db_ops.read_one_record = AsyncMock(return_value=mock_metrics_data)
         mock_metrics.update_notes_metrics = AsyncMock()
@@ -55,7 +58,7 @@ class TestNotesCore:
             "total_unique_tag_count": 15,
             "date_created": datetime.utcnow(),
             "date_updated": datetime.utcnow(),
-            "user_id": "user-123"
+            "user_id": "user-123",
         }
         mock_db_ops.read_one_record = AsyncMock(return_value=mock_metrics_data)
 
@@ -71,7 +74,9 @@ class TestNotesCore:
     @patch("src.endpoints.notes.process_ai_analysis_background")
     @patch("src.endpoints.notes.notes_metrics")
     @patch("src.endpoints.notes.db_ops")
-    async def test_create_note(self, mock_db_ops, mock_metrics, mock_ai_task, client, bypass_auth):
+    async def test_create_note(
+        self, mock_db_ops, mock_metrics, mock_ai_task, client, bypass_auth
+    ):
         """Test creating a new note."""
         # Mock database response
         mock_note = MagicMock()
@@ -82,7 +87,7 @@ class TestNotesCore:
         response = client.post(
             "/notes/new",
             data={"mood": "positive", "note": "This is a test note content."},
-            follow_redirects=False
+            follow_redirects=False,
         )
 
         assert response.status_code == 302
@@ -94,7 +99,9 @@ class TestNotesCore:
     @pytest.mark.asyncio
     @patch("src.endpoints.notes.db_ops")
     @patch("src.endpoints.notes.date_functions")
-    async def test_view_note(self, mock_date_functions, mock_db_ops, client, bypass_auth):
+    async def test_view_note(
+        self, mock_date_functions, mock_db_ops, client, bypass_auth
+    ):
         """Test viewing a specific note."""
         # Mock note data
         mock_note = MagicMock()
@@ -106,7 +113,7 @@ class TestNotesCore:
             "tags": ["test", "note"],
             "date_created": datetime.utcnow(),
             "date_updated": datetime.utcnow(),
-            "user_id": "user-123"
+            "user_id": "user-123",
         }
         mock_db_ops.read_one_record = AsyncMock(return_value=mock_note)
         mock_date_functions.timezone_update = AsyncMock(return_value="Jan 1, 2024")
@@ -135,7 +142,9 @@ class TestNotesEditing:
     @patch("src.endpoints.notes.db_ops")
     @patch("src.endpoints.notes.date_functions")
     @patch("src.endpoints.notes.ai")
-    async def test_edit_note_form(self, mock_ai, mock_date_functions, mock_db_ops, client, bypass_auth):
+    async def test_edit_note_form(
+        self, mock_ai, mock_date_functions, mock_db_ops, client, bypass_auth
+    ):
         """Test edit note form loads."""
         # Mock note data
         mock_note = MagicMock()
@@ -147,7 +156,7 @@ class TestNotesEditing:
             "tags": ["test", "note"],
             "date_created": datetime.utcnow(),
             "date_updated": datetime.utcnow(),
-            "user_id": "user-123"
+            "user_id": "user-123",
         }
         mock_db_ops.read_one_record = AsyncMock(return_value=mock_note)
         mock_date_functions.timezone_update = AsyncMock(return_value="Jan 1, 2024")
@@ -169,7 +178,7 @@ class TestNotesEditing:
             "note": "Original content",
             "summary": "Original summary",
             "tags": ["original"],
-            "user_id": "user-123"
+            "user_id": "user-123",
         }
 
         # Mock updated note response
@@ -186,9 +195,9 @@ class TestNotesEditing:
                 "mood": "negative",
                 "note": "Updated content",
                 "summary": "Updated summary",
-                "tags": "updated,note"
+                "tags": "updated,note",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
 
         assert response.status_code == 302
@@ -236,7 +245,7 @@ class TestNotesAI:
         mock_note.to_dict.return_value = {
             "pkid": "note-123",
             "note": "Test content",
-            "ai_fix": True
+            "ai_fix": True,
         }
         mock_db_ops.read_one_record = AsyncMock(return_value=mock_note)
 
@@ -247,28 +256,36 @@ class TestNotesAI:
     @patch("src.endpoints.notes.ai")
     @patch("src.endpoints.notes.db_ops")
     @patch("src.endpoints.notes.settings")
-    async def test_ai_fix_processing(self, mock_settings, mock_db_ops, mock_ai, client, bypass_auth):
+    async def test_ai_fix_processing(
+        self, mock_settings, mock_db_ops, mock_ai, client, bypass_auth
+    ):
         """Test AI fix processing."""
         # Mock settings
-        mock_settings.mood_analysis_weights = [("positive", 1), ("negative", 1), ("neutral", 1)]
+        mock_settings.mood_analysis_weights = [
+            ("positive", 1),
+            ("negative", 1),
+            ("neutral", 1),
+        ]
 
         # Mock note data
         mock_note = MagicMock()
         mock_note.to_dict.return_value = {
             "pkid": "note-123",
             "note": "Test content",
-            "mood": "positive"
+            "mood": "positive",
         }
         mock_db_ops.read_one_record = AsyncMock(return_value=mock_note)
         mock_db_ops.update_one = AsyncMock()
 
         # Mock AI response
-        mock_ai.get_analysis = AsyncMock(return_value={
-            "tags": {"tags": ["test", "ai"]},
-            "summary": "AI-generated summary",
-            "mood_analysis": "positive",
-            "mood": {"mood": "positive"}
-        })
+        mock_ai.get_analysis = AsyncMock(
+            return_value={
+                "tags": {"tags": ["test", "ai"]},
+                "summary": "AI-generated summary",
+                "mood_analysis": "positive",
+                "mood": {"mood": "positive"},
+            }
+        )
 
         response = client.get("/notes/ai-fix/note-123", follow_redirects=False)
         assert response.status_code == 302
@@ -280,7 +297,9 @@ class TestNotesAI:
     @pytest.mark.asyncio
     @patch("src.endpoints.notes.db_ops")
     @patch("src.endpoints.notes.date_functions")
-    async def test_notes_issues(self, mock_date_functions, mock_db_ops, client, bypass_auth):
+    async def test_notes_issues(
+        self, mock_date_functions, mock_db_ops, client, bypass_auth
+    ):
         """Test viewing notes with AI issues."""
         # Mock notes with issues
         mock_note = MagicMock()
@@ -288,10 +307,12 @@ class TestNotesAI:
             "pkid": "note-123",
             "note": "Content with issues",
             "ai_fix": True,
-            "date_created": datetime.utcnow()
+            "date_created": datetime.utcnow(),
         }
         mock_db_ops.read_query = AsyncMock(return_value=[mock_note])
-        mock_date_functions.update_timezone_for_dates = AsyncMock(return_value=[mock_note.to_dict()])
+        mock_date_functions.update_timezone_for_dates = AsyncMock(
+            return_value=[mock_note.to_dict()]
+        )
 
         response = client.get("/notes/issues")
         assert response.status_code == 200
@@ -303,16 +324,21 @@ class TestNotesPagination:
     @pytest.mark.asyncio
     @patch("src.endpoints.notes.db_ops")
     @patch("src.endpoints.notes.date_functions")
-    async def test_pagination_basic(self, mock_date_functions, mock_db_ops, client, bypass_auth):
+    async def test_pagination_basic(
+        self, mock_date_functions, mock_db_ops, client, bypass_auth
+    ):
         """Test basic pagination."""
         # Mock notes data
         mock_notes = [
-            MagicMock(to_dict=lambda: {
-                "pkid": f"note-{i}",
-                "note": f"Test note {i}",
-                "mood": "positive",
-                "date_created": datetime.utcnow()
-            }) for i in range(5)
+            MagicMock(
+                to_dict=lambda: {
+                    "pkid": f"note-{i}",
+                    "note": f"Test note {i}",
+                    "mood": "positive",
+                    "date_created": datetime.utcnow(),
+                }
+            )
+            for i in range(5)
         ]
         mock_db_ops.read_query = AsyncMock(return_value=mock_notes)
         mock_db_ops.count_query = AsyncMock(return_value=25)
@@ -323,10 +349,12 @@ class TestNotesPagination:
         response = client.get("/notes/pagination?page=1&limit=5")
         assert response.status_code == 200
 
-    @pytest.mark.xfail(reason="Application bug: Notes.note is a property, not a column - search is broken")
+    @pytest.mark.xfail(
+        reason="Application bug: Notes.note is a property, not a column - search is broken"
+    )
     async def test_pagination_with_search(self, client, bypass_auth):
         """Test pagination with search term - currently fails due to application bug.
-        
+
         Notes.note is a property (not a column) but the code tries to call .contains() on it.
         This test documents the current broken behavior.
         """
@@ -339,22 +367,32 @@ class TestNotesPagination:
     @pytest.mark.asyncio
     @patch("src.endpoints.notes.db_ops")
     @patch("src.endpoints.notes.date_functions")
-    async def test_pagination_with_date_filter(self, mock_date_functions, mock_db_ops, client, bypass_auth):
+    async def test_pagination_with_date_filter(
+        self, mock_date_functions, mock_db_ops, client, bypass_auth
+    ):
         """Test pagination with date filtering."""
-        mock_notes = [MagicMock(to_dict=lambda: {"pkid": "note-1", "note": "Date filtered content"})]
+        mock_notes = [
+            MagicMock(
+                to_dict=lambda: {"pkid": "note-1", "note": "Date filtered content"}
+            )
+        ]
         mock_db_ops.read_query = AsyncMock(return_value=mock_notes)
         mock_db_ops.count_query = AsyncMock(return_value=1)
         mock_date_functions.update_timezone_for_dates = AsyncMock(
             return_value=[mock_notes[0].to_dict()]
         )
 
-        response = client.get("/notes/pagination?start_date=2024-01-01&end_date=2024-12-31&page=1")
+        response = client.get(
+            "/notes/pagination?start_date=2024-01-01&end_date=2024-12-31&page=1"
+        )
         assert response.status_code == 200
 
     @pytest.mark.asyncio
     @patch("src.endpoints.notes.db_ops")
     @patch("src.endpoints.notes.date_functions")
-    async def test_pagination_with_mood_filter(self, mock_date_functions, mock_db_ops, client, bypass_auth):
+    async def test_pagination_with_mood_filter(
+        self, mock_date_functions, mock_db_ops, client, bypass_auth
+    ):
         """Test pagination with mood filtering."""
         mock_notes = [MagicMock(to_dict=lambda: {"pkid": "note-1", "mood": "positive"})]
         mock_db_ops.read_query = AsyncMock(return_value=mock_notes)
@@ -374,17 +412,21 @@ class TestNotesToday:
     @patch("src.endpoints.notes.db_ops")
     @patch("src.endpoints.notes.date_functions")
     @patch("src.endpoints.notes.settings")
-    async def test_today_notes(self, mock_settings, mock_date_functions, mock_db_ops, client, bypass_auth):
+    async def test_today_notes(
+        self, mock_settings, mock_date_functions, mock_db_ops, client, bypass_auth
+    ):
         """Test viewing today's notes in history."""
         mock_settings.history_range = 7
-        
+
         # Mock today's notes
         mock_notes = [
-            MagicMock(to_dict=lambda: {
-                "pkid": "note-today-1",
-                "note": "Today's note",
-                "date_created": datetime.utcnow()
-            })
+            MagicMock(
+                to_dict=lambda: {
+                    "pkid": "note-today-1",
+                    "note": "Today's note",
+                    "date_created": datetime.utcnow(),
+                }
+            )
         ]
         mock_db_ops.read_query = AsyncMock(return_value=mock_notes)
         mock_date_functions.update_timezone_for_dates = AsyncMock(
@@ -411,11 +453,11 @@ class TestNotesBulk:
 
         # Create mock CSV data
         csv_content = "mood,note\npositive,Test note 1\nnegative,Test note 2"
-        
+
         response = client.post(
             "/notes/bulk",
             files={"csv_file": ("test_notes.csv", csv_content, "text/csv")},
-            follow_redirects=False
+            follow_redirects=False,
         )
 
         assert response.status_code == 302
@@ -429,19 +471,23 @@ class TestNotesBackgroundProcessing:
     @patch("src.endpoints.notes.ai")
     @patch("src.endpoints.notes.db_ops")
     @patch("src.endpoints.notes.settings")
-    async def test_process_ai_analysis_background_success(self, mock_settings, mock_db_ops, mock_ai):
+    async def test_process_ai_analysis_background_success(
+        self, mock_settings, mock_db_ops, mock_ai
+    ):
         """Test successful background AI analysis."""
         from src.endpoints.notes import process_ai_analysis_background
-        
+
         mock_settings.mood_analysis_weights = [("positive", 1), ("negative", 1)]
-        
+
         # Mock AI response
-        mock_ai.get_analysis = AsyncMock(return_value={
-            "tags": {"tags": ["background", "test"]},
-            "summary": "Background analysis summary",
-            "mood_analysis": "positive",
-            "mood": {"mood": "positive"}
-        })
+        mock_ai.get_analysis = AsyncMock(
+            return_value={
+                "tags": {"tags": ["background", "test"]},
+                "summary": "Background analysis summary",
+                "mood_analysis": "positive",
+                "mood": {"mood": "positive"},
+            }
+        )
         mock_db_ops.update_one = AsyncMock()
 
         # Test the background function
@@ -455,12 +501,16 @@ class TestNotesBackgroundProcessing:
     @patch("src.endpoints.notes.ai")
     @patch("src.endpoints.notes.db_ops")
     @patch("src.endpoints.notes.logger")
-    async def test_process_ai_analysis_background_error(self, mock_logger, mock_db_ops, mock_ai):
+    async def test_process_ai_analysis_background_error(
+        self, mock_logger, mock_db_ops, mock_ai
+    ):
         """Test background AI analysis error handling."""
         from src.endpoints.notes import process_ai_analysis_background
-        
+
         # Mock AI failure
-        mock_ai.get_analysis = AsyncMock(side_effect=Exception("AI service unavailable"))
+        mock_ai.get_analysis = AsyncMock(
+            side_effect=Exception("AI service unavailable")
+        )
         mock_db_ops.update_one = AsyncMock()
 
         # Test the background function with error
@@ -471,7 +521,7 @@ class TestNotesBackgroundProcessing:
         mock_db_ops.update_one.assert_called_with(
             table=mock_db_ops.update_one.call_args[1]["table"],
             record_id="note-123",
-            new_values={"ai_fix": True}
+            new_values={"ai_fix": True},
         )
 
 
@@ -539,14 +589,14 @@ class TestNotesEdgeCases:
             "pkid": "metrics-456",
             "date_created": datetime.utcnow(),
             "date_updated": datetime.utcnow(),
-            "user_id": "user-456"
+            "user_id": "user-456",
         }
-        
+
         mock_db_ops.read_one_record = AsyncMock(side_effect=[None, mock_metrics_data])
 
         with patch("src.endpoints.notes.notes_metrics") as mock_metrics:
             mock_metrics.update_notes_metrics = AsyncMock()
-            
+
             response = client.get("/notes/metrics/counts")
             assert response.status_code == 200
             mock_metrics.update_notes_metrics.assert_called_once()
@@ -560,15 +610,15 @@ class TestNotesEdgeCases:
 
         with patch("src.endpoints.notes.date_functions") as mock_date_functions:
             mock_date_functions.update_timezone_for_dates = AsyncMock(return_value=[])
-            
+
             # Test high page number
             response = client.get("/notes/pagination?page=999")
             assert response.status_code == 200
-            
+
             # Test limit=0 causes division by zero error (application bug)
             response = client.get("/notes/pagination?limit=0")
             assert response.status_code == 500  # Application crashes on limit=0
-            
+
             # Test minimum valid limit
             response = client.get("/notes/pagination?limit=1")
             assert response.status_code == 200
@@ -582,11 +632,13 @@ class TestNotesEdgeCases:
                     "pkid": "note-123",
                     "note": "Test content",
                     "date_created": datetime.utcnow(),
-                    "date_updated": datetime.utcnow()
+                    "date_updated": datetime.utcnow(),
                 }
                 mock_db_ops.read_one_record = AsyncMock(return_value=mock_note)
-                mock_date_functions.timezone_update = AsyncMock(return_value="Jan 1, 2024")
-                
+                mock_date_functions.timezone_update = AsyncMock(
+                    return_value="Jan 1, 2024"
+                )
+
                 response = client.get("/notes/view/note-123?ai=true")
                 assert response.status_code == 200
 
@@ -599,13 +651,21 @@ class TestNotesIntegration:
     @patch("src.endpoints.notes.notes_metrics")
     @patch("src.endpoints.notes.db_ops")
     @patch("src.endpoints.notes.date_functions")
-    async def test_full_note_lifecycle(self, mock_date_functions, mock_db_ops, mock_metrics, mock_ai_task, client, bypass_auth):
+    async def test_full_note_lifecycle(
+        self,
+        mock_date_functions,
+        mock_db_ops,
+        mock_metrics,
+        mock_ai_task,
+        client,
+        bypass_auth,
+    ):
         """Test complete note lifecycle: create -> view -> edit -> delete."""
         # Step 1: Create note
         mock_created_note = MagicMock()
         mock_created_note.pkid = "lifecycle-note"
         mock_db_ops.create_one = AsyncMock(return_value=mock_created_note)
-        
+
         # Step 2: View note setup
         mock_note_data = MagicMock()
         mock_note_data.to_dict.return_value = {
@@ -615,48 +675,50 @@ class TestNotesIntegration:
             "summary": "Test summary",
             "tags": ["test"],
             "date_created": datetime.utcnow(),
-            "date_updated": datetime.utcnow()
+            "date_updated": datetime.utcnow(),
         }
-        
+
         # Step 3: Edit/update setup
         mock_updated_note = MagicMock()
         mock_updated_note.pkid = "lifecycle-note"
         mock_db_ops.update_one = AsyncMock(return_value=mock_updated_note)
-        
+
         # Step 4: Delete setup
         mock_db_ops.delete_one = AsyncMock(return_value=True)
-        
+
         # Configure read_one_record for different scenarios
         mock_db_ops.read_one_record = AsyncMock(return_value=mock_note_data)
         mock_date_functions.timezone_update = AsyncMock(return_value="Jan 1, 2024")
         mock_metrics.update_notes_metrics = AsyncMock()
 
         # Test the lifecycle
-        
+
         # 1. Create note
         create_response = client.post(
             "/notes/new",
             data={"mood": "positive", "note": "Lifecycle test"},
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert create_response.status_code == 302
-        
-        # 2. View note  
+
+        # 2. View note
         view_response = client.get("/notes/view/lifecycle-note")
         assert view_response.status_code == 200
-        
+
         # 3. Edit note
         edit_response = client.post(
             "/notes/edit/lifecycle-note",
             data={"mood": "negative", "note": "Updated lifecycle test"},
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert edit_response.status_code == 302
-        
+
         # 4. Delete note
-        delete_response = client.post("/notes/delete/lifecycle-note", follow_redirects=False)
+        delete_response = client.post(
+            "/notes/delete/lifecycle-note", follow_redirects=False
+        )
         assert delete_response.status_code == 302
-        
+
         # Verify all operations were called
         mock_db_ops.create_one.assert_called_once()
         mock_db_ops.update_one.assert_called()

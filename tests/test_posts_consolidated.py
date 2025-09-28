@@ -46,7 +46,7 @@ class TestPosts:
 
         with patch("src.endpoints.blog_posts.db_ops") as mock_db_ops:
             mock_db_ops.create_one = AsyncMock(return_value=mock_created_post)
-            
+
             # Mock the redirect view
             mock_post_obj = MagicMock()
             mock_post_obj.to_dict.return_value = mock_post
@@ -58,11 +58,11 @@ class TestPosts:
                     "title": "Test Post",
                     "content": "Test content",
                     "category": "technology",
-                    "tags": "test,post"
+                    "tags": "test,post",
                 },
-                follow_redirects=False
+                follow_redirects=False,
             )
-            
+
             assert response.status_code in [200, 302, 303]
 
     @pytest.mark.asyncio
@@ -87,7 +87,7 @@ class TestPosts:
             "content": "Test content",
             "date_created": "2024-01-01T00:00:00",
             "date_updated": "2024-01-01T00:00:00",
-            "user_id": "user-123"
+            "user_id": "user-123",
         }
         mock_db_ops.read_one_record = AsyncMock(return_value=mock_post_obj)
 
@@ -95,12 +95,12 @@ class TestPosts:
             "/posts/new",
             data={
                 "title": "Test Post",
-                "content": "Test content", 
-                "category": "technology"
+                "content": "Test content",
+                "category": "technology",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
-        
+
         assert response.status_code in [200, 302, 303]
 
     def test_read_post(self, client, mock_post):
@@ -156,14 +156,23 @@ class TestPosts:
 
     @pytest.mark.asyncio
     @patch("src.endpoints.blog_posts.db_ops")
-    async def test_edit_post_form_async(self, mock_db_ops, client, bypass_auth, mock_post):
+    async def test_edit_post_form_async(
+        self, mock_db_ops, client, bypass_auth, mock_post
+    ):
         """Test edit post form (async version)."""
         mock_post_obj = MagicMock()
         mock_post_obj.to_dict.return_value = mock_post
         mock_db_ops.read_one_record = AsyncMock(return_value=mock_post_obj)
 
-        response = client.get("/posts/edit/post-123")
-        assert response.status_code == 200
+        # Mock date functions to handle timezone conversion properly
+        with patch("src.endpoints.blog_posts.date_functions") as mock_date_func:
+            mock_date_func.update_timezone_for_dates = AsyncMock(
+                return_value=[mock_post]
+            )
+            mock_date_func.timezone_update = AsyncMock(return_value="Jan 1, 2024")
+
+            response = client.get("/posts/edit/post-123")
+            assert response.status_code == 200
 
     def test_update_post(self, client, bypass_auth, mock_post):
         """Test updating a post."""
@@ -184,11 +193,11 @@ class TestPosts:
                 data={
                     "title": "Updated Post",
                     "content": "Updated content",
-                    "category": "updated"
+                    "category": "updated",
                 },
-                follow_redirects=False
+                follow_redirects=False,
             )
-            
+
             assert response.status_code in [200, 302, 303]
 
     @pytest.mark.asyncio
@@ -202,13 +211,10 @@ class TestPosts:
 
         response = client.post(
             "/posts/edit/post-123",
-            data={
-                "title": "Updated Post",
-                "content": "Updated content"
-            },
-            follow_redirects=False
+            data={"title": "Updated Post", "content": "Updated content"},
+            follow_redirects=False,
         )
-        
+
         assert response.status_code in [200, 302, 303]
 
     def test_delete_post(self, client, bypass_auth, mock_post):
@@ -220,11 +226,8 @@ class TestPosts:
             mock_db_ops.read_one_record = AsyncMock(return_value=mock_post_obj)
             mock_db_ops.delete_one = AsyncMock(return_value=True)
 
-            response = client.post(
-                "/posts/delete/post-123",
-                follow_redirects=False
-            )
-            
+            response = client.post("/posts/delete/post-123", follow_redirects=False)
+
             assert response.status_code in [200, 302, 303]
 
     @pytest.mark.asyncio
@@ -251,13 +254,13 @@ class TestPosts:
                 }
             )
         ]
-        
+
         with (
             patch("src.endpoints.blog_posts.db_ops") as mock_db_ops,
             patch(
                 "src.endpoints.blog_posts.date_functions.update_timezone_for_dates",
-                AsyncMock(return_value=mock_posts)
-            )
+                AsyncMock(return_value=mock_posts),
+            ),
         ):
             mock_db_ops.read_query = AsyncMock(return_value=mock_posts)
             mock_db_ops.count_query = AsyncMock(return_value=1)
@@ -270,11 +273,13 @@ class TestPosts:
     async def test_posts_pagination_async(self, mock_db_ops, client):
         """Test posts pagination (async version)."""
         mock_posts = [
-            MagicMock(to_dict=lambda: {
-                "pkid": "1", 
-                "title": "Test Post",
-                "date_created": "2024-01-01T00:00:00"
-            })
+            MagicMock(
+                to_dict=lambda: {
+                    "pkid": "1",
+                    "title": "Test Post",
+                    "date_created": "2024-01-01T00:00:00",
+                }
+            )
         ]
         mock_db_ops.read_query = AsyncMock(return_value=mock_posts)
         mock_db_ops.count_query = AsyncMock(return_value=1)
@@ -290,13 +295,15 @@ class TestPosts:
     def test_posts_list_with_mock_data(self, client):
         """Test posts list with mocked data."""
         mock_posts = [
-            MagicMock(to_dict=lambda: {
-                "pkid": "1",
-                "title": "Test Post", 
-                "date_created": "2024-01-01T00:00:00"
-            })
+            MagicMock(
+                to_dict=lambda: {
+                    "pkid": "1",
+                    "title": "Test Post",
+                    "date_created": "2024-01-01T00:00:00",
+                }
+            )
         ]
-        
+
         with patch("src.endpoints.blog_posts.db_ops") as mock_db_ops:
             mock_db_ops.read_query = AsyncMock(return_value=mock_posts)
             mock_db_ops.count_query = AsyncMock(return_value=1)
