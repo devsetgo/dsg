@@ -57,7 +57,7 @@ class TestServicesGetCategories:
         assert response.status_code == 200
         data = response.json()
         assert data == ["category-1", "category-2", "category-3"]
-        
+
         # Verify db_ops.read_query was called with correct parameters
         mock_db_read.assert_called_once()
         call_args = mock_db_read.call_args[0]
@@ -77,7 +77,7 @@ class TestServicesGetCategories:
         assert response.status_code == 200
         data = response.json()
         assert data == ["test-category"]
-        
+
         # Verify db_ops.read_query was called
         mock_db_read.assert_called_once()
         call_args = mock_db_read.call_args[0]
@@ -143,7 +143,7 @@ class TestServicesGetCategories:
         assert response.status_code == 200
         data = response.json()
         assert data == []
-        
+
         # Verify error was logged
         mock_logger.error.assert_called_once()
         error_msg = mock_logger.error.call_args[0][0]
@@ -166,7 +166,7 @@ class TestServicesGetCategories:
         assert response.status_code == 200
         data = response.json()
         assert data == []
-        
+
         # Verify error was logged
         mock_logger.error.assert_called_once()
 
@@ -177,18 +177,22 @@ class TestServicesEnumValidation:
     @pytest.mark.asyncio
     @patch("src.endpoints.services.db_ops.read_query")
     @patch("src.endpoints.services.logger")
-    async def test_invalid_category_name_handled(self, mock_logger, mock_db_read, client):
+    async def test_invalid_category_name_handled(
+        self, mock_logger, mock_db_read, client
+    ):
         """Test that invalid category names are handled gracefully."""
         # When invalid category is used, getattr fails and exception is caught
-        mock_db_read.side_effect = AttributeError("type object 'Categories' has no attribute 'invalid_category'")
-        
+        mock_db_read.side_effect = AttributeError(
+            "type object 'Categories' has no attribute 'invalid_category'"
+        )
+
         response = client.get("/services/categories?category_name=invalid_category")
-        
+
         # Should return 200 with empty list due to exception handling
         assert response.status_code == 200
         data = response.json()
         assert data == []
-        
+
         # Verify error was logged
         mock_logger.error.assert_called_once()
         error_msg = mock_logger.error.call_args[0][0]
@@ -207,7 +211,9 @@ class TestServicesCatListConstant:
         """Test that cat_list values match Categories model boolean fields."""
         # Verify that the enum values correspond to actual boolean fields in Categories
         for cat_name in cat_list:
-            assert hasattr(Categories, cat_name), f"Categories model should have {cat_name} field"
+            assert hasattr(
+                Categories, cat_name
+            ), f"Categories model should have {cat_name} field"
 
 
 class TestServicesIntegration:
@@ -252,17 +258,17 @@ class TestServicesIntegration:
                 "description": f"{name} category",
                 "is_post": True,
                 "is_weblink": False,
-                "is_system": False
+                "is_system": False,
             }
             mock_cats.append(mock_cat)
-        
+
         mock_db_read.return_value = mock_cats
 
         response = client.get("/services/categories")
 
         assert response.status_code == 200
         data = response.json()
-        
+
         # Should only return the names, not full objects
         assert data == ["Tech", "Science", "Art"]
         assert all(isinstance(item, str) for item in data)
@@ -276,21 +282,25 @@ class TestServicesErrorScenarios:
     @patch("src.endpoints.services.logger")
     async def test_getattr_exception(self, mock_logger, mock_db_read, client):
         """Test error handling when getattr fails."""
-        mock_db_read.side_effect = AttributeError("Categories has no attribute 'invalid_field'")
+        mock_db_read.side_effect = AttributeError(
+            "Categories has no attribute 'invalid_field'"
+        )
 
         response = client.get("/services/categories?category_name=is_post")
 
         assert response.status_code == 200
         data = response.json()
         assert data == []
-        
+
         # Verify error was logged
         mock_logger.error.assert_called_once()
 
     @pytest.mark.asyncio
     @patch("src.endpoints.services.db_ops.read_query")
     @patch("src.endpoints.services.logger")
-    async def test_list_comprehension_exception(self, mock_logger, mock_db_read, client):
+    async def test_list_comprehension_exception(
+        self, mock_logger, mock_db_read, client
+    ):
         """Test error handling when list comprehension fails."""
         # Create a mock that fails during list comprehension
         mock_cat = MagicMock()
@@ -302,7 +312,7 @@ class TestServicesErrorScenarios:
         assert response.status_code == 200
         data = response.json()
         assert data == []
-        
+
         # Verify error was logged
         mock_logger.error.assert_called_once()
 
