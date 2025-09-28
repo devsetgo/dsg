@@ -22,7 +22,7 @@ Functions:
 Usage:
     This module is intended to be imported and used by other parts of the application, particularly where blog post management functionality is required. It provides a clear API for interacting with blog post data.
 """
-from datetime import datetime
+from datetime import datetime, UTC
 
 # from pytz import timezone, UTC
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, Request
@@ -181,7 +181,7 @@ async def update_post(
     form = await request.form()
     print(form)
     # Initialize the updated data dictionary with the current date and time
-    updated_data = {"date_updated": datetime.utcnow()}
+    updated_data = {"date_updated": datetime.now(UTC)}
 
     # List of fields to update
     fields = ["mood", "content", "tags", "summary", "mood_analysis"]
