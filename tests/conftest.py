@@ -25,19 +25,25 @@ def event_loop():
 
 @pytest.fixture
 async def test_db():
-    """Create a test database."""
+    """Create a test database with dummy data."""
     # Use in-memory SQLite for testing
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
 
     # Create all tables
     async with engine.begin() as conn:
-        # Import the metadata from the actual db_init or create minimal tables
-        await conn.run_sync(lambda sync_conn: None)  # Skip table creation for now
+        await conn.run_sync(Users.metadata.create_all)
+        await conn.run_sync(Notes.metadata.create_all)
+        await conn.run_sync(Posts.metadata.create_all)
+        await conn.run_sync(WebLinks.metadata.create_all)
+        await conn.run_sync(Categories.metadata.create_all)
 
     # Mock the db_ops to use test database
     original_engine = getattr(db_ops, "engine", None)
     if hasattr(db_ops, "engine"):
         db_ops.engine = engine
+
+    # Add dummy data
+    await _create_dummy_data(engine)
 
     yield engine
 
@@ -219,6 +225,123 @@ def create_mock_db_record(data_dict):
     for key, value in data_dict.items():
         setattr(mock_record, key, value)
     return mock_record
+
+
+# Helper function to create dummy data
+async def _create_dummy_data(engine):
+    """Create dummy test data in the database."""
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from datetime import datetime
+
+    async with AsyncSession(engine) as session:
+        # Create test users
+        test_users = [
+            Users(
+                pkid="test-user-123",
+                user_name="testuser",
+                email="test@example.com",
+                first_name="Test",
+                last_name="User",
+                is_active=True,
+                is_admin=False,
+                my_timezone="America/New_York",
+                date_created=datetime.now(),
+                date_updated=datetime.now(),
+            ),
+            Users(
+                pkid="admin-user-123",
+                user_name="adminuser",
+                email="admin@example.com",
+                first_name="Admin",
+                last_name="User",
+                is_active=True,
+                is_admin=True,
+                my_timezone="America/New_York",
+                date_created=datetime.now(),
+                date_updated=datetime.now(),
+            ),
+        ]
+
+        # Create test categories
+        test_categories = [
+            Categories(
+                pkid="cat-tech",
+                name="technology",
+                description="Technology related content",
+                is_post=True,
+                is_weblink=True,
+                is_system=False,
+                date_created=datetime.now(),
+                date_updated=datetime.now(),
+            ),
+            Categories(
+                pkid="cat-science",
+                name="science",
+                description="Science related content",
+                is_post=True,
+                is_weblink=True,
+                is_system=False,
+                date_created=datetime.now(),
+                date_updated=datetime.now(),
+            ),
+        ]
+
+        # Create test notes
+        test_notes = [
+            Notes(
+                pkid="note-123",
+                mood="positive",
+                note="This is a test note content.",
+                summary="Test note",
+                tags=["test", "note"],
+                mood_analysis="happy",
+                user_id="test-user-123",
+                ai_fix=False,
+                word_count=6,
+                character_count=30,
+                date_created=datetime.now(),
+                date_updated=datetime.now(),
+            ),
+        ]
+
+        # Create test posts
+        test_posts = [
+            Posts(
+                pkid="post-123",
+                title="Test Post",
+                summary="This is a test post summary.",
+                content="<p>This is test post content.</p>",
+                category="technology",
+                tags=["test", "post"],
+                user_id="test-user-123",
+                date_created=datetime.now(),
+                date_updated=datetime.now(),
+            ),
+        ]
+
+        # Create test weblinks
+        test_weblinks = [
+            WebLinks(
+                pkid="weblink-123",
+                title="Test Website",
+                summary="This is a test website summary.",
+                url="https://example.com",
+                category="technology",
+                public=True,
+                user_id="test-user-123",
+                ai_fix=False,
+                image_preview_data=None,
+                comment=None,
+                date_created=datetime.now(),
+                date_updated=datetime.now(),
+            ),
+        ]
+
+        # Add all data to session
+        session.add_all(
+            test_users + test_categories + test_notes + test_posts + test_weblinks
+        )
+        await session.commit()
 
 
 # Auth bypass fixture

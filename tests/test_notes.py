@@ -45,14 +45,18 @@ class TestNotes:
     @pytest.mark.asyncio
     @patch("src.endpoints.notes.ai")
     @patch("src.endpoints.notes.db_ops")
-    async def test_create_note(self, mock_db_ops, mock_ai, client, bypass_auth):
+    @patch("src.functions.notes_metrics.update_notes_metrics")  # Mock background task
+    async def test_create_note(
+        self, mock_update_metrics, mock_db_ops, mock_ai, client, bypass_auth
+    ):
         """Test creating a new note."""
-        # Mock AI response with AsyncMock
+        # Mock AI response with AsyncMock - include all required keys
         mock_ai.get_analysis = AsyncMock(
             return_value={
                 "tags": {"tags": ["test"]},
                 "summary": "Test summary",
                 "mood_analysis": "happy",
+                "mood": {"mood": "positive"},  # Add missing mood key
             }
         )
 
@@ -60,6 +64,10 @@ class TestNotes:
         mock_note = MagicMock()
         mock_note.pkid = "note-123"
         mock_db_ops.create_one = AsyncMock(return_value=mock_note)
+        mock_db_ops.update_one = AsyncMock(return_value=MagicMock())  # Fix AsyncMock
+
+        # Mock background task
+        mock_update_metrics.return_value = AsyncMock()
 
         response = client.post(
             "/notes/new",
@@ -101,7 +109,10 @@ class TestNotes:
 
     @pytest.mark.asyncio
     @patch("src.endpoints.notes.db_ops")
-    async def test_update_note(self, mock_db_ops, client, bypass_auth, mock_note):
+    @patch("src.functions.notes_metrics.update_notes_metrics")  # Mock background task
+    async def test_update_note(
+        self, mock_update_metrics, mock_db_ops, client, bypass_auth, mock_note
+    ):
         """Test updating a note."""
         # Mock old data
         old_note = MagicMock()
@@ -114,6 +125,9 @@ class TestNotes:
         mock_db_ops.read_one_record = AsyncMock(return_value=old_note)
         mock_db_ops.update_one = AsyncMock(return_value=updated_note)
 
+        # Mock background task
+        mock_update_metrics.return_value = AsyncMock()
+
         response = client.post(
             "/notes/edit/note-123",
             data={"note": "Updated note content", "mood": "positive"},
@@ -124,12 +138,18 @@ class TestNotes:
 
     @pytest.mark.asyncio
     @patch("src.endpoints.notes.db_ops")
-    async def test_delete_note(self, mock_db_ops, client, bypass_auth, mock_note):
+    @patch("src.functions.notes_metrics.update_notes_metrics")  # Mock background task
+    async def test_delete_note(
+        self, mock_update_metrics, mock_db_ops, client, bypass_auth, mock_note
+    ):
         """Test deleting a note."""
         mock_note_obj = MagicMock()
         mock_note_obj.to_dict.return_value = mock_note
         mock_db_ops.read_one_record = AsyncMock(return_value=mock_note_obj)
         mock_db_ops.delete_one = AsyncMock(return_value=True)
+
+        # Mock background task
+        mock_update_metrics.return_value = AsyncMock()
 
         response = client.post("/notes/delete/note-123", follow_redirects=False)
         assert response.status_code == 302

@@ -292,7 +292,7 @@ async def get_summary(
     logger.info("Starting get_summary function")
 
     # Create the prompt for the OpenAI API
-    prompt = f"Please summarize the content and provide {sentence_length} concise sentence in length as a title and it cannot contain any persons name"
+    prompt = f"Please summarize the content and provide {sentence_length} concise sentence in length and it cannot contain any persons name"
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
