@@ -31,8 +31,8 @@ class TestAdminUserManagementCoverage:
 
         mock_user_info = {
             "user_identifier": "user123",  # Same as update_user_id
-            "timezone": "UTC", 
-            "is_admin": True
+            "timezone": "UTC",
+            "is_admin": True,
         }
         mock_request = MagicMock()
         update_user_id = "user123"  # Same as user_identifier
@@ -49,21 +49,29 @@ class TestAdminUserManagementCoverage:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
         update_user_id = "user123"
 
         # Mock form data for weak password
-        form_data = {"account-action": "", "new-password-entry": "weak", "change-email-entry": ""}
+        form_data = {
+            "account-action": "",
+            "new-password-entry": "weak",
+            "change-email-entry": "",
+        }
+
         async def mock_form():
             return form_data
+
         mock_request.form = mock_form
 
         with patch("src.endpoints.admin.check_password_complexity") as mock_complexity:
             mock_complexity.return_value = False
 
-            result = await admin_update_user(mock_request, update_user_id, mock_user_info)
+            result = await admin_update_user(
+                mock_request, update_user_id, mock_user_info
+            )
             assert result is not None
 
     @pytest.mark.asyncio
@@ -75,15 +83,21 @@ class TestAdminUserManagementCoverage:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
         update_user_id = "user123"
 
         # Mock form data for lock action
-        form_data = {"account-action": "lock", "new-password-entry": "", "change-email-entry": ""}
+        form_data = {
+            "account-action": "lock",
+            "new-password-entry": "",
+            "change-email-entry": "",
+        }
+
         async def mock_form():
             return form_data
+
         mock_request.form = mock_form
 
         # Mock async database operations
@@ -102,15 +116,21 @@ class TestAdminUserManagementCoverage:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
         update_user_id = "user123"
 
         # Mock form data for password change
-        form_data = {"account-action": "", "new-password-entry": "NewPassword123!", "change-email-entry": ""}
+        form_data = {
+            "account-action": "",
+            "new-password-entry": "NewPassword123!",
+            "change-email-entry": "",
+        }
+
         async def mock_form():
             return form_data
+
         mock_request.form = mock_form
 
         mock_db_ops.update_one = AsyncMock(return_value=MagicMock())
@@ -121,7 +141,9 @@ class TestAdminUserManagementCoverage:
                 mock_complexity.return_value = True
                 mock_hash.return_value = "hashed_new_password"
 
-                result = await admin_update_user(mock_request, update_user_id, mock_user_info)
+                result = await admin_update_user(
+                    mock_request, update_user_id, mock_user_info
+                )
                 assert result is not None
 
     @pytest.mark.asyncio
@@ -133,15 +155,21 @@ class TestAdminUserManagementCoverage:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
         update_user_id = "user123"
 
         # Mock form data for email change
-        form_data = {"account-action": "", "new-password-entry": "", "change-email-entry": "newemail@test.com"}
+        form_data = {
+            "account-action": "",
+            "new-password-entry": "",
+            "change-email-entry": "newemail@test.com",
+        }
+
         async def mock_form():
             return form_data
+
         mock_request.form = mock_form
 
         mock_db_ops.update_one = AsyncMock(return_value=MagicMock())
@@ -150,7 +178,9 @@ class TestAdminUserManagementCoverage:
         with patch("src.endpoints.admin.validate_email_address") as mock_validate:
             mock_validate.return_value = {"valid": True}
 
-            result = await admin_update_user(mock_request, update_user_id, mock_user_info)
+            result = await admin_update_user(
+                mock_request, update_user_id, mock_user_info
+            )
             assert result is not None
 
     @pytest.mark.asyncio
@@ -162,21 +192,29 @@ class TestAdminUserManagementCoverage:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
         update_user_id = "user123"
 
         # Mock form data for email change with invalid email
-        form_data = {"account-action": "", "new-password-entry": "", "change-email-entry": "invalid-email"}
+        form_data = {
+            "account-action": "",
+            "new-password-entry": "",
+            "change-email-entry": "invalid-email",
+        }
+
         async def mock_form():
             return form_data
+
         mock_request.form = mock_form
 
         with patch("src.endpoints.admin.validate_email_address") as mock_validate:
             mock_validate.return_value = {"valid": False}
 
-            result = await admin_update_user(mock_request, update_user_id, mock_user_info)
+            result = await admin_update_user(
+                mock_request, update_user_id, mock_user_info
+            )
             assert result is not None
 
     @pytest.mark.asyncio
@@ -188,15 +226,17 @@ class TestAdminUserManagementCoverage:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
         update_user_id = "user123"
 
         # Mock form data for deletion
         form_data = {"account-action": "delete"}
+
         async def mock_form():
             return form_data
+
         mock_request.form = mock_form
 
         # Mock successful deletion but notes found
@@ -205,7 +245,9 @@ class TestAdminUserManagementCoverage:
         mock_db_ops.read_query = AsyncMock(return_value=[mock_note])  # Notes found
 
         with patch("src.endpoints.admin.logger") as mock_logger:
-            result = await admin_update_user(mock_request, update_user_id, mock_user_info)
+            result = await admin_update_user(
+                mock_request, update_user_id, mock_user_info
+            )
             assert result is not None
             # Should log warning about notes found
             mock_logger.warning.assert_called()
@@ -219,7 +261,7 @@ class TestAdminUserManagementCoverage:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
         user_id = "nonexistent"
@@ -231,7 +273,7 @@ class TestAdminUserManagementCoverage:
             # This should raise HTTPException - we catch it to test the path
             with pytest.raises(HTTPException) as exc_info:
                 await admin_user(mock_request, user_id, mock_user_info)
-            
+
             assert exc_info.value.status_code == 404
             assert exc_info.value.detail == "User not found"
 
@@ -247,14 +289,20 @@ class TestAdminCategoryManagementCoverage:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
 
         # Mock proper form data with correct field names
-        form_data = {"name": "New Category", "description": "New description", "pkid": "new"}
+        form_data = {
+            "name": "New Category",
+            "description": "New description",
+            "pkid": "new",
+        }
+
         async def mock_form():
             return form_data
+
         mock_request.form = mock_form
 
         with patch("src.endpoints.admin.db_ops") as mock_db_ops:
@@ -278,7 +326,7 @@ class TestAdminCategoriesTableErrorHandling:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
 
@@ -287,11 +335,13 @@ class TestAdminCategoriesTableErrorHandling:
         mock_category.to_dict.return_value = {"name": "Tech", "pkid": "cat123"}
 
         # Test scenario: post_count is not a list
-        mock_db_ops.read_query = AsyncMock(side_effect=[
-            [mock_category],  # categories
-            "not_a_list",     # post_count - causes error
-            []                # weblinks
-        ])
+        mock_db_ops.read_query = AsyncMock(
+            side_effect=[
+                [mock_category],  # categories
+                "not_a_list",  # post_count - causes error
+                [],  # weblinks
+            ]
+        )
 
         with patch("src.endpoints.admin.logger") as mock_logger:
             result = await admin_categories_table(mock_request, mock_user_info)
@@ -306,8 +356,8 @@ class TestAdminCategoriesTableErrorHandling:
 
         mock_user_info = {
             "user_identifier": "admin@test.com",
-            "timezone": "UTC", 
-            "is_admin": True
+            "timezone": "UTC",
+            "is_admin": True,
         }
         mock_request = MagicMock()
 
@@ -315,15 +365,17 @@ class TestAdminCategoriesTableErrorHandling:
             # Mock categories
             mock_category = MagicMock()
             mock_category.to_dict.return_value = {"name": "Tech", "pkid": "cat1"}
-            
+
             # Mock a post without to_dict method to trigger error path
             mock_bad_post = MagicMock(spec=[])  # Empty spec means no to_dict
-            
-            mock_db_ops.read_query = AsyncMock(side_effect=[
-                [mock_category],  # categories query
-                [mock_bad_post],  # posts query - will trigger error
-                []                # weblinks query
-            ])
+
+            mock_db_ops.read_query = AsyncMock(
+                side_effect=[
+                    [mock_category],  # categories query
+                    [mock_bad_post],  # posts query - will trigger error
+                    [],  # weblinks query
+                ]
+            )
 
             with patch("src.endpoints.admin.logger") as mock_logger:
                 result = await admin_categories_table(mock_request, mock_user_info)
@@ -339,7 +391,7 @@ class TestAdminCategoriesTableErrorHandling:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
 
@@ -347,15 +399,17 @@ class TestAdminCategoriesTableErrorHandling:
             # Mock categories
             mock_category = MagicMock()
             mock_category.to_dict.return_value = {"name": "Tech", "pkid": "cat1"}
-            
+
             # Mock a weblink without to_dict method to trigger error path
             mock_bad_weblink = MagicMock(spec=[])  # Empty spec means no to_dict
-            
-            mock_db_ops.read_query = AsyncMock(side_effect=[
-                [mock_category],     # categories query
-                [],                  # posts query
-                [mock_bad_weblink]   # weblinks query - will trigger error
-            ])
+
+            mock_db_ops.read_query = AsyncMock(
+                side_effect=[
+                    [mock_category],  # categories query
+                    [],  # posts query
+                    [mock_bad_weblink],  # weblinks query - will trigger error
+                ]
+            )
 
             with patch("src.endpoints.admin.logger") as mock_logger:
                 result = await admin_categories_table(mock_request, mock_user_info)
@@ -385,7 +439,7 @@ class TestAdminUtilityFunctionsCoverage:
             "is_locked": False,
             "date_created": "2024-01-01T00:00:00",
             "date_last_login": "2024-01-01T00:00:00",
-            "roles": {"user_access": True}
+            "roles": {"user_access": True},
         }
 
         mock_db_ops.read_query = AsyncMock(return_value=[mock_user])
@@ -395,7 +449,7 @@ class TestAdminUtilityFunctionsCoverage:
 
         # Now test error path - covers lines 85-92
         mock_db_ops.read_query = AsyncMock(side_effect=Exception("Database error"))
-        
+
         with patch("src.endpoints.admin.logger") as mock_logger:
             result = await get_list_of_users("UTC")
             # Function returns empty list on error, not dict
@@ -419,14 +473,16 @@ class TestAdminFormValidationCoverage:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
 
         # Mock form data missing required fields - should trigger KeyError
         form_data = {}  # Empty form data
+
         async def mock_form():
             return form_data
+
         mock_request.form = mock_form
 
         # This should raise a KeyError when trying to access form["name"]
@@ -448,7 +504,7 @@ class TestAdminEdgeCasesAndErrorPaths:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
 
@@ -467,15 +523,21 @@ class TestAdminEdgeCasesAndErrorPaths:
         mock_user_info = {
             "user_identifier": "admin@test.com",
             "timezone": "UTC",
-            "is_admin": True
+            "is_admin": True,
         }
         mock_request = MagicMock()
         update_user_id = "user123"
 
         # Mock form data with all empty values (no changes)
-        form_data = {"account-action": "", "new-password-entry": "", "change-email-entry": ""}
+        form_data = {
+            "account-action": "",
+            "new-password-entry": "",
+            "change-email-entry": "",
+        }
+
         async def mock_form():
             return form_data
+
         mock_request.form = mock_form
 
         mock_db_ops.update_one = AsyncMock(return_value=MagicMock())
@@ -484,5 +546,7 @@ class TestAdminEdgeCasesAndErrorPaths:
         with patch("src.endpoints.admin.check_password_complexity") as mock_complexity:
             mock_complexity.return_value = True
 
-            result = await admin_update_user(mock_request, update_user_id, mock_user_info)
+            result = await admin_update_user(
+                mock_request, update_user_id, mock_user_info
+            )
             assert result is not None
