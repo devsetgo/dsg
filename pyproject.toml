@@ -1,12 +1,7 @@
 [project]
 name = "dsg"
-<<<<<<< Updated upstream
-version = "2025-08-31-006"
-requires-python = ">=3.12"
-=======
 version = "2025-09-22-001"
 requires-python = ">=3.13"
->>>>>>> Stashed changes
 description = "DevSetGo website"
 readme = "README.md"
 classifiers = [ "License :: OSI Approved :: MIT License", "Programming Language :: Python", "Programming Language :: Python :: 3.13", "Operating System :: POSIX :: Linux", "Operating System :: POSIX",]
