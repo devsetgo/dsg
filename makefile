@@ -335,11 +335,8 @@ run-grdev:  # Run the FastAPI application in development mode with granian and r
 ##@ Testing and Quality Assurance
 
 test: ## Run the project's tests
-<<<<<<< Updated upstream
-	@printf "\033[1;33m🧪 Running full test suite...\033[0m\n"
-=======
 	cp env-files/.env.pytest .env
->>>>>>> Stashed changes
+	@printf "\033[1;33m🧪 Running full test suite...\033[0m\n"
 	pre-commit run -a
 	pytest tests/ --cov=src --cov-report=html --cov-report=term-missing --cov-report=xml --cov-fail-under=70
 	sed -i 's|<source>.*</source>|<source>$(REPONAME)</source>|' coverage.xml
@@ -349,7 +346,6 @@ test: ## Run the project's tests
 
 tests: test ## Run the project's tests
 
-<<<<<<< Updated upstream
 clean-test: ## Clean test artifacts
 	@printf "\033[1;33m🧹 Cleaning test artifacts...\033[0m\n"
 	rm -rf .pytest_cache
@@ -364,48 +360,3 @@ test-file: ## Run a specific test file
 test-marker: ## Run tests with specific marker
 	@printf "\033[1;33m🧪 Running tests with marker: $(MARKER)...\033[0m\n"
 	pytest tests/ -m $(MARKER) -v
-=======
-# Run tests with 85% coverage threshold
-test-coverage-85: ## Run tests with 85% coverage requirement
-	cp env-files/.env.pytest .env
-	pre-commit run -a
-	pytest tests/ --cov=src --cov-report=html --cov-report=term-missing --cov-report=xml --cov-fail-under=85
-	sed -i 's|<source>.*</source>|<source>$(REPONAME)</source>|' coverage.xml
-	genbadge coverage -i coverage.xml
-	genbadge tests -i report.xml
-
-# Run tests quickly (no coverage)
-test-fast: ## Run tests without coverage for speed
-	cp env-files/.env.pytest .env
-	pytest tests/ -x --ff
-
-# Run tests with debugging
-test-debug: ## Run tests with debugging enabled
-	cp env-files/.env.pytest .env
-	pytest tests/ -v -s --pdb
-
-# Run specific test coverage
-test-cov: ## Run tests with coverage report
-	cp env-files/.env.pytest .env
-	pytest tests/ --cov=src --cov-report=html --cov-report=term-missing
-
-
-clean-test: ## Clean test artifacts
-	rm -rf .pytest_cache
-	rm -rf htmlcov
-	rm -f .coverage
-	rm -f coverage.xml
-	rm -f report.xml
-
-# Run a specific test file
-test-file: ## Run a specific test file
-	@read -p "Enter test file path: " file; \
-	pytest "tests/$$file" -v
-
-# Run tests with specific marker
-test-marker: ## Run tests with specific marker
-	@read -p "Enter marker name: " marker; \
-	pytest tests/ -m "$$marker" -v
-
-.PHONY: test test-cov test-coverage-85 test-fast test-debug clean-test install-test-deps test-file test-marker
->>>>>>> Stashed changes
