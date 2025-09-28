@@ -18,7 +18,7 @@ Successfully consolidated three overlapping admin test files into a single, comp
    - Proper AsyncMock usage for database operations
    - Simple, effective test patterns
 
-3. **`test_admin_final_coverage.py`** - 147 lines with targeted tests  
+3. **`test_admin_final_coverage.py`** - 147 lines with targeted tests
    - 6 additional targeted tests for specific coverage gaps
    - HTTPException testing with proper exception handling
    - Error path testing with mock objects
@@ -86,7 +86,7 @@ Successfully consolidated three overlapping admin test files into a single, comp
 
 The following files can now be safely removed:
 - `tests/test_admin_coverage_boost.py` (incomplete, many failing tests)
-- `tests/test_admin_coverage_simple.py` (functionality moved to comprehensive file)  
+- `tests/test_admin_coverage_simple.py` (functionality moved to comprehensive file)
 - `tests/test_admin_final_coverage.py` (functionality moved to comprehensive file)
 
 ## Final Test Suite Structure
