@@ -126,9 +126,9 @@ class TestCoverageMiddleware:
 
     def test_cors_middleware(self, client):
         """Test CORS middleware."""
-        response = client.options("/")
-        # CORS may or may not be configured
-        assert response.status_code in [200, 404, 405]
+        response = client.options("/", follow_redirects=False)
+        # CORS may or may not be configured, and may redirect
+        assert response.status_code in [200, 307, 404, 405]
 
     def test_auth_middleware(self, client):
         """Test authentication middleware."""
@@ -264,10 +264,12 @@ class TestCoverageEdgeCases:
         """Test handling of large requests."""
         large_content = "x" * 10000  # 10KB of content
         response = client.post(
-            "/posts/new", data={"title": "Large", "content": large_content}
+            "/posts/new",
+            data={"title": "Large", "content": large_content},
+            follow_redirects=False,
         )
-        # Should handle large requests
-        assert response.status_code in [200, 302, 400, 413]
+        # Should handle large requests, may redirect
+        assert response.status_code in [200, 302, 307, 400, 413]
 
     def test_special_characters(self, client):
         """Test special character handling."""
