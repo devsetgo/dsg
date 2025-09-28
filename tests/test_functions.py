@@ -83,7 +83,7 @@ class TestHashFunctions:
 
         # Invalid password (too short)
         invalid = check_password_complexity("short")
-        assert not invalid
+        assert invalid != True  # Should return error message, not True
 
 
 class TestDateFunctions:

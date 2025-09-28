@@ -46,13 +46,13 @@ class TestAppRoutes:
             "/notes/",
             "/users/user-info",
         ]
-        
+
         for route in routes_to_test:
             response = client.get(route)
             # Should not be 404 (routes should exist)
             assert response.status_code != 404
 
-    @pytest.mark.asyncio 
+    @pytest.mark.asyncio
     async def test_static_file_serving(self, client):
         """Test static file serving."""
         # Test that static route exists (even if file doesn't)
@@ -67,6 +67,7 @@ class TestMainApp:
     def test_app_creation(self):
         """Test that the app is created properly."""
         from src.main import app
+
         assert app is not None
         assert hasattr(app, "router")
 
@@ -74,11 +75,13 @@ class TestMainApp:
     async def test_app_startup(self):
         """Test app startup events."""
         from src.main import app
+
         # Test that the app has startup events configured
         assert hasattr(app, "router")
-        
+
     def test_app_metadata(self):
         """Test app metadata is set."""
         from src.main import app
+
         # Check that basic app properties exist
         assert hasattr(app, "title") or hasattr(app, "openapi_url")
