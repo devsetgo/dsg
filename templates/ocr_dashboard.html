@@ -15,7 +15,7 @@
 
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
-  
+
   {% include "navigation.html" %}
 
   <!-- Content Wrapper -->
@@ -40,7 +40,7 @@
     <!-- Main content -->
     <div class="content">
       <div class="container-fluid">
-        
+
         {% if user_info.get("is_admin") %}
         <!-- Admin View: Metrics Section -->
         <div class="row">
@@ -48,7 +48,7 @@
             <h3>System Metrics</h3>
           </div>
         </div>
-        
+
         <!-- Metrics Info Boxes -->
         <div class="row">
           <!-- Total Jobs -->
@@ -63,7 +63,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Completed Jobs -->
           <div class="col-lg-3 col-6">
             <div class="small-box bg-success">
@@ -76,7 +76,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Failed Jobs -->
           <div class="col-lg-3 col-6">
             <div class="small-box bg-danger">
@@ -89,7 +89,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Processing Jobs -->
           <div class="col-lg-3 col-6">
             <div class="small-box bg-warning">
@@ -118,7 +118,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Total Pages -->
           <div class="col-lg-3 col-6">
             <div class="small-box bg-secondary">
@@ -131,7 +131,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Success Rate -->
           <div class="col-lg-3 col-6">
             <div class="small-box bg-teal">
@@ -144,7 +144,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Space Savings -->
           <div class="col-lg-3 col-6">
             <div class="small-box bg-indigo">
@@ -218,7 +218,7 @@
           </div>
         </div>
         {% endif %}
-        
+
         <!-- Upload Section (Available to all users) -->
         <div class="row">
           <div class="col-12">
@@ -240,7 +240,7 @@
                     </div>
                     <small class="form-text text-muted">Maximum file size: 50MB</small>
                   </div>
-                  
+
                   <div class="form-group">
                     <div class="form-check">
                       <input class="form-check-input" type="checkbox" id="enhanceQuality" name="enhance_quality" checked>
@@ -249,7 +249,7 @@
                       </label>
                     </div>
                   </div>
-                  
+
                   <button type="submit" class="btn btn-primary">
                     <i class="fas fa-cog"></i> Start OCR Processing
                   </button>
@@ -266,7 +266,7 @@
             <h3>Your OCR Jobs</h3>
           </div>
         </div>
-        
+
         <!-- User Metrics -->
         <div class="row">
           <div class="col-lg-3 col-6">
@@ -280,7 +280,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="col-lg-3 col-6">
             <div class="small-box bg-success">
               <div class="inner">
@@ -292,7 +292,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="col-lg-3 col-6">
             <div class="small-box bg-danger">
               <div class="inner">
@@ -304,7 +304,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="col-lg-3 col-6">
             <div class="small-box bg-primary">
               <div class="inner">
@@ -333,7 +333,7 @@
                   <div class="form-group">
                     <label for="jobId">Job ID</label>
                     <div class="input-group">
-                      <input type="text" class="form-control" id="jobId" name="job_id" 
+                      <input type="text" class="form-control" id="jobId" name="job_id"
                              placeholder="Enter your OCR job ID" required>
                       <div class="input-group-append">
                         <button type="submit" class="btn btn-secondary">
@@ -430,27 +430,27 @@ $('.custom-file-input').on('change', function() {
 // Upload form handling
 $('#ocrUploadForm').on('submit', function(e) {
     e.preventDefault();
-    
+
     let fileInput = $('#file')[0];
     if (fileInput.files.length === 0) {
         alert('Please select a PDF file');
         return;
     }
-    
+
     let file = fileInput.files[0];
     if (file.size > 50 * 1024 * 1024) { // 50MB
         alert('File size must be less than 50MB');
         return;
     }
-    
+
     // Show loading state
     $('button[type="submit"]').html('<i class="fas fa-spinner fa-spin"></i> Processing...').prop('disabled', true);
-    
+
     // Submit form
     this.submit();
 });
 
-// Status check form handling  
+// Status check form handling
 $('#statusCheckForm').on('submit', function(e) {
     let jobId = $('#jobId').val().trim();
     if (jobId.length === 0) {

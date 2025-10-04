@@ -1,0 +1,72 @@
+<!-- Your Recent Jobs (for regular users) -->
+{% if user_summary.user_recent_jobs %}
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Your Recent Jobs</h3>
+        <div class="card-tools">
+          <button type="button" class="btn btn-sm btn-outline-primary" 
+                  hx-get="/pdf-tools/ocr/user/recent-jobs" 
+                  hx-target="#user-recent-jobs-container" 
+                  hx-indicator="#user-recent-loading">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Loading indicator -->
+        <div id="user-recent-loading" class="text-center" style="display: none;">
+          <i class="fas fa-spinner fa-spin"></i> Loading recent jobs...
+        </div>
+        
+        <!-- User recent jobs container -->
+        <div id="user-recent-jobs-container">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Job ID</th>
+                  <th>Filename</th>
+                  <th>Status</th>
+                  <th>Pages</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for job in user_summary.user_recent_jobs %}
+                <tr>
+                  <td><code>{{ job.job_id }}</code></td>
+                  <td>{{ job.original_filename }}</td>
+                  <td>
+                    {% if job.status == 'completed' %}
+                      <span class="badge bg-success">Completed</span>
+                    {% elif job.status == 'failed' %}
+                      <span class="badge bg-danger">Failed</span>
+                    {% elif job.status == 'processing' %}
+                      <span class="badge bg-warning">Processing</span>
+                    {% else %}
+                      <span class="badge bg-secondary">{{ job.status }}</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ job.page_count or 0 }}</td>
+                  <td>{{ job.date_created.strftime('%Y-%m-%d %H:%M') if job.date_created else '' }}</td>
+                  <td>
+                    {% if job.status == 'completed' %}
+                      <a href="/pdf-tools/ocr/download/{{ job.job_id }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-download"></i> Download
+                      </a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}

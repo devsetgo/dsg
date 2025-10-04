@@ -1,0 +1,153 @@
+<!-- DataTables -->
+<script src="{{ url_for('static', path='plugins/datatables/jquery.dataTables.js') }}"></script>
+<script src="{{ url_for('static', path='plugins/datatables-bs4/js/dataTables.bootstrap4.js') }}"></script>
+<!-- SweetAlert2 -->
+<script src="{{ url_for('static', path='plugins/sweetalert2/sweetalert2.min.js') }}"></script>
+
+<script>
+$(document).ready(function() {
+    // Initialize DataTables for jobs table if it exists
+    if ($('#jobs-table').length) {
+        const table = $('#jobs-table').DataTable({
+            "responsive": true,
+            "lengthChange": false,
+            "autoWidth": false,
+            "pageLength": 10,
+            "order": [[2, "desc"]], // Sort by creation date descending
+            "columnDefs": [
+                { "orderable": false, "targets": 5 } // Actions column not orderable
+            ]
+        });
+    }
+
+    // File upload handling with HTMX integration
+    const uploadZone = $('#upload-zone');
+    const fileInput = $('#pdf-file-input');
+    const uploadForm = $('#upload-form');
+
+    // Handle file input change
+    fileInput.change(function() {
+        console.log('File input changed'); // Debug log
+        const file = this.files[0];
+        console.log('Selected file:', file); // Debug log
+        
+        if (file) {
+            console.log('File details:', {
+                name: file.name,
+                type: file.type,
+                size: file.size
+            });
+            
+            if (!validateFile(file)) {
+                // Clear the input if validation fails
+                this.value = '';
+                return false;
+            }
+            console.log('File validation passed, HTMX will handle submission'); // Debug log
+            // HTMX will automatically handle the form submission due to hx-trigger="change"
+        } else {
+            console.log('No file selected');
+        }
+    });
+
+    // Drag and drop functionality
+    uploadZone.on('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).addClass('dragover');
+    });
+
+    uploadZone.on('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass('dragover');
+    });
+
+    uploadZone.on('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass('dragover');
+
+        const files = e.originalEvent.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            console.log('File dropped:', file); // Debug log
+            
+            if (validateFile(file)) {
+                // Set the file to the input - this will trigger the change event and HTMX upload
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput[0].files = dataTransfer.files;
+                
+                // Manually trigger the change event to ensure HTMX processes it
+                fileInput.trigger('change');
+            }
+        }
+    });
+
+    // File validation function
+    function validateFile(file) {
+        if (file.type !== 'application/pdf') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File',
+                text: 'Please select a PDF file.'
+            });
+            return false;
+        }
+
+        if (file.size > 50 * 1024 * 1024) { // 50MB
+            Swal.fire({
+                icon: 'error',
+                title: 'File Too Large',
+                text: 'File size exceeds 50MB limit.'
+            });
+            return false;
+        }
+
+        return true;
+    }
+
+    // HTMX event handlers for better UX
+    document.addEventListener('htmx:beforeRequest', function(evt) {
+        console.log('HTMX before request:', evt.detail); // Debug log
+        // Show loading states for HTMX requests
+        const indicator = evt.detail.elt.getAttribute('hx-indicator');
+        if (indicator) {
+            document.querySelector(indicator).style.display = 'block';
+        }
+    });
+
+    document.addEventListener('htmx:afterRequest', function(evt) {
+        console.log('HTMX after request:', evt.detail); // Debug log
+        // Hide loading states after HTMX requests
+        const indicator = evt.detail.elt.getAttribute('hx-indicator');
+        if (indicator) {
+            document.querySelector(indicator).style.display = 'none';
+        }
+        
+        // Clear the file input after upload
+        if (evt.detail.elt.id === 'upload-form') {
+            $('#pdf-file-input')[0].value = '';
+        }
+    });
+
+    document.addEventListener('htmx:responseError', function(evt) {
+        console.log('HTMX response error:', evt.detail); // Debug log
+        // Handle HTMX errors
+        Swal.fire({
+            icon: 'error',
+            title: 'Request Failed',
+            text: 'Unable to complete the request. Please try again.'
+        });
+    });
+
+    // Listen for custom events triggered by HTMX
+    document.addEventListener('refreshJobs', function(evt) {
+        // Refresh the jobs table when a new upload is successful
+        if ($('#jobs-table-container').length) {
+            htmx.trigger('#jobs-table-container', 'load');
+        }
+    });
+});
+</script>

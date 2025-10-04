@@ -27,11 +27,13 @@ async def schedule_ocr_cleanup_task():
         try:
             logger.info("Starting scheduled OCR cleanup task")
             cleaned_count = await cleanup_expired_files()
-            logger.info(f"OCR cleanup task completed. Cleaned {cleaned_count} expired jobs")
-            
+            logger.info(
+                f"OCR cleanup task completed. Cleaned {cleaned_count} expired jobs"
+            )
+
         except Exception as e:
             logger.error(f"Error in OCR cleanup task: {e}")
-            
+
         # Wait for 1 hour before next cleanup
         await asyncio.sleep(3600)  # 3600 seconds = 1 hour
 
@@ -45,6 +47,6 @@ def start_background_tasks():
         # Create and start the cleanup task
         asyncio.create_task(schedule_ocr_cleanup_task())
         logger.info("OCR background cleanup task started")
-        
+
     except Exception as e:
         logger.error(f"Failed to start OCR background tasks: {e}")

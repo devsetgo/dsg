@@ -1,4 +1,4 @@
-ocrmypdf==16.10.4
+autopep8
 black
 isort
-autopep8
+ocrmypdf==16.10.4

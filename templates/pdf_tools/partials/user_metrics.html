@@ -1,0 +1,49 @@
+<!-- User Jobs Section (for non-admin users) -->
+<div class="row">
+  <div class="col-12">
+    <h3>Your OCR Jobs</h3>
+  </div>
+</div>
+
+<!-- User Metrics -->
+<div class="row">
+  <div class="col-lg-3 col-6">
+    <div class="info-box bg-info">
+      <span class="info-box-icon"><i class="fas fa-file"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Your Total Jobs</span>
+        <span class="info-box-number">{{ user_summary.user_jobs or 0 }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-6">
+    <div class="info-box bg-success">
+      <span class="info-box-icon"><i class="fas fa-check"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Completed</span>
+        <span class="info-box-number">{{ user_summary.user_completed_jobs or 0 }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-6">
+    <div class="info-box bg-danger">
+      <span class="info-box-icon"><i class="fas fa-times"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Failed</span>
+        <span class="info-box-number">{{ user_summary.user_failed_jobs or 0 }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-6">
+    <div class="info-box bg-primary">
+      <span class="info-box-icon"><i class="fas fa-chart-pie"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Success Rate</span>
+        <span class="info-box-number">{{ user_summary.user_success_rate or 0 }}%</span>
+      </div>
+    </div>
+  </div>
+</div>
