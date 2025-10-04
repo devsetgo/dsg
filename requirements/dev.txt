@@ -14,7 +14,7 @@ pre-commit==4.3.0 # Vulnerabilities: None
 pyright==1.1.404 # Vulnerabilities: None
 pytest==8.4.1 # Vulnerabilities: None
 pytest-asyncio==1.1.0 # Vulnerabilities: None
-pytest-cov==6.2.1 # Vulnerabilities: None
+pytest-cov==7.0.0 # Vulnerabilities: None
 pytest-html==4.1.1 # Vulnerabilities: None
 pytest-xdist==3.8.0 # Vulnerabilities: None
 ruff==0.12.11 # Vulnerabilities: None
