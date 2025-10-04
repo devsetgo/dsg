@@ -26,42 +26,54 @@ async def get_ocr_metrics():
         total_jobs = 0
 
     try:
-        completed_jobs = await db_ops.count_query(
-            query=Select(OCRJob).where(OCRJob.status == "completed")
-        ) or 0
+        completed_jobs = (
+            await db_ops.count_query(
+                query=Select(OCRJob).where(OCRJob.status == "completed")
+            )
+            or 0
+        )
     except Exception as e:
         logger.error(f"Error getting completed OCR jobs: {e}")
         completed_jobs = 0
 
     try:
-        failed_jobs = await db_ops.count_query(
-            query=Select(OCRJob).where(OCRJob.status == "failed")
-        ) or 0
+        failed_jobs = (
+            await db_ops.count_query(
+                query=Select(OCRJob).where(OCRJob.status == "failed")
+            )
+            or 0
+        )
     except Exception as e:
         logger.error(f"Error getting failed OCR jobs: {e}")
         failed_jobs = 0
 
     try:
-        processing_jobs = await db_ops.count_query(
-            query=Select(OCRJob).where(OCRJob.status == "processing")
-        ) or 0
+        processing_jobs = (
+            await db_ops.count_query(
+                query=Select(OCRJob).where(OCRJob.status == "processing")
+            )
+            or 0
+        )
     except Exception as e:
         logger.error(f"Error getting processing OCR jobs: {e}")
         processing_jobs = 0
 
     try:
-        unique_users = await db_ops.count_query(
-            query=Select(OCRJob.user_id).distinct()
-        ) or 0
+        unique_users = (
+            await db_ops.count_query(query=Select(OCRJob.user_id).distinct()) or 0
+        )
     except Exception as e:
         logger.error(f"Error getting unique OCR users: {e}")
         unique_users = 0
 
     try:
         yesterday = datetime.utcnow() - timedelta(days=1)
-        recent_jobs = await db_ops.count_query(
-            query=Select(OCRJob).where(OCRJob.date_created >= yesterday)
-        ) or 0
+        recent_jobs = (
+            await db_ops.count_query(
+                query=Select(OCRJob).where(OCRJob.date_created >= yesterday)
+            )
+            or 0
+        )
     except Exception as e:
         logger.error(f"Error getting recent OCR jobs: {e}")
         recent_jobs = 0
@@ -71,28 +83,38 @@ async def get_ocr_metrics():
     total_size_original = 0
     total_size_converted = 0
     avg_processing_time = 0.0
-    
+
     try:
         completed_job_records = await db_ops.read_query(
             query=Select(OCRJob).where(OCRJob.status == "completed")
         )
-        
+
         if completed_job_records and isinstance(completed_job_records, list):
             # Calculate totals using safe attribute access
-            total_pages = sum(getattr(job, 'page_count', 0) or 0 for job in completed_job_records)
-            total_size_original = sum(getattr(job, 'file_size_original', 0) or 0 for job in completed_job_records)
-            total_size_converted = sum(getattr(job, 'file_size_converted', 0) or 0 for job in completed_job_records)
-            
+            total_pages = sum(
+                getattr(job, "page_count", 0) or 0 for job in completed_job_records
+            )
+            total_size_original = sum(
+                getattr(job, "file_size_original", 0) or 0
+                for job in completed_job_records
+            )
+            total_size_converted = sum(
+                getattr(job, "file_size_converted", 0) or 0
+                for job in completed_job_records
+            )
+
             # Calculate average processing time
             processing_times = [
-                getattr(job, 'processing_time', 0) or 0
+                getattr(job, "processing_time", 0) or 0
                 for job in completed_job_records
-                if getattr(job, 'processing_time', None) is not None
+                if getattr(job, "processing_time", None) is not None
             ]
-            
+
             if processing_times:
-                avg_processing_time = round(sum(processing_times) / len(processing_times), 2)
-                
+                avg_processing_time = round(
+                    sum(processing_times) / len(processing_times), 2
+                )
+
     except Exception as e:
         logger.error(f"Error calculating detailed metrics: {e}")
 
@@ -104,8 +126,8 @@ async def get_ocr_metrics():
     space_savings = 0.0
     if total_size_original > 0 and total_size_converted > 0:
         space_savings = round(
-            ((total_size_original - total_size_converted) / total_size_original) * 100, 
-            1
+            ((total_size_original - total_size_converted) / total_size_original) * 100,
+            1,
         )
 
     return {
@@ -120,36 +142,45 @@ async def get_ocr_metrics():
         "recent_jobs": recent_jobs,
         "avg_processing_time": avg_processing_time,
         "success_rate": success_rate,
-        "space_savings": space_savings
+        "space_savings": space_savings,
     }
 
 
 async def get_user_ocr_summary(user_id: str) -> Dict[str, Any]:
     """Get OCR metrics for a specific user"""
     try:
-        user_jobs = await db_ops.count_query(
-            query=Select(OCRJob).where(OCRJob.user_id == user_id)
-        ) or 0
+        user_jobs = (
+            await db_ops.count_query(
+                query=Select(OCRJob).where(OCRJob.user_id == user_id)
+            )
+            or 0
+        )
     except Exception as e:
         logger.error(f"Error getting user jobs count: {e}")
         user_jobs = 0
 
     try:
-        user_completed_jobs = await db_ops.count_query(
-            query=Select(OCRJob).where(
-                and_(OCRJob.user_id == user_id, OCRJob.status == "completed")
+        user_completed_jobs = (
+            await db_ops.count_query(
+                query=Select(OCRJob).where(
+                    and_(OCRJob.user_id == user_id, OCRJob.status == "completed")
+                )
             )
-        ) or 0
+            or 0
+        )
     except Exception as e:
         logger.error(f"Error getting user completed jobs: {e}")
         user_completed_jobs = 0
 
     try:
-        user_failed_jobs = await db_ops.count_query(
-            query=Select(OCRJob).where(
-                and_(OCRJob.user_id == user_id, OCRJob.status == "failed")
+        user_failed_jobs = (
+            await db_ops.count_query(
+                query=Select(OCRJob).where(
+                    and_(OCRJob.user_id == user_id, OCRJob.status == "failed")
+                )
             )
-        ) or 0
+            or 0
+        )
     except Exception as e:
         logger.error(f"Error getting user failed jobs: {e}")
         user_failed_jobs = 0
@@ -163,16 +194,16 @@ async def get_user_ocr_summary(user_id: str) -> Dict[str, Any]:
             .order_by(OCRJob.date_created.desc())
             .limit(10)
         )
-        
+
         if user_recent_jobs_records and isinstance(user_recent_jobs_records, list):
             user_recent_jobs = [
                 {
-                    "job_id": getattr(job, 'job_id', ''),
-                    "original_filename": getattr(job, 'original_filename', ''),
-                    "status": getattr(job, 'status', ''),
-                    "date_created": getattr(job, 'date_created', None),
-                    "page_count": getattr(job, 'page_count', 0),
-                    "processing_time": getattr(job, 'processing_time', 0)
+                    "job_id": getattr(job, "job_id", ""),
+                    "original_filename": getattr(job, "original_filename", ""),
+                    "status": getattr(job, "status", ""),
+                    "date_created": getattr(job, "date_created", None),
+                    "page_count": getattr(job, "page_count", 0),
+                    "processing_time": getattr(job, "processing_time", 0),
                 }
                 for job in user_recent_jobs_records
             ]
@@ -189,7 +220,7 @@ async def get_user_ocr_summary(user_id: str) -> Dict[str, Any]:
         "user_completed_jobs": user_completed_jobs,
         "user_failed_jobs": user_failed_jobs,
         "user_success_rate": user_success_rate,
-        "user_recent_jobs": user_recent_jobs
+        "user_recent_jobs": user_recent_jobs,
     }
 
 
@@ -197,30 +228,29 @@ async def get_recent_ocr_jobs(limit: int = 20) -> List[Dict[str, Any]]:
     """Get recent OCR jobs for admin dashboard"""
     try:
         recent_jobs_records = await db_ops.read_query(
-            query=Select(OCRJob)
-            .order_by(OCRJob.date_created.desc())
-            .limit(limit)
+            query=Select(OCRJob).order_by(OCRJob.date_created.desc()).limit(limit)
         )
-        
+
         if recent_jobs_records and isinstance(recent_jobs_records, list):
             return [
                 {
-                    "job_id": getattr(job, 'job_id', ''),
-                    "user_id": getattr(job, 'user_id', ''),
-                    "original_filename": getattr(job, 'original_filename', ''),
-                    "status": getattr(job, 'status', ''),
-                    "date_created": getattr(job, 'date_created', None),
-                    "date_completed": getattr(job, 'date_completed', None),
-                    "page_count": getattr(job, 'page_count', 0),
-                    "file_size_original": getattr(job, 'file_size_original', 0),
-                    "processing_time": getattr(job, 'processing_time', 0)
+                    "job_id": getattr(job, "job_id", ""),
+                    "user_id": getattr(job, "user_id", ""),
+                    "original_filename": getattr(job, "original_filename", ""),
+                    "status": getattr(job, "status", ""),
+                    "date_created": getattr(job, "date_created", None),
+                    "date_completed": getattr(job, "date_completed", None),
+                    "page_count": getattr(job, "page_count", 0),
+                    "file_size_original": getattr(job, "file_size_original", 0),
+                    "processing_time": getattr(job, "processing_time", 0),
                 }
                 for job in recent_jobs_records
             ]
     except Exception as e:
         logger.error(f"Error getting recent OCR jobs: {e}")
-    
+
     return []
+
 
 from datetime import datetime, timedelta
 from loguru import logger
@@ -268,9 +298,7 @@ async def get_ocr_metrics():
 
     try:
         # Unique users who have used OCR
-        unique_users = await db_ops.count_query(
-            query=Select(OCRJob.user_id).distinct()
-        )
+        unique_users = await db_ops.count_query(query=Select(OCRJob.user_id).distinct())
     except Exception as e:
         logger.error(f"Error getting unique OCR users: {e}")
         unique_users = 0
@@ -330,10 +358,12 @@ async def get_ocr_metrics():
         for job in completed_job_records:
             if job.processing_time is not None:
                 processing_times.append(job.processing_time)
-        
-        avg_processing_time = round(
-            sum(processing_times) / len(processing_times), 2
-        ) if processing_times else 0.0
+
+        avg_processing_time = (
+            round(sum(processing_times) / len(processing_times), 2)
+            if processing_times
+            else 0.0
+        )
     except Exception as e:
         logger.error(f"Error getting average processing time: {e}")
         avg_processing_time = 0.0
@@ -347,8 +377,8 @@ async def get_ocr_metrics():
     space_savings = 0
     if total_size_original > 0 and total_size_converted > 0:
         space_savings = round(
-            ((total_size_original - total_size_converted) / total_size_original) * 100, 
-            1
+            ((total_size_original - total_size_converted) / total_size_original) * 100,
+            1,
         )
 
     return {
@@ -363,7 +393,7 @@ async def get_ocr_metrics():
         "recent_jobs": recent_jobs,
         "avg_processing_time": avg_processing_time,
         "success_rate": success_rate,
-        "space_savings": space_savings
+        "space_savings": space_savings,
     }
 
 
@@ -374,15 +404,15 @@ async def get_user_ocr_summary(user_id: str):
         user_total_jobs = await db_ops.count_query(
             query=Select(OCRJob).where(OCRJob.user_id == user_id)
         )
-        
+
         # User's completed jobs
         user_completed_jobs = await db_ops.count_query(
             query=Select(OCRJob).where(
                 and_(OCRJob.user_id == user_id, OCRJob.status == "completed")
             )
         )
-        
-        # User's failed jobs  
+
+        # User's failed jobs
         user_failed_jobs = await db_ops.count_query(
             query=Select(OCRJob).where(
                 and_(OCRJob.user_id == user_id, OCRJob.status == "failed")
@@ -401,14 +431,14 @@ async def get_user_ocr_summary(user_id: str):
             "user_total_jobs": user_total_jobs,
             "user_completed_jobs": user_completed_jobs,
             "user_failed_jobs": user_failed_jobs,
-            "user_total_pages": user_total_pages
+            "user_total_pages": user_total_pages,
         }
-        
+
     except Exception as e:
         logger.error(f"Error getting user OCR summary: {e}")
         return {
             "user_total_jobs": 0,
             "user_completed_jobs": 0,
             "user_failed_jobs": 0,
-            "user_total_pages": 0
+            "user_total_pages": 0,
         }

@@ -1,0 +1,42 @@
+<!-- DataTables -->
+<link rel="stylesheet" href="{{ url_for('static', path='plugins/datatables-bs4/css/dataTables.bootstrap4.css') }}">
+<!-- SweetAlert2 -->
+<link rel="stylesheet" href="{{ url_for('static', path='plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css') }}">
+<style>
+.upload-zone {
+    border: 2px dashed #007bff;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.upload-zone:hover {
+    border-color: #0056b3;
+    background-color: #e9ecef;
+}
+.upload-zone.dragover {
+    border-color: #28a745;
+    background-color: #d4edda;
+}
+.job-status {
+    font-weight: bold;
+}
+.status-pending { color: #ffc107; }
+.status-processing { color: #17a2b8; }
+.status-completed { color: #28a745; }
+.status-failed { color: #dc3545; }
+.file-info {
+    font-size: 0.9em;
+    color: #6c757d;
+}
+.job-actions {
+    white-space: nowrap;
+}
+.info-box-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>

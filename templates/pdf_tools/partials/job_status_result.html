@@ -1,0 +1,79 @@
+<!-- Job status result partial for HTMX response -->
+{% if job %}
+<div class="alert alert-info">
+    <h5><i class="fas fa-info-circle"></i> Job Status</h5>
+    <div class="row">
+        <div class="col-md-6">
+            <strong>Job ID:</strong> <code>{{ job.job_id }}</code><br>
+            <strong>Filename:</strong> {{ job.original_filename }}<br>
+            <strong>Status:</strong> 
+            {% if job.status == 'completed' %}
+                <span class="badge bg-success">Completed</span>
+            {% elif job.status == 'failed' %}
+                <span class="badge bg-danger">Failed</span>
+            {% elif job.status == 'processing' %}
+                <span class="badge bg-warning">Processing</span>
+            {% else %}
+                <span class="badge bg-secondary">{{ job.status }}</span>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            {% if job.date_created %}
+                <strong>Created:</strong> {{ job.date_created.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+            {% endif %}
+            {% if job.date_completed %}
+                <strong>Completed:</strong> {{ job.date_completed.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+            {% endif %}
+            {% if job.page_count %}
+                <strong>Pages:</strong> {{ job.page_count }}<br>
+            {% endif %}
+            {% if job.processing_time %}
+                <strong>Processing Time:</strong> {{ "%.2f"|format(job.processing_time) }}s<br>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if job.file_size_original or job.file_size_converted %}
+    <div class="row mt-2">
+        <div class="col-12">
+            {% if job.file_size_original %}
+                <strong>Original Size:</strong> {{ job.file_size_original }}<br>
+            {% endif %}
+            {% if job.file_size_converted %}
+                <strong>Converted Size:</strong> {{ job.file_size_converted }}<br>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if job.error_message %}
+    <div class="row mt-2">
+        <div class="col-12">
+            <div class="alert alert-danger">
+                <strong>Error:</strong> {{ job.error_message }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if job.can_download %}
+    <div class="row mt-3">
+        <div class="col-12">
+            <a href="/pdf-tools/ocr/download/{{ job.job_id }}" class="btn btn-success">
+                <i class="fas fa-download"></i> Download Converted PDF
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% elif error %}
+<div class="alert alert-danger">
+    <h5><i class="fas fa-exclamation-triangle"></i> Error</h5>
+    {{ error }}
+</div>
+{% else %}
+<div class="alert alert-warning">
+    <h5><i class="fas fa-question-circle"></i> Job Not Found</h5>
+    The specified job ID was not found. Please check your Job ID and try again.
+</div>
+{% endif %}

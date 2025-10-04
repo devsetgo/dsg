@@ -15,7 +15,7 @@
 
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
-  
+
   {% include "navigation.html" %}
 
   <!-- Content Wrapper -->
@@ -41,7 +41,7 @@
     <!-- Main content -->
     <div class="content">
       <div class="container-fluid">
-        
+
         {% if error %}
         <!-- Error Message -->
         <div class="row">
@@ -55,7 +55,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Try Again Form -->
         <div class="row">
           <div class="col-12">
@@ -68,7 +68,7 @@
                   <div class="form-group">
                     <label for="jobId">Job ID</label>
                     <div class="input-group">
-                      <input type="text" class="form-control" id="jobId" name="job_id" 
+                      <input type="text" class="form-control" id="jobId" name="job_id"
                              placeholder="Enter your OCR job ID" value="{{ job_id if job_id else '' }}" required>
                       <div class="input-group-append">
                         <button type="submit" class="btn btn-primary">
@@ -82,7 +82,7 @@
             </div>
           </div>
         </div>
-        
+
         {% elif job %}
         <!-- Job Status Display -->
         <div class="row">
@@ -97,10 +97,10 @@
                 <dl class="row">
                   <dt class="col-sm-3">Job ID:</dt>
                   <dd class="col-sm-9"><code>{{ job.job_id }}</code></dd>
-                  
+
                   <dt class="col-sm-3">Original Filename:</dt>
                   <dd class="col-sm-9">{{ job.original_filename }}</dd>
-                  
+
                   <dt class="col-sm-3">Status:</dt>
                   <dd class="col-sm-9">
                     {% if job.status == 'completed' %}
@@ -121,7 +121,7 @@
                       </span>
                     {% endif %}
                   </dd>
-                  
+
                   <dt class="col-sm-3">Created:</dt>
                   <dd class="col-sm-9">
                     {% if job.date_created %}
@@ -130,27 +130,27 @@
                       N/A
                     {% endif %}
                   </dd>
-                  
+
                   {% if job.date_completed %}
                   <dt class="col-sm-3">Completed:</dt>
                   <dd class="col-sm-9">{{ job.date_completed.strftime('%Y-%m-%d %H:%M:%S UTC') }}</dd>
                   {% endif %}
-                  
+
                   {% if job.page_count %}
                   <dt class="col-sm-3">Pages:</dt>
                   <dd class="col-sm-9">{{ job.page_count }}</dd>
                   {% endif %}
-                  
+
                   {% if job.file_size_original %}
                   <dt class="col-sm-3">Original Size:</dt>
                   <dd class="col-sm-9">{{ job.file_size_original }}</dd>
                   {% endif %}
-                  
+
                   {% if job.file_size_converted %}
                   <dt class="col-sm-3">Converted Size:</dt>
                   <dd class="col-sm-9">{{ job.file_size_converted }}</dd>
                   {% endif %}
-                  
+
                   {% if job.processing_time %}
                   <dt class="col-sm-3">Processing Time:</dt>
                   <dd class="col-sm-9">{{ "%.2f"|format(job.processing_time) }} seconds</dd>
@@ -179,10 +179,10 @@
                 {% elif job.status == 'processing' %}
                   <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i>
-                    <strong>Processing in Progress:</strong> Your PDF is currently being processed. 
+                    <strong>Processing in Progress:</strong> Your PDF is currently being processed.
                     This page will automatically refresh in 30 seconds to check for updates.
                   </div>
-                  
+
                   <button onclick="location.reload();" class="btn btn-primary">
                     <i class="fas fa-sync-alt"></i> Refresh Status
                   </button>
@@ -196,12 +196,12 @@
                       The OCR processing failed. Please try uploading your PDF again.
                     {% endif %}
                   </div>
-                  
+
                   <a href="/ocr" class="btn btn-primary">
                     <i class="fas fa-upload"></i> Upload Another PDF
                   </a>
                 {% endif %}
-                
+
                 <a href="/ocr" class="btn btn-secondary ml-2">
                   <i class="fas fa-arrow-left"></i> Back to OCR Dashboard
                 </a>
@@ -209,7 +209,7 @@
             </div>
           </div>
         </div>
-        
+
         {% if job.error_message and job.status == 'failed' %}
         <!-- Error Details -->
         <div class="row">
@@ -230,7 +230,7 @@
           </div>
         </div>
         {% endif %}
-        
+
         {% else %}
         <!-- Default state - should not happen but just in case -->
         <div class="row">

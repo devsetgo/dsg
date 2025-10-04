@@ -1,0 +1,100 @@
+<!-- Admin View: Metrics Section -->
+<div class="row">
+  <div class="col-12">
+    <h3>System Metrics</h3>
+  </div>
+</div>
+
+<!-- Metrics Info Boxes -->
+<div class="row">
+  <!-- Total Jobs -->
+  <div class="col-lg-3 col-6">
+    <div class="info-box bg-info">
+      <span class="info-box-icon"><i class="fas fa-file-pdf"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Total OCR Jobs</span>
+        <span class="info-box-number">{{ ocr_metrics.total_jobs or 0 }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completed Jobs -->
+  <div class="col-lg-3 col-6">
+    <div class="info-box bg-success">
+      <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Completed Jobs</span>
+        <span class="info-box-number">{{ ocr_metrics.completed_jobs or 0 }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Failed Jobs -->
+  <div class="col-lg-3 col-6">
+    <div class="info-box bg-danger">
+      <span class="info-box-icon"><i class="fas fa-times-circle"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Failed Jobs</span>
+        <span class="info-box-number">{{ ocr_metrics.failed_jobs or 0 }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Processing Jobs -->
+  <div class="col-lg-3 col-6">
+    <div class="info-box bg-warning">
+      <span class="info-box-icon"><i class="fas fa-cog fa-spin"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Processing Jobs</span>
+        <span class="info-box-number">{{ ocr_metrics.processing_jobs or 0 }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Additional Metrics -->
+<div class="row">
+  <!-- Unique Users -->
+  <div class="col-lg-3 col-6">
+    <div class="info-box bg-primary">
+      <span class="info-box-icon"><i class="fas fa-users"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Unique Users</span>
+        <span class="info-box-number">{{ ocr_metrics.unique_users or 0 }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Pages -->
+  <div class="col-lg-3 col-6">
+    <div class="info-box bg-secondary">
+      <span class="info-box-icon"><i class="fas fa-file-alt"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Pages Processed</span>
+        <span class="info-box-number">{{ ocr_metrics.total_pages or 0 }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Rate -->
+  <div class="col-lg-3 col-6">
+    <div class="info-box bg-teal">
+      <span class="info-box-icon"><i class="fas fa-chart-line"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Success Rate</span>
+        <span class="info-box-number">{{ ocr_metrics.success_rate or 0 }}%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Space Savings -->
+  <div class="col-lg-3 col-6">
+    <div class="info-box bg-indigo">
+      <span class="info-box-icon"><i class="fas fa-compress-alt"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Space Savings</span>
+        <span class="info-box-number">{{ ocr_metrics.space_savings or 0 }}%</span>
+      </div>
+    </div>
+  </div>
+</div>

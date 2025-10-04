@@ -1,0 +1,19 @@
+<!-- Upload result partial for HTMX response -->
+{% if success %}
+<div class="alert alert-success alert-dismissible">
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+    <h5><i class="fas fa-check"></i> Upload Successful!</h5>
+    <strong>Job ID:</strong> <code>{{ job_id }}</code><br>
+    <strong>Filename:</strong> {{ original_filename }}<br>
+    {% if file_size %}
+        <strong>File Size:</strong> {{ file_size }}<br>
+    {% endif %}
+    <p class="mt-2">Your PDF has been uploaded and OCR processing has started. You can check the status using the Job ID above or monitor the jobs table below.</p>
+</div>
+{% elif error %}
+<div class="alert alert-danger alert-dismissible">
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+    <h5><i class="fas fa-exclamation-triangle"></i> Upload Failed</h5>
+    {{ error }}
+</div>
+{% endif %}
