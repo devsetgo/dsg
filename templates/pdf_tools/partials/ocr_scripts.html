@@ -30,14 +30,14 @@ $(document).ready(function() {
         console.log('File input changed'); // Debug log
         const file = this.files[0];
         console.log('Selected file:', file); // Debug log
-        
+
         if (file) {
             console.log('File details:', {
                 name: file.name,
                 type: file.type,
                 size: file.size
             });
-            
+
             if (!validateFile(file)) {
                 // Clear the input if validation fails
                 this.value = '';
@@ -72,13 +72,13 @@ $(document).ready(function() {
         if (files.length > 0) {
             const file = files[0];
             console.log('File dropped:', file); // Debug log
-            
+
             if (validateFile(file)) {
                 // Set the file to the input - this will trigger the change event and HTMX upload
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 fileInput[0].files = dataTransfer.files;
-                
+
                 // Manually trigger the change event to ensure HTMX processes it
                 fileInput.trigger('change');
             }
@@ -125,7 +125,7 @@ $(document).ready(function() {
         if (indicator) {
             document.querySelector(indicator).style.display = 'none';
         }
-        
+
         // Clear the file input after upload
         if (evt.detail.elt.id === 'upload-form') {
             $('#pdf-file-input')[0].value = '';
