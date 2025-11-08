@@ -6,9 +6,9 @@
       <div class="card-header">
         <h3 class="card-title">Your Recent Jobs</h3>
         <div class="card-tools">
-          <button type="button" class="btn btn-sm btn-outline-primary" 
-                  hx-get="/pdf-tools/ocr/user/recent-jobs" 
-                  hx-target="#user-recent-jobs-container" 
+          <button type="button" class="btn btn-sm btn-outline-primary"
+                  hx-get="/pdf-tools/ocr/user/recent-jobs"
+                  hx-target="#user-recent-jobs-container"
                   hx-indicator="#user-recent-loading">
             <i class="fas fa-sync-alt"></i> Refresh
           </button>
@@ -19,7 +19,7 @@
         <div id="user-recent-loading" class="text-center" style="display: none;">
           <i class="fas fa-spinner fa-spin"></i> Loading recent jobs...
         </div>
-        
+
         <!-- User recent jobs container -->
         <div id="user-recent-jobs-container">
           <div class="table-responsive">

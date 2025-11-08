@@ -112,17 +112,25 @@ async def upload_pdf_for_ocr(
             error_msg = "No filename provided"
             if hx_request:
                 context = {"request": request, "error": error_msg}
-                return templates.TemplateResponse("pdf_tools/partials/upload_result.html", context)
+                return templates.TemplateResponse(
+                    "pdf_tools/partials/upload_result.html", context
+                )
             else:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_msg)
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail=error_msg
+                )
 
         if not pdf_file.filename.lower().endswith(".pdf"):
             error_msg = "Only PDF files are allowed"
             if hx_request:
                 context = {"request": request, "error": error_msg}
-                return templates.TemplateResponse("pdf_tools/partials/upload_result.html", context)
+                return templates.TemplateResponse(
+                    "pdf_tools/partials/upload_result.html", context
+                )
             else:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_msg)
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail=error_msg
+                )
 
         # Check file size (limit to 50MB)
         content = await pdf_file.read()
@@ -130,9 +138,14 @@ async def upload_pdf_for_ocr(
             error_msg = "File size exceeds 50MB limit"
             if hx_request:
                 context = {"request": request, "error": error_msg}
-                return templates.TemplateResponse("pdf_tools/partials/upload_result.html", context)
+                return templates.TemplateResponse(
+                    "pdf_tools/partials/upload_result.html", context
+                )
             else:
-                raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=error_msg)
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail=error_msg,
+                )
 
         # Reset file pointer and validate PDF content
         await pdf_file.seek(0)
@@ -140,9 +153,13 @@ async def upload_pdf_for_ocr(
             error_msg = "Invalid PDF file"
             if hx_request:
                 context = {"request": request, "error": error_msg}
-                return templates.TemplateResponse("pdf_tools/partials/upload_result.html", context)
+                return templates.TemplateResponse(
+                    "pdf_tools/partials/upload_result.html", context
+                )
             else:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_msg)
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail=error_msg
+                )
 
         # Reset file pointer for processing
         await pdf_file.seek(0)
@@ -167,7 +184,9 @@ async def upload_pdf_for_ocr(
                 "file_size": format_file_size(job_info["file_size"]),
             }
             # Trigger refresh of jobs table after successful upload
-            response = templates.TemplateResponse("pdf_tools/partials/upload_result.html", context)
+            response = templates.TemplateResponse(
+                "pdf_tools/partials/upload_result.html", context
+            )
             response.headers["HX-Trigger"] = "refreshJobs"
             return response
         else:
@@ -187,13 +206,17 @@ async def upload_pdf_for_ocr(
             raise
         # Convert HTTPException to HTML response for HTMX
         context = {"request": request, "error": "Upload failed. Please try again."}
-        return templates.TemplateResponse("pdf_tools/partials/upload_result.html", context)
+        return templates.TemplateResponse(
+            "pdf_tools/partials/upload_result.html", context
+        )
     except Exception as e:
         logger.error(f"Error uploading PDF for OCR: {e}")
         error_msg = "Failed to process PDF upload"
         if hx_request:
             context = {"request": request, "error": error_msg}
-            return templates.TemplateResponse("pdf_tools/partials/upload_result.html", context)
+            return templates.TemplateResponse(
+                "pdf_tools/partials/upload_result.html", context
+            )
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -202,7 +225,9 @@ async def upload_pdf_for_ocr(
 
 
 @router.get("/ocr/admin/recent-jobs", response_class=HTMLResponse)
-async def get_admin_recent_jobs(request: Request, user_info: dict = Depends(check_login)):
+async def get_admin_recent_jobs(
+    request: Request, user_info: dict = Depends(check_login)
+):
     """HTMX endpoint for admin recent jobs table"""
     if not user_info.get("is_admin"):
         raise HTTPException(
@@ -245,9 +270,7 @@ async def get_user_jobs_htmx(request: Request, user_info: dict = Depends(check_l
         )
     except Exception as e:
         logger.error(f"Error getting user jobs: {e}")
-        return HTMLResponse(
-            '<div class="alert alert-danger">Failed to load jobs</div>'
-        )
+        return HTMLResponse('<div class="alert alert-danger">Failed to load jobs</div>')
 
 
 @router.post("/ocr/status", response_class=HTMLResponse)
@@ -324,7 +347,9 @@ async def check_ocr_status_htmx(request: Request):
 
 
 @router.get("/ocr/user/recent-jobs", response_class=HTMLResponse)
-async def get_user_recent_jobs(request: Request, user_info: dict = Depends(check_login)):
+async def get_user_recent_jobs(
+    request: Request, user_info: dict = Depends(check_login)
+):
     """HTMX endpoint for user recent jobs"""
     user_id = user_info["user_identifier"]
 

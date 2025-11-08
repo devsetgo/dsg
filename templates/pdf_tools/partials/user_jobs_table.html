@@ -5,9 +5,9 @@
             <div class="card-header">
                 <h3 class="card-title">Your OCR Jobs</h3>
                 <div class="card-tools">
-                    <button type="button" class="btn btn-sm btn-primary" 
-                            hx-get="/pdf-tools/ocr/jobs" 
-                            hx-target="#jobs-table-container" 
+                    <button type="button" class="btn btn-sm btn-primary"
+                            hx-get="/pdf-tools/ocr/jobs"
+                            hx-target="#jobs-table-container"
                             hx-indicator="#jobs-loading"
                             id="refresh-jobs">
                         <i class="fas fa-sync-alt"></i> Refresh
@@ -19,11 +19,11 @@
                 <div id="jobs-loading" class="text-center" style="display: none;">
                     <i class="fas fa-spinner fa-spin"></i> Loading jobs...
                 </div>
-                
+
                 <!-- Jobs table container -->
-                <div id="jobs-table-container" 
-                     hx-get="/pdf-tools/ocr/jobs" 
-                     hx-trigger="load, every 30s, refreshJobs from:body" 
+                <div id="jobs-table-container"
+                     hx-get="/pdf-tools/ocr/jobs"
+                     hx-trigger="load, every 30s, refreshJobs from:body"
                      hx-indicator="#jobs-loading">
                     <table class="table table-striped table-hover" id="jobs-table">
                         <thead>
