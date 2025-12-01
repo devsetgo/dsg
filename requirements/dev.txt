@@ -10,7 +10,7 @@ isort==6.0.1 # Vulnerabilities: None
 mkdocs-gen-files==0.5.0 # Vulnerabilities: None
 mkdocs-material==9.6.18 # Vulnerabilities: None
 mkdocstrings[python]==0.30.0 # Vulnerabilities: None
-pre-commit==4.3.0 # Vulnerabilities: None
+pre-commit==4.5.0 # Vulnerabilities: None
 pyright==1.1.405 # Vulnerabilities: None
 pytest==8.4.2 # Vulnerabilities: None
 pytest-asyncio==1.1.0 # Vulnerabilities: None
