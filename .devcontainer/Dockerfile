@@ -3,9 +3,12 @@ FROM mcr.microsoft.com/devcontainers/python:1-3.13
 ENV PYTHONUNBUFFERED 1
 
 # Install Docker CLI
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends docker.io \
-    && rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    rm -f /etc/apt/sources.list.d/yarn.list /etc/apt/sources.list.d/yarn*.list || true; \
+    apt-get update; \
+    export DEBIAN_FRONTEND=noninteractive; \
+    apt-get -y install --no-install-recommends docker.io; \
+    rm -rf /var/lib/apt/lists/*
 
 # Use the Docker group ID from the host machine
 ARG DOCKER_GID=1001
