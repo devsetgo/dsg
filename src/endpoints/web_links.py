@@ -47,8 +47,8 @@ from sqlalchemy import Select, asc, func, or_
 
 from ..db_tables import Categories, WebLinks
 from ..functions import ai, date_functions, link_import, link_preview
-from ..functions.youtube_helper import extract_youtube_video_id, is_youtube_url
 from ..functions.login_required import check_login
+from ..functions.youtube_helper import extract_youtube_video_id, is_youtube_url
 from ..resources import db_ops, templates
 
 router = APIRouter()
@@ -118,7 +118,7 @@ async def bulk_weblink(
 async def get_categories():
     categories = await db_ops.read_query(
         Select(Categories)
-        .where(Categories.is_weblink == True)
+        .where(Categories.is_weblink)
         .order_by(asc(func.lower(Categories.name)))
     )
     cat_list = [cat.to_dict()["name"] for cat in categories]
@@ -298,12 +298,14 @@ async def view_weblink(
     if user_timezone is None:
         user_timezone = "America/New_York"
 
-    link_obj = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
-    
+    link_obj = await db_ops.read_one_record(
+        Select(WebLinks).where(WebLinks.pkid == pkid)
+    )
+
     # Store the is_youtube property before converting to dict
     link_is_youtube = link_obj.is_youtube
     link = link_obj.to_dict()
-    
+
     # Add the is_youtube property to the dictionary
     link["is_youtube"] = link_is_youtube
 
@@ -403,7 +405,7 @@ async def get_update_comment(
     # Get categories for the dropdown
     categories = await db_ops.read_query(
         Select(Categories)
-        .where(Categories.is_weblink == True)
+        .where(Categories.is_weblink)
         .order_by(asc(func.lower(Categories.name)))
     )
     cat_list = [cat.to_dict()["name"] for cat in categories]

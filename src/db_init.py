@@ -28,14 +28,14 @@ from .settings import settings
 
 if str(settings.db_driver.value).startswith(
     "sqlite+aiosqlite:///:memory:?cache=shared"
-):
+):  # no pragma: no cover
     db_uri: str = settings.db_driver.value
-elif settings.db_driver.value == "sqlite+aiosqlite":
+elif settings.db_driver.value == "sqlite+aiosqlite":  # no pragma: no cover
     db_name = settings.db_name.get_secret_value()
-    if "." not in db_name:
+    if "." not in db_name:  # no pragma: no cover
         db_name = f"{db_name}.db"
     db_uri: str = f"{settings.db_driver.value}:///sqlite_db/{db_name}"
-else:
+else:  # no pragma: no cover
     db_username = settings.db_username.get_secret_value()
     db_password = settings.db_password.get_secret_value()
     db_name = settings.db_name.get_secret_value()

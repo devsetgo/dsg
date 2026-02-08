@@ -1,0 +1,32 @@
+<!-- Recent Jobs Table for Admin -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Recent OCR Jobs</h3>
+        <div class="card-tools">
+          <button type="button" class="btn btn-sm btn-outline-primary"
+                  hx-get="/pdf-tools/ocr/admin/recent-jobs"
+                  hx-target="#recent-jobs-container"
+                  hx-indicator="#recent-jobs-loading">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Loading indicator -->
+        <div id="recent-jobs-loading" class="text-center" style="display: none;">
+          <i class="fas fa-spinner fa-spin"></i> Loading recent jobs...
+        </div>
+
+        <!-- Recent jobs container -->
+        <div id="recent-jobs-container"
+             hx-get="/pdf-tools/ocr/admin/recent-jobs"
+             hx-trigger="load, every 60s"
+             hx-indicator="#recent-jobs-loading">
+          {% include "pdf_tools/partials/recent_jobs_table_data.html" %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

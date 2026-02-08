@@ -17,4 +17,4 @@ pytest-asyncio==1.1.0 # Vulnerabilities: None
 pytest-cov==7.0.0 # Vulnerabilities: None
 pytest-html==4.1.1 # Vulnerabilities: None
 pytest-xdist==3.8.0 # Vulnerabilities: None
-ruff==0.12.11 # Vulnerabilities: None
+ruff==0.15.0 # From 0.12.11 | Vulnerabilities: None

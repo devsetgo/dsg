@@ -22,6 +22,7 @@ from nameparser import HumanName
 from openai import AsyncOpenAI
 
 from src.settings import settings
+
 from ._names import names
 
 client = AsyncOpenAI(
@@ -37,21 +38,23 @@ timeout = 10
 temperature = 0.2
 
 
-def get_model_temperature(model: str, requested_temperature: Optional[float] = None) -> float:
+def get_model_temperature(
+    model: str, requested_temperature: Optional[float] = None
+) -> float:
     """
     Get the appropriate temperature for the given model.
-    
+
     Args:
         model (str): The OpenAI model name
         requested_temperature (Optional[float], optional): The requested temperature
-        
+
     Returns:
         float: The temperature to use for the model
     """
     # gpt-5-nano only supports temperature = 1 (default)
     if model == "gpt-5-nano":
         return 1.0
-    
+
     # For other models, use requested temperature or default
     return requested_temperature if requested_temperature is not None else temperature
 
@@ -455,7 +458,7 @@ async def get_url_summary(
     logger.info("Starting get_url_summary function")
 
     # Check if it's a YouTube URL and handle it specially
-    from ..functions.youtube_helper import is_youtube_url, get_youtube_summary
+    from ..functions.youtube_helper import get_youtube_summary, is_youtube_url
 
     if is_youtube_url(url):
         logger.info("Detected YouTube URL, using YouTube-specific handler")
@@ -505,7 +508,7 @@ async def get_url_title(
     logger.info("Starting get_url_title function")
 
     # Check if it's a YouTube URL and handle it specially
-    from ..functions.youtube_helper import is_youtube_url, get_youtube_title
+    from ..functions.youtube_helper import get_youtube_title, is_youtube_url
 
     if is_youtube_url(url):
         logger.info("Detected YouTube URL, using YouTube-specific handler")

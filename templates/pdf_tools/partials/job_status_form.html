@@ -1,0 +1,37 @@
+<!-- Job Status Check Form (for all users) -->
+<div class="row">
+  <div class="col-12">
+    <div class="card card-secondary">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-search"></i> Check Job Status / Download
+        </h3>
+      </div>
+      <div class="card-body">
+        <form hx-post="/pdf-tools/ocr/status" hx-target="#status-results" hx-indicator="#status-loading" id="statusCheckForm">
+          <div class="form-group">
+            <label for="jobId">Job ID</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="jobId" name="job_id"
+                     placeholder="Enter your OCR job ID" required>
+              <div class="input-group-append">
+                <button type="submit" class="btn btn-secondary">
+                  <i class="fas fa-search"></i> Check Status
+                </button>
+              </div>
+            </div>
+            <small class="form-text text-muted">You received this ID when you uploaded your PDF</small>
+          </div>
+        </form>
+
+        <!-- Loading indicator -->
+        <div id="status-loading" class="text-center" style="display: none;">
+          <i class="fas fa-spinner fa-spin"></i> Checking status...
+        </div>
+
+        <!-- Results container -->
+        <div id="status-results" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+</div>

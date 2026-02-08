@@ -22,7 +22,7 @@ Functions:
 Usage:
     This module is intended to be imported and used by other parts of the application, particularly where blog post management functionality is required. It provides a clear API for interacting with blog post data.
 """
-from datetime import datetime
+from datetime import datetime, UTC
 
 # from pytz import timezone, UTC
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, Request
@@ -64,9 +64,7 @@ async def list_of_posts(
 @router.get("/categories", response_class=JSONResponse)
 async def get_categories():
     categories = await db_ops.read_query(
-        Select(Categories)
-        .where(Categories.is_post == True)
-        .order_by(asc(Categories.name))
+        Select(Categories).where(Categories.is_post).order_by(asc(Categories.name))
     )
     try:
         cat_list = [cat.to_dict()["name"] for cat in categories]
@@ -183,7 +181,7 @@ async def update_post(
     form = await request.form()
     print(form)
     # Initialize the updated data dictionary with the current date and time
-    updated_data = {"date_updated": datetime.utcnow()}
+    updated_data = {"date_updated": datetime.now(UTC)}
 
     # List of fields to update
     fields = ["mood", "content", "tags", "summary", "mood_analysis"]

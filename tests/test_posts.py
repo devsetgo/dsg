@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 
 
 class TestPosts:
@@ -85,7 +87,7 @@ class TestPosts:
         mock_post_obj = MagicMock()
         mock_post_obj.to_dict.return_value = mock_post
         mock_db_ops.read_one_record = AsyncMock(return_value=mock_post_obj)
-        mock_user_name = AsyncMock(return_value="Test User")
+        AsyncMock(return_value="Test User")
 
         with patch(
             "src.endpoints.blog_posts.date_functions.timezone_update",
