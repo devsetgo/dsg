@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block page_title %}| OCR PDF Converter{% endblock %}
+{% block page_breadcrumb %}PDF Tools / OCR{% endblock %}
+{% block page_head_title %}OCR PDF Converter{% endblock %}
+
+{% block page_stylesheet %}
+{% include "pdf_tools/partials/ocr_styles.html" %}
+{% endblock %}
+
+{% block body %}
+<section class="content">
+    <div class="container-fluid">
+
+        {% if user_info.get("is_admin") %}
+        {% include "pdf_tools/partials/admin_metrics.html" %}
+        {% include "pdf_tools/partials/recent_jobs_table.html" %}
+        {% endif %}
+
+        {% include "pdf_tools/partials/upload_form.html" %}
+
+        {% if not user_info.get("is_admin") %}
+        {% include "pdf_tools/partials/user_metrics.html" %}
+        {% endif %}
+
+        {% include "pdf_tools/partials/job_status_form.html" %}
+
+        {% include "pdf_tools/partials/user_jobs_table.html" %}
+
+        {% if not user_info.get("is_admin") %}
+        {% include "pdf_tools/partials/user_recent_jobs.html" %}
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}
+
+{% block page_javascript %}
+{% include "pdf_tools/partials/ocr_scripts.html" %}
+{% endblock %}

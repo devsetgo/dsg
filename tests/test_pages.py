@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 
 
 class TestPages:
@@ -56,10 +57,8 @@ class TestPages:
     @patch("src.functions.github.call_github_user")
     async def test_about_page(self, mock_user, mock_repos, client):
         """Test about page with GitHub data."""
-        mock_repos = AsyncMock(
-            return_value=[{"name": "test-repo", "description": "Test"}]
-        )
-        mock_user = AsyncMock(return_value={"login": "testuser", "name": "Test User"})
+        AsyncMock(return_value=[{"name": "test-repo", "description": "Test"}])
+        AsyncMock(return_value={"login": "testuser", "name": "Test User"})
 
         response = client.get("/pages/about")
         assert response.status_code == 200
@@ -87,10 +86,10 @@ class TestPages:
     @pytest.mark.asyncio
     async def test_about_standalone(self, client):
         """Test about page standalone."""
-        with patch("src.functions.github.call_github_repos") as mock_repos:
-            with patch("src.functions.github.call_github_user") as mock_user:
-                mock_repos = AsyncMock(return_value=[])
-                mock_user = AsyncMock(return_value={"login": "test"})
+        with patch("src.functions.github.call_github_repos"):
+            with patch("src.functions.github.call_github_user"):
+                AsyncMock(return_value=[])
+                AsyncMock(return_value={"login": "test"})
                 response = client.get("/pages/about")
                 assert response.status_code == 200
 

@@ -597,7 +597,9 @@ async def add_posts():
         ):
             rand_cat = random.randint(0, len(cat_list) - 1)
             tags = [silly.noun() for _ in range(random.randint(2, 5))]
-            date_created = datetime.now(timezone.utc) - timedelta(days=random.randint(1, 700))
+            date_created = datetime.now(timezone.utc) - timedelta(
+                days=random.randint(1, 700)
+            )
             post = Posts(
                 title=silly.sentence(),
                 content=silly.markdown(length=random.randint(30, 60)),

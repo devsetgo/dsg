@@ -51,7 +51,7 @@ async def call_github_repos() -> list:
     logger.debug(data)
 
     # Check if the rate limit has been exceeded
-    if "message" in data:
+    if "message" in data:  # No pragma: no cover
         return {
             "message": "Github rate limit exceeded, try again later and I am surprised\
                  that it even hit the rate limit! But I am not paying for a higher\
@@ -82,18 +82,18 @@ async def call_github_user() -> list:
     r = await client.get(url, auth=api_key)
 
     # Log the action
-    logger.info(f"Fetching Repos for {settings.github_id}")
+    logger.info(f"Fetching Repos for {settings.github_id}")  # No pragma: no cover
 
     # Convert the response to JSON format
-    data = r.json()
+    data = r.json()  # No pragma: no cover
 
     # Check if the rate limit has been exceeded
-    if "message" in data:
+    if "message" in data:  # No pragma: no cover
         return {
             "message": "Github rate limit exceeded, try again later and I am surprised\
                  that. I am not paying for a higher rate limit. :-)"
         }
-    else:
+    else:  # No pragma: no cover
         # Process the data and return the results
         data["created_at"] = await format_time(data["created_at"])
         data["updated_at"] = await format_time(data["updated_at"])

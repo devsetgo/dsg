@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 
 class TestAIFunctions:
@@ -82,7 +83,7 @@ class TestHashFunctions:
 
         # Invalid password (too short)
         invalid = check_password_complexity("short")
-        assert invalid != True
+        assert invalid != True  # Should return error message, not True
 
 
 class TestDateFunctions:
@@ -136,8 +137,9 @@ class TestLoginRequired:
     @pytest.mark.asyncio
     async def test_check_user_identifier_invalid(self):
         """Test invalid user identifier check."""
-        from src.functions.login_required import check_user_identifier
         from fastapi import HTTPException
+
+        from src.functions.login_required import check_user_identifier
 
         mock_request = MagicMock()
         mock_request.session.get.return_value = None
@@ -163,8 +165,9 @@ class TestLoginRequired:
     @pytest.mark.asyncio
     async def test_check_session_expiry_expired(self):
         """Test expired session check."""
-        from src.functions.login_required import check_session_expiry
         from fastapi import HTTPException
+
+        from src.functions.login_required import check_session_expiry
 
         mock_request = MagicMock()
         # Set expiry to past

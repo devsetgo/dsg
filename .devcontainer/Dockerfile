@@ -3,9 +3,12 @@ FROM mcr.microsoft.com/devcontainers/python:1-3.13
 ENV PYTHONUNBUFFERED 1
 
 # Install Docker CLI
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends docker.io \
-    && rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    rm -f /etc/apt/sources.list.d/yarn.list /etc/apt/sources.list.d/yarn*.list || true; \
+    apt-get update; \
+    export DEBIAN_FRONTEND=noninteractive; \
+    apt-get -y install --no-install-recommends docker.io; \
+    rm -rf /var/lib/apt/lists/*
 
 # Use the Docker group ID from the host machine
 ARG DOCKER_GID=1001
@@ -34,6 +37,14 @@ RUN CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_
     && wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
     && unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/ \
     && rm /tmp/chromedriver.zip
+
+# Install all required dependencies for ocrmypdf functionality
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+	&& apt-get -y install --no-install-recommends \
+		tesseract-ocr \
+		unpaper \
+		ghostscript \
+	&& apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # [Optional] If your requirements rarely change, uncomment this section to add them to the image.
 # COPY requirements.txt /tmp/pip-tmp/
