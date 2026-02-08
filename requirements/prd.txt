@@ -6,7 +6,7 @@ devsetgo-lib[all]==2025.8.9.1 # Vulnerabilities: None
 email-validator==2.3.0 # From 2.2.0 | Vulnerabilities: None
 fastapi[all]==0.118.0 # Vulnerabilities: None
 fastapi-sso==0.18.0 # Vulnerabilities: None
-granian==2.5.1 # From 2.5.0 | Vulnerabilities: None
+granian==2.7.0 # From 2.5.0 | Vulnerabilities: None
 httpx-auth==0.23.1 # Vulnerabilities: None
 Markdown==3.10.1 # From 3.8.2 | Vulnerabilities: None
 nameparser==1.1.3 # Vulnerabilities: None
