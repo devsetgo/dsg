@@ -4,6 +4,7 @@
 REPONAME = dsg
 APP_VERSION = 2025-08-31-006
 
+
 # Python Configuration
 PYTHON = python3
 PIP = $(PYTHON) -m pip
