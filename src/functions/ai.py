@@ -292,7 +292,7 @@ async def get_summary(
     logger.info("Starting get_summary function")
 
     # Create the prompt for the OpenAI API
-    prompt = f"Please summarize the content and provide {sentence_length} concise sentence in length and it cannot contain any persons name"
+    prompt = f"Create a very brief {sentence_length}-sentence title-style summary. Use only 3-6 words maximum. Focus on the main topic only, avoid detailed explanations. No person names allowed."
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
@@ -417,8 +417,8 @@ async def analyze_post(content: str, temperature: float = temperature) -> dict:
     # Get the tags from the content
     tags = await get_tags(content=content)
 
-    # Get a two-sentence summary of the content
-    summary = await get_summary(content=content, sentence_length=2)
+    # Get a very brief summary of the content
+    summary = await get_summary(content=content, sentence_length=1)
 
     # Analyze the mood of the content
     mood_analysis = await get_mood_analysis(content=content)
@@ -442,7 +442,7 @@ async def analyze_post(content: str, temperature: float = temperature) -> dict:
 
 
 async def get_url_summary(
-    url: str, temperature: float = temperature, sentence_length: int = 2
+    url: str, temperature: float = temperature, sentence_length: int = 1
 ) -> Dict[str, str]:
     """
     Gets a summary of the given URL using the OpenAI API.
@@ -465,7 +465,7 @@ async def get_url_summary(
         return await get_youtube_summary(url, sentence_length)
 
     # Create the prompt for the OpenAI API
-    prompt = f"Please summarize the URL and provide {sentence_length} concise sentence(s) in length as a summary for the URL"
+    prompt = f"Create a very brief {sentence_length}-word title for this URL. Use only 3-6 words maximum. Focus on the main topic only."
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
