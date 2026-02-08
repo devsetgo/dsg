@@ -1,7 +1,7 @@
 [project]
 name = "dsg"
-version = "2025-09-22-001"
-requires-python = ">=3.13"
+version = "2025-11-08-001"
+requires-python = ">=3.12"
 description = "DevSetGo website"
 readme = "README.md"
 classifiers = [ "License :: OSI Approved :: MIT License", "Programming Language :: Python", "Programming Language :: Python :: 3.13", "Operating System :: POSIX :: Linux", "Operating System :: POSIX",]
