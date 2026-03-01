@@ -6,7 +6,7 @@ bumpcalver==2025.10.11.2 # From 2025.8.2.3 | Vulnerabilities: None
 calver==2025.10.20 # Vulnerabilities: None
 coverage-badge==1.1.2 # Vulnerabilities: None
 genbadge[all]==1.1.2 # Vulnerabilities: None
-isort==6.0.1 # Vulnerabilities: None
+isort==8.0.1 # Vulnerabilities: None
 mkdocs-gen-files==0.6.0 # Vulnerabilities: None
 mkdocs-material==9.7.1 # Vulnerabilities: None
 mkdocstrings[python]==1.0.2 # Vulnerabilities: None
