@@ -43,6 +43,7 @@ Routes:
 import csv
 import io
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 # from pytz import timezone, UTC
 from fastapi import (
@@ -703,7 +704,7 @@ async def read_today_notes(
     logger.info(f"Found {len(notes)} notes for user {user_identifier}")
 
     # get the user's timezone
-    user_tz = timezone(user_timezone)
+    user_tz = ZoneInfo(user_timezone)
 
     # convert the UTC datetime to the user's timezone
     today_user_tz = today.astimezone(user_tz)
