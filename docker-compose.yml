@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
   devsetgoMain:
-    image: mikeryan56/dsg:2024-09-22-001
+    image: mikeryan56/dsg:2025-11-08-001
     env_file:
       - .env
     restart: always
@@ -12,25 +12,29 @@ services:
       - web
       - postrgresql_db_network
     labels:
-      - "traefik.http.middlewares.dsg-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.dsg-main-https.redirectscheme.scheme=https"
       #### Labels define the behavior and rules of the traefik proxy for this container ####
       - "traefik.enable=true" # <== Enable traefik to proxy this container
-      - "traefik.http.routers.dsg-main-web.rule=Host(`devsetgo.com`)" # <== Your Domain Name goes here for the http rule
+      - "traefik.http.routers.dsg-main-web.rule=Host(`www.devsetgo.com`) || Host(`devsetgo.com`)" # <== Your Domain Name goes here for the http rule
       - "traefik.http.routers.dsg-main-web.entrypoints=web" # <== Defining the entrypoint for http, **ref: line 30
       - "traefik.http.routers.dsg-main-web.middlewares=redirect@file" # <== This is a middleware to redirect to https
-      - "traefik.http.routers.dsg-main-secured.rule=Host(`devsetgo.com`)" # <== Your Domain Name for the https rule
+      - "traefik.http.routers.dsg-main-secured.rule=Host(`www.devsetgo.com`) || Host(`devsetgo.com`)" # <== Your Domain Name for the https rule 
       - "traefik.http.routers.dsg-main-secured.entrypoints=web-secured" # <== Defining entrypoint for https, **ref: line 31
       - "traefik.http.routers.dsg-main-secured.tls.certresolver=mytlschallenge" # <== Defining certsresolvers for https
+      # Traefik v3 explicit service definitions
+      - "traefik.http.services.dsg-main.loadbalancer.server.port=5000"
+      - "traefik.http.routers.dsg-main-web.service=dsg-main"
+      - "traefik.http.routers.dsg-main-secured.service=dsg-main"
 
     volumes:
       - log-volume:/app/log
-    deploy:
-      replicas: 2
-      update_config:
-        parallelism: 1
-        delay: 30s
-      restart_policy:
-        condition: on-failure
+    # deploy:
+    #   replicas: 2
+    #   update_config:
+    #     parallelism: 1
+    #     delay: 30s
+    #   restart_policy:
+    #     condition: on-failure
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:5000/api/health/status || exit 1"]
       interval: 1m30s
@@ -43,7 +47,7 @@ networks:
     external: true
 
 volumes:
-  devsetgo_main:
+  devsetgoMain:
     external: false
   log-volume:
     driver: local
