@@ -33,6 +33,8 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from .settings import settings
+
 from .endpoints import (
     admin,
     blog_posts,
@@ -242,9 +244,9 @@ def create_routes(app: FastAPI) -> NoReturn:
 
     # This should always be the last route added to keep it at the bottom of the OpenAPI docs
     config_health = {
-        "enable_status_endpoint": True,
-        "enable_uptime_endpoint": True,
-        "enable_heapdump_endpoint": False,
+        "enable_status_endpoint": settings.health_status_endpoint,
+        "enable_uptime_endpoint": settings.health_uptime_endpoint,
+        "enable_heapdump_endpoint": settings.health_heapdump_endpoint,
     }
 
     app.include_router(

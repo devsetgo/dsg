@@ -160,6 +160,11 @@ class Settings(BaseSettings):
 
     convert_markdown_to_html: bool = False
 
+    # health endpoints
+    health_status_endpoint: bool = True
+    health_uptime_endpoint: bool = True
+    health_heapdump_endpoint: bool = False
+
     @model_validator(mode="before")
     @classmethod
     def parse_database_driver(cls, values):
