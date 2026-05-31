@@ -2,7 +2,7 @@ alembic==1.18.4 # Vulnerabilities: None
 argon2-cffi==25.1.0 # Vulnerabilities: None
 async-lru==2.3.0 # Vulnerabilities: None
 cryptography==48.0.0 # From 47.0.0 | Vulnerabilities: None
-devsetgo-lib[all]==2026.3.15.1 # Vulnerabilities: None
+devsetgo-lib[sqlite,postgres]==2026.3.15.1 # Vulnerabilities: None
 email-validator==2.3.0 # Vulnerabilities: None
 fastapi[all]==0.136.3 # From 0.136.1 | Vulnerabilities: None
 fastapi-sso==0.21.0 # Vulnerabilities: None
