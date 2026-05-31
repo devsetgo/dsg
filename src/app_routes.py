@@ -40,6 +40,7 @@ from .endpoints import (
     blog_posts,
     devtools,
     notes,
+    notifications,
     pages,
     pdf_tools,
     pypi,
@@ -206,6 +207,12 @@ def create_routes(app: FastAPI) -> NoReturn:
         notes.router,
         prefix="/notes",
         tags=["notes"],
+        include_in_schema=show_route,
+    )
+    app.include_router(
+        notifications.router,
+        prefix="/notifications",
+        tags=["notifications"],
         include_in_schema=show_route,
     )
     app.include_router(

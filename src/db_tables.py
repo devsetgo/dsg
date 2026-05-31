@@ -460,6 +460,22 @@ class OCRJob(schema_base, async_db.Base):
         }
 
 
+class Notifications(schema_base, async_db.Base):
+    __tablename__ = "notifications"
+    __tableargs__ = {"comment": "User notifications from background tasks and system events"}
+
+    user_id = Column(String, ForeignKey("users.pkid"), nullable=False, index=True)
+    message = Column(String(500), nullable=False)
+    category = Column(String(50), default="info", index=True)  # ai, error, info
+    is_read = Column(Boolean, default=False, index=True)
+    note_id = Column(String, nullable=True)  # optional link back to a note
+
+    def to_dict(self):
+        return {
+            c.key: getattr(self, c.key) for c in class_mapper(self.__class__).columns
+        }
+
+
 # class JobApplications(schema_base, async_db.Base):
 #     __tablename__ = "job_applications"  # Name of the table in the database
 #     __tableargs__ = {"comment": "Job applications that the user has submitted"}

@@ -62,6 +62,7 @@ from sqlalchemy import Select, Text, and_, between, cast, desc, extract, or_
 
 from ..db_tables import NoteMetrics, Notes
 from ..functions import ai, date_functions, note_import, notes_metrics
+from ..functions.notifications import create_notification
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
 from ..settings import settings
@@ -70,26 +71,16 @@ router = APIRouter()
 
 
 async def process_ai_analysis_background(
-    note_id: str, content: str, mood_process: str | None = None
+    note_id: str, content: str, user_id: str, mood_process: str | None = None
 ):
-    """
-    Background task to process AI analysis for a note and update the database.
-
-    Args:
-        note_id (str): The ID of the note to update
-        content (str): The note content to analyze
-        mood_process (str, optional): The mood process parameter
-    """
     try:
         logger.info(f"Starting background AI analysis for note {note_id}")
 
-        # Get the analysis from AI
         analysis = await ai.get_analysis(content=content, mood_process=mood_process)
 
         moods_list: list = [mood[0] for mood in settings.mood_analysis_weights]
         ai_fix = analysis["mood_analysis"] not in moods_list
 
-        # Prepare the update data
         update_data = {
             "tags": analysis["tags"]["tags"],
             "summary": analysis["summary"],
@@ -97,20 +88,31 @@ async def process_ai_analysis_background(
             "ai_fix": ai_fix,
         }
 
-        # If mood analysis returned a mood, update it
         if analysis["mood"] is not None:
             update_data["mood"] = analysis["mood"]["mood"]
 
-        # Update the note in the database
         await db_ops.update_one(table=Notes, record_id=note_id, new_values=update_data)
 
+        tags = ", ".join(analysis["tags"]["tags"]) or "none"
+        mood = update_data.get("mood", analysis["mood_analysis"])
+        await create_notification(
+            user_id=user_id,
+            message=f"AI analysis complete — mood: {mood}, tags: {tags}",
+            category="ai",
+            note_id=note_id,
+        )
         logger.info(f"Completed background AI analysis for note {note_id}")
 
     except Exception as e:
         logger.error(f"Error in background AI analysis for note {note_id}: {str(e)}")
-        # Set ai_fix to True if there was an error
         await db_ops.update_one(
             table=Notes, record_id=note_id, new_values={"ai_fix": True}
+        )
+        await create_notification(
+            user_id=user_id,
+            message="AI analysis failed for a note. Retry from the AI Issues page.",
+            category="error",
+            note_id=note_id,
         )
 
 
@@ -232,46 +234,32 @@ async def ai_update_note(
 
 @router.get("/ai-fix/{note_id}")
 async def ai_fix_processing(
-    request: Request, note_id: str, user_info: dict = Depends(check_login)
+    background_tasks: BackgroundTasks,
+    request: Request,
+    note_id: str,
+    user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_info["timezone"]
 
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
     note = await db_ops.read_one_record(query=query)
+    if note is None:
+        return RedirectResponse(url="/error/404", status_code=303)
 
-    note = note.to_dict()
+    note_dict = note.to_dict()
+    mood = note_dict["mood"] if note_dict["mood"] not in ["positive", "negative", "neutral"] else None
 
-    mood = None
-    if note["mood"] not in ["postive", "negative", "neutral"]:
-        mood = note["mood"]
-    # Get the tags and summary from OpenAI
-    analysis = await ai.get_analysis(content=note["note"], mood_process=mood)
-
-    moods_list: list = [mood[0] for mood in settings.mood_analysis_weights]
-
-    if analysis["mood_analysis"] not in moods_list:
-        pass
-
-    logger.debug(f"Received analysis from AI: {analysis}")
-    # Create the note
-    note_update = {
-        "tags": analysis["tags"]["tags"],
-        "summary": analysis["summary"],
-        "mood_analysis": analysis["mood_analysis"],
-        "ai_fix": False,
-    }
-
-    # If mood is not None, add it to note_update
-    if analysis["mood"] is not None:
-        note_update["mood"] = analysis["mood"]["mood"]
-
-    await db_ops.update_one(table=Notes, record_id=note["pkid"], new_values=note_update)
-
-    logger.info(f"Resubmited note to AI with ID: {note_id}")
-    return RedirectResponse(url=f"/notes/view/{note_id}?ai=true", status_code=302)
+    background_tasks.add_task(
+        process_ai_analysis_background,
+        note_id=note_id,
+        content=note_dict["note"],
+        user_id=user_identifier,
+        mood_process=mood,
+    )
+    logger.info(f"Queued background AI fix for note {note_id}")
+    return RedirectResponse(url=f"/notes/view/{note_id}", status_code=302)
 
 
 @router.get("/bulk")
@@ -523,7 +511,10 @@ async def create_note(
 
     # Add background tasks for AI analysis and metrics update
     background_tasks.add_task(
-        process_ai_analysis_background, note_id=data.pkid, content=note_content
+        process_ai_analysis_background,
+        note_id=data.pkid,
+        content=note_content,
+        user_id=user_identifier,
     )
     background_tasks.add_task(
         notes_metrics.update_notes_metrics, user_id=user_identifier

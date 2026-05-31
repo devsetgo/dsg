@@ -49,7 +49,7 @@ from tqdm import tqdm
 from src.functions.ai import get_summary
 
 from .db_init import async_db
-from .db_tables import Categories, Notes, Posts, Users, WebLinks
+from .db_tables import Categories, Notes, Notifications, Posts, Users, WebLinks
 from .functions.models import RoleEnum
 from .settings import settings
 
@@ -229,6 +229,7 @@ async def add_system_data() -> None:
         if settings.release_env.lower() != "prd" and settings.create_demo_notes:
             # Create notes for the admin user
             await add_notes(user_id=data["pkid"])
+            await add_notifications(user_id=data["pkid"])
 
     # Check if the environment is not production
     if settings.release_env.lower() != "prd":
@@ -413,6 +414,50 @@ async def add_notes(
             date_updated=date_updated,
         )
         await db_ops.create_one(note)
+
+
+async def add_notifications(user_id: str) -> None:
+    demo_notifications = [
+        {
+            "message": "AI analysis complete — mood: positive, tags: work, career, growth",
+            "category": "ai",
+            "minutes_ago": 2,
+        },
+        {
+            "message": "AI analysis complete — mood: neutral, tags: reflection, daily",
+            "category": "ai",
+            "minutes_ago": 15,
+        },
+        {
+            "message": "AI analysis complete — mood: negative, tags: stress, health",
+            "category": "ai",
+            "minutes_ago": 47,
+        },
+        {
+            "message": "AI analysis failed for a note. Retry from the AI Issues page.",
+            "category": "error",
+            "minutes_ago": 90,
+        },
+        {
+            "message": "AI analysis complete — mood: positive, tags: family, florida",
+            "category": "ai",
+            "minutes_ago": 200,
+        },
+    ]
+
+    for item in demo_notifications:
+        created_at = datetime.now(timezone.utc) - timedelta(minutes=item["minutes_ago"])
+        notification = Notifications(
+            user_id=user_id,
+            message=item["message"],
+            category=item["category"],
+            is_read=False,
+            date_created=created_at.replace(tzinfo=None),
+            date_updated=created_at.replace(tzinfo=None),
+        )
+        await db_ops.create_one(notification)
+
+    logger.info(f"Created {len(demo_notifications)} demo notifications for user {user_id}")
 
 
 async def add_user() -> Optional[Dict[str, Any]]:

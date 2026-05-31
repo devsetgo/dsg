@@ -285,7 +285,7 @@ bump:  ## Bump the version number using bumpcalver
 run-dev:  ## Run the FastAPI application in development mode with hot-reloading
 	@printf "\033[1;33m🚀 Starting FastAPI in development mode...\033[0m\n"
 	cp env-files/.env.dev .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
+	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --reload-dir src --reload-dir templates --log-level ${LOG_LEVEL}
 
 run-local:  ## Run the FastAPI application in local mode with hot-reloading
 	@printf "\033[1;33m🏠 Starting FastAPI in local mode...\033[0m\n"

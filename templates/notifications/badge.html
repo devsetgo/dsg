@@ -1,0 +1,6 @@
+{% if count|default(0) > 0 %}<span class="badge badge-warning navbar-badge"
+      hx-get="/notifications/badge"
+      hx-trigger="every 10s"
+      hx-swap="outerHTML">{{ count }}</span>{% else %}<span hx-get="/notifications/badge"
+      hx-trigger="every 10s"
+      hx-swap="outerHTML"></span>{% endif %}
