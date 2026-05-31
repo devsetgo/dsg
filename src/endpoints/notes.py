@@ -535,91 +535,118 @@ async def create_note(
     return RedirectResponse(url=f"/notes/view/{data.pkid}", status_code=302)
 
 
+@router.get("/tags")
+async def get_note_tags(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    user_identifier = user_info["user_identifier"]
+    query = Select(Notes).where(Notes.user_id == user_identifier)
+    results = await db_ops.read_query(query=query)
+    all_tags: set = set()
+    if results and not isinstance(results, str):
+        for note in results:
+            if note.tags:
+                all_tags.update(note.tags)
+    return sorted(all_tags)
+
+
 @router.get("/pagination")
 async def read_notes_pagination(
     request: Request,
-    search_term: str = Query(None, description="Search term"),
+    search_term: str = Query(None, description="Search term for note and summary content"),
     start_date: str = Query(None, description="Start date"),
     end_date: str = Query(None, description="End date"),
     mood: str = Query(None, description="Mood"),
+    tags: list[str] = Query(default=[], description="Tags to filter by (OR logic)"),
     page: int = Query(1, description="Page number"),
     limit: int = Query(20, description="Number of notes per page"),
     user_info: dict = Depends(check_login),
-    #
 ):
-    query_params = {
-        "search_term": search_term,
-        "start_date": start_date,
-        "end_date": end_date,
-        "mood": mood,
-        "limit": limit,
-    }
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
     logger.info(
-        f"Searching for term: {search_term}, start_date: {start_date}, end_date: {end_date}, mood: {mood}, user: {user_identifier}"
-    )
-    # note and summary are encrypted LargeBinary — only tags and mood are searchable at SQL level
-    query = Select(Notes).where(
-        (Notes.user_id == user_identifier)
-        & (
-            or_(
-                Notes.mood.contains(search_term) if search_term else True,
-                cast(Notes.tags, Text).contains(search_term) if search_term else True,
-            )
-        )
+        f"Searching content: {search_term!r}, tags: {tags}, start_date: {start_date}, "
+        f"end_date: {end_date}, mood: {mood}, user: {user_identifier}"
     )
 
-    # filter by mood
+    # Base SQL query — mood, dates, and tags are filterable at the DB level
+    query = Select(Notes).where(Notes.user_id == user_identifier)
+
+    # Tag filter: OR logic, exact match within the JSON array
+    # JSON arrays serialize as ["tag1","tag2"], so wrapping in quotes gives exact matches
+    if tags:
+        query = query.where(
+            or_(*[cast(Notes.tags, Text).contains(f'"{tag}"') for tag in tags])
+        )
+
     if mood:
         query = query.where(Notes.mood == mood)
-    # filter by date range
-    if start_date and end_date:
-        start_date = datetime.strptime(start_date, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
-        query = query.where(
-            (Notes.date_created >= start_date) & (Notes.date_created <= end_date)
-        )
-    # order and limit the results
-    offset = (page - 1) * limit
-    query = query.order_by(Notes.date_created.desc())
-    count_query = query
-    query = query.limit(limit).offset(offset)
-    notes = await db_ops.read_query(query=query)
-    logger.debug(f"notes returned from pagination query {notes}")
-    if isinstance(notes, str):
-        logger.error(f"Unexpected result from read_query: {notes}")
-        notes = []
-    else:
-        notes = [note.to_dict() for note in notes]
 
-    # offset date_created and date_updated to user's timezone
+    if start_date or end_date:
+        start_dt = datetime.strptime(start_date, "%Y-%m-%d") if start_date else datetime(2011, 1, 1)
+        end_dt = datetime.strptime(end_date, "%Y-%m-%d") if end_date else datetime.now(timezone.utc) + timedelta(days=2)
+        query = query.where(
+            (Notes.date_created >= start_dt) & (Notes.date_created <= end_dt)
+        )
+
+    query = query.order_by(Notes.date_created.desc())
+
+    offset = (page - 1) * limit
+
+    if not search_term:
+        # Fast path: no content decryption needed — use DB-level pagination
+        note_count = await db_ops.count_query(query=query)
+        total_pages = -(-note_count // limit) if note_count else 1
+        page_notes = await db_ops.read_query(query=query.limit(limit).offset(offset))
+        if isinstance(page_notes, str):
+            logger.error(f"Unexpected result from read_query: {page_notes}")
+            page_notes = []
+        notes = [n.to_dict() for n in page_notes]
+    else:
+        # Slow path: decrypt all SQL-filtered notes to search content
+        # For ~2,900–5,800 notes Fernet decrypt is fast (~100ms total); the
+        # mood/date/tag SQL filters above reduce the set before we get here.
+        all_notes = await db_ops.read_query(query=query)
+        if isinstance(all_notes, str):
+            logger.error(f"Unexpected result from read_query: {all_notes}")
+            all_notes = []
+        term = search_term.lower()
+        all_notes = [
+            n for n in all_notes
+            if term in (n.note or "").lower() or term in (n.summary or "").lower()
+        ]
+        note_count = len(all_notes)
+        total_pages = -(-note_count // limit) if note_count else 1
+        notes = [n.to_dict() for n in all_notes[offset : offset + limit]]
+
     notes = await date_functions.update_timezone_for_dates(
         data=notes, user_timezone=user_timezone
     )
+
     found = len(notes)
-    note_count = await db_ops.count_query(query=count_query)
 
-    current_count = found + offset
+    def _page_url(p: int) -> str:
+        params = [f"page={p}"]
+        if search_term:
+            params.append(f"search_term={search_term}")
+        if start_date:
+            params.append(f"start_date={start_date}")
+        if end_date:
+            params.append(f"end_date={end_date}")
+        if mood:
+            params.append(f"mood={mood}")
+        if limit != 20:
+            params.append(f"limit={limit}")
+        for tag in tags:
+            params.append(f"tags={tag}")
+        return "/notes/pagination?" + "&".join(params)
 
-    total_pages = -(-note_count // limit)  # Ceiling division
-    # Generate the URLs for the previous and next pages
-    prev_page_url = (
-        f"/notes/pagination?page={page - 1}&"
-        + "&".join(f"{k}={v}" for k, v in query_params.items() if v)
-        if page > 1
-        else None
-    )
-    next_page_url = (
-        f"/notes/pagination?page={page + 1}&"
-        + "&".join(f"{k}={v}" for k, v in query_params.items() if v)
-        if page < total_pages
-        else None
-    )
+    prev_page_url = _page_url(page - 1) if page > 1 else None
+    next_page_url = _page_url(page + 1) if page < total_pages else None
 
-    logger.info(f"Found {found} notes for user {user_identifier}")
+    logger.info(f"Found {note_count} notes for user {user_identifier} (page {page}/{total_pages})")
     return templates.TemplateResponse(
         request=request,
         name="/notes/pagination.html",
@@ -630,7 +657,7 @@ async def read_notes_pagination(
             "note_count": note_count,
             "total_pages": total_pages,
             "start_count": offset + 1,
-            "current_count": offset + current_count,
+            "current_count": offset + found,
             "current_page": page,
             "prev_page_url": prev_page_url,
             "next_page_url": next_page_url,
