@@ -244,7 +244,7 @@ def create_routes(app: FastAPI) -> NoReturn:
     config_health = {
         "enable_status_endpoint": True,
         "enable_uptime_endpoint": True,
-        "enable_heapdump_endpoint": True,
+        "enable_heapdump_endpoint": False,
     }
 
     app.include_router(
