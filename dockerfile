@@ -1,53 +1,46 @@
-# Use an official Python runtime as a parent image
-FROM python:3.13-slim-bookworm
+FROM python:3.14-slim-bookworm
 
-# Set the working directory in the container to /app
 WORKDIR /app
 
-# Add metadata to the image
 LABEL maintainer='Mike Ryan'
 LABEL github_repo='https://github.com/devsetgo/dsg'
 
-# Install gcc, curl, and other dependencies
-RUN apt-get update && apt-get -y install gcc wget gnupg unzip curl
+# Create user before COPY so we can use --chown and avoid a duplicate ownership layer
+RUN useradd -m -r dsgUser
 
-# Install Google Chrome
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
+# All system deps in one layer: security upgrade + build tools + OCR tools
+RUN apt-get update && apt-get -y upgrade \
+    && apt-get -y install --no-install-recommends \
+        gcc wget gnupg unzip curl \
+        tesseract-ocr unpaper ghostscript \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Google Chrome (used for WebLink screenshots)
+RUN wget -q -O /usr/share/keyrings/google-chrome.asc https://dl.google.com/linux/linux_signing_key.pub \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.asc] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
-    && apt-get install -y google-chrome-stable
+    && apt-get install -y --no-install-recommends google-chrome-stable \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install ChromeDriver
-RUN CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) \
-    && wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
-    && unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/ \
-    && rm /tmp/chromedriver.zip
+# Install ChromeDriver pinned to the installed Chrome major version
+RUN CHROME_MAJOR=$(google-chrome --version | grep -oP '\d+' | head -1) \
+    && CHROMEDRIVER_URL=$(curl -sS "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json" \
+        | python3 -c "import sys,json; data=json.load(sys.stdin); versions=[v for v in data['versions'] if v['version'].split('.')[0]=='$CHROME_MAJOR']; url=[d['url'] for d in versions[-1]['downloads'].get('chromedriver',[]) if d['platform']=='linux64'][0]; print(url)") \
+    && wget -O /tmp/chromedriver.zip "$CHROMEDRIVER_URL" \
+    && unzip /tmp/chromedriver.zip -d /tmp/chromedriver_extracted/ \
+    && find /tmp/chromedriver_extracted/ -name "chromedriver" -exec mv {} /usr/local/bin/ \; \
+    && rm -rf /tmp/chromedriver.zip /tmp/chromedriver_extracted/
 
-# Install all required dependencies for ocrmypdf functionality
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-	&& apt-get -y install --no-install-recommends \
-		tesseract-ocr \
-		unpaper \
-		ghostscript \
-	&& apt-get clean && rm -rf /var/lib/apt/lists/*
+# Copy requirements first for better layer caching — pip layer only rebuilds when requirements change
+COPY --chown=dsgUser:dsgUser requirements/ /app/requirements/
+RUN pip install --no-cache-dir --upgrade pip setuptools \
+    && pip install --no-cache-dir -r requirements/prd.txt
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy app with correct ownership in one step — eliminates the duplicate ~319MB chown layer
+COPY --chown=dsgUser:dsgUser . /app
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --upgrade pip setuptools
-RUN pip install --no-cache-dir -r requirements/prd.txt
-
-# Create a user and set file permissions
-RUN useradd -m -r dsgUser && chown -R dsgUser /app
-
-# Switch to the new user
 USER dsgUser
 
-# Install spaCy and other dependencies
-# RUN pip install spacy
-
-# Set environment variables
 ENV release_env=prd
 ENV DB_DRIVER=sqlite
 ENV DB_USERNAME=postgres
@@ -63,9 +56,9 @@ ENV POOL_SIZE=100
 ENV MAX_OVERFLOW=100
 ENV POOL_TIMEOUT=3600
 ENV CREATE_ADMIN_USER=True
-ENV ADMIN_USER=admin
-ENV ADMIN_PASSWORD=rules
-ENV ADMIN_EMAIL=mikeryan56@gmail.com
+ENV ADMIN_USER=<your-github-id>
+ENV ADMIN_PASSWORD=<a-password>
+ENV ADMIN_EMAIL=<your-email@something.com>
 ENV DEFAULT_TIMEZONE=America/New_York
 ENV CREATE_DEMO_USER=True
 ENV CREATE_DEMO_USERS_QTY=10
@@ -89,12 +82,10 @@ ENV GITHUB_ID=octocat
 ENV GITHUB_TOKEN=<githubToken>
 ENV GITHUB_REPO_LIMIT=1000
 ENV HISTORY_RANGE=3
-# Set the port and workers as environment variables
 ENV PORT=5000
 ENV WORKERS=1
-# Make port 5000 available to the world outside this container
+
 EXPOSE 5000
 
-# Run the command to start ASGI server
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "5000", "--workers", "4"]
 # CMD ["granian", "--interface", "asgi", "src.main:app", "--host","0.0.0.0", "--port", "5000", "--workers", "4", "--threads", "2", "--http", "1", "--log-level", "debug"]
