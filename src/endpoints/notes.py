@@ -561,13 +561,12 @@ async def read_notes_pagination(
     logger.info(
         f"Searching for term: {search_term}, start_date: {start_date}, end_date: {end_date}, mood: {mood}, user: {user_identifier}"
     )
-    # find search_term in columns: note, mood, tags, summary
+    # note and summary are encrypted LargeBinary — only tags and mood are searchable at SQL level
     query = Select(Notes).where(
         (Notes.user_id == user_identifier)
         & (
             or_(
-                Notes.note.contains(search_term) if search_term else True,
-                Notes.summary.contains(search_term) if search_term else True,
+                Notes.mood.contains(search_term) if search_term else True,
                 cast(Notes.tags, Text).contains(search_term) if search_term else True,
             )
         )
