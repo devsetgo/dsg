@@ -59,7 +59,7 @@ from fastapi import (
 )
 from fastapi.responses import RedirectResponse
 from loguru import logger
-from sqlalchemy import Select, Text, and_, between, cast, desc, extract, or_
+from sqlalchemy import Select, Text, and_, between, cast, desc, extract, func, or_
 
 from ..db_tables import NoteMetrics, Notes
 from ..functions import ai, date_functions, note_import, notes_metrics
@@ -571,16 +571,16 @@ async def read_notes_pagination(
     # Base SQL query — mood, dates, and tags are filterable at the DB level
     query = Select(Notes).where(Notes.user_id == user_identifier)
 
-    # Tag filter: OR logic, exact match within the JSON array.
-    # Escape LIKE wildcards so % and _ in tag values aren't treated as SQL patterns.
+    # Tag filter: OR logic, case-insensitive exact match within the JSON array.
+    # func.lower() on both sides handles mixed-case stored tags (e.g. "Valerie" matches "valerie").
     if tags:
         def _tag_like(tag: str):
-            escaped = tag.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-            return cast(Notes.tags, Text).like(f'%"{escaped}"%', escape="\\")
+            escaped = tag.lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            return func.lower(cast(Notes.tags, Text)).like(f'%"{escaped}"%', escape="\\")
         query = query.where(or_(*[_tag_like(t) for t in tags]))
 
     if mood:
-        query = query.where(Notes.mood == mood)
+        query = query.where(Notes.mood == mood.lower())
 
     if start_date or end_date:
         start_dt = datetime.strptime(start_date, "%Y-%m-%d") if start_date else datetime(2011, 1, 1)
