@@ -15,7 +15,7 @@ openai==2.33.0 # From 2.30.0 | Vulnerabilities: None
 pydantic[email]==2.13.3 # From 2.12.5 | Vulnerabilities: None
 PyJWT[crypto]==2.12.1 # Vulnerabilities: None
 python-dateutil==2.9.0.post0 # Vulnerabilities: None
-pytz==2026.1.post1 # Vulnerabilities: None
+pytz==2026.2 # Vulnerabilities: None
 selenium==4.43.0 # From 4.41.0 | Vulnerabilities: None
 silly==1.1.0 # Vulnerabilities: None
 starlette-authlib==0.3.17 # From 0.3.16 | Vulnerabilities: None
