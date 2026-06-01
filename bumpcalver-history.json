@@ -1,5 +1,26 @@
 [
   {
+    "operation_id": "20260531_204248_731",
+    "timestamp": "2026-05-31T20:42:48.741010",
+    "version": "2026-05-31-006",
+    "files_updated": [
+      "/home/mike/dsg/pyproject.toml",
+      "/home/mike/dsg/src/__init__.py",
+      "/home/mike/dsg/makefile",
+      "/home/mike/dsg/sonar-project.properties"
+    ],
+    "backups": {
+      "/home/mike/dsg/pyproject.toml": "/home/mike/dsg/.bumpcalver/backups/20260531_204248_731_pyproject.toml",
+      "/home/mike/dsg/src/__init__.py": "/home/mike/dsg/.bumpcalver/backups/20260531_204248_731___init__.py",
+      "/home/mike/dsg/makefile": "/home/mike/dsg/.bumpcalver/backups/20260531_204248_732_makefile",
+      "/home/mike/dsg/sonar-project.properties": "/home/mike/dsg/.bumpcalver/backups/20260531_204248_733_sonar-project.properties"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026-05-31-006"
+  },
+  {
     "operation_id": "20260531_202911_309",
     "timestamp": "2026-05-31T20:29:11.319530",
     "version": "2026-05-31-005",
