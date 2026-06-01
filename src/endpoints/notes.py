@@ -43,6 +43,7 @@ Routes:
 import csv
 import io
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 # from pytz import timezone, UTC
@@ -249,7 +250,10 @@ async def ai_fix_processing(
         return RedirectResponse(url="/error/404", status_code=303)
 
     note_dict = note.to_dict()
-    mood = note_dict["mood"] if note_dict["mood"] not in ["positive", "negative", "neutral"] else None
+    mood = note_dict["mood"] if note_dict["mood"] in ["positive", "negative", "neutral"] else None
+
+    # Clear the flag immediately so the note leaves /issues before the background task finishes
+    await db_ops.update_one(table=Notes, record_id=note_id, new_values={"ai_fix": False})
 
     background_tasks.add_task(
         process_ai_analysis_background,
@@ -532,13 +536,15 @@ async def get_note_tags(
     user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    query = Select(Notes).where(Notes.user_id == user_identifier)
+    # Select only the tags column — avoids loading encrypted note/summary blobs
+    query = Select(Notes.tags).where(Notes.user_id == user_identifier)
     results = await db_ops.read_query(query=query)
     all_tags: set = set()
     if results and not isinstance(results, str):
-        for note in results:
-            if note.tags:
-                all_tags.update(note.tags)
+        for row in results:
+            tags_value = row.tags if hasattr(row, "tags") else row[0]
+            if tags_value:
+                all_tags.update(tags_value)
     return sorted(all_tags)
 
 
@@ -565,12 +571,13 @@ async def read_notes_pagination(
     # Base SQL query — mood, dates, and tags are filterable at the DB level
     query = Select(Notes).where(Notes.user_id == user_identifier)
 
-    # Tag filter: OR logic, exact match within the JSON array
-    # JSON arrays serialize as ["tag1","tag2"], so wrapping in quotes gives exact matches
+    # Tag filter: OR logic, exact match within the JSON array.
+    # Escape LIKE wildcards so % and _ in tag values aren't treated as SQL patterns.
     if tags:
-        query = query.where(
-            or_(*[cast(Notes.tags, Text).contains(f'"{tag}"') for tag in tags])
-        )
+        def _tag_like(tag: str):
+            escaped = tag.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            return cast(Notes.tags, Text).like(f'%"{escaped}"%', escape="\\")
+        query = query.where(or_(*[_tag_like(t) for t in tags]))
 
     if mood:
         query = query.where(Notes.mood == mood)
@@ -619,20 +626,20 @@ async def read_notes_pagination(
     found = len(notes)
 
     def _page_url(p: int) -> str:
-        params = [f"page={p}"]
+        pairs = [("page", p)]
         if search_term:
-            params.append(f"search_term={search_term}")
+            pairs.append(("search_term", search_term))
         if start_date:
-            params.append(f"start_date={start_date}")
+            pairs.append(("start_date", start_date))
         if end_date:
-            params.append(f"end_date={end_date}")
+            pairs.append(("end_date", end_date))
         if mood:
-            params.append(f"mood={mood}")
+            pairs.append(("mood", mood))
         if limit != 20:
-            params.append(f"limit={limit}")
+            pairs.append(("limit", limit))
         for tag in tags:
-            params.append(f"tags={tag}")
-        return "/notes/pagination?" + "&".join(params)
+            pairs.append(("tags", tag))
+        return "/notes/pagination?" + urlencode(pairs)
 
     prev_page_url = _page_url(page - 1) if page > 1 else None
     next_page_url = _page_url(page + 1) if page < total_pages else None
@@ -647,7 +654,7 @@ async def read_notes_pagination(
             "found": found,
             "note_count": note_count,
             "total_pages": total_pages,
-            "start_count": offset + 1,
+            "start_count": offset + 1 if found else 0,
             "current_count": offset + found,
             "current_page": page,
             "prev_page_url": prev_page_url,
