@@ -33,12 +33,16 @@ Author:
 License:
     MIT License
 """
+import asyncio
 import random
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import markdown
 import silly
+from alembic import command as alembic_command
+from alembic.config import Config as AlembicConfig
 from dsg_lib.async_database_functions import database_operations
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -53,6 +57,8 @@ from .db_tables import Categories, Notes, Notifications, Posts, Users, WebLinks
 from .functions.models import RoleEnum
 from .settings import settings
 
+_migration_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="alembic")
+
 # templates and static files
 templates = Jinja2Templates(directory="templates")
 statics = StaticFiles(directory="static")
@@ -65,6 +71,21 @@ db_ops = database_operations.DatabaseOperations(async_db)
 
 # Log the completion of the database setup
 logger.info("database setup complete")
+
+
+def _run_alembic_upgrade() -> None:
+    cfg = AlembicConfig("alembic.ini")
+    alembic_command.upgrade(cfg, "head")
+
+
+async def run_migrations() -> None:
+    loop = asyncio.get_event_loop()
+    try:
+        await loop.run_in_executor(_migration_executor, _run_alembic_upgrade)
+        logger.info("Database migrations applied successfully")
+    except Exception as e:
+        logger.error(f"Database migration failed: {e}")
+        raise
 
 
 async def startup() -> None:
@@ -86,6 +107,9 @@ async def startup() -> None:
     """
     # Log the startup process
     logger.info("starting up services")
+
+    # Apply any pending schema migrations before anything else touches the DB
+    await run_migrations()
 
     # Check the database for existing tables
     logger.info("checking database for tables")
