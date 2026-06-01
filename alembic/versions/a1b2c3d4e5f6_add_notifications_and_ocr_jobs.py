@@ -11,6 +11,7 @@ from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy import inspect
 
 revision: str = "a1b2c3d4e5f6"
 down_revision: Union[str, None] = "7154ca3bffb4"
@@ -20,8 +21,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     bind = op.get_bind()
+    existing = set(inspect(bind).get_table_names())
 
-    if not bind.dialect.has_table(bind, "ocr_jobs"):
+    if "ocr_jobs" not in existing:
         op.create_table(
             "ocr_jobs",
             sa.Column("pkid", sa.String(36), primary_key=True),
@@ -41,7 +43,7 @@ def upgrade() -> None:
             sa.ForeignKeyConstraint(["user_id"], ["users.pkid"]),
         )
 
-    if not bind.dialect.has_table(bind, "notifications"):
+    if "notifications" not in existing:
         op.create_table(
             "notifications",
             sa.Column("pkid", sa.String(36), primary_key=True),

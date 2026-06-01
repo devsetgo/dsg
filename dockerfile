@@ -39,6 +39,9 @@ RUN pip install --no-cache-dir --upgrade pip setuptools \
 # Copy app with correct ownership in one step — eliminates the duplicate ~319MB chown layer
 COPY --chown=dsgUser:dsgUser . /app
 
+# Create log directory — gitignored so not in build context, must exist before dsgUser runs
+RUN mkdir -p /app/log && chown dsgUser:dsgUser /app/log
+
 USER dsgUser
 
 ENV release_env=prd
