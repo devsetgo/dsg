@@ -12,6 +12,7 @@ Author:
     MIT Licensed
 """
 import ast
+import json
 import re
 from functools import lru_cache
 from typing import Dict, List, Optional
@@ -29,8 +30,6 @@ client = AsyncOpenAI(
     # This is the default and can be omitted
     api_key=settings.openai_key.get_secret_value(),
 )
-
-openai_model = "gpt-5-nano"  # "gpt-3.5-turbo-1106"
 
 mood_analysis = [mood[0] for mood in settings.mood_analysis_weights]
 
@@ -61,45 +60,133 @@ def get_model_temperature(
 
 async def get_analysis(content: str, mood_process: str = None) -> dict:
     """
-    Gets the tags, summary, mood analysis, and mood from the given content.
+    Gets tags, summary, mood_analysis, and mood in a single API call.
 
     Args:
-        content (str): The content to analyze.
-        mood_process (str, optional): The mood process. Defaults to None.
+        content (str): The journal content to analyze.
+        mood_process (str, optional): Kept for backward compatibility; no longer used.
 
     Returns:
-        dict: A dictionary containing the tags, summary, mood analysis, and mood.
+        dict with keys: tags ({"tags": [...]}), summary (str),
+        mood_analysis (str), mood ({"mood": str}).
+        On failure returns safe defaults plus _ai_fix=True sentinel.
     """
-    logger.info("Starting get_analysis function")
+    logger.info("Starting get_analysis (single call)")
+    moods_list = [m[0] for m in settings.mood_analysis_weights]
+    model = settings.openai_model
 
-    # Get the tags from the content
-    tags = await get_tags(content=content)
+    system_prompt = (
+        "Analyze this journal entry. Respond ONLY with valid JSON in exactly this shape:\n"
+        '{"tags": ["word1"], "summary": "...", "mood_analysis": "...", "mood": "..."}\n\n'
+        "Rules:\n"
+        "- tags: 1-3 single lowercase words, no person names\n"
+        "- summary: 3-6 words, title-style, no person names\n"
+        f"- mood_analysis: one word from {moods_list}\n"
+        '- mood: one of ["positive", "negative", "neutral"]\n'
+    )
 
-    # Get the summary from the content
-    summary = await get_summary(content=content, sentence_length=1)
+    try:
+        chat_completion = await client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": content},
+            ],
+            temperature=get_model_temperature(model),
+            response_format={"type": "json_object"},
+        )
+        raw = chat_completion.choices[0].message.content
+        logger.debug(f"get_analysis raw response: {raw}")
+        parsed = json.loads(raw)
 
-    # Get the mood analysis from the content
-    mood_analysis = await get_mood_analysis(content=content)
+        raw_tags = parsed.get("tags", [])
+        if not isinstance(raw_tags, list):
+            raw_tags = []
+        raw_tags = ["".join(re.findall("[a-zA-Z]+", str(t))) for t in raw_tags if t]
+        tags_dict = tag_check({"tags": raw_tags})
 
-    mood = None
-    # If the mood process is not one of the expected values, get the mood from the content
-    if mood_process not in ["positive", "negative", "neutral"]:
-        mood = await get_mood(content=content)
-        logger.info("processing mood")
+        summary = str(parsed.get("summary", "")).strip()
 
-    # Create a dictionary with the analysis results
-    data = {
-        "tags": tags,
-        "summary": summary,
-        "mood_analysis": mood_analysis["mood_analysis"],
-        "mood": mood,
-    }
+        mood_analysis_val = (parsed.get("mood_analysis") or "").strip().lower()
+        if mood_analysis_val not in moods_list:
+            logger.warning(f"get_analysis: unexpected mood_analysis '{mood_analysis_val}', defaulting to 'neutral'")
+            mood_analysis_val = "neutral"
 
-    logger.info("openai request completed")
-    logger.debug(f"analysis: {data}")
-    logger.info("Finished get_analysis function")
+        mood_val = (parsed.get("mood") or "").strip().lower()
+        if mood_val not in ("positive", "negative", "neutral"):
+            logger.warning(f"get_analysis: unexpected mood '{mood_val}', defaulting to 'neutral'")
+            mood_val = "neutral"
 
-    return data
+        data = {
+            "tags": tags_dict,            # {"tags": [...]} — callers use analysis["tags"]["tags"]
+            "summary": summary,
+            "mood_analysis": mood_analysis_val,
+            "mood": {"mood": mood_val},   # {"mood": "..."} — note_import uses analysis["mood"]["mood"]
+        }
+        logger.info("get_analysis completed (single call)")
+        logger.debug(f"analysis: {data}")
+        return data
+
+    except (json.JSONDecodeError, KeyError, AttributeError) as exc:
+        logger.error(f"get_analysis JSON parse failure: {exc}")
+        return {
+            "tags": {"tags": []},
+            "summary": "",
+            "mood_analysis": "neutral",
+            "mood": {"mood": "neutral"},
+            "_ai_fix": True,
+        }
+
+
+async def get_blog_post_analysis(
+    content: str, sentence_length: int = 3, keyword_limit: int = 3
+) -> dict:
+    """
+    Gets tags and summary for a blog post in a single API call.
+
+    Returns:
+        dict: {"tags": [...], "summary": "..."} — tags is a flat list,
+        matching blog_posts.py's direct use of analysis["tags"].
+    """
+    logger.info("Starting get_blog_post_analysis (single call)")
+    model = settings.openai_model
+
+    system_prompt = (
+        f"Analyze this blog post. Respond ONLY with valid JSON in exactly this shape:\n"
+        f'{{"tags": ["word1"], "summary": "..."}}\n\n'
+        f"Rules:\n"
+        f"- tags: 1-{keyword_limit} single lowercase words, no person names\n"
+        f"- summary: {sentence_length}-sentence summary, no person names\n"
+    )
+
+    try:
+        chat_completion = await client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": content},
+            ],
+            temperature=get_model_temperature(model),
+            response_format={"type": "json_object"},
+        )
+        raw = chat_completion.choices[0].message.content
+        logger.debug(f"get_blog_post_analysis raw: {raw}")
+        parsed = json.loads(raw)
+
+        raw_tags = parsed.get("tags", [])
+        if not isinstance(raw_tags, list):
+            raw_tags = []
+        raw_tags = ["".join(re.findall("[a-zA-Z]+", str(t))) for t in raw_tags if t]
+        tags_dict = tag_check({"tags": raw_tags})
+
+        return {
+            "tags": tags_dict["tags"],    # flat list — blog_posts.py uses analysis["tags"] directly
+            "summary": str(parsed.get("summary", "")).strip(),
+        }
+
+    except (json.JSONDecodeError, KeyError, AttributeError) as exc:
+        logger.error(f"get_blog_post_analysis failure: {exc}")
+        return {"tags": [], "summary": ""}
 
 
 async def get_tags(
@@ -123,7 +210,7 @@ async def get_tags(
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
-        model=openai_model,
+        model=settings.openai_model,
         messages=[
             {
                 "role": "system",
@@ -131,7 +218,7 @@ async def get_tags(
             },
             {"role": "user", "content": content},
         ],
-        temperature=get_model_temperature(openai_model, temperature),
+        temperature=get_model_temperature(settings.openai_model, temperature),
     )
 
     # Extract the content from the response
@@ -296,7 +383,7 @@ async def get_summary(
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
-        model=openai_model,
+        model=settings.openai_model,
         messages=[
             {
                 "role": "system",
@@ -304,7 +391,7 @@ async def get_summary(
             },
             {"role": "user", "content": content},
         ],
-        temperature=get_model_temperature(openai_model, temperature),
+        temperature=get_model_temperature(settings.openai_model, temperature),
     )
 
     # Extract the content from the response
@@ -336,7 +423,7 @@ async def get_mood_analysis(content: str, temperature: float = temperature) -> d
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
-        model=openai_model,
+        model=settings.openai_model,
         messages=[
             {
                 "role": "system",
@@ -344,7 +431,7 @@ async def get_mood_analysis(content: str, temperature: float = temperature) -> d
             },
             {"role": "user", "content": content},
         ],
-        temperature=get_model_temperature(openai_model, temperature),
+        temperature=get_model_temperature(settings.openai_model, temperature),
     )
 
     # Extract the content from the response
@@ -378,7 +465,7 @@ async def get_mood(content: str, temperature: float = temperature) -> dict:
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
-        model=openai_model,
+        model=settings.openai_model,
         messages=[
             {
                 "role": "system",
@@ -386,7 +473,7 @@ async def get_mood(content: str, temperature: float = temperature) -> dict:
             },
             {"role": "user", "content": content},
         ],
-        temperature=get_model_temperature(openai_model, temperature),
+        temperature=get_model_temperature(settings.openai_model, temperature),
     )
 
     # Extract the content from the response
@@ -402,42 +489,10 @@ async def get_mood(content: str, temperature: float = temperature) -> dict:
 
 
 async def analyze_post(content: str, temperature: float = temperature) -> dict:
-    """
-    Analyzes a post and returns tags, summary, mood analysis, and mood.
-
-    Args:
-        content (str): The content to analyze.
-        temperature (float, optional): The temperature to use for the OpenAI API. Defaults to temperature.
-
-    Returns:
-        dict: A dictionary containing the tags, summary, mood analysis, and mood.
-    """
+    """Analyzes a post. Delegates to get_analysis() for a single API call."""
     logger.info("Starting analyze_post function")
-
-    # Get the tags from the content
-    tags = await get_tags(content=content)
-
-    # Get a very brief summary of the content
-    summary = await get_summary(content=content, sentence_length=1)
-
-    # Analyze the mood of the content
-    mood_analysis = await get_mood_analysis(content=content)
-
-    # Determine the mood of the content
-    mood = await get_mood(content=content)
-
-    # Store the analysis results in a dictionary
-    data = {
-        "tags": tags,
-        "summary": summary,
-        "mood_analysis": mood_analysis,
-        "mood": mood,
-    }
-
-    logger.info("openai request completed")
-    logger.debug(f"post analysis content: {data}")
+    data = await get_analysis(content=content)
     logger.info("Finished analyze_post function")
-
     return data
 
 
@@ -469,7 +524,7 @@ async def get_url_summary(
 
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
-        model=openai_model,
+        model=settings.openai_model,
         messages=[
             {
                 "role": "system",
@@ -477,7 +532,7 @@ async def get_url_summary(
             },
             {"role": "user", "content": url},
         ],
-        temperature=get_model_temperature(openai_model, temperature),
+        temperature=get_model_temperature(settings.openai_model, temperature),
     )
 
     # Extract the content from the response
@@ -519,7 +574,7 @@ async def get_url_title(
     prompt = f"Create a title for this websites. It should be only {sentence_length} sentence in length and cannot contain any persons name."
     # Send the prompt to the OpenAI API
     chat_completion = await client.chat.completions.create(
-        model=openai_model,
+        model=settings.openai_model,
         messages=[
             {
                 "role": "system",
@@ -527,7 +582,7 @@ async def get_url_title(
             },
             {"role": "user", "content": url},
         ],
-        temperature=get_model_temperature(openai_model, temperature),
+        temperature=get_model_temperature(settings.openai_model, temperature),
     )
 
     # Extract the content from the response

@@ -80,7 +80,7 @@ async def process_ai_analysis_background(
         analysis = await ai.get_analysis(content=content, mood_process=mood_process)
 
         moods_list: list = [mood[0] for mood in settings.mood_analysis_weights]
-        ai_fix = analysis["mood_analysis"] not in moods_list
+        ai_fix = analysis["mood_analysis"] not in moods_list or analysis.get("_ai_fix", False)
 
         # mood is the user's self-reported feeling — AI must never overwrite it.
         # mood_analysis is the AI's nuanced assessment (elated, hopeless, etc.).
