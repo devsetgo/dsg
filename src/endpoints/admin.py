@@ -28,6 +28,7 @@ Routes:
     - GET "/note-ai-check": Lists notes pending AI review. Allows admins to manually trigger AI checks on notes. Requires login verification.
     - GET "/note-ai-check/{user_id}": Triggers AI processing for all notes associated with a specific user. Designed to facilitate batch processing of user notes. Requires login verification.
 """
+import asyncio
 import secrets
 from collections import defaultdict
 from datetime import datetime
@@ -47,7 +48,8 @@ from sqlalchemy import Select, and_
 
 # , FailedLoginAttempts,JobApplications
 from ..db_tables import Categories, Notes, Posts, Users, WebLinks
-from ..functions import date_functions, link_preview, note_import
+from ..functions import ai, date_functions, link_preview, note_import
+from ..functions.notifications import create_notification
 from ..functions.hash_function import check_password_complexity, hash_password
 from ..functions.login_required import check_login
 from ..functions.models import RoleEnum
@@ -568,6 +570,93 @@ async def admin_weblink_fix_user(
         list_of_ids=list_of_ids,
     )
     return RedirectResponse(url="/admin", status_code=302)
+
+
+async def _fix_moods_background(user_id: str) -> None:
+    """Re-derive mood from content for all notes stuck on 'neutral' due to the AI overwrite bug."""
+    query = Select(Notes).where(Notes.user_id == user_id, Notes.mood == "neutral")
+    notes = await db_ops.read_query(query=query)
+    if isinstance(notes, str) or not notes:
+        await create_notification(
+            user_id=user_id,
+            message="Mood fix: no neutral notes found to process.",
+            category="info",
+        )
+        return
+
+    total = len(notes)
+    fixed = 0
+    errors = 0
+
+    for note in notes:
+        try:
+            content = note.note  # decrypted via property
+            if not content or content.startswith("Failed to decrypt"):
+                continue
+            result = await ai.get_mood(content=content)
+            new_mood = (result.get("mood") or "").strip().lower()
+            if new_mood in ("positive", "negative", "neutral"):
+                await db_ops.update_one(
+                    table=Notes,
+                    record_id=note.pkid,
+                    new_values={"mood": new_mood},
+                )
+                if new_mood != "neutral":
+                    fixed += 1
+        except Exception as e:
+            logger.error(f"Mood fix failed for note {note.pkid}: {e}")
+            errors += 1
+
+        # Respect OpenAI rate limits — ~2 req/s is safe for most tiers
+        await asyncio.sleep(0.5)
+
+    msg = f"Mood fix complete: {total} neutral notes processed, {fixed} re-classified, {errors} errors."
+    logger.info(msg)
+    await create_notification(user_id=user_id, message=msg, category="ai")
+
+
+@router.get("/fix-moods", response_class=HTMLResponse)
+async def admin_fix_moods(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    user_info["is_admin"]
+    query = Select(Notes.user_id, Users.user_name).join(
+        Users, Notes.user_id == Users.pkid
+    ).where(Notes.mood == "neutral")
+    rows = await db_ops.read_query(query=query)
+
+    counts: dict = {}
+    if rows and not isinstance(rows, str):
+        for row in rows:
+            uid = row.user_id
+            name = row.user_name
+            if uid not in counts:
+                counts[uid] = {"user_name": name, "neutral_count": 0}
+            counts[uid]["neutral_count"] += 1
+
+    user_stats = sorted(counts.values(), key=lambda x: x["neutral_count"], reverse=True)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="/admin/fix-moods.html",
+        context={"user_stats": user_stats},
+    )
+
+
+@router.post("/fix-moods/{user_id}", response_class=HTMLResponse)
+async def admin_fix_moods_start(
+    background_tasks: BackgroundTasks,
+    user_id: str,
+    user_info: dict = Depends(check_login),
+):
+    user_info["is_admin"]
+    background_tasks.add_task(_fix_moods_background, user_id=user_id)
+    logger.info(f"Mood fix job queued for user {user_id}")
+    return HTMLResponse(
+        '<div class="alert alert-success">Mood fix job started. '
+        'You will receive a notification when it completes.</div>'
+    )
 
 
 @router.get("/export-notes", response_class=HTMLResponse)
