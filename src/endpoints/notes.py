@@ -82,6 +82,8 @@ async def process_ai_analysis_background(
         moods_list: list = [mood[0] for mood in settings.mood_analysis_weights]
         ai_fix = analysis["mood_analysis"] not in moods_list
 
+        # mood is the user's self-reported feeling — AI must never overwrite it.
+        # mood_analysis is the AI's nuanced assessment (elated, hopeless, etc.).
         update_data = {
             "tags": analysis["tags"]["tags"],
             "summary": analysis["summary"],
@@ -89,13 +91,10 @@ async def process_ai_analysis_background(
             "ai_fix": ai_fix,
         }
 
-        if analysis["mood"] is not None:
-            update_data["mood"] = analysis["mood"]["mood"]
-
         await db_ops.update_one(table=Notes, record_id=note_id, new_values=update_data)
 
         tags = ", ".join(analysis["tags"]["tags"]) or "none"
-        mood = update_data.get("mood", analysis["mood_analysis"])
+        mood = analysis["mood_analysis"]
         await create_notification(
             user_id=user_id,
             message=f"AI analysis complete — mood: {mood}, tags: {tags}",

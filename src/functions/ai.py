@@ -83,7 +83,7 @@ async def get_analysis(content: str, mood_process: str = None) -> dict:
 
     mood = None
     # If the mood process is not one of the expected values, get the mood from the content
-    if mood_process not in ["postive", "negative", "neutral"]:
+    if mood_process not in ["positive", "negative", "neutral"]:
         mood = await get_mood(content=content)
         logger.info("processing mood")
 
