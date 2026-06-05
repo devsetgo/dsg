@@ -58,6 +58,21 @@ from ..resources import db_ops, templates
 router = APIRouter()
 
 
+def _safe_list(result) -> list:
+    """Return result when it is a genuine list of ORM objects; empty list otherwise.
+
+    dsg_lib db_ops methods return a plain dict on certain database errors instead
+    of raising an exception.  Guards that only check isinstance(result, str) miss
+    those dict error responses.  This helper covers both cases.
+    """
+    return result if isinstance(result, list) else []
+
+
+def _safe_record(result):
+    """Return result when it is a genuine ORM object; None otherwise."""
+    return result if result is not None and not isinstance(result, dict) else None
+
+
 @router.get("/", response_class=HTMLResponse)
 async def admin_dashboard(
     request: Request,
@@ -78,7 +93,7 @@ async def admin_dashboard(
 async def get_list_of_users(user_timezone: str):
     try:
         query = Select(Users)
-        users = await db_ops.read_query(query=query)
+        users = _safe_list(await db_ops.read_query(query=query))
         users = [user.to_dict() for user in users]
 
         for user in users:
@@ -121,7 +136,7 @@ async def admin_categories_table(
     user_info["is_admin"]
 
     query = Select(Categories)
-    categories = await db_ops.read_query(query=query)
+    categories = _safe_list(await db_ops.read_query(query=query))
     categories = [category.to_dict() for category in categories]
 
     # Get a count of posts for each category
@@ -257,7 +272,7 @@ async def admin_user(
     user_info["is_admin"]
 
     query = Select(Users).where(Users.pkid == user_id)
-    user = await db_ops.read_one_record(query=query)
+    user = _safe_record(await db_ops.read_one_record(query=query))
 
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -358,7 +373,7 @@ async def admin_update_user(
     )
 
     query = Select(Users).where(Users.pkid == update_user_id)
-    user = await db_ops.read_one_record(query=query)
+    user = _safe_record(await db_ops.read_one_record(query=query))
 
     if user is None:  # no pragma: no cover
         raise HTTPException(status_code=404, detail="User not found")
@@ -447,14 +462,14 @@ async def admin_note_ai_check(
     notes_query = Select(Notes).where(Notes.ai_fix)
 
     # Execute the query and get the results
-    notes = await db_ops.read_query(query=notes_query)
+    notes = _safe_list(await db_ops.read_query(query=notes_query))
     notes = [note.to_dict() for note in notes]
 
     # Create a query to select weblinks that need AI check
     weblinks_query = Select(WebLinks).where(WebLinks.ai_fix)
 
     # Execute the query and get the results
-    weblinks = await db_ops.read_query(query=weblinks_query)
+    weblinks = _safe_list(await db_ops.read_query(query=weblinks_query))
     weblinks = [weblink.to_dict() for weblink in weblinks]
 
     # Log the number of retrieved notes and weblinks
@@ -483,7 +498,7 @@ async def admin_note_ai_check(
 
     # Query to get the weblinks with ai_fix set to True
     weblinks_query = Select(WebLinks).where(WebLinks.ai_fix)
-    weblinks = await db_ops.read_query(query=weblinks_query)
+    weblinks = _safe_list(await db_ops.read_query(query=weblinks_query))
     weblinks = [weblink.to_dict() for weblink in weblinks]
 
     # Update user_note_count with weblinks count
@@ -497,9 +512,8 @@ async def admin_note_ai_check(
     for user in user_note_count:
         user_id = user["user_id"]
         query = Select(Users).where(Users.pkid == user_id)
-        user_data = await db_ops.read_one_record(query=query)
-        user_data = user_data.to_dict()
-        user["user_name"] = user_data["user_name"]
+        user_data = _safe_record(await db_ops.read_one_record(query=query))
+        user["user_name"] = user_data.to_dict()["user_name"] if user_data else "unknown"
 
     # Log the number of retrieved notes and weblinks
     logger.debug(f"Retrieved {len(notes)} notes for AI check")
@@ -533,10 +547,7 @@ async def admin_note_ai_check_user(
     query = Select(Notes).where(and_(Notes.user_id == user_id, Notes.ai_fix))
 
     # Execute the query and get the results
-    notes = await db_ops.read_query(query=query)
-    if isinstance(notes, dict):
-        logger.error(f"Error fetching notes: {notes}")
-        raise HTTPException(status_code=404, detail="No notes found for user")
+    notes = _safe_list(await db_ops.read_query(query=query))
     notes = [note.to_dict() for note in notes]
     list_of_ids: list = []
     for note in notes:
@@ -559,7 +570,7 @@ async def admin_weblink_fix_user(
     query = Select(WebLinks).where(and_(WebLinks.user_id == user_id, WebLinks.ai_fix))
 
     # Execute the query and get the results
-    links = await db_ops.read_query(query=query)
+    links = _safe_list(await db_ops.read_query(query=query))
     links = [link.to_dict() for link in links]
     list_of_ids: list = []
     for link in links:
@@ -575,8 +586,8 @@ async def admin_weblink_fix_user(
 async def _fix_moods_background(user_id: str) -> None:
     """Re-derive mood from content for all notes stuck on 'neutral' due to the AI overwrite bug."""
     query = Select(Notes).where(Notes.user_id == user_id, Notes.mood == "neutral")
-    notes = await db_ops.read_query(query=query)
-    if isinstance(notes, str) or not notes:
+    notes = _safe_list(await db_ops.read_query(query=query))
+    if not notes:
         await create_notification(
             user_id=user_id,
             message="Mood fix: no neutral notes found to process.",
@@ -624,11 +635,10 @@ async def admin_fix_moods(
     query = Select(Notes.user_id, Users.user_name).join(
         Users, Notes.user_id == Users.pkid
     ).where(Notes.mood == "neutral")
-    rows = await db_ops.read_query(query=query)
+    rows = _safe_list(await db_ops.read_query(query=query))
 
     counts: dict = {}
-    if rows and not isinstance(rows, str):
-        for row in rows:
+    for row in rows:
             uid = row.user_id
             name = row.user_name
             if uid not in counts:
@@ -670,8 +680,7 @@ async def export_notes(
 
     # Fetch all notes from the database with user_name
     query = Select(Notes).join(Users, Notes.user_id == Users.pkid)
-    result = await db_ops.read_query(query=query)
-    notes = [note.to_dict() for note in result]
+    notes = [note.to_dict() for note in _safe_list(await db_ops.read_query(query=query))]
     # Render the template with the data
     context = {
         "page": "admin",
