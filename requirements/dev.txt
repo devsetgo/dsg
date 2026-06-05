@@ -1,6 +1,6 @@
 -r prd.txt
 autoflake==2.3.3 # Vulnerabilities: None
-black==26.3.1 # Vulnerabilities: None
+black==26.5.1 # Vulnerabilities: None
 bump-pydantic==0.8.0 # Vulnerabilities: None
 bumpcalver==2026.3.8.1 # Vulnerabilities: None
 calver==2025.10.20 # Vulnerabilities: None
