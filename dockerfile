@@ -8,11 +8,13 @@ LABEL github_repo='https://github.com/devsetgo/dsg'
 # Create user before COPY so we can use --chown and avoid a duplicate ownership layer
 RUN useradd -m -r dsgUser
 
-# All system deps in one layer: security upgrade + build tools + OCR tools
+# All system deps in one layer: security upgrade + build tools + OCR tools + gosu
+# gosu is used by entrypoint.sh to drop from root to dsgUser after fixing volume permissions
 RUN apt-get update && apt-get -y upgrade \
     && apt-get -y install --no-install-recommends \
         gcc wget gnupg unzip curl \
         tesseract-ocr unpaper ghostscript \
+        gosu \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Google Chrome (used for WebLink screenshots)
@@ -39,10 +41,16 @@ RUN pip install --no-cache-dir --upgrade pip setuptools \
 # Copy app with correct ownership in one step — eliminates the duplicate ~319MB chown layer
 COPY --chown=dsgUser:dsgUser . /app
 
-# Create log directory — gitignored so not in build context, must exist before dsgUser runs
+# Create log directory — gitignored so not in build context
 RUN mkdir -p /app/log && chown dsgUser:dsgUser /app/log
 
-USER dsgUser
+# entrypoint.sh runs as root, chowns the mounted log volume, then exec's as dsgUser via gosu.
+# USER is intentionally not set here — gosu in entrypoint.sh handles the privilege drop,
+# matching the pattern used by official Docker images (postgres, redis, etc.).
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
 
 ENV release_env=prd
 ENV DB_DRIVER=sqlite
