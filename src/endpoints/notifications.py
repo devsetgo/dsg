@@ -55,7 +55,7 @@ async def notifications_partial(
 
     query = Select(Notifications).where(Notifications.user_id == user_identifier)
     if not show_all:
-        query = query.where(Notifications.is_read == False)  # noqa: E712
+        query = query.where(Notifications.is_read.is_(False))
     if show_all:
         query = query.order_by(Notifications.is_read.asc(), Notifications.date_created.desc())
     else:
@@ -83,7 +83,7 @@ async def notifications_badge(
     user_identifier = user_info["user_identifier"]
     query = Select(Notifications).where(
         Notifications.user_id == user_identifier,
-        Notifications.is_read == False,  # noqa: E712
+        Notifications.is_read.is_(False),
     )
     count = await db_ops.count_query(query=query)
     return templates.TemplateResponse(
