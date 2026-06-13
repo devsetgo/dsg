@@ -242,14 +242,12 @@ async def create_post(
 
     logger.debug(f"Received category: {category} and content: {content}")
 
-    # Get the tags and summary from OpenAI
-    analysis = await ai.get_tags(content=content)
-    summary = await ai.get_summary(content=content, sentence_length=3)
+    # Single AI call returns tags (flat list) and summary together
+    analysis = await ai.get_blog_post_analysis(content=content, sentence_length=3)
     logger.info(f"Received analysis from AI: {analysis}")
-    # Create the post
     post = Posts(
         title=title,
-        summary=summary,
+        summary=analysis["summary"],
         content=content,
         user_id=user_identifier,
         category=category,

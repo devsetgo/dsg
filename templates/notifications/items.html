@@ -1,0 +1,17 @@
+{% if notifications %}
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <small class="text-white-50">{{ notifications|length }} notification{{ 's' if notifications|length != 1 else '' }}</small>
+    <button class="btn btn-sm btn-outline-secondary py-0"
+            hx-delete="/notifications/clear-all{% if show_all %}?show_all=true{% endif %}"
+            hx-target="#notification-items"
+            hx-swap="innerHTML"
+            hx-confirm="Clear all notifications?">
+        Clear all
+    </button>
+</div>
+{% for n in notifications %}
+{% include "notifications/item.html" %}
+{% endfor %}
+{% else %}
+<p class="text-white-50 text-center small mt-4">No notifications</p>
+{% endif %}

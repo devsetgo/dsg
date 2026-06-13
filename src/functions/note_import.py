@@ -162,20 +162,26 @@ async def process_note(
             note = note.to_dict()
             logger.debug(f"AI Processing of note: {note}")
 
-            mood = note["mood"]
-            if mood not in ["positive", "negative", "neutral"]:
-                mood = await ai.get_mood(content=note["note"])
-                mood = mood["mood"]
-
+            # Single AI call — get_analysis now always returns mood too
             analysis = await ai.get_analysis(content=note["note"])
             logger.info(f"Received analysis from AI: {analysis}")
+
+            # Honour valid user-selected mood; use AI-derived mood only if needed
+            stored_mood = note.get("mood", "")
+            if stored_mood in ("positive", "negative", "neutral"):
+                final_mood = stored_mood
+            else:
+                ai_mood = analysis.get("mood") or {}
+                final_mood = ai_mood.get("mood", "neutral") if isinstance(ai_mood, dict) else "neutral"
+                if final_mood not in ("positive", "negative", "neutral"):
+                    final_mood = "neutral"
 
             note_update = {
                 "tags": analysis["tags"]["tags"],
                 "summary": analysis["summary"],
                 "mood_analysis": analysis["mood_analysis"],
                 "ai_fix": False,
-                "mood": mood,
+                "mood": final_mood,
             }
 
             data = await db_ops.update_one(

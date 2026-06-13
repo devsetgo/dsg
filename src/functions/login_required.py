@@ -105,6 +105,7 @@ async def check_login(request: Request):
         "timezone": request.session.get("timezone", None),
         "is_admin": request.session.get("is_admin", False) is True,
         "exp": request.session.get("exp", 0),
+        "mood_takeaway_months": int(request.session.get("mood_takeaway_months", 3)),
     }
 
     logger.debug(f"check login initial: {request.state.user_info}")

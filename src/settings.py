@@ -114,7 +114,7 @@ class Settings(BaseSettings):
     # OpenAI Settings
     open_ai_disabled: bool = False
     openai_key: SecretStr = None  # OpenAI API Key
-    openai_model: str = "gpt-3.5-turbo-1106"
+    openai_model: str = "gpt-5-nano"
     mood_analysis_weights: list = [
         ("elated", 1),
         ("overjoyed", 0.875),
@@ -160,6 +160,11 @@ class Settings(BaseSettings):
 
     convert_markdown_to_html: bool = False
 
+    # health endpoints
+    health_status_endpoint: bool = True
+    health_uptime_endpoint: bool = True
+    health_heapdump_endpoint: bool = False
+
     @model_validator(mode="before")
     @classmethod
     def parse_database_driver(cls, values):
@@ -170,6 +175,10 @@ class Settings(BaseSettings):
                 values["db_driver"] = DatabaseDriverEnum[db_driver.lower()].value
             except KeyError:
                 pass
+
+        # Backward-compatibility for legacy singular env var names.
+        if "create_demo_posts" not in values and "create_demo_post" in values:
+            values["create_demo_posts"] = values.get("create_demo_post")
         return values
 
     model_config = SettingsConfigDict(

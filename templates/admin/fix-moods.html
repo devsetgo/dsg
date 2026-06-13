@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block page_title %}| Fix Moods{% endblock %}
+{% block page_breadcrumb %}Fix Moods{% endblock %}
+{% block page_head_title %}Fix Neutral Moods{% endblock %}
+
+{% block body %}
+<section>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card card-warning">
+          <div class="card-header">
+            <h3 class="card-title">Re-derive Mood for Notes Stuck on Neutral</h3>
+          </div>
+          <div class="card-body">
+            <p>
+              A bug caused the AI to overwrite the user-selected mood with its own assessment, which
+              frequently returned <strong>neutral</strong>. This tool re-asks the AI to classify each
+              neutral note as positive, negative, or neutral based on content.
+            </p>
+            <p class="text-muted small">
+              Each note requires one OpenAI API call. Processing is rate-limited to ~2 req/sec.
+              A notification will appear when the job completes.
+            </p>
+
+            {% if user_stats %}
+            <table class="table table-bordered table-sm mt-3">
+              <thead class="thead-dark">
+                <tr>
+                  <th>User</th>
+                  <th>Neutral Notes</th>
+                  <th>Estimated Time</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for stat in user_stats %}
+                <tr>
+                  <td>{{ stat.user_name }}</td>
+                  <td>{{ stat.neutral_count }}</td>
+                  <td>~{{ (stat.neutral_count * 0.5 / 60) | round(1) }} min</td>
+                  <td>
+                    <div id="action-{{ loop.index }}">
+                      <button class="btn btn-sm btn-warning"
+                              hx-post="/admin/fix-moods/{{ stat.user_id }}"
+                              hx-target="#action-{{ loop.index }}"
+                              hx-swap="innerHTML"
+                              hx-confirm="Start mood fix for {{ stat.neutral_count }} notes? This will make ~{{ stat.neutral_count }} OpenAI API calls.">
+                        Fix Moods
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+            <div class="alert alert-success mt-3">
+              <i class="fas fa-check-circle mr-2"></i>No neutral notes found — nothing to fix.
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

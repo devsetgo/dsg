@@ -1,0 +1,41 @@
+<div class="p-3">
+    <h6 class="text-white mb-1"><i class="fas fa-bell mr-2"></i>Notifications &amp; Updates</h6>
+    <p class="text-white-50 small mb-3">AI results and system events appear here.</p>
+
+    <!-- Unread / All toggle -->
+    <div class="btn-group btn-group-sm w-100 mb-3" role="group">
+        <button id="notif-btn-unread" type="button"
+                class="btn btn-light"
+                onclick="setNotifView(false)">Unread</button>
+        <button id="notif-btn-all" type="button"
+                class="btn btn-outline-secondary"
+                onclick="setNotifView(true)">All</button>
+    </div>
+
+    <div id="notification-items"
+         hx-get="/notifications/partial"
+         hx-trigger="load, every 10s"
+         hx-swap="innerHTML">
+        <p class="text-white-50 text-center small mt-4">Loading...</p>
+    </div>
+</div>
+
+<script>
+(function () {
+    var showingAll = false;
+
+    window.setNotifView = function (all) {
+        showingAll = all;
+        var el = document.getElementById('notification-items');
+        var url = all ? '/notifications/partial?show_all=true' : '/notifications/partial';
+        el.setAttribute('hx-get', url);
+        htmx.process(el);
+        htmx.trigger(el, 'load');
+
+        document.getElementById('notif-btn-unread').className =
+            all ? 'btn btn-outline-secondary' : 'btn btn-light';
+        document.getElementById('notif-btn-all').className =
+            all ? 'btn btn-light' : 'btn btn-outline-secondary';
+    };
+})();
+</script>

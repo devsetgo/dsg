@@ -1,43 +1,143 @@
 <!-- Begin Charting Section -->
 <section>
-    <!-- Row for Tags chart -->
+    <!-- Row for Insight summary cards -->
     <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Tags</h3>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                                class="fas fa-minus"></i>
-                        </button>
-                    </div>
+        <div class="col-md-3 col-sm-6 col-12">
+            <div class="info-box bg-info">
+                <span class="info-box-icon"><i class="fas fa-fire"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Current Streak</span>
+                    <span class="info-box-number">{{ metrics.writing_streak.current if metrics.writing_streak else 0 }} days</span>
                 </div>
-                <div class="card-body">
-                    <canvas id="tagsChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 col-12">
+            <div class="info-box bg-indigo">
+                <span class="info-box-icon"><i class="fas fa-trophy"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Longest Streak</span>
+                    <span class="info-box-number">{{ metrics.writing_streak.longest if metrics.writing_streak else 0 }} days</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 col-12">
+            <div class="info-box bg-secondary">
+                <span class="info-box-icon"><i class="fas fa-wave-square"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Mood Stability</span>
+                    <span class="info-box-number">{{ metrics.mood_stability_score if metrics.mood_stability_score is not none else 0 }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 col-12">
+            <div class="info-box bg-success">
+                <span class="info-box-icon"><i class="fas fa-award"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Milestones</span>
+                    <span class="info-box-number">{{ metrics.milestones|length if metrics.milestones else 0 }}</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Row for Mood Trends chart -->
+    <!-- Section 1: How often you write -->
     <div class="row">
         <div class="col-12">
-            <div class="card">
+            <div class="card card-outline card-primary">
                 <div class="card-header">
-                    <h3 class="card-title">Mood Trends</h3>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                                class="fas fa-minus"></i>
-                        </button>
-                    </div>
+                    <h3 class="card-title">1. How Often You Write</h3>
                 </div>
-                <div class="card-body">
-                    <canvas id="moodChart"></canvas>
+                <div class="card-body pt-2 pb-2 text-muted">
+                    <small>Track your consistency and note depth over time. Steady monthly output and stable average word count usually signal sustainable journaling.</small>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Row for Mood Trends chart -->
+
+    <!-- Row for Notes by Month and Word Trend -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Notes by Month</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
+                                class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Average Words per Note by Month</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="wordTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: When you write -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-outline card-info">
+                <div class="card-header">
+                    <h3 class="card-title">2. When You Write</h3>
+                </div>
+                <div class="card-body pt-2 pb-2 text-muted">
+                    {% set best_day = (metrics.activity_by_day_of_week|dictsort(by='value')|last)[0] if metrics.activity_by_day_of_week else 'N/A' %}
+                    {% set best_hour = (metrics.activity_by_hour|dictsort(by='value')|last)[0] if metrics.activity_by_hour else 'N/A' %}
+                    <small>Your strongest writing window appears to be <strong>{{ best_day }}</strong> around <strong>{{ best_hour }}:00</strong>. Protect this slot to keep momentum.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row for activity distribution charts -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Writing by Day of Week</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="activityDayChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Writing by Hour</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="activityHourChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: How mood changes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-outline card-warning">
+                <div class="card-header">
+                    <h3 class="card-title">3. How Mood Changes</h3>
+                </div>
+                <div class="card-body pt-2 pb-2 text-muted">
+                    <small id="mood-takeaway-text">Use this trend to spot drift early. Rising volatility with a flat or declining mean can be a signal to review routines, sleep, or workload.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row for Mood Trend chart -->
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -54,58 +154,94 @@
         </div>
     </div>
 
-    <!-- Row for Notes by Year chart -->
+    <!-- Section 4: What themes are changing -->
     <div class="row">
         <div class="col-12">
-            <div class="card">
+            <div class="card card-outline card-success">
                 <div class="card-header">
-                    <h3 class="card-title">Notes by Year</h3>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                                class="fas fa-plus"></i>
-                        </button>
-                    </div>
+                    <h3 class="card-title">4. What Themes Are Changing</h3>
                 </div>
-                <div class="card-body">
-                    <canvas id="yearChart"></canvas>
+                <div class="card-body pt-2 pb-2 text-muted">
+                    {% set rising_count = metrics.tag_trend.rising|length if metrics.tag_trend and metrics.tag_trend.rising else 0 %}
+                    {% set falling_count = metrics.tag_trend.falling|length if metrics.tag_trend and metrics.tag_trend.falling else 0 %}
+                    <small>Theme shifts reveal where attention is moving. You currently have <strong>{{ rising_count }}</strong> rising and <strong>{{ falling_count }}</strong> falling tag trends.</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Row for Notes by Month chart -->
+    <!-- Row for milestones and tag trends -->
     <div class="row">
-        <div class="col-12">
+        <div class="col-lg-6">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Notes by Month</h3>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                                class="fas fa-plus"></i>
-                        </button>
-                    </div>
+                    <h3 class="card-title">Milestones</h3>
                 </div>
                 <div class="card-body">
-                    <canvas id="monthChart"></canvas>
+                    <ul class="list-group list-group-flush">
+                        {% if metrics.milestones %}
+                        {% for milestone in metrics.milestones %}
+                        <li class="list-group-item">{{ milestone }}</li>
+                        {% endfor %}
+                        {% else %}
+                        <li class="list-group-item text-muted">No milestones yet.</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Tag Trend (Last 90 vs Prior 90 Days)</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <h6>Rising</h6>
+                            <ul class="list-group list-group-flush">
+                                {% if metrics.tag_trend and metrics.tag_trend.rising %}
+                                {% for tag, delta in metrics.tag_trend.rising.items() %}
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>{{ tag }}</span>
+                                    <span class="text-success">+{{ delta }}</span>
+                                </li>
+                                {% endfor %}
+                                {% else %}
+                                <li class="list-group-item text-muted">No rising tags</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        <div class="col-6">
+                            <h6>Falling</h6>
+                            <ul class="list-group list-group-flush">
+                                {% if metrics.tag_trend and metrics.tag_trend.falling %}
+                                {% for tag, delta in metrics.tag_trend.falling.items() %}
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>{{ tag }}</span>
+                                    <span class="text-danger">{{ delta }}</span>
+                                </li>
+                                {% endfor %}
+                                {% else %}
+                                <li class="list-group-item text-muted">No falling tags</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Row for Notes by Week chart -->
+    <!-- Row for mood-tag chart -->
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Notes by Week</h3>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                                class="fas fa-plus"></i>
-                        </button>
-                    </div>
+                    <h3 class="card-title">Top Tags by Mood</h3>
                 </div>
                 <div class="card-body">
-                    <canvas id="weekChart"></canvas>
+                    <canvas id="moodTagChart"></canvas>
                 </div>
             </div>
         </div>

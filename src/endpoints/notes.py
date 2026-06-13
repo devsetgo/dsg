@@ -42,7 +42,9 @@ Routes:
 """
 import csv
 import io
+import json
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 # from pytz import timezone, UTC
@@ -58,10 +60,11 @@ from fastapi import (
 )
 from fastapi.responses import RedirectResponse
 from loguru import logger
-from sqlalchemy import Select, Text, and_, between, cast, desc, extract, or_
+from sqlalchemy import Select, Text, and_, between, cast, desc, extract, func, or_
 
 from ..db_tables import NoteMetrics, Notes
 from ..functions import ai, date_functions, note_import, notes_metrics
+from ..functions.notifications import create_notification
 from ..functions.login_required import check_login
 from ..resources import db_ops, templates
 from ..settings import settings
@@ -70,26 +73,18 @@ router = APIRouter()
 
 
 async def process_ai_analysis_background(
-    note_id: str, content: str, mood_process: str | None = None
+    note_id: str, content: str, user_id: str, mood_process: str | None = None
 ):
-    """
-    Background task to process AI analysis for a note and update the database.
-
-    Args:
-        note_id (str): The ID of the note to update
-        content (str): The note content to analyze
-        mood_process (str, optional): The mood process parameter
-    """
     try:
         logger.info(f"Starting background AI analysis for note {note_id}")
 
-        # Get the analysis from AI
         analysis = await ai.get_analysis(content=content, mood_process=mood_process)
 
         moods_list: list = [mood[0] for mood in settings.mood_analysis_weights]
-        ai_fix = analysis["mood_analysis"] not in moods_list
+        ai_fix = analysis["mood_analysis"] not in moods_list or analysis.get("_ai_fix", False)
 
-        # Prepare the update data
+        # mood is the user's self-reported feeling — AI must never overwrite it.
+        # mood_analysis is the AI's nuanced assessment (elated, hopeless, etc.).
         update_data = {
             "tags": analysis["tags"]["tags"],
             "summary": analysis["summary"],
@@ -97,20 +92,28 @@ async def process_ai_analysis_background(
             "ai_fix": ai_fix,
         }
 
-        # If mood analysis returned a mood, update it
-        if analysis["mood"] is not None:
-            update_data["mood"] = analysis["mood"]["mood"]
-
-        # Update the note in the database
         await db_ops.update_one(table=Notes, record_id=note_id, new_values=update_data)
 
+        tags = ", ".join(analysis["tags"]["tags"]) or "none"
+        mood = analysis["mood_analysis"]
+        await create_notification(
+            user_id=user_id,
+            message=f"AI analysis complete — mood: {mood}, tags: {tags}",
+            category="ai",
+            note_id=note_id,
+        )
         logger.info(f"Completed background AI analysis for note {note_id}")
 
     except Exception as e:
         logger.error(f"Error in background AI analysis for note {note_id}: {str(e)}")
-        # Set ai_fix to True if there was an error
         await db_ops.update_one(
             table=Notes, record_id=note_id, new_values={"ai_fix": True}
+        )
+        await create_notification(
+            user_id=user_id,
+            message="AI analysis failed for a note. Retry from the AI Issues page.",
+            category="error",
+            note_id=note_id,
         )
 
 
@@ -169,6 +172,7 @@ async def read_notes(
         "user_identifier": user_identifier,
         "metrics": metrics,
         "note_metrics": note_metrics,
+        "mood_takeaway_months": user_info.get("mood_takeaway_months", 3),
     }
     # print(context["note_metrics"]["ai_fix_count"])
     return templates.TemplateResponse(
@@ -232,46 +236,35 @@ async def ai_update_note(
 
 @router.get("/ai-fix/{note_id}")
 async def ai_fix_processing(
-    request: Request, note_id: str, user_info: dict = Depends(check_login)
+    background_tasks: BackgroundTasks,
+    request: Request,
+    note_id: str,
+    user_info: dict = Depends(check_login),
 ):
     user_identifier = user_info["user_identifier"]
-    user_info["timezone"]
 
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
     note = await db_ops.read_one_record(query=query)
+    if note is None:
+        return RedirectResponse(url="/error/404", status_code=303)
 
-    note = note.to_dict()
+    note_dict = note.to_dict()
+    mood = note_dict["mood"] if note_dict["mood"] in ["positive", "negative", "neutral"] else None
 
-    mood = None
-    if note["mood"] not in ["postive", "negative", "neutral"]:
-        mood = note["mood"]
-    # Get the tags and summary from OpenAI
-    analysis = await ai.get_analysis(content=note["note"], mood_process=mood)
+    # Clear the flag immediately so the note leaves /issues before the background task finishes
+    await db_ops.update_one(table=Notes, record_id=note_id, new_values={"ai_fix": False})
 
-    moods_list: list = [mood[0] for mood in settings.mood_analysis_weights]
-
-    if analysis["mood_analysis"] not in moods_list:
-        pass
-
-    logger.debug(f"Received analysis from AI: {analysis}")
-    # Create the note
-    note_update = {
-        "tags": analysis["tags"]["tags"],
-        "summary": analysis["summary"],
-        "mood_analysis": analysis["mood_analysis"],
-        "ai_fix": False,
-    }
-
-    # If mood is not None, add it to note_update
-    if analysis["mood"] is not None:
-        note_update["mood"] = analysis["mood"]["mood"]
-
-    await db_ops.update_one(table=Notes, record_id=note["pkid"], new_values=note_update)
-
-    logger.info(f"Resubmited note to AI with ID: {note_id}")
-    return RedirectResponse(url=f"/notes/view/{note_id}?ai=true", status_code=302)
+    background_tasks.add_task(
+        process_ai_analysis_background,
+        note_id=note_id,
+        content=note_dict["note"],
+        user_id=user_identifier,
+        mood_process=mood,
+    )
+    logger.info(f"Queued background AI fix for note {note_id}")
+    return RedirectResponse(url=f"/notes/view/{note_id}", status_code=302)
 
 
 @router.get("/bulk")
@@ -523,7 +516,10 @@ async def create_note(
 
     # Add background tasks for AI analysis and metrics update
     background_tasks.add_task(
-        process_ai_analysis_background, note_id=data.pkid, content=note_content
+        process_ai_analysis_background,
+        note_id=data.pkid,
+        content=note_content,
+        user_id=user_identifier,
     )
     background_tasks.add_task(
         notes_metrics.update_notes_metrics, user_id=user_identifier
@@ -535,92 +531,151 @@ async def create_note(
     return RedirectResponse(url=f"/notes/view/{data.pkid}", status_code=302)
 
 
+@router.get("/tags")
+async def get_note_tags(
+    request: Request,
+    user_info: dict = Depends(check_login),
+):
+    user_identifier = user_info["user_identifier"]
+    # Select only the tags column — avoids loading encrypted note/summary blobs
+    query = Select(Notes.tags).where(Notes.user_id == user_identifier)
+    results = await db_ops.read_query(query=query)
+    all_tags: set = set()
+
+    def _extract_tags(row):
+        if row is None:
+            return None
+
+        if hasattr(row, "tags"):
+            return row.tags
+
+        mapping = getattr(row, "_mapping", None)
+        if mapping and "tags" in mapping:
+            return mapping["tags"]
+
+        if isinstance(row, dict):
+            return row.get("tags")
+
+        if isinstance(row, (list, tuple)):
+            return row[0] if row else None
+
+        return None
+
+    if results and not isinstance(results, (str, dict)):
+        for row in results:
+            tags_value = _extract_tags(row)
+            if not tags_value:
+                continue
+
+            if isinstance(tags_value, str):
+                try:
+                    parsed = json.loads(tags_value)
+                    tags_value = parsed if isinstance(parsed, list) else [tags_value]
+                except Exception:
+                    tags_value = [tags_value]
+
+            if isinstance(tags_value, (list, tuple, set)):
+                all_tags.update([tag for tag in tags_value if tag])
+    return sorted(all_tags)
+
+
 @router.get("/pagination")
 async def read_notes_pagination(
     request: Request,
-    search_term: str = Query(None, description="Search term"),
+    search_term: str = Query(None, description="Search term for note and summary content"),
     start_date: str = Query(None, description="Start date"),
     end_date: str = Query(None, description="End date"),
     mood: str = Query(None, description="Mood"),
+    tags: list[str] = Query(default=[], description="Tags to filter by (OR logic)"),
     page: int = Query(1, description="Page number"),
     limit: int = Query(20, description="Number of notes per page"),
     user_info: dict = Depends(check_login),
-    #
 ):
-    query_params = {
-        "search_term": search_term,
-        "start_date": start_date,
-        "end_date": end_date,
-        "mood": mood,
-        "limit": limit,
-    }
-
     user_identifier = user_info["user_identifier"]
     user_timezone = user_info["timezone"]
 
     logger.info(
-        f"Searching for term: {search_term}, start_date: {start_date}, end_date: {end_date}, mood: {mood}, user: {user_identifier}"
-    )
-    # find search_term in columns: note, mood, tags, summary
-    query = Select(Notes).where(
-        (Notes.user_id == user_identifier)
-        & (
-            or_(
-                Notes.note.contains(search_term) if search_term else True,
-                Notes.summary.contains(search_term) if search_term else True,
-                cast(Notes.tags, Text).contains(search_term) if search_term else True,
-            )
-        )
+        f"Searching content: {search_term!r}, tags: {tags}, start_date: {start_date}, "
+        f"end_date: {end_date}, mood: {mood}, user: {user_identifier}"
     )
 
-    # filter by mood
+    # Base SQL query — mood, dates, and tags are filterable at the DB level
+    query = Select(Notes).where(Notes.user_id == user_identifier)
+
+    # Tag filter: OR logic, case-insensitive exact match within the JSON array.
+    # func.lower() on both sides handles mixed-case stored tags (e.g. "Valerie" matches "valerie").
+    if tags:
+        def _tag_like(tag: str):
+            escaped = tag.lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            return func.lower(cast(Notes.tags, Text)).like(f'%"{escaped}"%', escape="\\")
+        query = query.where(or_(*[_tag_like(t) for t in tags]))
+
     if mood:
-        query = query.where(Notes.mood == mood)
-    # filter by date range
-    if start_date and end_date:
-        start_date = datetime.strptime(start_date, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
-        query = query.where(
-            (Notes.date_created >= start_date) & (Notes.date_created <= end_date)
-        )
-    # order and limit the results
-    offset = (page - 1) * limit
-    query = query.order_by(Notes.date_created.desc())
-    count_query = query
-    query = query.limit(limit).offset(offset)
-    notes = await db_ops.read_query(query=query)
-    logger.debug(f"notes returned from pagination query {notes}")
-    if isinstance(notes, str):
-        logger.error(f"Unexpected result from read_query: {notes}")
-        notes = []
-    else:
-        notes = [note.to_dict() for note in notes]
+        query = query.where(Notes.mood == mood.lower())
 
-    # offset date_created and date_updated to user's timezone
+    if start_date or end_date:
+        start_dt = datetime.strptime(start_date, "%Y-%m-%d") if start_date else datetime(2011, 1, 1)
+        end_dt = datetime.strptime(end_date, "%Y-%m-%d") if end_date else datetime.now(timezone.utc) + timedelta(days=2)
+        query = query.where(
+            (Notes.date_created >= start_dt) & (Notes.date_created <= end_dt)
+        )
+
+    query = query.order_by(Notes.date_created.desc())
+
+    offset = (page - 1) * limit
+
+    if not search_term:
+        # Fast path: no content decryption needed — use DB-level pagination
+        note_count = await db_ops.count_query(query=query)
+        total_pages = -(-note_count // limit) if note_count else 1
+        page_notes = await db_ops.read_query(query=query.limit(limit).offset(offset))
+        if isinstance(page_notes, str):
+            logger.error(f"Unexpected result from read_query: {page_notes}")
+            page_notes = []
+        notes = [n.to_dict() for n in page_notes]
+    else:
+        # Slow path: decrypt all SQL-filtered notes to search content
+        # For ~2,900–5,800 notes Fernet decrypt is fast (~100ms total); the
+        # mood/date/tag SQL filters above reduce the set before we get here.
+        all_notes = await db_ops.read_query(query=query)
+        if isinstance(all_notes, str):
+            logger.error(f"Unexpected result from read_query: {all_notes}")
+            all_notes = []
+        term = search_term.lower()
+        all_notes = [
+            n for n in all_notes
+            if term in (n.note or "").lower() or term in (n.summary or "").lower()
+        ]
+        note_count = len(all_notes)
+        total_pages = -(-note_count // limit) if note_count else 1
+        notes = [n.to_dict() for n in all_notes[offset : offset + limit]]
+
     notes = await date_functions.update_timezone_for_dates(
         data=notes, user_timezone=user_timezone
     )
+
     found = len(notes)
-    note_count = await db_ops.count_query(query=count_query)
 
-    current_count = found + offset
+    def _page_url(p: int) -> str:
+        pairs = [("page", p)]
+        if search_term:
+            pairs.append(("search_term", search_term))
+        if start_date:
+            pairs.append(("start_date", start_date))
+        if end_date:
+            pairs.append(("end_date", end_date))
+        if mood:
+            pairs.append(("mood", mood))
+        if limit != 20:
+            pairs.append(("limit", limit))
+        for tag in tags:
+            pairs.append(("tags", tag))
+        return "/notes/pagination?" + urlencode(pairs)
 
-    total_pages = -(-note_count // limit)  # Ceiling division
-    # Generate the URLs for the previous and next pages
-    prev_page_url = (
-        f"/notes/pagination?page={page - 1}&"
-        + "&".join(f"{k}={v}" for k, v in query_params.items() if v)
-        if page > 1
-        else None
-    )
-    next_page_url = (
-        f"/notes/pagination?page={page + 1}&"
-        + "&".join(f"{k}={v}" for k, v in query_params.items() if v)
-        if page < total_pages
-        else None
-    )
+    prev_page_url = _page_url(page - 1) if page > 1 else None
+    next_page_url = _page_url(page + 1) if page < total_pages else None
 
-    logger.info(f"Found {found} notes for user {user_identifier}")
+    logger.info(f"Found {note_count} notes for user {user_identifier} (page {page}/{total_pages})")
     return templates.TemplateResponse(
         request=request,
         name="/notes/pagination.html",
@@ -630,8 +685,8 @@ async def read_notes_pagination(
             "found": found,
             "note_count": note_count,
             "total_pages": total_pages,
-            "start_count": offset + 1,
-            "current_count": offset + current_count,
+            "start_count": offset + 1 if found else 0,
+            "current_count": offset + found,
             "current_page": page,
             "prev_page_url": prev_page_url,
             "next_page_url": next_page_url,

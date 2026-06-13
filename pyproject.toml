@@ -1,10 +1,10 @@
 [project]
 name = "dsg"
-version = "2025-11-08-001"
+version = "2026-06-13-002"
 requires-python = ">=3.12"
 description = "DevSetGo website"
 readme = "README.md"
-classifiers = [ "License :: OSI Approved :: MIT License", "Programming Language :: Python", "Programming Language :: Python :: 3.13", "Operating System :: POSIX :: Linux", "Operating System :: POSIX",]
+classifiers = [ "License :: OSI Approved :: MIT License", "Programming Language :: Python", "Programming Language :: Python :: 3.14", "Operating System :: POSIX :: Linux", "Operating System :: POSIX",]
 [[project.authors]]
 name = "Mike Ryan"
 
@@ -23,7 +23,7 @@ Repository = "https://github.com/devsetgo/dsg"
 
 [tool.pyright]
 typeCheckingMode = "strict"
-pythonVersion = "3.13"
+pythonVersion = "3.14"
 include = [ "src", "test",]
 exclude = [ "unreleased/*", "scripts/*", "coverage.xml", "coverage-badge.svg",]
 reportMissingImports = true
@@ -48,7 +48,7 @@ reportPrivateUsage = true
 line-length = 100
 indent-width = 4
 unsafe-fixes = true
-target-version = "py313"
+target-version = "py314"
 src = [ "src", "test",]
 exclude = [ "unreleased/*", "scripts/*", "coverage.xml", "coverage-badge.svg",]
 
@@ -88,7 +88,7 @@ version_standard = "standard"
 [[tool.bumpcalver.file]]
 path = "makefile"
 file_type = "makefile"
-variable = "__version__"
+variable = "APP_VERSION"
 version_standard = "standard"
 
 [[tool.bumpcalver.file]]
