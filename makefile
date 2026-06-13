@@ -223,6 +223,13 @@ kill:  ## Kill any process running on the app port
 	@printf "\033[1;33m🔪 Stopping processes on port ${PORT}...\033[0m\n"
 	@echo "Stopping any process running on port ${PORT}..."
 	@lsof -ti:${PORT} | xargs -r kill -9 || echo "No process found running on port ${PORT}"
+	@echo "Stopping any run-dev/uvicorn workers not yet bound to port ${PORT}..."
+	@PIDS=$$(pgrep -f "make run-dev|uvicorn ${SERVICE_PATH}.main:app|python.*uvicorn.*${SERVICE_PATH}.main:app" || true); \
+	for pid in $$PIDS; do \
+		if [[ "$$pid" != "$$$$" && "$$pid" != "$$PPID" ]]; then \
+			kill -9 "$$pid" 2>/dev/null || true; \
+		fi; \
+	done
 	@echo "Port ${PORT} is now free"
 	@printf "\033[0;32m✅ Port cleared!\033[0m\n"
 

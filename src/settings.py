@@ -175,6 +175,10 @@ class Settings(BaseSettings):
                 values["db_driver"] = DatabaseDriverEnum[db_driver.lower()].value
             except KeyError:
                 pass
+
+        # Backward-compatibility for legacy singular env var names.
+        if "create_demo_posts" not in values and "create_demo_post" in values:
+            values["create_demo_posts"] = values.get("create_demo_post")
         return values
 
     model_config = SettingsConfigDict(

@@ -42,6 +42,7 @@ Routes:
 """
 import csv
 import io
+import json
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
@@ -171,6 +172,7 @@ async def read_notes(
         "user_identifier": user_identifier,
         "metrics": metrics,
         "note_metrics": note_metrics,
+        "mood_takeaway_months": user_info.get("mood_takeaway_months", 3),
     }
     # print(context["note_metrics"]["ai_fix_count"])
     return templates.TemplateResponse(
@@ -539,11 +541,41 @@ async def get_note_tags(
     query = Select(Notes.tags).where(Notes.user_id == user_identifier)
     results = await db_ops.read_query(query=query)
     all_tags: set = set()
-    if results and not isinstance(results, str):
+
+    def _extract_tags(row):
+        if row is None:
+            return None
+
+        if hasattr(row, "tags"):
+            return row.tags
+
+        mapping = getattr(row, "_mapping", None)
+        if mapping and "tags" in mapping:
+            return mapping["tags"]
+
+        if isinstance(row, dict):
+            return row.get("tags")
+
+        if isinstance(row, (list, tuple)):
+            return row[0] if row else None
+
+        return None
+
+    if results and not isinstance(results, (str, dict)):
         for row in results:
-            tags_value = row.tags if hasattr(row, "tags") else row[0]
-            if tags_value:
-                all_tags.update(tags_value)
+            tags_value = _extract_tags(row)
+            if not tags_value:
+                continue
+
+            if isinstance(tags_value, str):
+                try:
+                    parsed = json.loads(tags_value)
+                    tags_value = parsed if isinstance(parsed, list) else [tags_value]
+                except Exception:
+                    tags_value = [tags_value]
+
+            if isinstance(tags_value, (list, tuple, set)):
+                all_tags.update([tag for tag in tags_value if tag])
     return sorted(all_tags)
 
 

@@ -52,6 +52,10 @@ from ..settings import settings
 
 router = APIRouter()
 
+DEFAULT_MOOD_TAKEAWAY_MONTHS = 3
+MIN_MOOD_TAKEAWAY_MONTHS = 1
+MAX_MOOD_TAKEAWAY_MONTHS = 12
+
 
 @router.get("/edit-user", response_class=HTMLResponse)
 async def edit_user(
@@ -69,6 +73,11 @@ async def edit_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     user = user.to_dict()
+
+    roles = user.get("roles") or {}
+    user["mood_takeaway_months"] = roles.get(
+        "mood_takeaway_months", DEFAULT_MOOD_TAKEAWAY_MONTHS
+    )
 
     context = {"page": "user", "user": user, "timezones": timezones}
 
@@ -110,9 +119,30 @@ async def edit_user_post(
     if user_timezone not in timezones:
         errors.append("Invalid timezone")
 
+    mood_takeaway_months_raw = form.get(
+        "mood_takeaway_months", str(DEFAULT_MOOD_TAKEAWAY_MONTHS)
+    )
+    try:
+        mood_takeaway_months = int(mood_takeaway_months_raw)
+    except (TypeError, ValueError):
+        mood_takeaway_months = DEFAULT_MOOD_TAKEAWAY_MONTHS
+        errors.append("Mood takeaway months must be a number")
+
+    if not (MIN_MOOD_TAKEAWAY_MONTHS <= mood_takeaway_months <= MAX_MOOD_TAKEAWAY_MONTHS):
+        errors.append(
+            f"Mood takeaway months must be between {MIN_MOOD_TAKEAWAY_MONTHS} and {MAX_MOOD_TAKEAWAY_MONTHS}"
+        )
+
     if errors:
         request.session["error-message"] = errors
         return RedirectResponse(url="/users/edit-user", status_code=303)
+
+    current_user = await db_ops.read_one_record(
+        query=Select(Users).where(Users.pkid == user_identifier)
+    )
+    current_roles = (current_user.roles or {}) if current_user else {}
+    updated_roles = dict(current_roles)
+    updated_roles["mood_takeaway_months"] = mood_takeaway_months
 
     update = await db_ops.update_one(
         table=Users,
@@ -121,11 +151,14 @@ async def edit_user_post(
             "last_name": last_name,
             "email": email,
             "my_timezone": user_timezone,
+            "roles": updated_roles,
         },
         record_id=user_identifier,
     )
     if user_timezone != user_info["timezone"]:
         request.session["timezone"] = user_timezone
+    request.session["mood_takeaway_months"] = mood_takeaway_months
+    request.session["roles"] = updated_roles
     message = "User updated successfully"
 
     logger.debug(f"User update: {update}")
@@ -213,6 +246,7 @@ async def github_callback(request: Request):
                 add_roles[role] = True
         else:
             add_roles = {"user_access": True}
+        add_roles["mood_takeaway_months"] = DEFAULT_MOOD_TAKEAWAY_MONTHS
         new_user = Users(
             user_name=user.display_name,
             email=user.email,
@@ -226,6 +260,15 @@ async def github_callback(request: Request):
 
     try:
         user_stored = user_stored.to_dict()
+        roles = user_stored.get("roles") or {}
+        if "mood_takeaway_months" not in roles:
+            roles["mood_takeaway_months"] = DEFAULT_MOOD_TAKEAWAY_MONTHS
+            await db_ops.update_one(
+                table=Users,
+                new_values={"roles": roles},
+                record_id=user_stored["pkid"],
+            )
+            user_stored["roles"] = roles
         # Log the successful login attempt
         logger.info(f"Successful login attempt for user {user_stored}")
     except Exception as e:
@@ -235,6 +278,9 @@ async def github_callback(request: Request):
     # Set the user identifier in the session
     request.session["user_identifier"] = user_stored["pkid"]
     request.session["roles"] = user_stored["roles"]
+    request.session["mood_takeaway_months"] = user_stored["roles"].get(
+        "mood_takeaway_months", DEFAULT_MOOD_TAKEAWAY_MONTHS
+    )
     request.session["is_active"] = user_stored["is_active"]
     if user_stored["is_admin"] is True:
         request.session["is_admin"] = True

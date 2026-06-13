@@ -177,17 +177,23 @@ def create_routes(app: FastAPI) -> NoReturn:
             Dict[str, Any]: A dictionary that represents the context of the error page.
         """
         # Create the context for the error page
+        code_data = ALL_HTTP_CODES.get(error_code, ALL_HTTP_CODES[500])
         context = {
             "page": "x",
             "request": request,
             "error_code": error_code,
-            "description": ALL_HTTP_CODES[error_code]["description"],
-            "extended_description": ALL_HTTP_CODES[error_code]["extended_description"],
-            "link": ALL_HTTP_CODES[error_code]["link"],
+            "description": code_data["description"],
+            "extended_description": code_data["extended_description"],
+            "link": code_data["link"],
         }
 
         # Return a template response with the error page and the context
-        return templates.TemplateResponse("error/error-page.html", context)
+        return templates.TemplateResponse(
+            request=request,
+            name="error/error-page.html",
+            context=context,
+            status_code=error_code if error_code in ALL_HTTP_CODES else 500,
+        )
 
     app.include_router(
         services.router,
