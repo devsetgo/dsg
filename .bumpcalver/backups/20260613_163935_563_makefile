@@ -2,7 +2,7 @@
 # Project Variables
 # =============================================================================
 REPONAME = dsg
-APP_VERSION = 2026-06-13-001
+APP_VERSION = 2026-06-08-001
 
 # Python Configuration
 PYTHON = python3
