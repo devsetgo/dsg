@@ -49,7 +49,7 @@ from tqdm import tqdm
 from src.functions.ai import get_summary
 
 from .db_init import async_db
-from .db_tables import Categories, Notes, Posts, Users, WebLinks
+from .db_tables import Categories, Notes, Notifications, Posts, Users, WebLinks
 from .functions.models import RoleEnum
 from .settings import settings
 
@@ -220,15 +220,20 @@ async def add_system_data() -> None:
         None
     """
     # Check if an admin user should be created
+    admin_data: Optional[Dict[str, Any]] = None
+    demo_user_data: Optional[Dict[str, Any]] = None
+    demo_users_created = 0
+    seeded_note_owner_id: Optional[str] = None
+    seeded_note_count = 0
+    seeded_post_owner_id: Optional[str] = None
+    seeded_post_count = 0
+
     if settings.create_admin_user:
         logger.warning("Creating admin user")
         # Create an admin user
-        data: Optional[Dict[str, Any]] = await add_admin()
-
-        # Check if demo notes should be created for the admin user
-        if settings.release_env.lower() != "prd" and settings.create_demo_notes:
-            # Create notes for the admin user
-            await add_notes(user_id=data["pkid"])
+        admin_data = await add_admin()
+        if admin_data is not None:
+            logger.info(f"Seed summary: created admin user {admin_data['pkid']}")
 
     # Check if the environment is not production
     if settings.release_env.lower() != "prd":
@@ -241,8 +246,20 @@ async def add_system_data() -> None:
                 leave=True,
             ):
                 data = await add_user()  # Create a demo user
+                demo_user_data = data
+                demo_users_created += 1
                 # Create notes for the loop user
-                await add_notes(user_id=data["pkid"])
+                if settings.create_demo_notes:
+                    await add_notes(user_id=data["pkid"])
+                    seeded_note_owner_id = data["pkid"]
+                    seeded_note_count = settings.create_demo_notes_qty
+
+        elif settings.create_demo_notes and admin_data is not None:
+            # Only seed the admin account when explicit demo users are not being created.
+            await add_notes(user_id=admin_data["pkid"])
+            await add_notifications(user_id=admin_data["pkid"])
+            seeded_note_owner_id = admin_data["pkid"]
+            seeded_note_count = settings.create_demo_notes_qty
 
         # Check if base categories should be created
         if settings.create_base_categories:
@@ -252,12 +269,37 @@ async def add_system_data() -> None:
         # Check if demo data should be created
         if settings.create_demo_data:
             logger.warning("Creating demo data")
-            await add_web_links()  # Create demo data
-            await add_posts()
+            demo_owner_id = None
+            if demo_user_data is not None:
+                demo_owner_id = demo_user_data["pkid"]
+            elif admin_data is not None:
+                demo_owner_id = admin_data["pkid"]
+
+            await add_web_links(user_id=demo_owner_id)  # Create demo data
 
             from .functions.pypi_core import add_demo_data
 
             await add_demo_data(qty=20)
+
+        if settings.create_demo_posts:
+            logger.warning("Creating demo posts")
+            demo_owner_id = None
+            if demo_user_data is not None:
+                demo_owner_id = demo_user_data["pkid"]
+            elif admin_data is not None:
+                demo_owner_id = admin_data["pkid"]
+            await add_posts(user_id=demo_owner_id)
+            seeded_post_owner_id = demo_owner_id
+            seeded_post_count = settings.create_demo_posts_qty
+
+    logger.info(
+        "Seed summary: created {} demo user(s); seeded {} notes to {}; seeded {} posts to {}",
+        demo_users_created,
+        seeded_note_count,
+        seeded_note_owner_id or "none",
+        seeded_post_count,
+        seeded_post_owner_id or "none",
+    )
 
 
 async def add_admin() -> Optional[Dict[str, Any]]:
@@ -337,9 +379,12 @@ async def add_notes(
     moods: List[str] = ["positive", "neutral", "negative"]
     mood_analysis: List[str] = [mood[0] for mood in settings.mood_analysis_weights]
 
-    # Create notes with the same date for both creation and update
+    same_day_qty = min(qty_notes, 365)
+    random_qty = max(0, qty_notes - same_day_qty)
+
+    # Create a bounded set of notes with the same created/updated date.
     for i in tqdm(
-        range(settings.create_demo_notes_qty),
+        range(same_day_qty),
         desc=f"same day notes for {user_id}",
         leave=False,
     ):
@@ -373,9 +418,9 @@ async def add_notes(
         )
         await db_ops.create_one(note)
 
-    # Create notes with random dates within the last X years
+    # Create the remaining notes with random dates within the last X years.
     for _ in tqdm(
-        range(qty_notes), desc=f"creating demo notes for {user_id}", leave=False
+        range(random_qty), desc=f"creating demo notes for {user_id}", leave=False
     ):
         mood: str = random.choice(moods)
         mood_analysis_choice: str = random.choice(mood_analysis)
@@ -413,6 +458,50 @@ async def add_notes(
             date_updated=date_updated,
         )
         await db_ops.create_one(note)
+
+
+async def add_notifications(user_id: str) -> None:
+    demo_notifications = [
+        {
+            "message": "AI analysis complete — mood: positive, tags: work, career, growth",
+            "category": "ai",
+            "minutes_ago": 2,
+        },
+        {
+            "message": "AI analysis complete — mood: neutral, tags: reflection, daily",
+            "category": "ai",
+            "minutes_ago": 15,
+        },
+        {
+            "message": "AI analysis complete — mood: negative, tags: stress, health",
+            "category": "ai",
+            "minutes_ago": 47,
+        },
+        {
+            "message": "AI analysis failed for a note. Retry from the AI Issues page.",
+            "category": "error",
+            "minutes_ago": 90,
+        },
+        {
+            "message": "AI analysis complete — mood: positive, tags: family, florida",
+            "category": "ai",
+            "minutes_ago": 200,
+        },
+    ]
+
+    for item in demo_notifications:
+        created_at = datetime.now(timezone.utc) - timedelta(minutes=item["minutes_ago"])
+        notification = Notifications(
+            user_id=user_id,
+            message=item["message"],
+            category=item["category"],
+            is_read=False,
+            date_created=created_at.replace(tzinfo=None),
+            date_updated=created_at.replace(tzinfo=None),
+        )
+        await db_ops.create_one(notification)
+
+    logger.info(f"Created {len(demo_notifications)} demo notifications for user {user_id}")
 
 
 async def add_user() -> Optional[Dict[str, Any]]:
@@ -520,7 +609,7 @@ async def add_categories():
         logger.info(f"category name: {d.name}")
 
 
-async def add_web_links():
+async def add_web_links(user_id: str | None = None):
     # This function is responsible for adding a list of interesting things to the database.
     # Each item in the list is a dictionary with keys for name, description, url, and category.
 
@@ -539,11 +628,13 @@ async def add_web_links():
             logger.info(f"system item {item.get('title', 'processing')} already added")
             continue
 
-    user_name = settings.admin_user.get_secret_value()
-    # Get the user record for 'admin'
-    user = await db_ops.read_one_record(
-        Select(Users).where(Users.user_name == user_name)
-    )
+    if user_id is not None:
+        user = await db_ops.read_one_record(Select(Users).where(Users.pkid == user_id))
+    else:
+        user_name = settings.admin_user.get_secret_value()
+        user = await db_ops.read_one_record(
+            Select(Users).where(Users.user_name == user_name)
+        )
 
     # Loop through the list of items
     for item in my_stuff:
@@ -579,12 +670,14 @@ async def add_web_links():
         logger.info(f"{thing.title}, {thing.category}, {thing.url}, {thing.summary}")
 
 
-async def add_posts():
-    user_name = settings.admin_user.get_secret_value()
-    # Get the user record for 'admin'
-    user = await db_ops.read_one_record(
-        Select(Users).where(Users.user_name == user_name)
-    )
+async def add_posts(user_id: str | None = None):
+    if user_id is not None:
+        user = await db_ops.read_one_record(Select(Users).where(Users.pkid == user_id))
+    else:
+        user_name = settings.admin_user.get_secret_value()
+        user = await db_ops.read_one_record(
+            Select(Users).where(Users.user_name == user_name)
+        )
     categories = await db_ops.read_query(Select(Categories))
     categories = [cat.to_dict() for cat in categories]
     cat_list = [cat["name"] for cat in categories]

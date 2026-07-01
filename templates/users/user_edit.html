@@ -53,6 +53,18 @@
                                 {% endfor %}
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label for="mood_takeaway_months">Mood Takeaway Window (months)</label>
+                            <select class="form-control" id="mood_takeaway_months" name="mood_takeaway_months" required>
+                                {% set selected_months = user.mood_takeaway_months if user.mood_takeaway_months else 3 %}
+                                {% for month_count in range(1, 13) %}
+                                <option value="{{ month_count }}" {% if selected_months == month_count %}selected{% endif %}>
+                                    {{ month_count }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Used by the Notes dashboard mood takeaway. Default is 3 months.</small>
+                        </div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
                 </form>
@@ -66,12 +78,6 @@
 
 {% endblock %}
 
-{% block page_sidebar_content %}
-<!-- blank and demo script adds page configuration example -->
-<!-- <div class="p-3">
-  <h5>Title</h5>
-  <p>Sidebar content</p>
-</div> -->
-{% endblock %}
+
 {% block page_scripts %}
 {% endblock %}

@@ -33,11 +33,14 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from .settings import settings
+
 from .endpoints import (
     admin,
     blog_posts,
     devtools,
     notes,
+    notifications,
     pages,
     pdf_tools,
     pypi,
@@ -174,17 +177,23 @@ def create_routes(app: FastAPI) -> NoReturn:
             Dict[str, Any]: A dictionary that represents the context of the error page.
         """
         # Create the context for the error page
+        code_data = ALL_HTTP_CODES.get(error_code, ALL_HTTP_CODES[500])
         context = {
             "page": "x",
             "request": request,
             "error_code": error_code,
-            "description": ALL_HTTP_CODES[error_code]["description"],
-            "extended_description": ALL_HTTP_CODES[error_code]["extended_description"],
-            "link": ALL_HTTP_CODES[error_code]["link"],
+            "description": code_data["description"],
+            "extended_description": code_data["extended_description"],
+            "link": code_data["link"],
         }
 
         # Return a template response with the error page and the context
-        return templates.TemplateResponse("error/error-page.html", context)
+        return templates.TemplateResponse(
+            request=request,
+            name="error/error-page.html",
+            context=context,
+            status_code=error_code if error_code in ALL_HTTP_CODES else 500,
+        )
 
     app.include_router(
         services.router,
@@ -204,6 +213,12 @@ def create_routes(app: FastAPI) -> NoReturn:
         notes.router,
         prefix="/notes",
         tags=["notes"],
+        include_in_schema=show_route,
+    )
+    app.include_router(
+        notifications.router,
+        prefix="/notifications",
+        tags=["notifications"],
         include_in_schema=show_route,
     )
     app.include_router(
@@ -242,9 +257,9 @@ def create_routes(app: FastAPI) -> NoReturn:
 
     # This should always be the last route added to keep it at the bottom of the OpenAPI docs
     config_health = {
-        "enable_status_endpoint": True,
-        "enable_uptime_endpoint": True,
-        "enable_heapdump_endpoint": True,
+        "enable_status_endpoint": settings.health_status_endpoint,
+        "enable_uptime_endpoint": settings.health_uptime_endpoint,
+        "enable_heapdump_endpoint": settings.health_heapdump_endpoint,
     }
 
     app.include_router(

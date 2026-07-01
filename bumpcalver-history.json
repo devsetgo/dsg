@@ -1,0 +1,230 @@
+[
+  {
+    "operation_id": "20260613_192042_862",
+    "timestamp": "2026-06-13T19:20:42.874745",
+    "version": "2026-06-13-002",
+    "files_updated": [
+      "/home/mike/dsg/pyproject.toml",
+      "/home/mike/dsg/src/__init__.py",
+      "/home/mike/dsg/makefile",
+      "/home/mike/dsg/sonar-project.properties"
+    ],
+    "backups": {
+      "/home/mike/dsg/pyproject.toml": "/home/mike/dsg/.bumpcalver/backups/20260613_192042_862_pyproject.toml",
+      "/home/mike/dsg/src/__init__.py": "/home/mike/dsg/.bumpcalver/backups/20260613_192042_863___init__.py",
+      "/home/mike/dsg/makefile": "/home/mike/dsg/.bumpcalver/backups/20260613_192042_863_makefile",
+      "/home/mike/dsg/sonar-project.properties": "/home/mike/dsg/.bumpcalver/backups/20260613_192042_863_sonar-project.properties"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026-06-13-002"
+  },
+  {
+    "operation_id": "20260613_163935_562",
+    "timestamp": "2026-06-13T16:39:35.570109",
+    "version": "2026-06-13-001",
+    "files_updated": [
+      "/home/mike/dsg/pyproject.toml",
+      "/home/mike/dsg/src/__init__.py",
+      "/home/mike/dsg/makefile",
+      "/home/mike/dsg/sonar-project.properties"
+    ],
+    "backups": {
+      "/home/mike/dsg/pyproject.toml": "/home/mike/dsg/.bumpcalver/backups/20260613_163935_562_pyproject.toml",
+      "/home/mike/dsg/src/__init__.py": "/home/mike/dsg/.bumpcalver/backups/20260613_163935_563___init__.py",
+      "/home/mike/dsg/makefile": "/home/mike/dsg/.bumpcalver/backups/20260613_163935_563_makefile",
+      "/home/mike/dsg/sonar-project.properties": "/home/mike/dsg/.bumpcalver/backups/20260613_163935_563_sonar-project.properties"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026-06-13-001"
+  },
+  {
+    "operation_id": "20260608_233107_474",
+    "timestamp": "2026-06-08T23:31:07.489125",
+    "version": "2026-06-08-001",
+    "files_updated": [
+      "/workspaces/dsg/pyproject.toml",
+      "/workspaces/dsg/src/__init__.py",
+      "/workspaces/dsg/makefile",
+      "/workspaces/dsg/sonar-project.properties"
+    ],
+    "backups": {
+      "/workspaces/dsg/pyproject.toml": "/workspaces/dsg/.bumpcalver/backups/20260608_233107_474_pyproject.toml",
+      "/workspaces/dsg/src/__init__.py": "/workspaces/dsg/.bumpcalver/backups/20260608_233107_474___init__.py",
+      "/workspaces/dsg/makefile": "/workspaces/dsg/.bumpcalver/backups/20260608_233107_475_makefile",
+      "/workspaces/dsg/sonar-project.properties": "/workspaces/dsg/.bumpcalver/backups/20260608_233107_475_sonar-project.properties"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026-06-08-001"
+  },
+  {
+    "operation_id": "20260608_002806_202",
+    "timestamp": "2026-06-08T00:28:06.235858",
+    "version": "2026-06-07-001",
+    "files_updated": [
+      "/workspaces/dsg/pyproject.toml",
+      "/workspaces/dsg/src/__init__.py",
+      "/workspaces/dsg/makefile",
+      "/workspaces/dsg/sonar-project.properties"
+    ],
+    "backups": {
+      "/workspaces/dsg/pyproject.toml": "/workspaces/dsg/.bumpcalver/backups/20260608_002806_202_pyproject.toml",
+      "/workspaces/dsg/src/__init__.py": "/workspaces/dsg/.bumpcalver/backups/20260608_002806_204___init__.py",
+      "/workspaces/dsg/makefile": "/workspaces/dsg/.bumpcalver/backups/20260608_002806_205_makefile",
+      "/workspaces/dsg/sonar-project.properties": "/workspaces/dsg/.bumpcalver/backups/20260608_002806_205_sonar-project.properties"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026-06-07-001"
+  },
+  {
+    "operation_id": "20260602_195816_655",
+    "timestamp": "2026-06-02T19:58:16.664255",
+    "version": "2026-06-02-001",
+    "files_updated": [
+      "/home/mike/dsg/pyproject.toml",
+      "/home/mike/dsg/src/__init__.py",
+      "/home/mike/dsg/makefile",
+      "/home/mike/dsg/sonar-project.properties"
+    ],
+    "backups": {
+      "/home/mike/dsg/pyproject.toml": "/home/mike/dsg/.bumpcalver/backups/20260602_195816_655_pyproject.toml",
+      "/home/mike/dsg/src/__init__.py": "/home/mike/dsg/.bumpcalver/backups/20260602_195816_655___init__.py",
+      "/home/mike/dsg/makefile": "/home/mike/dsg/.bumpcalver/backups/20260602_195816_656_makefile",
+      "/home/mike/dsg/sonar-project.properties": "/home/mike/dsg/.bumpcalver/backups/20260602_195816_656_sonar-project.properties"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026-06-02-001"
+  },
+  {
+    "operation_id": "20260531_204248_731",
+    "timestamp": "2026-05-31T20:42:48.741010",
+    "version": "2026-05-31-006",
+    "files_updated": [
+      "/home/mike/dsg/pyproject.toml",
+      "/home/mike/dsg/src/__init__.py",
+      "/home/mike/dsg/makefile",
+      "/home/mike/dsg/sonar-project.properties"
+    ],
+    "backups": {
+      "/home/mike/dsg/pyproject.toml": "/home/mike/dsg/.bumpcalver/backups/20260531_204248_731_pyproject.toml",
+      "/home/mike/dsg/src/__init__.py": "/home/mike/dsg/.bumpcalver/backups/20260531_204248_731___init__.py",
+      "/home/mike/dsg/makefile": "/home/mike/dsg/.bumpcalver/backups/20260531_204248_732_makefile",
+      "/home/mike/dsg/sonar-project.properties": "/home/mike/dsg/.bumpcalver/backups/20260531_204248_733_sonar-project.properties"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026-05-31-006"
+  },
+  {
+    "operation_id": "20260531_202911_309",
+    "timestamp": "2026-05-31T20:29:11.319530",
+    "version": "2026-05-31-005",
+    "files_updated": [
+      "/home/mike/dsg/pyproject.toml",
+      "/home/mike/dsg/src/__init__.py",
+      "/home/mike/dsg/makefile",
+      "/home/mike/dsg/sonar-project.properties"
+    ],
+    "backups": {
+      "/home/mike/dsg/pyproject.toml": "/home/mike/dsg/.bumpcalver/backups/20260531_202911_309_pyproject.toml",
+      "/home/mike/dsg/src/__init__.py": "/home/mike/dsg/.bumpcalver/backups/20260531_202911_309___init__.py",
+      "/home/mike/dsg/makefile": "/home/mike/dsg/.bumpcalver/backups/20260531_202911_310_makefile",
+      "/home/mike/dsg/sonar-project.properties": "/home/mike/dsg/.bumpcalver/backups/20260531_202911_310_sonar-project.properties"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026-05-31-005"
+  },
+  {
+    "operation_id": "20260531_152908_820",
+    "timestamp": "2026-05-31T15:29:08.837295",
+    "version": "2026-05-31-004",
+    "files_updated": [
+      "/home/mike/dsg/pyproject.toml",
+      "/home/mike/dsg/src/__init__.py",
+      "/home/mike/dsg/makefile",
+      "/home/mike/dsg/sonar-project.properties"
+    ],
+    "backups": {
+      "/home/mike/dsg/pyproject.toml": "/home/mike/dsg/.bumpcalver/backups/20260531_152908_820_pyproject.toml",
+      "/home/mike/dsg/src/__init__.py": "/home/mike/dsg/.bumpcalver/backups/20260531_152908_820___init__.py",
+      "/home/mike/dsg/makefile": "/home/mike/dsg/.bumpcalver/backups/20260531_152908_820_makefile",
+      "/home/mike/dsg/sonar-project.properties": "/home/mike/dsg/.bumpcalver/backups/20260531_152908_820_sonar-project.properties"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026-05-31-004"
+  },
+  {
+    "operation_id": "20260531_152716_739",
+    "timestamp": "2026-05-31T15:27:16.772811",
+    "version": "2026-05-31-003",
+    "files_updated": [
+      "/home/mike/dsg/pyproject.toml",
+      "/home/mike/dsg/src/__init__.py",
+      "/home/mike/dsg/sonar-project.properties"
+    ],
+    "backups": {
+      "/home/mike/dsg/pyproject.toml": "/home/mike/dsg/.bumpcalver/backups/20260531_152716_739_pyproject.toml",
+      "/home/mike/dsg/src/__init__.py": "/home/mike/dsg/.bumpcalver/backups/20260531_152716_739___init__.py",
+      "/home/mike/dsg/makefile": "/home/mike/dsg/.bumpcalver/backups/20260531_152716_740_makefile",
+      "/home/mike/dsg/sonar-project.properties": "/home/mike/dsg/.bumpcalver/backups/20260531_152716_740_sonar-project.properties"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026-05-31-003"
+  },
+  {
+    "operation_id": "20260531_152428_026",
+    "timestamp": "2026-05-31T15:24:28.034740",
+    "version": "2026-05-31-002",
+    "files_updated": [
+      "/home/mike/dsg/pyproject.toml",
+      "/home/mike/dsg/src/__init__.py",
+      "/home/mike/dsg/sonar-project.properties"
+    ],
+    "backups": {
+      "/home/mike/dsg/pyproject.toml": "/home/mike/dsg/.bumpcalver/backups/20260531_152428_026_pyproject.toml",
+      "/home/mike/dsg/src/__init__.py": "/home/mike/dsg/.bumpcalver/backups/20260531_152428_026___init__.py",
+      "/home/mike/dsg/makefile": "/home/mike/dsg/.bumpcalver/backups/20260531_152428_027_makefile",
+      "/home/mike/dsg/sonar-project.properties": "/home/mike/dsg/.bumpcalver/backups/20260531_152428_027_sonar-project.properties"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026-05-31-002"
+  },
+  {
+    "operation_id": "20260531_145342_283",
+    "timestamp": "2026-05-31T14:53:42.291020",
+    "version": "2026-05-31-001",
+    "files_updated": [
+      "/home/mike/dsg/pyproject.toml",
+      "/home/mike/dsg/src/__init__.py",
+      "/home/mike/dsg/sonar-project.properties"
+    ],
+    "backups": {
+      "/home/mike/dsg/pyproject.toml": "/home/mike/dsg/.bumpcalver/backups/20260531_145342_283_pyproject.toml",
+      "/home/mike/dsg/src/__init__.py": "/home/mike/dsg/.bumpcalver/backups/20260531_145342_283___init__.py",
+      "/home/mike/dsg/makefile": "/home/mike/dsg/.bumpcalver/backups/20260531_145342_284_makefile",
+      "/home/mike/dsg/sonar-project.properties": "/home/mike/dsg/.bumpcalver/backups/20260531_145342_284_sonar-project.properties"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026-05-31-001"
+  }
+]

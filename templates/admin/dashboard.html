@@ -38,6 +38,10 @@
                   role="tab" aria-controls="custom-tabs-four-notes-export" aria-selected="false" hx-trigger="click"
                   hx-indicator=".htmx-indicator">Notes Export</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/fix-moods"
+                  hx-indicator=".htmx-indicator">Fix Moods</a>
+              </li>
             </ul>
           </div>
           <div class="card-body">
@@ -104,14 +108,7 @@
   </div>
 </section>
 {% endblock %}
-{% block page_sidebar_content %}
-<!-- blank and demo script adds page configuration example -->
-<ul>
-  {% for _ in range(5) %}
-  <li>Hi</li>
-  {% endfor %}
-</ul>
-{% endblock %}
+
 {% block page_scripts %}
 <!-- Start of page scripts block -->
 <!-- OPTIONAL SCRIPTS -->

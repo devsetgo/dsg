@@ -9,14 +9,13 @@
         </div>
         <div class="card-body">
             <!-- Begin Search Form -->
-            <form hx-get="/notes/pagination" hx-trigger="submit" hx-target="#notes-data" hx-indicator=".htmx-indicator">
+            <form id="notes-search-form" hx-get="/notes/pagination" hx-trigger="submit" hx-target="#notes-data" hx-indicator=".htmx-indicator">
                 <div class="row">
                     <div class="col-md-4">
-                        <label for="search_term">Search Term</label>
+                        <label for="search_term">Text Search</label>
                         <input id="search_term" class="form-control" type="search" name="search_term"
-                            placeholder="Begin Typing To Search Notes...">
+                            placeholder="Search note content and summary...">
                     </div>
-                    <!-- Mood input -->
                     <div class="col-md-4">
                         <label for="mood">Mood</label>
                         <select id="mood" class="form-control" name="mood">
@@ -30,38 +29,115 @@
                         <button class="btn btn-primary" type="submit">Search</button>
                     </div>
                 </div>
-                <!-- Date range inputs -->
+                <!-- Tags and date range -->
                 <div class="row mt-3">
                     <div class="col-md-4">
+                        <label>Tags</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="tag-input"
+                                   list="tags-datalist"
+                                   placeholder="Type to search tags...">
+                            <datalist id="tags-datalist"></datalist>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-secondary" id="add-tag-btn">Add</button>
+                            </div>
+                        </div>
+                        <div id="selected-tags" class="mt-2 d-flex flex-wrap"></div>
+                        <div id="tag-hidden-inputs"></div>
+                    </div>
+                    <div class="col-md-3">
                         <label for="start_date">From Date</label>
                         <input id="start_date" class="form-control" type="date" name="start_date"
                             placeholder="From Date">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="end_date">To Date</label>
-                        <input id="end_date" class="form-control" type="date" name="end_date" placeholder="To Date">
+                        <input id="end_date" class="form-control" type="date" name="end_date"
+                            placeholder="To Date">
                     </div>
-                    <!-- ... rest of the form ... -->
-                    <div class="col-md-4 d-flex align-items-end">
+                    <div class="col-md-2 d-flex align-items-end">
                         <button class="btn btn-warning" type="button" id="resetButton">Reset</button>
                     </div>
-                    <script>
-                        document.getElementById('resetButton').addEventListener('click', function () {
-                            // Get the form
-                            var form = this.closest('form');
-
-                            // Reset the form fields
-                            form.reset();
-
-                            // Submit a new query
-                            // form.submit();
-                        });
-                    </script>
-                    <!-- ... rest of the form ... -->
                 </div>
             </form>
             <!-- End Search Form -->
         </div>
     </div>
-
 </div>
+
+<script>
+(function () {
+    // Populate datalist with user's existing tags
+    fetch('/notes/tags')
+        .then(function (r) { return r.json(); })
+        .then(function (tags) {
+            var dl = document.getElementById('tags-datalist');
+            tags.forEach(function (tag) {
+                var opt = document.createElement('option');
+                opt.value = tag;
+                dl.appendChild(opt);
+            });
+        })
+        .catch(function () {});
+
+    var selectedTags = new Set();
+
+    function addTag() {
+        var input = document.getElementById('tag-input');
+        var tag = input.value.trim().toLowerCase();
+        if (tag && !selectedTags.has(tag)) {
+            selectedTags.add(tag);
+            renderTags();
+        }
+        input.value = '';
+    }
+
+    function removeTag(tag) {
+        selectedTags.delete(tag);
+        renderTags();
+    }
+
+    function renderTags() {
+        var badges = document.getElementById('selected-tags');
+        var inputs = document.getElementById('tag-hidden-inputs');
+        badges.innerHTML = '';
+        inputs.innerHTML = '';
+        selectedTags.forEach(function (tag) {
+            var badge = document.createElement('span');
+            badge.className = 'badge badge-info mr-1 mb-1';
+            badge.style.fontSize = '0.9em';
+            badge.style.padding = '6px 8px';
+            var text = document.createTextNode(tag + ' ');
+            var x = document.createElement('span');
+            x.innerHTML = '&times;';
+            x.style.cursor = 'pointer';
+            x.setAttribute('data-tag', tag);
+            x.addEventListener('click', function () { removeTag(this.getAttribute('data-tag')); });
+            badge.appendChild(text);
+            badge.appendChild(x);
+            badges.appendChild(badge);
+
+            var hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'tags';
+            hidden.value = tag;
+            inputs.appendChild(hidden);
+        });
+    }
+
+    document.getElementById('add-tag-btn').addEventListener('click', addTag);
+
+    document.getElementById('tag-input').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addTag();
+        }
+    });
+
+    document.getElementById('resetButton').addEventListener('click', function () {
+        document.getElementById('notes-search-form').reset();
+        selectedTags.clear();
+        renderTags();
+    });
+})();
+</script>

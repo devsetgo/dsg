@@ -21,9 +21,12 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from src.db_init import async_db
+from src.db_init import async_db, db_uri
 
 target_metadata = async_db.Base.metadata
+
+# Derive a sync-compatible URL for alembic (strip the async driver prefix)
+_sync_url = db_uri.replace("+aiosqlite", "").replace("+asyncpg", "+psycopg2")
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -32,20 +35,8 @@ target_metadata = async_db.Base.metadata
 
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode.
-
-    This configures the context with just a URL
-    and not an Engine, though an Engine is acceptable
-    here as well.  By skipping the Engine creation
-    we don't even need a DBAPI to be available.
-
-    Calls to context.execute() here emit the given string to the
-    script output.
-
-    """
-    url = os.getenv("DATABASE_URL")
-    if not url:
-        raise ValueError("DATABASE_URL environment variable is not set.")
+    """Run migrations in 'offline' mode."""
+    url = _sync_url
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -65,17 +56,8 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    """In this scenario we need to create an Engine
-    and associate a connection with the context.
-    """
-
-    # Fetch the DATABASE_URL from the environment variables
-    url = os.getenv("DATABASE_URL")
-    if not url:
-        raise ValueError("DATABASE_URL environment variable is not set.")
-
     connectable = create_async_engine(
-        url,
+        db_uri,
         poolclass=pool.NullPool,
     )
 
