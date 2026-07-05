@@ -4,7 +4,7 @@ async-lru==2.3.0 # Vulnerabilities: None
 cryptography==48.0.0 # From 47.0.0 | Vulnerabilities: None
 devsetgo-lib[sqlite,postgres]==2026.6.29.3 # Vulnerabilities: None
 email-validator==2.3.0 # Vulnerabilities: None
-fastapi[all]==0.136.3 # From 0.136.1 | Vulnerabilities: None
+fastapi[all]==0.138.2 # From 0.136.1 | Vulnerabilities: None
 fastapi-sso==0.21.0 # Vulnerabilities: None
 granian==2.7.5 # From 2.7.4 | Vulnerabilities: None
 httpx-auth==0.23.1 # Vulnerabilities: None
