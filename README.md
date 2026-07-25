@@ -1,6 +1,6 @@
 
 [![Coverage fury.io](coverage-badge.svg)](https://github.com/devsetgo/dsg)
-[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
+[![Python 3.14](https://img.shields.io/badge/python-3.14-blue.svg)](https://www.python.org/downloads/release/python-3140/)
 
 # DevSetGo.com
 
@@ -12,7 +12,6 @@ My personal website and blog built with FastAPI. Versioned with CalVer (`YY.MM.D
 - **Notes** — personal notes with OpenAI-powered analysis
 - **Web Links** — curated link collection with AI-generated titles and summaries
 - **PyPI Checker** — dev tool to check package versions and vulnerabilities
-- **PDF Tools** — OCR and PDF processing via ocrmypdf
 - **GitHub OAuth** — authentication via GitHub SSO
 - **Admin panel** — user and content management
 

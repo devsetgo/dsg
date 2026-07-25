@@ -632,18 +632,20 @@ async def admin_fix_moods(
     user_info: dict = Depends(check_login),
 ):
     user_info["is_admin"]
-    query = Select(Notes.user_id, Users.user_name).join(
-        Users, Notes.user_id == Users.pkid
-    ).where(Notes.mood == "neutral")
+    query = (
+        Select(Notes.user_id, Users.user_name)
+        .join(Users, Notes.user_id == Users.pkid)
+        .where(Notes.mood == "neutral")
+    )
     rows = _safe_list(await db_ops.read_query(query=query))
 
     counts: dict = {}
     for row in rows:
-            uid = row.user_id
-            name = row.user_name
-            if uid not in counts:
-                counts[uid] = {"user_name": name, "neutral_count": 0}
-            counts[uid]["neutral_count"] += 1
+        uid = row.user_id
+        name = row.user_name
+        if uid not in counts:
+            counts[uid] = {"user_name": name, "neutral_count": 0}
+        counts[uid]["neutral_count"] += 1
 
     user_stats = sorted(counts.values(), key=lambda x: x["neutral_count"], reverse=True)
 
@@ -665,7 +667,7 @@ async def admin_fix_moods_start(
     logger.info(f"Mood fix job queued for user {user_id}")
     return HTMLResponse(
         '<div class="alert alert-success">Mood fix job started. '
-        'You will receive a notification when it completes.</div>'
+        "You will receive a notification when it completes.</div>"
     )
 
 
@@ -680,7 +682,9 @@ async def export_notes(
 
     # Fetch all notes from the database with user_name
     query = Select(Notes).join(Users, Notes.user_id == Users.pkid)
-    notes = [note.to_dict() for note in _safe_list(await db_ops.read_query(query=query))]
+    notes = [
+        note.to_dict() for note in _safe_list(await db_ops.read_query(query=query))
+    ]
     # Render the template with the data
     context = {
         "page": "admin",

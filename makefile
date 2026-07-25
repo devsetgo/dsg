@@ -5,9 +5,10 @@ REPONAME = dsg
 APP_VERSION = 2026-06-13-002
 
 # Python Configuration
-PYTHON = python3
+PYTHON ?= $(shell if command -v python3.14 >/dev/null 2>&1; then echo python3.14; else echo python3; fi)
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
+ALEMBIC_PYTHON ?= $(shell if [ -x /home/mike/dsg/.venv/bin/python ]; then echo /home/mike/dsg/.venv/bin/python; elif command -v python3.14 >/dev/null 2>&1; then echo python3.14; else echo python3; fi)
 
 # Path Configuration
 SERVICE_PATH = src
@@ -95,7 +96,7 @@ alembic-migrate: ## Migrate database using Alembic
 	./scripts/env.sh && \
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
 	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
-	/home/mike/dsg/.venv/bin/python -m alembic upgrade head
+	$(ALEMBIC_PYTHON) -m alembic upgrade head
 	@printf "\033[0;32m✅ Database migration completed!\033[0m\n"
 
 alembic-rev: ## Create a new revision file
@@ -105,7 +106,7 @@ alembic-rev: ## Create a new revision file
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
 	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
 	read -p "Enter revision name: " name; \
-	/home/mike/dsg/.venv/bin/python -m alembic revision --autogenerate -m "$$name"
+	$(ALEMBIC_PYTHON) -m alembic revision --autogenerate -m "$$name"
 	@printf "\033[0;32m✅ Revision created successfully!\033[0m\n"
 
 alembic-current: ## Show the current revision
@@ -114,14 +115,14 @@ alembic-current: ## Show the current revision
 	./scripts/env.sh && \
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
 	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
-	/home/mike/dsg/.venv/bin/python -m alembic current
+	$(ALEMBIC_PYTHON) -m alembic current
 
 alembic-history: ## Show migration history
 	@printf "\033[1;33m📚 Showing migration history...\033[0m\n"
 	cp env-files/.env.test .env && \
 	./scripts/env.sh && \
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
-	/home/mike/dsg/.venv/bin/python -m alembic history
+	$(ALEMBIC_PYTHON) -m alembic history
 
 alembic-stamp: ## Stamp the database with a specific revision
 	@printf "\033[1;33m🏷️ Stamping database revision...\033[0m\n"
@@ -130,7 +131,7 @@ alembic-stamp: ## Stamp the database with a specific revision
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
 	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
 	read -p "Enter revision ID: " rev; \
-	/home/mike/dsg/.venv/bin/python -m alembic stamp "$$rev"
+	$(ALEMBIC_PYTHON) -m alembic stamp "$$rev"
 	@printf "\033[0;32m✅ Database stamped successfully!\033[0m\n"
 
 alembic-downgrade: ## Downgrade database using Alembic

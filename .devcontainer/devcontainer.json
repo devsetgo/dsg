@@ -25,7 +25,7 @@
 		5432,
 		32080
 	],
-	"postCreateCommand": "pip3 install --upgrade pip setuptools wheel && pip3 install -r requirements/dev.txt && sudo chmod 666 /var/run/docker.sock",
+	"postCreateCommand": "pip3 install --upgrade pip setuptools wheel && pip3 install -r requirements/dev.txt && if [ -S /var/run/docker.sock ]; then chmod 666 /var/run/docker.sock; fi",
 	// "postStartCommand": "",
 	"customizations": {
 		"vscode": {
