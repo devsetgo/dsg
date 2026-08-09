@@ -2,7 +2,7 @@
 # Project Variables
 # =============================================================================
 REPONAME = dsg
-APP_VERSION = 2026-06-13-002
+APP_VERSION = 2026-07-24-001
 
 # Python Configuration
 PYTHON ?= $(shell if command -v python3.14 >/dev/null 2>&1; then echo python3.14; else echo python3; fi)
@@ -368,3 +368,22 @@ test-file: ## Run a specific test file
 test-marker: ## Run tests with specific marker
 	@printf "\033[1;33m🧪 Running tests with marker: $(MARKER)...\033[0m\n"
 	pytest tests/ -m $(MARKER) -v
+
+rebase: ## Rebase current branch from origin/main
+	git fetch origin
+	git rebase origin/main
+
+git-cleanup: ## Fetch + prune from origin, then delete local branches whose upstream is gone
+	@echo "Fetching from origin and pruning stale remote-tracking branches..."
+	git fetch origin --prune
+	@echo "Removing local branches whose upstream branch no longer exists..."
+	@current_branch=$$(git rev-parse --abbrev-ref HEAD); \
+	stale_branches=$$(git branch -vv | awk '/: gone\]/{print $$1}' | sed 's/^\*//' | grep -vE "^(main|master|dev|$$current_branch)$$" || true); \
+	if [[ -z "$$stale_branches" ]]; then \
+		echo "No stale local branches found."; \
+	else \
+		echo "Deleting stale branches:"; \
+		echo "$$stale_branches"; \
+		echo "$$stale_branches" | xargs -r git branch -D; \
+	fi
+	@echo "git-cleanup complete."
