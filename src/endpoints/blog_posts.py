@@ -38,9 +38,25 @@ from ..resources import db_ops, templates
 router = APIRouter()
 
 
+def _safe_list(result) -> list:
+    """Return result when it is a genuine list of ORM objects; empty list otherwise.
+
+    dsg_lib db_ops methods return a plain dict on certain database errors instead
+    of raising an exception, so an isinstance(x, str) guard is not sufficient.
+    """
+    return result if isinstance(result, list) else []
+
+
+def _safe_record(result):
+    """Return result when it is a genuine ORM object; None otherwise."""
+    return result if result is not None and not isinstance(result, dict) else None
+
+
 async def get_user_name(user_id: str):
     query = Select(Users).where(Users.pkid == user_id)
-    user = await db_ops.read_one_record(query=query)
+    user = _safe_record(await db_ops.read_one_record(query=query))
+    if user is None:
+        return "unknown"
     user = user.to_dict()
     full_name = f"{user['first_name']} {user['last_name']}"
     return full_name
@@ -63,8 +79,10 @@ async def list_of_posts(
 
 @router.get("/categories", response_class=JSONResponse)
 async def get_categories():
-    categories = await db_ops.read_query(
-        Select(Categories).where(Categories.is_post).order_by(asc(Categories.name))
+    categories = _safe_list(
+        await db_ops.read_query(
+            Select(Categories).where(Categories.is_post).order_by(asc(Categories.name))
+        )
     )
     try:
         cat_list = [cat.to_dict()["name"] for cat in categories]
@@ -85,7 +103,10 @@ async def delete_post_form(
     query = Select(Posts).where(
         and_(Posts.user_id == user_identifier, Posts.pkid == post_id)
     )
-    post = await db_ops.read_one_record(query=query)
+    post = _safe_record(await db_ops.read_one_record(query=query))
+    if post is None:
+        logger.warning(f"No post found with ID: {post_id} for user: {user_identifier}")
+        return RedirectResponse(url="/posts", status_code=302)
 
     return templates.TemplateResponse(
         request=request, name="/posts/delete.html", context={"post": post}
@@ -104,7 +125,7 @@ async def delete_note(
     query = Select(Posts).where(
         and_(Posts.user_id == user_identifier, Posts.pkid == post_id)
     )
-    post = await db_ops.read_one_record(query=query)
+    post = _safe_record(await db_ops.read_one_record(query=query))
 
     if post is None:
         logger.warning(f"No post found with ID: {post_id} for user: {user_identifier}")
@@ -131,7 +152,7 @@ async def edit_post_form(
     query = Select(Posts).where(
         and_(Posts.user_id == user_identifier, Posts.pkid == post_id)
     )
-    post = await db_ops.read_one_record(query=query)
+    post = _safe_record(await db_ops.read_one_record(query=query))
     if post is None:
         logger.warning(f"No post found with ID: {post_id} for user: {user_identifier}")
         return RedirectResponse(url="/posts", status_code=302)
@@ -172,9 +193,12 @@ async def update_post(
     user_info["timezone"]
 
     # Fetch the old data
-    old_data = await db_ops.read_one_record(
-        query=Select(Posts).where(Posts.pkid == post_id)
+    old_data = _safe_record(
+        await db_ops.read_one_record(query=Select(Posts).where(Posts.pkid == post_id))
     )
+    if old_data is None:
+        logger.warning(f"No post found with ID: {post_id}")
+        return RedirectResponse(url="/posts", status_code=302)
     old_data = old_data.to_dict()
 
     # Get the new data from the form
@@ -199,9 +223,14 @@ async def update_post(
 
     print(f"Updated data: {updated_data}")
     # Update the database
-    data = await db_ops.update_one(
-        table=Posts, record_id=post_id, new_values=updated_data
+    data = _safe_record(
+        await db_ops.update_one(
+            table=Posts, record_id=post_id, new_values=updated_data
+        )
     )
+    if data is None:
+        logger.error(f"Failed to update post with ID: {post_id}")
+        return RedirectResponse(url="/error/500", status_code=303)
     logger.info(f"Updated post with ID: {post_id}")
     # background_tasks.add_task(
     #     notes_metrics.update_notes_metrics, user_id=user_identifier
@@ -382,7 +411,7 @@ async def get_post_id(request: Request, post_id: str):
         user_timezone = "America/New_York"
 
     query = Select(Posts).where(Posts.pkid == post_id)
-    post = await db_ops.read_one_record(query=query)
+    post = _safe_record(await db_ops.read_one_record(query=query))
 
     if post is None:
         logger.warning(f"No post found with ID: {post_id}")

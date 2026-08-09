@@ -32,6 +32,11 @@ def _is_valid_result(result) -> bool:
     return result is not None and not isinstance(result, dict)
 
 
+def _safe_list(result) -> list:
+    """Return result when it is a genuine list of ORM objects; empty list otherwise."""
+    return result if isinstance(result, list) else []
+
+
 async def _render_item(request: Request, notification_id: str, user_timezone: str, user_identifier: str) -> tuple:
     """Re-fetch a notification (with ownership) and format it for rendering."""
     result = await db_ops.read_one_record(
@@ -63,10 +68,7 @@ async def notifications_partial(
     query = query.limit(50)
 
     results = await db_ops.read_query(query=query)
-    notifications = _format_notifications(
-        results if results and not isinstance(results, str) else [],
-        user_timezone,
-    )
+    notifications = _format_notifications(_safe_list(results), user_timezone)
 
     return templates.TemplateResponse(
         request=request,
@@ -174,9 +176,8 @@ async def clear_all_notifications(
     user_identifier = user_info["user_identifier"]
     query = Select(Notifications).where(Notifications.user_id == user_identifier)
     results = await db_ops.read_query(query=query)
-    if results and not isinstance(results, str):
-        for n in results:
-            await db_ops.delete_one(table=Notifications, record_id=n.pkid)
+    for n in _safe_list(results):
+        await db_ops.delete_one(table=Notifications, record_id=n.pkid)
     logger.info(f"Cleared all notifications for user {user_identifier}")
     return templates.TemplateResponse(
         request=request,

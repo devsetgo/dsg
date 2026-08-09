@@ -54,6 +54,20 @@ from ..resources import db_ops, templates
 router = APIRouter()
 
 
+def _safe_list(result) -> list:
+    """Return result when it is a genuine list of ORM objects; empty list otherwise.
+
+    dsg_lib db_ops methods return a plain dict on certain database errors instead
+    of raising an exception, so an isinstance(x, str) guard is not sufficient.
+    """
+    return result if isinstance(result, list) else []
+
+
+def _safe_record(result):
+    """Return result when it is a genuine ORM object; None otherwise."""
+    return result if result is not None and not isinstance(result, dict) else None
+
+
 # api endpoints
 # /list with filters (by tag, by date range, by category)
 @router.get("/")
@@ -116,10 +130,12 @@ async def bulk_weblink(
 
 @router.get("/categories", response_class=JSONResponse)
 async def get_categories():
-    categories = await db_ops.read_query(
-        Select(Categories)
-        .where(Categories.is_weblink)
-        .order_by(asc(func.lower(Categories.name)))
+    categories = _safe_list(
+        await db_ops.read_query(
+            Select(Categories)
+            .where(Categories.is_weblink)
+            .order_by(asc(func.lower(Categories.name)))
+        )
     )
     cat_list = [cat.to_dict()["name"] for cat in categories]
     return cat_list
@@ -173,7 +189,7 @@ async def read_weblinks_pagination(
     query = query.order_by(WebLinks.date_created.desc()).limit(limit).offset(offset)
     weblinks = await db_ops.read_query(query=query)
     logger.debug(f"weblinks returned from pagination query {weblinks}")
-    if isinstance(weblinks, str):
+    if not isinstance(weblinks, list):
         logger.error(f"Unexpected result from read_query: {weblinks}")
         weblinks = []
     else:
@@ -298,9 +314,13 @@ async def view_weblink(
     if user_timezone is None:
         user_timezone = "America/New_York"
 
-    link_obj = await db_ops.read_one_record(
-        Select(WebLinks).where(WebLinks.pkid == pkid)
+    link_obj = _safe_record(
+        await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
     )
+
+    if link_obj is None:
+        logger.warning(f"No weblink found with ID: {pkid}")
+        return RedirectResponse(url="/error/404", status_code=303)
 
     # Store the is_youtube property before converting to dict
     link_is_youtube = link_obj.is_youtube
@@ -357,7 +377,12 @@ async def edit_weblink(
 ):
     # user_identifier = user_info["user_identifier"]
 
-    data = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
+    data = _safe_record(
+        await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
+    )
+    if data is None:
+        logger.warning(f"No weblink found with ID: {pkid}")
+        return RedirectResponse(url="/error/404", status_code=302)
 
     data = data.to_dict()
 
@@ -400,13 +425,20 @@ async def get_update_comment(
 ):
     user_info["user_identifier"]
 
-    link = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
+    link = _safe_record(
+        await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
+    )
+    if link is None:
+        logger.warning(f"No weblink found with ID: {pkid}")
+        return RedirectResponse(url="/error/404", status_code=302)
 
     # Get categories for the dropdown
-    categories = await db_ops.read_query(
-        Select(Categories)
-        .where(Categories.is_weblink)
-        .order_by(asc(func.lower(Categories.name)))
+    categories = _safe_list(
+        await db_ops.read_query(
+            Select(Categories)
+            .where(Categories.is_weblink)
+            .order_by(asc(func.lower(Categories.name)))
+        )
     )
     cat_list = [cat.to_dict()["name"] for cat in categories]
 
@@ -468,7 +500,9 @@ async def delete_weblink_form(
     user_identifier = user_info["user_identifier"]
 
     # Check if the weblink exists and belongs to the user
-    link = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
+    link = _safe_record(
+        await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
+    )
 
     if link is None:
         logger.warning(f"No weblink found with ID: {pkid}")
@@ -509,7 +543,9 @@ async def delete_weblink(
         return RedirectResponse(url="/error/400", status_code=302)
 
     # Check if the weblink exists and belongs to the user
-    link = await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
+    link = _safe_record(
+        await db_ops.read_one_record(Select(WebLinks).where(WebLinks.pkid == pkid))
+    )
 
     if link is None:
         logger.warning(f"No weblink found with ID: {pkid} for user: {user_identifier}")

@@ -52,6 +52,16 @@ from ..settings import settings
 
 router = APIRouter()
 
+
+def _safe_record(result):
+    """Return result when it is a genuine ORM object; None otherwise.
+
+    dsg_lib db_ops methods return a plain dict on certain database errors instead
+    of raising an exception, so a bare `is None` check is not sufficient.
+    """
+    return result if result is not None and not isinstance(result, dict) else None
+
+
 DEFAULT_MOOD_TAKEAWAY_MONTHS = 3
 MIN_MOOD_TAKEAWAY_MONTHS = 1
 MAX_MOOD_TAKEAWAY_MONTHS = 12
@@ -67,7 +77,7 @@ async def edit_user(
     user_info["is_admin"]
 
     query = Select(Users).where(Users.pkid == user_identifier)
-    user = await db_ops.read_one_record(query=query)
+    user = _safe_record(await db_ops.read_one_record(query=query))
 
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -137,8 +147,10 @@ async def edit_user_post(
         request.session["error-message"] = errors
         return RedirectResponse(url="/users/edit-user", status_code=303)
 
-    current_user = await db_ops.read_one_record(
-        query=Select(Users).where(Users.pkid == user_identifier)
+    current_user = _safe_record(
+        await db_ops.read_one_record(
+            query=Select(Users).where(Users.pkid == user_identifier)
+        )
     )
     current_roles = (current_user.roles or {}) if current_user else {}
     updated_roles = dict(current_roles)
@@ -186,7 +198,7 @@ async def get_user_info(
     user_info["is_admin"]
 
     query = Select(Users).where(Users.pkid == user_identifier)
-    user = await db_ops.read_one_record(query=query)
+    user = _safe_record(await db_ops.read_one_record(query=query))
 
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -231,8 +243,10 @@ async def github_callback(request: Request):
     async with sso:
         user = await sso.verify_and_process(request)
 
-    user_stored = await db_ops.read_one_record(
-        Select(Users).where(Users.user_name == user.display_name)
+    user_stored = _safe_record(
+        await db_ops.read_one_record(
+            Select(Users).where(Users.user_name == user.display_name)
+        )
     )
 
     if not user_stored:
@@ -255,8 +269,11 @@ async def github_callback(request: Request):
             is_admin=is_admin,
             roles=add_roles,
         )
-        user_stored = await db_ops.create_one(new_user)
+        user_stored = _safe_record(await db_ops.create_one(new_user))
         logger.debug(user_stored)
+
+    if user_stored is None:
+        raise HTTPException(status_code=500, detail="Failed to create or load user")
 
     try:
         user_stored = user_stored.to_dict()
