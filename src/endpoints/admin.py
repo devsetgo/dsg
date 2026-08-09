@@ -186,7 +186,9 @@ async def admin_category_edit(
     context = {"categories": None, "rand": secrets.token_urlsafe(2)}
     if category_id is not None:
         query = Select(Categories).where(Categories.pkid == category_id)
-        category = await db_ops.read_one_record(query=query)
+        category = _safe_record(await db_ops.read_one_record(query=query))
+        if category is None:
+            raise HTTPException(status_code=404, detail="Category not found")
         context["category"] = category.to_dict()
 
     logger.debug(f"category-edit: {context}")
@@ -221,10 +223,13 @@ async def add_edit_category(
     if "category_id" in form and form["category_id"] != "":  # no pragma: no cover
         category_id = form["category_id"]
         # Fetch the old data
-        old_data = await db_ops.read_one_record(
-            query=Select(Categories).where(Categories.pkid == category_id)
+        old_data = _safe_record(
+            await db_ops.read_one_record(
+                query=Select(Categories).where(Categories.pkid == category_id)
+            )
         )
-        old_data = old_data.to_dict()
+        if old_data is None:
+            raise HTTPException(status_code=404, detail="Category not found")
 
         updated_data = {
             "name": name,
@@ -236,9 +241,13 @@ async def add_edit_category(
         }
 
         # Update the database
-        data = await db_ops.update_one(
-            table=Categories, record_id=category_id, new_values=updated_data
+        data = _safe_record(
+            await db_ops.update_one(
+                table=Categories, record_id=category_id, new_values=updated_data
+            )
         )
+        if data is None:
+            raise HTTPException(status_code=500, detail="Failed to update category")
         context["category_data"] = data.to_dict()
         context["status"] = "updated"
     else:  # no pragma: no cover
@@ -251,7 +260,9 @@ async def add_edit_category(
             is_system=is_system,
         )
 
-        data = await db_ops.create_one(category_data)
+        data = _safe_record(await db_ops.create_one(category_data))
+        if data is None:
+            raise HTTPException(status_code=500, detail="Failed to create category")
         context["category_data"] = data.to_dict()
         context["status"] = "created"
 

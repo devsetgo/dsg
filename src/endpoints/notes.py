@@ -72,6 +72,21 @@ from ..settings import settings
 router = APIRouter()
 
 
+def _safe_list(result) -> list:
+    """Return result when it is a genuine list of ORM objects; empty list otherwise.
+
+    dsg_lib db_ops methods return a plain dict on certain database errors instead
+    of raising an exception. Guards that only check isinstance(result, str) miss
+    those dict error responses.
+    """
+    return result if isinstance(result, list) else []
+
+
+def _safe_record(result):
+    """Return result when it is a genuine ORM object; None otherwise."""
+    return result if result is not None and not isinstance(result, dict) else None
+
+
 async def process_ai_analysis_background(
     note_id: str, content: str, user_id: str, mood_process: str | None = None
 ):
@@ -132,14 +147,18 @@ async def read_notes(
         logger.debug("User identifier is None, redirecting to login")
         return RedirectResponse(url="/users/login", status_code=302)
 
-    note_metrics = await db_ops.read_one_record(
-        query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
+    note_metrics = _safe_record(
+        await db_ops.read_one_record(
+            query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
+        )
     )
 
     if note_metrics is None:
         await notes_metrics.update_notes_metrics(user_id=user_identifier)
-        note_metrics = await db_ops.read_one_record(
-            query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
+        note_metrics = _safe_record(
+            await db_ops.read_one_record(
+                query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
+            )
         )
 
     metrics = None
@@ -188,13 +207,25 @@ async def get_note_counts(
     user_identifier = user_info["user_identifier"]
     user_info["timezone"]
 
-    note_metrics = await db_ops.read_one_record(
-        query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
+    note_metrics = _safe_record(
+        await db_ops.read_one_record(
+            query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
+        )
     )
     if note_metrics is None:
         await notes_metrics.update_notes_metrics(user_id=user_identifier)
-        note_metrics = await db_ops.read_one_record(
-            query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
+        note_metrics = _safe_record(
+            await db_ops.read_one_record(
+                query=Select(NoteMetrics).where(NoteMetrics.user_id == user_identifier)
+            )
+        )
+
+    if note_metrics is None:
+        logger.error(f"Unable to load note metrics for user {user_identifier}")
+        return templates.TemplateResponse(
+            request=request,
+            name="/notes/metrics.html",
+            context={"note_metrics": {}},
         )
 
     note_metrics = note_metrics.to_dict()
@@ -221,7 +252,7 @@ async def ai_update_note(
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
-    note = await db_ops.read_one_record(query=query)
+    note = _safe_record(await db_ops.read_one_record(query=query))
 
     if note is None:
         logger.warning(f"No note found with ID: {note_id} for user: {user_identifier}")
@@ -246,7 +277,7 @@ async def ai_fix_processing(
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
-    note = await db_ops.read_one_record(query=query)
+    note = _safe_record(await db_ops.read_one_record(query=query))
     if note is None:
         return RedirectResponse(url="/error/404", status_code=303)
 
@@ -316,7 +347,7 @@ async def edit_note_form(
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
-    note = await db_ops.read_one_record(query=query)
+    note = _safe_record(await db_ops.read_one_record(query=query))
     if note is None:
         logger.warning(f"No note found with ID: {note_id} for user: {user_identifier}")
         return RedirectResponse(url="/notes", status_code=302)
@@ -357,9 +388,12 @@ async def update_note(
     user_info["timezone"]
 
     # Fetch the old data
-    old_data = await db_ops.read_one_record(
-        query=Select(Notes).where(Notes.pkid == note_id)
+    old_data = _safe_record(
+        await db_ops.read_one_record(query=Select(Notes).where(Notes.pkid == note_id))
     )
+    if old_data is None:
+        logger.warning(f"No note found with ID: {note_id} for user: {user_identifier}")
+        return RedirectResponse(url="/notes", status_code=302)
     old_data = old_data.to_dict()
 
     # Get the new data from the form
@@ -383,9 +417,14 @@ async def update_note(
             updated_data[field] = new_value
 
     # Update the database
-    data = await db_ops.update_one(
-        table=Notes, record_id=note_id, new_values=updated_data
+    data = _safe_record(
+        await db_ops.update_one(
+            table=Notes, record_id=note_id, new_values=updated_data
+        )
     )
+    if data is None:
+        logger.error(f"Failed to update note with ID: {note_id}")
+        return RedirectResponse(url="/error/500", status_code=303)
     logger.info(f"Updated note with ID: {note_id}")
     background_tasks.add_task(
         notes_metrics.update_notes_metrics, user_id=user_identifier
@@ -404,7 +443,10 @@ async def delete_note_form(
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
-    note = await db_ops.read_one_record(query=query)
+    note = _safe_record(await db_ops.read_one_record(query=query))
+    if note is None:
+        logger.warning(f"No note found with ID: {note_id} for user: {user_identifier}")
+        return RedirectResponse(url="/notes", status_code=302)
 
     return templates.TemplateResponse(
         request=request, name="/notes/delete.html", context={"note": note}
@@ -424,7 +466,7 @@ async def delete_note(
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
-    note = await db_ops.read_one_record(query=query)
+    note = _safe_record(await db_ops.read_one_record(query=query))
 
     if note is None:
         logger.warning(f"No note found with ID: {note_id} for user: {user_identifier}")
@@ -456,7 +498,7 @@ async def get_note_issue(
         .where(and_(Notes.user_id == user_identifier, Notes.ai_fix))
         .limit(200)
     ).order_by(desc(Notes.date_created))
-    notes = await db_ops.read_query(query=query)
+    notes = _safe_list(await db_ops.read_query(query=query))
 
     # offset date_created and date_updated to user's timezone
     notes = [note.to_dict() for note in notes]
@@ -512,7 +554,10 @@ async def create_note(
         user_id=user_identifier,
         ai_fix=False,  # Will be updated by background task if needed
     )
-    data = await db_ops.create_one(note)
+    data = _safe_record(await db_ops.create_one(note))
+    if data is None:
+        logger.error(f"Failed to create note for user {user_identifier}")
+        return RedirectResponse(url="/error/500", status_code=303)
 
     # Add background tasks for AI analysis and metrics update
     background_tasks.add_task(
@@ -629,7 +674,7 @@ async def read_notes_pagination(
         note_count = await db_ops.count_query(query=query)
         total_pages = -(-note_count // limit) if note_count else 1
         page_notes = await db_ops.read_query(query=query.limit(limit).offset(offset))
-        if isinstance(page_notes, str):
+        if not isinstance(page_notes, list):
             logger.error(f"Unexpected result from read_query: {page_notes}")
             page_notes = []
         notes = [n.to_dict() for n in page_notes]
@@ -638,7 +683,7 @@ async def read_notes_pagination(
         # For ~2,900–5,800 notes Fernet decrypt is fast (~100ms total); the
         # mood/date/tag SQL filters above reduce the set before we get here.
         all_notes = await db_ops.read_query(query=query)
-        if isinstance(all_notes, str):
+        if not isinstance(all_notes, list):
             logger.error(f"Unexpected result from read_query: {all_notes}")
             all_notes = []
         term = search_term.lower()
@@ -747,7 +792,7 @@ async def read_today_notes(
         )
         .order_by(desc(Notes.date_created))
     )
-    notes = await db_ops.read_query(query=query)
+    notes = _safe_list(await db_ops.read_query(query=query))
 
     # offset date_created and date_updated to user's timezone
     notes = [note.to_dict() for note in notes]
@@ -795,7 +840,7 @@ async def read_note(
     query = Select(Notes).where(
         and_(Notes.user_id == user_identifier, Notes.pkid == note_id)
     )
-    note = await db_ops.read_one_record(query=query)
+    note = _safe_record(await db_ops.read_one_record(query=query))
 
     if note is None:
         logger.warning(f"No note found with ID: {note_id} for user: {user_identifier}")
