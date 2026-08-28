@@ -37,7 +37,9 @@ def _safe_list(result) -> list:
     return result if isinstance(result, list) else []
 
 
-async def _render_item(request: Request, notification_id: str, user_timezone: str, user_identifier: str) -> tuple:
+async def _render_item(
+    request: Request, notification_id: str, user_timezone: str, user_identifier: str
+) -> tuple:
     """Re-fetch a notification (with ownership) and format it for rendering."""
     result = await db_ops.read_one_record(
         query=Select(Notifications).where(
@@ -45,7 +47,11 @@ async def _render_item(request: Request, notification_id: str, user_timezone: st
             Notifications.user_id == user_identifier,
         )
     )
-    n = _format_notifications([result], user_timezone)[0] if _is_valid_result(result) else None
+    n = (
+        _format_notifications([result], user_timezone)[0]
+        if _is_valid_result(result)
+        else None
+    )
     return n
 
 
@@ -62,7 +68,9 @@ async def notifications_partial(
     if not show_all:
         query = query.where(Notifications.is_read.is_(False))
     if show_all:
-        query = query.order_by(Notifications.is_read.asc(), Notifications.date_created.desc())
+        query = query.order_by(
+            Notifications.is_read.asc(), Notifications.date_created.desc()
+        )
     else:
         query = query.order_by(Notifications.date_created.desc())
     query = query.limit(50)
@@ -120,7 +128,9 @@ async def mark_notification_read(
         record_id=notification_id,
         new_values={"is_read": True},
     )
-    logger.debug(f"Marked notification {notification_id} read for user {user_identifier}")
+    logger.debug(
+        f"Marked notification {notification_id} read for user {user_identifier}"
+    )
 
     if not show_all:
         return HTMLResponse("")
@@ -157,7 +167,9 @@ async def mark_notification_unread(
         record_id=notification_id,
         new_values={"is_read": False},
     )
-    logger.debug(f"Marked notification {notification_id} unread for user {user_identifier}")
+    logger.debug(
+        f"Marked notification {notification_id} unread for user {user_identifier}"
+    )
 
     n = await _render_item(request, notification_id, user_timezone, user_identifier)
     return templates.TemplateResponse(

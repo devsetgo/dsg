@@ -501,7 +501,9 @@ async def add_notifications(user_id: str) -> None:
         )
         await db_ops.create_one(notification)
 
-    logger.info(f"Created {len(demo_notifications)} demo notifications for user {user_id}")
+    logger.info(
+        f"Created {len(demo_notifications)} demo notifications for user {user_id}"
+    )
 
 
 async def add_user() -> Optional[Dict[str, Any]]:

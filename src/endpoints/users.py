@@ -138,7 +138,9 @@ async def edit_user_post(
         mood_takeaway_months = DEFAULT_MOOD_TAKEAWAY_MONTHS
         errors.append("Mood takeaway months must be a number")
 
-    if not (MIN_MOOD_TAKEAWAY_MONTHS <= mood_takeaway_months <= MAX_MOOD_TAKEAWAY_MONTHS):
+    if not (
+        MIN_MOOD_TAKEAWAY_MONTHS <= mood_takeaway_months <= MAX_MOOD_TAKEAWAY_MONTHS
+    ):
         errors.append(
             f"Mood takeaway months must be between {MIN_MOOD_TAKEAWAY_MONTHS} and {MAX_MOOD_TAKEAWAY_MONTHS}"
         )

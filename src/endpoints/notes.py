@@ -96,7 +96,9 @@ async def process_ai_analysis_background(
         analysis = await ai.get_analysis(content=content, mood_process=mood_process)
 
         moods_list: list = [mood[0] for mood in settings.mood_analysis_weights]
-        ai_fix = analysis["mood_analysis"] not in moods_list or analysis.get("_ai_fix", False)
+        ai_fix = analysis["mood_analysis"] not in moods_list or analysis.get(
+            "_ai_fix", False
+        )
 
         # mood is the user's self-reported feeling — AI must never overwrite it.
         # mood_analysis is the AI's nuanced assessment (elated, hopeless, etc.).
@@ -282,10 +284,16 @@ async def ai_fix_processing(
         return RedirectResponse(url="/error/404", status_code=303)
 
     note_dict = note.to_dict()
-    mood = note_dict["mood"] if note_dict["mood"] in ["positive", "negative", "neutral"] else None
+    mood = (
+        note_dict["mood"]
+        if note_dict["mood"] in ["positive", "negative", "neutral"]
+        else None
+    )
 
     # Clear the flag immediately so the note leaves /issues before the background task finishes
-    await db_ops.update_one(table=Notes, record_id=note_id, new_values={"ai_fix": False})
+    await db_ops.update_one(
+        table=Notes, record_id=note_id, new_values={"ai_fix": False}
+    )
 
     background_tasks.add_task(
         process_ai_analysis_background,
@@ -627,7 +635,9 @@ async def get_note_tags(
 @router.get("/pagination")
 async def read_notes_pagination(
     request: Request,
-    search_term: str = Query(None, description="Search term for note and summary content"),
+    search_term: str = Query(
+        None, description="Search term for note and summary content"
+    ),
     start_date: str = Query(None, description="Start date"),
     end_date: str = Query(None, description="End date"),
     mood: str = Query(None, description="Mood"),
@@ -650,17 +660,34 @@ async def read_notes_pagination(
     # Tag filter: OR logic, case-insensitive exact match within the JSON array.
     # func.lower() on both sides handles mixed-case stored tags (e.g. "Valerie" matches "valerie").
     if tags:
+
         def _tag_like(tag: str):
-            escaped = tag.lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-            return func.lower(cast(Notes.tags, Text)).like(f'%"{escaped}"%', escape="\\")
+            escaped = (
+                tag.lower()
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_")
+            )
+            return func.lower(cast(Notes.tags, Text)).like(
+                f'%"{escaped}"%', escape="\\"
+            )
+
         query = query.where(or_(*[_tag_like(t) for t in tags]))
 
     if mood:
         query = query.where(Notes.mood == mood.lower())
 
     if start_date or end_date:
-        start_dt = datetime.strptime(start_date, "%Y-%m-%d") if start_date else datetime(2011, 1, 1)
-        end_dt = datetime.strptime(end_date, "%Y-%m-%d") if end_date else datetime.now(timezone.utc) + timedelta(days=2)
+        start_dt = (
+            datetime.strptime(start_date, "%Y-%m-%d")
+            if start_date
+            else datetime(2011, 1, 1)
+        )
+        end_dt = (
+            datetime.strptime(end_date, "%Y-%m-%d")
+            if end_date
+            else datetime.now(timezone.utc) + timedelta(days=2)
+        )
         query = query.where(
             (Notes.date_created >= start_dt) & (Notes.date_created <= end_dt)
         )
@@ -688,7 +715,8 @@ async def read_notes_pagination(
             all_notes = []
         term = search_term.lower()
         all_notes = [
-            n for n in all_notes
+            n
+            for n in all_notes
             if term in (n.note or "").lower() or term in (n.summary or "").lower()
         ]
         note_count = len(all_notes)
@@ -720,7 +748,9 @@ async def read_notes_pagination(
     prev_page_url = _page_url(page - 1) if page > 1 else None
     next_page_url = _page_url(page + 1) if page < total_pages else None
 
-    logger.info(f"Found {note_count} notes for user {user_identifier} (page {page}/{total_pages})")
+    logger.info(
+        f"Found {note_count} notes for user {user_identifier} (page {page}/{total_pages})"
+    )
     return templates.TemplateResponse(
         request=request,
         name="/notes/pagination.html",

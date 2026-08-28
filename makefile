@@ -2,12 +2,13 @@
 # Project Variables
 # =============================================================================
 REPONAME = dsg
-APP_VERSION = 2026-06-13-002
+APP_VERSION = 2026-07-24-001
 
 # Python Configuration
-PYTHON = python3
+PYTHON ?= $(shell if command -v python3.14 >/dev/null 2>&1; then echo python3.14; else echo python3; fi)
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
+ALEMBIC_PYTHON ?= $(shell if [ -x /home/mike/dsg/.venv/bin/python ]; then echo /home/mike/dsg/.venv/bin/python; elif command -v python3.14 >/dev/null 2>&1; then echo python3.14; else echo python3; fi)
 
 # Path Configuration
 SERVICE_PATH = src
@@ -95,7 +96,7 @@ alembic-migrate: ## Migrate database using Alembic
 	./scripts/env.sh && \
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
 	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
-	/home/mike/dsg/.venv/bin/python -m alembic upgrade head
+	$(ALEMBIC_PYTHON) -m alembic upgrade head
 	@printf "\033[0;32m✅ Database migration completed!\033[0m\n"
 
 alembic-rev: ## Create a new revision file
@@ -105,7 +106,7 @@ alembic-rev: ## Create a new revision file
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
 	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
 	read -p "Enter revision name: " name; \
-	/home/mike/dsg/.venv/bin/python -m alembic revision --autogenerate -m "$$name"
+	$(ALEMBIC_PYTHON) -m alembic revision --autogenerate -m "$$name"
 	@printf "\033[0;32m✅ Revision created successfully!\033[0m\n"
 
 alembic-current: ## Show the current revision
@@ -114,14 +115,14 @@ alembic-current: ## Show the current revision
 	./scripts/env.sh && \
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
 	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
-	/home/mike/dsg/.venv/bin/python -m alembic current
+	$(ALEMBIC_PYTHON) -m alembic current
 
 alembic-history: ## Show migration history
 	@printf "\033[1;33m📚 Showing migration history...\033[0m\n"
 	cp env-files/.env.test .env && \
 	./scripts/env.sh && \
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
-	/home/mike/dsg/.venv/bin/python -m alembic history
+	$(ALEMBIC_PYTHON) -m alembic history
 
 alembic-stamp: ## Stamp the database with a specific revision
 	@printf "\033[1;33m🏷️ Stamping database revision...\033[0m\n"
@@ -130,7 +131,7 @@ alembic-stamp: ## Stamp the database with a specific revision
 	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
 	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
 	read -p "Enter revision ID: " rev; \
-	/home/mike/dsg/.venv/bin/python -m alembic stamp "$$rev"
+	$(ALEMBIC_PYTHON) -m alembic stamp "$$rev"
 	@printf "\033[0;32m✅ Database stamped successfully!\033[0m\n"
 
 alembic-downgrade: ## Downgrade database using Alembic
@@ -367,3 +368,22 @@ test-file: ## Run a specific test file
 test-marker: ## Run tests with specific marker
 	@printf "\033[1;33m🧪 Running tests with marker: $(MARKER)...\033[0m\n"
 	pytest tests/ -m $(MARKER) -v
+
+rebase: ## Rebase current branch from origin/main
+	git fetch origin
+	git rebase origin/main
+
+git-cleanup: ## Fetch + prune from origin, then delete local branches whose upstream is gone
+	@echo "Fetching from origin and pruning stale remote-tracking branches..."
+	git fetch origin --prune
+	@echo "Removing local branches whose upstream branch no longer exists..."
+	@current_branch=$$(git rev-parse --abbrev-ref HEAD); \
+	stale_branches=$$(git branch -vv | awk '/: gone\]/{print $$1}' | sed 's/^\*//' | grep -vE "^(main|master|dev|$$current_branch)$$" || true); \
+	if [[ -z "$$stale_branches" ]]; then \
+		echo "No stale local branches found."; \
+	else \
+		echo "Deleting stale branches:"; \
+		echo "$$stale_branches"; \
+		echo "$$stale_branches" | xargs -r git branch -D; \
+	fi
+	@echo "git-cleanup complete."

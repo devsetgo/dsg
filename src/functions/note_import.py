@@ -172,7 +172,11 @@ async def process_note(
                 final_mood = stored_mood
             else:
                 ai_mood = analysis.get("mood") or {}
-                final_mood = ai_mood.get("mood", "neutral") if isinstance(ai_mood, dict) else "neutral"
+                final_mood = (
+                    ai_mood.get("mood", "neutral")
+                    if isinstance(ai_mood, dict)
+                    else "neutral"
+                )
                 if final_mood not in ("positive", "negative", "neutral"):
                     final_mood = "neutral"
 
