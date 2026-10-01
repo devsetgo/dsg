@@ -19,6 +19,6 @@ pytz==2026.3.post1 # From 2026.2 | Vulnerabilities: None
 selenium==4.46.0 # From 4.44.0 | Vulnerabilities: None
 silly==1.1.0 # Vulnerabilities: None
 starlette-authlib==0.3.20 # Vulnerabilities: None
-tqdm==4.70.0 # From 4.68.3 | Vulnerabilities: None
+tqdm==4.70.1 # From 4.68.3 | Vulnerabilities: None
 unsync==1.4.0 # Vulnerabilities: None
 webdriver-manager==4.1.2 # From 4.1.1 | Vulnerabilities: None
