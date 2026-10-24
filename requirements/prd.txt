@@ -1,23 +1,9 @@
-alembic==1.19.1 # From 1.18.5 | Vulnerabilities: None
-argon2-cffi==25.1.0 # Vulnerabilities: None
-async-lru==2.3.0 # Vulnerabilities: None
-cryptography==50.0.1 # From 49.0.0 | Vulnerabilities: None
-devsetgo-lib[sqlite,postgres]==2026.7.23.1 # Vulnerabilities: None
-email-validator==2.3.0 # Vulnerabilities: None
-fastapi-sso==0.21.1 # Vulnerabilities: None
-fastapi[all]==0.141.1 # From 0.140.0 | Vulnerabilities: None
-granian==2.8.2 # From 2.7.9 | Vulnerabilities: None
-httpx-auth==0.23.1 # Vulnerabilities: None
-Markdown==3.10.3 # From 3.10.2 | Vulnerabilities: None
-nameparser==2.1.0 # From 1.4.0 | Vulnerabilities: None
-openai==3.6.0 # From 2.48.0 | Vulnerabilities: None
-pydantic[email]==2.13.5 # From 2.13.4 | Vulnerabilities: None
-PyJWT[crypto]==2.13.0 # Vulnerabilities: None
-python-dateutil==2.9.0.post0 # Vulnerabilities: None
-pytz==2026.3.post1 # From 2026.2 | Vulnerabilities: None
-selenium==4.48.0 # From 4.46.0 | Vulnerabilities: None
-silly==1.1.0 # Vulnerabilities: None
-starlette-authlib==0.3.20 # Vulnerabilities: None
-tqdm==4.70.0 # From 4.69.1 | Vulnerabilities: None
-unsync==1.4.0 # Vulnerabilities: None
-webdriver-manager==4.1.2 # Vulnerabilities: None
+alembic==1.20.1 # From 1.20.0 | Vulnerabilities: None
+devsetgo-lib[sqlite]==2026.10.18.1 # Vulnerabilities: None
+httpx==0.28.1 # Vulnerabilities: None
+packaging==26.3 # Vulnerabilities: None
+pydantic==2.14.1 # Vulnerabilities: None
+pydantic-schemaforms==26.4.1 # Vulnerabilities: None
+pydantic-settings==2.16.1 # From 2.16.0 | Vulnerabilities: None
+resolvelib==1.2.1 # Vulnerabilities: None
+robyn[templating]==0.88.0 # Vulnerabilities: None

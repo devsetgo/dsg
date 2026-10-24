@@ -1,93 +1,75 @@
 # -*- coding: utf-8 -*-
 """
-This module, `db_init.py`, is responsible for initializing the database connection for a FastAPI application. It dynamically constructs the database URI based on the application's configuration settings, supporting various database drivers such as SQLite (with aiosqlite for asynchronous support), PostgreSQL, MySQL, Oracle, and MSSQL. The module also defines a mapping of configuration options to database drivers, indicating which options are supported by each driver.
-
-The database URI construction takes into account different scenarios, including in-memory SQLite databases, file-based SQLite databases, and other SQL databases requiring connection details such as username, password, host, and port.
+Initializes the SQLite database connection: a single file under
+`settings.db_directory` (a Docker volume in production), or a throwaway
+in-memory database (`DB_DRIVER=memory`, what the test suite uses).
 
 Author:
     Mike Ryan
 
 License:
     MIT License
-
-Dependencies:
-    - dsg_lib.async_database_functions: Provides asynchronous database functions and configuration utilities.
-    - loguru: Used for logging.
-    - .settings: A module containing the application's configuration settings, including database connection details.
-
-Functions:
-    None explicitly defined; the module's main functionality is executed at the module level during import, setting up the database URI based on the application's configuration.
-
-Usage:
-    This module is intended to be imported at the application startup to ensure the database connection is configured correctly. It automatically constructs the database URI from the application settings and logs it for debugging purposes.
 """
+
+import os
+
 from dsg_lib.async_database_functions import async_database, database_config
 from loguru import logger
+from sqlalchemy import event
 
-from .settings import settings
+from .settings import DatabaseDriverEnum, settings
 
-if str(settings.db_driver.value).startswith(
-    "sqlite+aiosqlite:///:memory:?cache=shared"
-):  # no pragma: no cover
+SQLITE_AIOSQLITE_DRIVER = "sqlite+aiosqlite"
+
+if settings.db_driver == DatabaseDriverEnum.memory:  # pragma: no cover
     db_uri: str = settings.db_driver.value
-elif settings.db_driver.value == "sqlite+aiosqlite":  # no pragma: no cover
-    db_name = settings.db_name.get_secret_value()
-    if "." not in db_name:  # no pragma: no cover
-        db_name = f"{db_name}.db"
-    db_uri: str = f"{settings.db_driver.value}:///sqlite_db/{db_name}"
-else:  # no pragma: no cover
-    db_username = settings.db_username.get_secret_value()
-    db_password = settings.db_password.get_secret_value()
-    db_name = settings.db_name.get_secret_value()
-    db_port = settings.db_port
-    # postgresql://username:password@localhost:5432/mydatabase
-    db_uri: str = (
-        f"{settings.db_driver.value}://{db_username}:{db_password}@{settings.db_host}:{settings.db_port}/{db_name}"
-    )
-logger.debug(f"{db_uri}")
+    db_path: str | None = None
+else:  # pragma: no cover
+    db_name = settings.db_name if "." in settings.db_name else f"{settings.db_name}.db"
+    db_path = os.path.join(settings.db_directory, db_name)
+    # SQLite creates the file but not its folder - a missing folder surfaces as
+    # a confusing "unable to open database file" at the first query otherwise.
+    os.makedirs(settings.db_directory, exist_ok=True)
+    db_uri = f"{SQLITE_AIOSQLITE_DRIVER}:///{db_path}"
+logger.debug(f"database uri: {db_uri}")
 
-
-# Mapping of configuration options to database drivers that support them
-option_support = {
-    "echo": ["sqlite+aiosqlite", "postgresql", "mysql", "oracle", "mssql"],
-    "future": ["sqlite+aiosqlite", "postgresql", "mysql", "oracle", "mssql"],
-    "pool_pre_ping": ["postgresql", "mysql", "oracle", "mssql"],
-    "pool_size": ["postgresql", "mysql", "oracle", "mssql"],
-    "max_overflow": ["postgresql", "mysql", "oracle", "mssql"],
-    "pool_recycle": ["sqlite+aiosqlite", "postgresql", "mysql", "oracle", "mssql"],
-    "pool_timeout": ["postgresql", "mysql", "oracle", "mssql"],
+config = {
+    "database_uri": db_uri,
+    "echo": settings.echo,
+    "future": settings.future,
+    "pool_recycle": settings.pool_recycle,
 }
-
-config = {"database_uri": db_uri}
-
-# Check each option
-for option in [
-    "echo",
-    "future",
-    "pool_pre_ping",
-    "pool_size",
-    "max_overflow",
-    "pool_recycle",
-    "pool_timeout",
-]:
-    value = getattr(settings, option)
-    # Check if the driver string starts with a supported driver
-    for driver in option_support[option]:
-        if settings.db_driver.value.startswith(driver) and value is not None:
-            config[option] = value
-            break
-
-logger.debug(f"database config: {config}")
-logger.info("setting up database")
 db_config = database_config.DBConfig(config)
 async_db = async_database.AsyncDatabase(db_config)
-"""
-function              SQLite  PostgreSQL  MySQL  Oracle  MSSQL
-echo (bool)           Yes     Yes         Yes    Yes     Yes
-future (bool)         Yes     Yes         Yes    Yes     Yes
-pool_pre_ping (bool)  No     Yes         Yes    Yes     Yes
-pool_size (int)       No      Yes         Yes    Yes     Yes
-max_overflow (int)    No      Yes         Yes    Yes     Yes
-pool_recycle (bool)   Yes     Yes         Yes    Yes     Yes
-pool_timeout (int)    No      Yes         Yes    Yes     Yes
-"""
+
+
+@event.listens_for(db_config.engine.sync_engine, "connect")
+def _set_sqlite_pragmas(dbapi_connection, _connection_record):
+    """
+    Per-connection SQLite tuning. PRAGMAs other than journal_mode don't persist
+    in the file, so they are re-applied on every connection the pool opens.
+
+    - journal_mode=WAL: readers never block the writer, which matters because
+      every Robyn worker process polls check status from the same file.
+      Skipped for :memory:, which can't use WAL.
+    - synchronous=NORMAL: safe under WAL and avoids an fsync on every commit.
+    - busy_timeout: wait for another process's write lock instead of failing
+      immediately with "database is locked".
+    - foreign_keys: SQLite ignores FOREIGN KEY constraints unless asked.
+    """
+    cursor = dbapi_connection.cursor()
+    try:
+        # First, so it also covers the journal_mode switch below: on a fresh
+        # file every Robyn process connects at once, and without a timeout
+        # the losers of that race fail with "database is locked".
+        cursor.execute(f"PRAGMA busy_timeout={int(settings.sqlite_busy_timeout_ms)}")
+        if db_path is not None:
+            cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute(f"PRAGMA mmap_size={int(settings.sqlite_mmap_size_bytes)}")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.execute("PRAGMA temp_store=MEMORY")
+        # Negative means KiB; a positive value would be a page count.
+        cursor.execute(f"PRAGMA cache_size=-{int(settings.sqlite_cache_size_kib)}")
+    finally:
+        cursor.close()

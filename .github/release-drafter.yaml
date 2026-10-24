@@ -5,7 +5,10 @@ template: |
   $CHANGES
 categories:
   - title: 'Breaking'
-    label: 'type: breaking'
+    # ai-pr-assistant always uses "breaking-change" for detected breaking changes.
+    labels:
+      - 'type: breaking'
+      - 'breaking-change'
   - title: 'New'
     label: 'type: feature'
   - title: 'Bug Fixes'
@@ -16,11 +19,14 @@ categories:
     label: 'type: docs'
   - title: 'Dependency Updates'
     label: 'type: dependencies'
+  - title: 'Security'
+    label: 'type: security'
 
 version-resolver:
   major:
     labels:
       - 'type: breaking'
+      - 'breaking-change'
   minor:
     labels:
       - 'type: feature'

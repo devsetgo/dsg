@@ -10,12 +10,14 @@ htmlcov
 log/*.log
 logs/
 scripts/
-sqlite_db/*.db
+# The whole folder: -wal/-shm files hold recent writes (submitted files). The
+# image recreates the empty folder, and compose mounts a volume over it.
+sqlite_db/
 tests/
 /env-files
-.env.*
+**/.env
+**/.env.*
 .env_sample
-.env
 .coverage
 .pre-commit-config.yaml
 coverage.xml
@@ -25,3 +27,11 @@ makefile
 README.md
 sonar-project.properties
 pyproject.toml
+.venv/
+_venv/
+pdf/
+benchmarks/
+data/
+report.xml
+**/__pycache__
+TODO_TASKS.md

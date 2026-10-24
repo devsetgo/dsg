@@ -1,43 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-This module, `main.py`, serves as the entry point for a FastAPI application named DevSetGo.com. It is responsible for configuring the application's logging, middleware, routes, and lifecycle events. The application provides a set of APIs for various functionalities, including note metrics and user management, with detailed API documentation available through FastAPI's built-in support for OpenAPI.
+Entry point for the DevSetGo package resolver, a Robyn application.
 
-The module utilizes the `asynccontextmanager` from the `contextlib` module to define an asynchronous context manager for the application's lifespan events, ensuring proper startup and shutdown procedures are followed. It also integrates custom modules for logging configuration, middleware setup, route creation, and application settings.
+Run with:
+    python -m src.main --processes 2 --workers 2     (production)
+    python -m src.main --dev                         (hot reload)
+
+Robyn reads --processes/--workers/--dev from the command line itself.
 
 Author:
     Mike Ryan
 
 License:
     MIT License
-
-Dependencies:
-    - fastapi: For creating and configuring the FastAPI application.
-    - loguru: For application logging.
-    - contextlib: For the asynchronous context manager.
-    - .app_middleware: Module for adding middleware to the application.
-    - .app_routes: Module for defining application routes.
-    - .functions.notes_metrics: Module for note metrics functionalities.
-    - .resources.startup: Module for startup tasks.
-    - .settings: Module for application settings.
-
-Functions:
-    - lifespan(app: FastAPI): An asynchronous context manager for managing application startup and shutdown events.
-
-Usage:
-    This module is executed to start the FastAPI application, setting up logging, middleware, routes, and handling the application's lifespan events. It configures the application with a title, description, version, and documentation URLs, and initializes it with specified settings for debugging, middleware, and routes.
 """
-import signal
-from contextlib import asynccontextmanager
+
+import logging
+import time
 
 from dsg_lib.common_functions import logging_config
-from fastapi import FastAPI, Request
-from fastapi.responses import RedirectResponse
 from loguru import logger
+from robyn import Headers, Request, Response, Robyn
 
-from .app_middleware import add_middleware
-from .app_routes import create_routes
 from .resources import shutdown, startup
+from .routes import api, health, pages
+from .routes.errors import error_page
 from .settings import settings
+from .templating import STATIC_DIR, STATIC_ROUTE
 
 logging_config.config_log(
     logging_directory=settings.logging_directory,
@@ -46,71 +35,61 @@ logging_config.config_log(
     log_rotation=settings.log_rotation,
     log_retention=settings.log_retention,
     log_backtrace=settings.log_backtrace,
-    log_format=None,
     log_serializer=settings.log_serializer,
     log_diagnose=settings.log_diagnose,
-    log_propagate=False,
-    intercept_standard_logging=False,
+    intercept_standard_logging=settings.log_intercept_standard_logging,
 )
 
+# httpx logs every request at INFO - hundreds of lines for one large check.
+for noisy in ("httpx", "httpcore"):
+    logging.getLogger(noisy).setLevel(logging.WARNING)
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):  # pragma: no cover
-    logger.info("starting up")
-    await startup()
-    yield
-    await shutdown()
-
-
-# Create an instance of the FastAPI class
-app = FastAPI(
-    title="DevSetGo.com",  # The title of the API
-    description="Website for devsetgo.com",  # A brief description of the API
-    version=settings.version,  # The version of the API
-    docs_url="/docs",  # The URL where the API documentation will be served
-    redoc_url="/redoc",  # The URL where the ReDoc documentation will be served
-    openapi_url="/openapi.json",  # The URL where the OpenAPI schema will be served
-    debug=settings.debug_mode,  # Enable debug mode
-    middleware=[],  # A list of middleware to include in the application
-    routes=[],  # A list of routes to include in the application
-    lifespan=lifespan,
-    # exception_handlers=
-)
-if settings.debug_mode:  # pragma: no cover
-    logger.warning("Debug mode is enabled and should not be used in production.")
-
-# add middleware and routes to the application
-add_middleware(app)
-# create routes
-create_routes(app)
+app = Robyn(__file__)
+app.serve_directory(STATIC_ROUTE, STATIC_DIR)
+app.include_router(pages.router)
+app.include_router(api.router)
+app.include_router(health.router)
+app.startup_handler(startup)
+app.shutdown_handler(shutdown)
 
 
-# Define a signal handler for the WINCH signal
-def handle_winch(signum, frame):
-    logger.info("Received WINCH signal")
+@app.exception
+def handle_exception(error: Exception) -> Response:
+    logger.opt(exception=error).error(f"unhandled error: {error}")
+    return error_page(
+        500, "Something went wrong on our side. The error has been logged."
+    )
 
 
-# Register the signal handler
-signal.signal(signal.SIGWINCH, handle_winch)
+@app.get("/favicon.ico")
+async def favicon():
+    return Response(
+        status_code=301,
+        headers=Headers({"Location": f"{STATIC_ROUTE}/favicon.ico"}),
+        description="",
+    )
 
 
-@app.get("/")
-async def root(request: Request) -> RedirectResponse:  # pragma: no cover
-    """
-    Root endpoint that redirects to the index page.
+if settings.access_log:
+    # Opt-in: each middleware is an extra Python call per request (measurable
+    # in benchmarks/results), and behind Traefik its access log covers this.
 
-    This asynchronous function performs the following tasks:
-    - Retrieves the 'user_identifier' from the session, if it exists.
-    - Redirects the user to the '/pages/index' URL.
+    @app.before_request()
+    async def stamp_start(request: Request):
+        request.headers.set("x-dsg-start", str(time.perf_counter()))
+        return request
 
-    Args:
-        request (Request): The request object containing session data.
+    @app.after_request()
+    async def access_log(request: Request, response: Response):
+        started = request.headers.get("x-dsg-start")
+        elapsed_ms = (time.perf_counter() - float(started)) * 1000 if started else -1
+        logger.info(
+            f"{request.method} {request.url.path} {response.status_code} {elapsed_ms:.1f}ms"
+        )
+        return response
 
-    Returns:
-        RedirectResponse: A response that redirects the user to the '/pages/index' URL.
-    """
-    # Retrieve 'user_identifier' from the session, if it exists
-    request.session.get("user_identifier", None)
 
-    # Redirect the user to the '/pages/index' URL
-    return RedirectResponse(url="/pages/index")
+if __name__ == "__main__":  # pragma: no cover
+    # _check_port=False: on a busy port Robyn otherwise prompts on stdin for
+    # another one, which hangs forever in a container instead of failing.
+    app.start(host=settings.host, port=settings.port, _check_port=False)

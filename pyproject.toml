@@ -2,7 +2,7 @@
 name = "dsg"
 version = "2026-07-24-001"
 requires-python = ">=3.14"
-description = "DevSetGo website"
+description = "DevSetGo: resolve a requirements.txt like pip does, for any Python version"
 readme = "README.md"
 classifiers = [ "License :: OSI Approved :: MIT License", "Programming Language :: Python", "Programming Language :: Python :: 3.14", "Operating System :: POSIX :: Linux", "Operating System :: POSIX",]
 [[project.authors]]
@@ -43,6 +43,9 @@ reportUnusedFunction = true
 reportUnusedVariable = true
 reportDuplicateImport = true
 reportPrivateUsage = true
+
+[tool.black]
+target-version = [ "py314",]
 
 [tool.ruff]
 line-length = 100
@@ -105,14 +108,20 @@ indent-style = "space"
 quote-style = "single"
 
 [tool.coverage.run]
-source = [ "bumpcalver",]
-omit = [ "setup.py", "_venv/*", "tests/*", "examples/*",]
+source = [ "src",]
+branch = true
+omit = [ "tests/*", "alembic/*", "benchmarks/*",]
 
 [tool.coverage.report]
 exclude_lines = [ "pragma: no cover", "if __name__",]
+# Protocol method stubs (`def f(self) -> int: ...`) declare a type; they are not code.
+exclude_also = [ ": \\.\\.\\.$",]
+show_missing = true
 
 [tool.pytest.ini_options]
-norecursedirs = [ "/tests",]
 testpaths = [ "tests",]
-python_files = [ "test_*.py", "*_test.py",]
-addopts = [ "--cov=./", "--cov-report=html", "--cov-report=xml", "--junitxml=report.xml", "--html=htmlcov/_test_report.html", "--self-contained-html", "-ra", "--strict-markers", "--tb=short", "-p", "pytester",]
+python_files = [ "test_*.py",]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = [ "--cov=src", "--cov-report=term-missing:skip-covered", "--cov-report=xml", "-ra", "--strict-markers", "--tb=short", "-m", "not network",]
+markers = [ "network: hits the real PyPI; run with `pytest -m network`",]

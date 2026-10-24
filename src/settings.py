@@ -1,101 +1,71 @@
 # -*- coding: utf-8 -*-
 """
-This module, `settings.py`, defines the configuration schema for the application using Pydantic models. It includes settings for database connections, supporting multiple database drivers such as PostgreSQL, SQLite, MySQL, and Oracle. The module leverages Pydantic's BaseSettings class to automatically load environment variables and validate them against the defined schema, ensuring that the application starts with a valid configuration.
+Application settings, loaded from environment variables / `.env` by
+pydantic-settings and cached for the life of the process.
 
-The `Settings` class within this module specifies the structure of the application's configuration, including database connection details (driver, username, password, host, port, and database name) and other application-specific settings as needed. It also defines enums for database drivers and cookie SameSite policies to ensure that only valid options are used throughout the application.
+The app is a single-purpose, public PyPI dependency resolver backed by SQLite,
+so this holds only database, logging, server and resolver configuration.
 
 Author:
     Mike Ryan
 
 License:
     MIT License
-
-Dependencies:
-    - pydantic: For data validation and settings management.
-    - loguru: For logging.
-    - secrets, datetime, enum, functools: Standard library modules for security, date handling, enumerations, and caching.
-
-Classes:
-    - SameSiteEnum: Enumerates valid options for the SameSite attribute of cookies.
-    - DatabaseDriverEnum: Enumerates supported database drivers and their connection strings.
-    - Settings: Defines the application's configuration schema, including database connection details and other necessary settings.
-
-Usage:
-    This module is intended to be imported and instantiated at the application startup to configure and validate the application settings. The `Settings` instance can then be used throughout the application to access configuration values.
 """
-import secrets  # For generating secure random numbers
-from datetime import (  # A Python library used for working with dates and times
-    datetime,
-    timezone,
-)
-from enum import (
-    Enum,  # For creating enumerations, which are a set of symbolic names bound to unique constant values
-)
-from functools import lru_cache  # For caching the results of expensive function calls
-from typing import Optional
 
-from loguru import logger  # For logging
-from pydantic import (  # For validating data
-    ConfigDict,
-    EmailStr,
-    Field,
-    SecretStr,
-    model_validator,
-)
+from datetime import datetime, timezone
+from enum import Enum
+from functools import lru_cache
+
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from . import __version__
 
 
-class SameSiteEnum(str, Enum):
-    Lax = "Lax"
-    Strict = "Strict"
-    None_ = "None"
-
-
 class DatabaseDriverEnum(str, Enum):
-    postgres = "postgresql+asyncpg"
-    postgresql = "postgresql+asyncpg"
     sqlite = "sqlite+aiosqlite"
-    memory = "sqlite+aiosqlite:///:memory:?cache=shared"
-    # mysql = "mysql+aiomysql"
-    # oracle = "oracle+cx_oracle"
-
-    model_config = ConfigDict(use_enum_values=True, extra="allow")
+    # Test-only. SQLAlchemy serves :memory: through a StaticPool - one
+    # connection shared by every session - so concurrent sessions interleave
+    # their transactions and one's ROLLBACK can silently discard another's
+    # INSERT. Fine for the test suite's sequential requests; use a file for
+    # anything that serves real traffic (even locally).
+    memory = "sqlite+aiosqlite:///:memory:"
 
 
 class Settings(BaseSettings):
-    # Class that describes the settings schema
-    https_redirect: bool = False
-    # allowed_hosts: list = ["localhost", "devsetgo.com","*.devsetgo.com","0.0.0.0"]
-    # database_configuration: DatabaseSettings = DatabaseSettings()
-    db_driver: DatabaseDriverEnum = Field("memory", description="DB_DRIVER")
-    db_username: SecretStr = Field(..., description="DB_USERNAME")
-    db_password: SecretStr = Field(..., description="DB_PASSWORD")
-    db_host: str = Field(..., description="DB_HOST")
-    db_port: int = Field(..., description="DB_PORT")
-    db_name: SecretStr = Field(
-        ..., description="For sqlite it should be folder path 'folder/filename"
+    # database
+    # The enum member, not "sqlite": pydantic-settings validates defaults, and
+    # parse_database_driver only maps the short names it is given.
+    db_driver: DatabaseDriverEnum = Field(
+        DatabaseDriverEnum.sqlite, description="sqlite (file) or memory (tests)"
     )
-    phrase: SecretStr = Field(..., description="substitution cipher")
-    salt: SecretStr = Field(..., description="salt for key derivation")
-    echo: bool = Field(True, description="Enable echo")
-    future: bool = Field(True, description="Enable future")
-    pool_pre_ping: bool = Field(False, description="Enable pool_pre_ping")
-    pool_size: Optional[int] = Field(None, description="Set pool_size")
-    max_overflow: Optional[int] = Field(None, description="Set max_overflow")
-    pool_recycle: int = Field(3600, description="Set pool_recycle")
-    pool_timeout: Optional[int] = Field(None, description="Set pool_timeout")
+    db_directory: str = Field("sqlite_db", description="Folder holding the SQLite file")
+    db_name: str = Field("dsg", description="SQLite file name; '.db' is appended")
+    # Off unless asked for: echo logs every statement with its bound parameters.
+    echo: bool = False
+    future: bool = True
+    pool_recycle: int = 3600
+    # Robyn runs several worker processes against one file, and writes are
+    # serialized across them - wait for the lock instead of failing.
+    sqlite_busy_timeout_ms: int = 5000
+    # Negative = KiB, per connection.
+    sqlite_cache_size_kib: int = 65536
+    # An upper bound, not an allocation - only the file's actual size is mapped.
+    sqlite_mmap_size_bytes: int = 268435456
 
-    # Set the current date and time when the application is run
-    date_run: datetime = datetime.now(timezone.utc)
-    # application settings
-    release_env: str = "prd"
+    # application
+    date_run: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     version: str = __version__
     debug_mode: bool = False
-    # logging settings
+
+    # server
+    host: str = "0.0.0.0"
+    port: int = 5000
+
+    # logging
     logging_directory: str = "log"
-    log_name: str = "log.log"
+    log_name: str = "log"
     logging_level: str = "INFO"
     log_rotation: str = "100 MB"
     log_retention: str = "30 days"
@@ -103,98 +73,73 @@ class Settings(BaseSettings):
     log_serializer: bool = False
     log_diagnose: bool = False
     log_intercept_standard_logging: bool = False
-    # session management
-    max_failed_login_attempts: int = 5
-    session_secret_key: str = secrets.token_hex(32)  # Generate a random secret key
-    same_site: SameSiteEnum = Field("Lax", description="Options: Lax, Strict, None")
-    https_only: bool = False
-    max_age: int = 3600
-    session_user_identifier: str = "user_identifier"
-    # service accounts
-    # OpenAI Settings
-    open_ai_disabled: bool = False
-    openai_key: SecretStr = None  # OpenAI API Key
-    openai_model: str = "gpt-5-nano"
-    mood_analysis_weights: list = [
-        ("elated", 1),
-        ("overjoyed", 0.875),
-        ("ecstatic", 0.75),
-        ("joyful", 0.625),
-        ("happy", 0.5),
-        ("pleased", 0.375),
-        ("content", 0.25),
-        ("neutral", 0),
-        ("concerned", -0.25),
-        ("disappointed", -0.375),
-        ("sad", -0.5),
-        ("upset", -0.625),
-        ("angry", -0.75),
-        ("despair", -0.875),
-        ("hopeless", -1),
-    ]
+    # Per-request access log from the app (Traefik already logs access in production).
+    access_log: bool = False
 
-    # GitHub
-    github_client_id: str = None
-    github_client_secret: SecretStr = None
-    github_call_back_domain: str = "https://localhost:5000"
-    github_id: str = "octocat"
-    github_repo_limit: int = 50
-    github_token: SecretStr = "<enter key>"
-    # historical data
-    history_range: int = 1
-    # add an admin user
-    create_admin_user: bool = False
-    admin_user: SecretStr = None
-    admin_password: SecretStr = None
-    admin_email: EmailStr = None
-    default_timezone: str = "America/New_York"
-    # create psuedo data
-    create_demo_user: bool = False
-    create_demo_users_qty: int = 0
-    create_base_categories: bool = False
-    create_demo_data: bool = False
-    create_demo_notes: bool = False
-    create_demo_notes_qty: int = 0
-    create_demo_posts: bool = False
-    create_demo_posts_qty: int = 0
-
-    convert_markdown_to_html: bool = False
+    # resolver
+    pypi_simple_url: str = "https://pypi.org/simple"
+    pypi_json_url: str = "https://pypi.org/pypi"
+    pypi_timeout_seconds: float = 30.0
+    pypi_max_connections: int = 32
+    # Index pages change whenever a release is uploaded; a released file's
+    # metadata never changes, so it is cached without expiry.
+    index_cache_ttl_seconds: int = 3600
+    # Vulnerability reports are added to old releases over time.
+    version_info_cache_ttl_seconds: int = 86400
+    check_timeout_seconds: int = 180
+    # Per process: resolutions run at once, and how many more may wait before
+    # new submissions get "busy, try again" (HTTP 429).
+    max_concurrent_checks: int = 4
+    max_queued_checks: int = 20
+    # Per client IP per process, for POST /check and /api/check; 0 disables.
+    checks_per_minute_per_ip: int = 10
+    # Reverse proxies in front of the app (Traefik = 1). The client address is
+    # taken that many entries from the right of X-Forwarded-For, since each
+    # proxy appends the peer it saw and everything further left is whatever
+    # the client sent. 0: ignore the header and use the socket peer.
+    forwarded_proxy_hops: int = 1
+    # List every check on /history. Off: results are reachable only through
+    # their (unguessable) link, since a pasted file can name private packages.
+    public_history: bool = False
+    resolver_max_rounds: int = 2000
+    max_requirement_lines: int = 100
+    default_python_version: str = "3.14"
 
     # health endpoints
     health_status_endpoint: bool = True
     health_uptime_endpoint: bool = True
-    health_heapdump_endpoint: bool = False
+
+    @property
+    def is_memory_db(self) -> bool:
+        """True for the throwaway in-memory database the test suite uses. Its
+        schema comes from create_tables() on boot; a file database's comes
+        from Alembic (see resources.startup)."""
+        return self.db_driver == DatabaseDriverEnum.memory
 
     @model_validator(mode="before")
     @classmethod
     def parse_database_driver(cls, values):
         db_driver = values.get("db_driver")
-        if isinstance(db_driver, str):
-            try:
-                # Convert db_driver to lower case before getting its value from the enum
-                values["db_driver"] = DatabaseDriverEnum[db_driver.lower()].value
-            except KeyError:
-                pass
-
-        # Backward-compatibility for legacy singular env var names.
-        if "create_demo_posts" not in values and "create_demo_post" in values:
-            values["create_demo_posts"] = values.get("create_demo_post")
+        if (
+            isinstance(db_driver, str)
+            and db_driver.lower() in DatabaseDriverEnum.__members__
+        ):
+            values["db_driver"] = DatabaseDriverEnum[db_driver.lower()]
         return values
 
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        extra="allow",
-        # use_enum_values=True
-    )  # Set up the configuration dictionary for the settings
+        # .env files on dev machines still carry settings from the pre-Robyn app.
+        extra="ignore",
+    )
 
 
 @lru_cache
-def get_settings():
-    # Function to get an instance of the Settings class. The results are cached
-    # to improve performance.
-    logger.debug(f"Settings: {Settings().model_dump()}")
+def get_settings() -> Settings:
+    # No settings dump here: this runs at import, before logging_config sets
+    # the level, so loguru's default DEBUG handler would print it every start.
     return Settings()
 
 
-settings = get_settings()  # Get the settings
+settings = get_settings()

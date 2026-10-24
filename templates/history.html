@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block page_title %}| Recent Checks{% endblock %}
+{% block page_breadcrumb %}Recent Checks{% endblock %}
+{% block page_head_title %}Recent Checks{% endblock %}
+{% block body %}
+{% if private %}
+<div class="card">
+  <div class="card-body">
+    <p class="mb-2"><i class="fa-solid fa-lock me-2 text-muted"></i>Checks on this server aren't listed publicly.
+      A pasted file can name private or internal packages, so each result is only reachable through its own link.</p>
+    <p class="mb-0 small text-muted">Aggregate numbers are on the <a href="/stats">Stats</a> page.</p>
+  </div>
+</div>
+{% else %}
+<div class="card">
+  <div class="card-body p-0">
+    {% if checks %}
+    <div class="table-responsive">
+      <table class="table table-hover table-sm mb-0 align-middle">
+        <thead>
+          <tr><th>When (UTC)</th><th>Python</th><th>Platform</th><th>Mode</th><th>Packages</th><th>Result</th><th>Time</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for c in checks %}
+          <tr>
+            <td>{{ c.date_created.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ c.target_python }}</td>
+            <td class="small">{{ platform_labels.get(c.platform, c.platform) }}</td>
+            <td>{{ c.mode }}</td>
+            <td>{{ c.lib_in_count }}{% if c.lib_out_count %} &rarr; {{ c.lib_out_count }}{% endif %}</td>
+            <td>
+              {% if c.status == 'done' %}<span class="badge badge-success">resolved</span>
+              {% elif c.has_conflicts %}<span class="badge badge-danger">conflict</span>
+              {% elif c.status == 'failed' %}<span class="badge badge-danger">failed</span>
+              {% else %}<span class="badge badge-info">{{ c.status }}</span>{% endif %}
+            </td>
+            <td class="small">{% if c.duration_ms is not none %}{{ (c.duration_ms / 1000) | round(1) }}s{% endif %}</td>
+            <td><a href="/check/{{ c.request_group_id }}" class="btn btn-sm btn-link">View</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="p-4 mb-0 text-muted">No checks yet. <a href="/check">Run the first one.</a></p>
+    {% endif %}
+  </div>
+  {% if pages > 1 %}
+  <div class="card-footer d-flex justify-content-between align-items-center">
+    <small class="text-muted">{{ total }} checks</small>
+    <nav><ul class="pagination pagination-sm mb-0">
+      <li class="page-item{{ ' disabled' if page <= 1 else '' }}"><a class="page-link" href="/history?page={{ page - 1 }}">Newer</a></li>
+      <li class="page-item disabled"><span class="page-link">{{ page }} / {{ pages }}</span></li>
+      <li class="page-item{{ ' disabled' if page >= pages else '' }}"><a class="page-link" href="/history?page={{ page + 1 }}">Older</a></li>
+    </ul></nav>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

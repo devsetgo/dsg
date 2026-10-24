@@ -8,382 +8,132 @@ APP_VERSION = 2026-07-24-001
 PYTHON ?= $(shell if command -v python3.14 >/dev/null 2>&1; then echo python3.14; else echo python3; fi)
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
-ALEMBIC_PYTHON ?= $(shell if [ -x /home/mike/dsg/.venv/bin/python ]; then echo /home/mike/dsg/.venv/bin/python; elif command -v python3.14 >/dev/null 2>&1; then echo python3.14; else echo python3; fi)
+ALEMBIC = $(PYTHON) -m alembic
 
 # Path Configuration
 SERVICE_PATH = src
 TESTS_PATH = tests
-LOG_PATH = log
 
 # Server Configuration
-DEV_SERVER = uvicorn ${SERVICE_PATH}.main:app
-PROD_SERVER = uvicorn ${SERVICE_PATH}.main:app
-PORT = 5000
-WORKERS = 4
-THREADS = 2
+PORT ?= 5000
+PROCESSES ?= 8
+WORKERS ?= 1
 
-# Requirements and Environment
-VENV_PATH = _venv
-REQUIREMENTS_PATH = requirements.txt
+# Requirements
+REQUIREMENTS_PATH = requirements/prd.txt
 DEV_REQUIREMENTS_PATH = requirements/dev.txt
 
-# Dynamic Variables
-TIMESTAMP := $(shell date +'%y-%m-%d-%H%M')
-LOG_LEVEL := $(shell grep LOGGING_LEVEL .env | cut -d '=' -f2 | tr '[:upper:]' '[:lower:]')
+# Benchmarks (wrk2: https://github.com/giltene/wrk2)
+WRK ?= $(HOME)/wrk2/wrk
+BENCH_URL ?= http://localhost:$(PORT)
 
 # =============================================================================
 # Safety Checks
 # =============================================================================
-# Make will use bash instead of sh
 SHELL := /bin/bash
-
-# Make will exit on errors
 .ONESHELL:
 .SHELLFLAGS := -eu -o pipefail -c
-
-# Delete target files if the command fails
 .DELETE_ON_ERROR:
-
-# Warn if variables are undefined
 MAKEFLAGS += --warn-undefined-variables
-
-# Disable built-in implicit rules
 .SUFFIXES:
 
-# =============================================================================
-# Phony Targets
-# =============================================================================
-.PHONY: help all dev-setup quick-test alembic-current alembic-downgrade alembic-history alembic-init alembic-migrate alembic-rev alembic-stamp autoflake black cache cleanup clear-pycache compile docker-all docker-build docker-login docker-push docker-run flake8 install install-dev install-test-deps isort kill pyright ruff run-dev run-gdev run-gprd run-grdev run-local run-plocal run-prd run-real run-stage run-test test tests clean-test test-file test-marker bump bump-beta format validate
+.PHONY: help install install-dev format ruff black validate test test-network test-file \
+	run run-dev migrate revision alembic-current alembic-history bench kill \
+	docker-build docker-run docker-push docker-all bump bump-beta clean
 
 # =============================================================================
 # Default Target
 # =============================================================================
-.DEFAULT_GOAL := help
-
-# =============================================================================
-# Help Target
-# =============================================================================
 help:  ## Display this help message
-	@echo ""
-	@printf "\033[0;36m████████████████████████████████████████████████████████████████\033[0m\n"
-	@printf "\033[0;36m█                      \033[1;37m$(REPONAME) Makefile\033[0;36m                       █\033[0m\n"
-	@printf "\033[0;36m████████████████████████████████████████████████████████████████\033[0m\n"
-	@awk 'BEGIN {FS = ":.*##"; printf "\n\033[1;37mUsage:\033[0m\n  make \033[0;36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[0;36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1;33m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
-	@echo ""
+	@printf "\033[0;36m$(REPONAME) makefile\033[0m\n"
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[0;36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[0;36m%-18s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1;33m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-##@ Quick Start
-all: install format test ## Run the complete development workflow
-	@printf "\033[0;32m✅ Complete workflow finished successfully!\033[0m\n"
-
-dev-setup: install install-dev ## Set up development environment
-	@printf "\033[0;32m✅ Development environment set up successfully!\033[0m\n"
-
-quick-test: format ## Run quick tests (no pre-commit hooks)
-	@printf "\033[1;33m🧪 Running quick tests...\033[0m\n"
-	$(PYTEST)
-	@printf "\033[0;32m✅ Quick tests passed!\033[0m\n"
-
-##@ Database Migration (Alembic) Commands
-
-alembic-init: ## Initialize Alembic
-	@printf "\033[1;33m🗃️ Initializing Alembic...\033[0m\n"
-	alembic init alembic
-	@printf "\033[0;32m✅ Alembic initialized successfully!\033[0m\n"
-
-alembic-migrate: ## Migrate database using Alembic
-	@printf "\033[1;33m🚀 Running database migration...\033[0m\n"
-	cp env-files/.env.test .env && \
-	./scripts/env.sh && \
-	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
-	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
-	$(ALEMBIC_PYTHON) -m alembic upgrade head
-	@printf "\033[0;32m✅ Database migration completed!\033[0m\n"
-
-alembic-rev: ## Create a new revision file
-	@printf "\033[1;33m📝 Creating new Alembic revision...\033[0m\n"
-	cp env-files/.env.test .env && \
-	./scripts/env.sh && \
-	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
-	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
-	read -p "Enter revision name: " name; \
-	$(ALEMBIC_PYTHON) -m alembic revision --autogenerate -m "$$name"
-	@printf "\033[0;32m✅ Revision created successfully!\033[0m\n"
-
-alembic-current: ## Show the current revision
-	@printf "\033[1;33m📋 Showing current revision...\033[0m\n"
-	cp env-files/.env.test .env && \
-	./scripts/env.sh && \
-	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
-	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
-	$(ALEMBIC_PYTHON) -m alembic current
-
-alembic-history: ## Show migration history
-	@printf "\033[1;33m📚 Showing migration history...\033[0m\n"
-	cp env-files/.env.test .env && \
-	./scripts/env.sh && \
-	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
-	$(ALEMBIC_PYTHON) -m alembic history
-
-alembic-stamp: ## Stamp the database with a specific revision
-	@printf "\033[1;33m🏷️ Stamping database revision...\033[0m\n"
-	cp env-files/.env.test .env && \
-	./scripts/env.sh && \
-	export DATABASE_URL=$$(cat /tmp/db_url.txt) && \
-	echo "In Makefile, DATABASE_URL is: $$DATABASE_URL" && \
-	read -p "Enter revision ID: " rev; \
-	$(ALEMBIC_PYTHON) -m alembic stamp "$$rev"
-	@printf "\033[0;32m✅ Database stamped successfully!\033[0m\n"
-
-alembic-downgrade: ## Downgrade database using Alembic
-	@printf "\033[1;33m⬇️ Downgrading database...\033[0m\n"
-	@read -p "Enter revision name: " name; \
-	alembic downgrade $$name
-	@printf "\033[0;32m✅ Database downgraded successfully!\033[0m\n"
-
-##@ Code Quality and Formatting
-
-autoflake:  ## Remove unused imports and variables
-	@printf "\033[1;33m🧹 Removing unused imports and variables...\033[0m\n"
-	autoflake --in-place --remove-all-unused-imports -r $(SERVICE_PATH)
-	autoflake --in-place --remove-all-unused-imports -r $(TESTS_PATH)
-	@printf "\033[0;32m✅ Autoflake completed!\033[0m\n"
-
-black:  ## Format code using black
-	@printf "\033[1;33m🖤 Formatting code with Black...\033[0m\n"
-	black $(SERVICE_PATH)
-	black $(TESTS_PATH)
-	@printf "\033[0;32m✅ Black formatting completed!\033[0m\n"
-
-isort:  ## Sort imports using isort
-	@printf "\033[1;33m📚 Sorting imports with isort...\033[0m\n"
-	isort $(SERVICE_PATH)
-	isort $(TESTS_PATH)
-	@printf "\033[0;32m✅ Import sorting completed!\033[0m\n"
-
-ruff:  ## Run ruff linter and formatter
-	@printf "\033[1;33m🦀 Linting and fixing with Ruff...\033[0m\n"
-	ruff check --fix --exit-non-zero-on-fix --show-fixes $(SERVICE_PATH) || true
-	ruff check --fix --exit-non-zero-on-fix --show-fixes $(TESTS_PATH) || true
-	@printf "\033[0;32m✅ Ruff linting completed!\033[0m\n"
-
-format: isort ruff autoflake black ## Run all code formatting tools in the correct order
-	@printf "\033[0;32m✅ All formatting tools completed!\033[0m\n"
-
-cleanup: format ## Run all code formatting tools (alias for format)
-	@printf "\033[0;32m✅ Code cleanup completed!\033[0m\n"
-
-validate: ## Validate code without making changes
-	@printf "\033[1;33m🔍 Validating code style...\033[0m\n"
-	black --check $(SERVICE_PATH) $(TESTS_PATH)
-	isort --check-only $(SERVICE_PATH) $(TESTS_PATH)
-	ruff check $(SERVICE_PATH) $(TESTS_PATH)
-	@printf "\033[0;32m✅ Code validation passed!\033[0m\n"
-
-flake8:  ## Run flake8 and output report
-	@printf "\033[1;33m📋 Running flake8 checks...\033[0m\n"
-	flake8 --tee . > _flake8Report.txt
-	@printf "\033[0;32m✅ Flake8 completed!\033[0m\n"
-
-pyright:  ## Run pyright
-	@printf "\033[1;33m🔍 Running pyright type checking...\033[0m\n"
-	pyright
-	@printf "\033[0;32m✅ Pyright completed!\033[0m\n"
-
-##@ Cache and Cleanup
-
-cache:  ## Clean pycache
-	@printf "\033[1;33m🧹 Cleaning cache files...\033[0m\n"
-	find . -name '__pycache__' -exec rm -rf {} +
-	find . -name '.pytest_cache' -exec rm -rf {} +
-	@printf "\033[0;32m✅ Cache cleanup completed!\033[0m\n"
-
-clear-pycache: ## Clear pycache
-	@printf "\033[1;33m🧹 Clearing pycache...\033[0m\n"
-	find . -name '__pycache__' -exec rm -rf {} +
-	@printf "\033[0;32m✅ Pycache cleared!\033[0m\n"
-
-clean: ## Clean up generated files and caches
-	@printf "\033[1;33m🧹 Cleaning up...\033[0m\n"
-	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	find . -type f -name "*.pyc" -delete 2>/dev/null || true
-	find . -type f -name "*.pyo" -delete 2>/dev/null || true
-	find . -type f -name "*.pyd" -delete 2>/dev/null || true
-	find . -type f -name ".coverage" -delete 2>/dev/null || true
-	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
-	rm -rf build/ dist/ .pytest_cache/ .ruff_cache/ 2>/dev/null || true
-	@printf "\033[0;32m✅ Cleanup completed!\033[0m\n"
-
-##@ Utilities
-
-compile:  ## Compile http_request.c into a shared library
-	@printf "\033[1;33m🔧 Compiling shared library...\033[0m\n"
-	gcc -shared -o http_request.so http_request.c -lcurl -fPIC
-	@printf "\033[0;32m✅ Compilation completed!\033[0m\n"
-
-kill:  ## Kill any process running on the app port
-	@printf "\033[1;33m🔪 Stopping processes on port ${PORT}...\033[0m\n"
-	@echo "Stopping any process running on port ${PORT}..."
-	@lsof -ti:${PORT} | xargs -r kill -9 || echo "No process found running on port ${PORT}"
-	@echo "Stopping any run-dev/uvicorn workers not yet bound to port ${PORT}..."
-	@PIDS=$$(pgrep -f "make run-dev|uvicorn ${SERVICE_PATH}.main:app|python.*uvicorn.*${SERVICE_PATH}.main:app" || true); \
-	for pid in $$PIDS; do \
-		if [[ "$$pid" != "$$$$" && "$$pid" != "$$PPID" ]]; then \
-			kill -9 "$$pid" 2>/dev/null || true; \
-		fi; \
-	done
-	@echo "Port ${PORT} is now free"
-	@printf "\033[0;32m✅ Port cleared!\033[0m\n"
-
-##@ Docker Commands
-
-docker-login:  ## Login to docker hub
-	@printf "\033[1;33m🐳 Logging into Docker Hub...\033[0m\n"
-	docker login
-	@printf "\033[0;32m✅ Docker login completed!\033[0m\n"
-
-docker-run:  ## Run docker container
-	@printf "\033[1;33m🚀 Running Docker container...\033[0m\n"
-	docker run -p 5000:5000 dsg:$(APP_VERSION)
-
-docker-build:  ## Build docker image
-	@printf "\033[1;33m🏗️ Building Docker image...\033[0m\n"
-	docker build --no-cache -t dsg:$(APP_VERSION) .
-	@printf "\033[0;32m✅ Docker image built successfully!\033[0m\n"
-
-docker-push:  ## Push image to docker hub
-	@printf "\033[1;33m⬆️ Pushing image to Docker Hub...\033[0m\n"
-	docker tag dsg:$(APP_VERSION) mikeryan56/dsg:$(APP_VERSION)
-	docker push mikeryan56/dsg:$(APP_VERSION)
-	@printf "\033[0;32m✅ Image pushed successfully!\033[0m\n"
-
-docker-all: docker-build docker-push ## Build and push Docker image
-	@printf "\033[0;32m✅ Docker build and push completed!\033[0m\n"
-
-##@ Setup and Installation
-
-install:  ## Install required dependencies
-	@printf "\033[1;33m📦 Installing dependencies...\033[0m\n"
+##@ Setup
+install:  ## Install production dependencies
 	$(PIP) install -r $(REQUIREMENTS_PATH)
-	@printf "\033[0;32m✅ Dependencies installed successfully!\033[0m\n"
 
 install-dev:  ## Install development dependencies
-	@printf "\033[1;33m📦 Installing development dependencies...\033[0m\n"
 	$(PIP) install -r $(DEV_REQUIREMENTS_PATH)
-	@printf "\033[0;32m✅ Development dependencies installed!\033[0m\n"
 
-install-test-deps: ## Install test dependencies
-	@printf "\033[1;33m📦 Installing test dependencies...\033[0m\n"
-	pip install pytest pytest-cov pytest-asyncio pytest-mock httpx
-	@printf "\033[0;32m✅ Test dependencies installed!\033[0m\n"
+##@ Code quality
+ruff:  ## Lint and fix with ruff
+	$(PYTHON) -m ruff check --fix --show-fixes $(SERVICE_PATH) $(TESTS_PATH)
 
-##@ Version Management
+black:  ## Format with black (what pre-commit runs)
+	$(PYTHON) -m black $(SERVICE_PATH) $(TESTS_PATH)
 
-bump-beta:  ## Bump the beta version number using bumpcalver
-	@printf "\033[1;33m📈 Bumping beta version...\033[0m\n"
-	bumpcalver --build --beta
-	@printf "\033[0;32m✅ Beta version bumped successfully!\033[0m\n"
+format: ruff black  ## Run all formatters
 
-bump:  ## Bump the version number using bumpcalver
-	@printf "\033[1;33m📈 Bumping version...\033[0m\n"
-	bumpcalver --build --git-tag
-	@printf "\033[0;32m✅ Version bumped successfully!\033[0m\n"
+validate:  ## Check style without changing files
+	$(PYTHON) -m ruff check $(SERVICE_PATH) $(TESTS_PATH)
+	$(PYTHON) -m black --check $(SERVICE_PATH) $(TESTS_PATH)
 
-##@ Application Server Commands
-
-run-dev:  ## Run the FastAPI application in development mode with hot-reloading
-	@printf "\033[1;33m🚀 Starting FastAPI in development mode...\033[0m\n"
-	cp env-files/.env.dev .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --reload-dir src --reload-dir templates --log-level ${LOG_LEVEL}
-
-run-local:  ## Run the FastAPI application in local mode with hot-reloading
-	@printf "\033[1;33m🏠 Starting FastAPI in local mode...\033[0m\n"
-	cp env-files/.env.local .env
-	@echo "Do you want to delete the SQLite database at /workspaces/dsg/sqlite_db/dsg_local.db? (y/N): " && read ans && [ "$$ans" = "y" ] && rm -f /workspaces/dsg/sqlite_db/dsg_local.db || echo "Database not deleted."
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
-
-run-plocal:  ## Run the FastAPI application with plocal environment
-	@printf "\033[1;33m🏠 Starting FastAPI with plocal environment...\033[0m\n"
-	cp env-files/.env.plocal .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
-
-run-test:  ## Run the FastAPI application in test mode
-	@printf "\033[1;33m🧪 Starting FastAPI in test mode...\033[0m\n"
-	cp env-files/.env.test .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
-
-run-stage:  ## Run the FastAPI application in staging mode
-	@printf "\033[1;33m🎭 Starting FastAPI in staging mode...\033[0m\n"
-	cp env-files/.env.stage .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --log-level ${LOG_LEVEL}
-
-run-real:  ## Run the FastAPI application in real mode with workers
-	@printf "\033[1;33m🌍 Starting FastAPI in real mode...\033[0m\n"
-	cp env-files/.env.real .env
-	uvicorn ${SERVICE_PATH}.main:app --port ${PORT} --workers ${WORKERS} --log-level ${LOG_LEVEL}
-
-run-prd:  ## Run the FastAPI application in production mode
-	@printf "\033[1;33m🏭 Starting FastAPI in production mode...\033[0m\n"
-	cp env-files/.env.server .env
-	uvicorn ${SERVICE_PATH}.main:app --port 5000 --workers 1 --log-level debug
-
-run-gdev:  ## Run the FastAPI application in development mode with granian
-	@printf "\033[1;33m⚡ Starting FastAPI with Granian (dev mode)...\033[0m\n"
-	cp env-files/.env.dev .env
-	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
-
-run-gprd:  ## Run the FastAPI application in production mode with granian
-	@printf "\033[1;33m⚡ Starting FastAPI with Granian (production)...\033[0m\n"
-	cp env-files/.env.dev .env
-	granian --interface asgi ${SERVICE_PATH}.main:app --port ${PORT} --workers 8 --log-level ${LOG_LEVEL}
-
-run-grdev:  # Run the FastAPI application in development mode with granian and rsgi interface
-	cp env-files/.env.dev .env
-	granian --interface rsgi ${SERVICE_PATH}.main:app --port ${PORT} --reload --log-level ${LOG_LEVEL}
-
-##@ Testing and Quality Assurance
-
-test: ## Run the project's tests
-	cp env-files/.env.pytest .env
-	@printf "\033[1;33m🧪 Running full test suite...\033[0m\n"
+##@ Tests
+test:  ## Run pre-commit and the test suite (no network), then update badges
 	pre-commit run -a
-	pytest tests/ --cov=src --cov-report=html --cov-report=term-missing --cov-report=xml --cov-fail-under=70
-	sed -i 's|<source>.*</source>|<source>$(REPONAME)</source>|' coverage.xml
+	$(PYTEST) --junitxml=report.xml
 	genbadge coverage -i coverage.xml
 	genbadge tests -i report.xml
-	@printf "\033[0;32m✅ All tests passed!\033[0m\n"
 
-tests: test ## Run the project's tests
+test-network:  ## Run the tests that hit the real PyPI
+	$(PYTEST) -m network --no-cov
 
-clean-test: ## Clean test artifacts
-	@printf "\033[1;33m🧹 Cleaning test artifacts...\033[0m\n"
-	rm -rf .pytest_cache
-	rm -rf htmlcov
-	rm -f .coverage
-	@printf "\033[0;32m✅ Test cleanup completed!\033[0m\n"
+test-file:  ## Run one test file: make test-file FILE=test_resolver.py
+	$(PYTEST) $(TESTS_PATH)/$(FILE) -v
 
-test-file: ## Run a specific test file
-	@printf "\033[1;33m🧪 Running specific test file: $(FILE)...\033[0m\n"
-	pytest tests/$(FILE) -v
+##@ Run
+# Not Robyn's --dev: its reloader restarts on a write to *any* file under the
+# app's folder, and every check writes sqlite_db/ and log/ - each check would
+# restart the server and kill itself. watchfiles watches only the code.
+run-dev:  ## Run with hot reload against sqlite_db/dsg_dev.db
+	DB_DRIVER=sqlite DB_NAME=dsg_dev $(ALEMBIC) upgrade head
+	DB_DRIVER=sqlite DB_NAME=dsg_dev PORT=$(PORT) $(PYTHON) -m watchfiles --target-type command \
+		"$(PYTHON) -m $(SERVICE_PATH).main --log-level WARN" $(SERVICE_PATH) templates static alembic
 
-test-marker: ## Run tests with specific marker
-	@printf "\033[1;33m🧪 Running tests with marker: $(MARKER)...\033[0m\n"
-	pytest tests/ -m $(MARKER) -v
+run:  ## Run like production: make run PROCESSES=8 WORKERS=1
+	$(ALEMBIC) upgrade head
+	PORT=$(PORT) $(PYTHON) -m $(SERVICE_PATH).main --processes $(PROCESSES) --workers $(WORKERS) --log-level WARN
 
-rebase: ## Rebase current branch from origin/main
-	git fetch origin
-	git rebase origin/main
+kill:  ## Kill whatever is listening on PORT (Robyn shares the port with a stale instance)
+	@lsof -ti:$(PORT) | xargs -r kill -9 || true
 
-git-cleanup: ## Fetch + prune from origin, then delete local branches whose upstream is gone
-	@echo "Fetching from origin and pruning stale remote-tracking branches..."
-	git fetch origin --prune
-	@echo "Removing local branches whose upstream branch no longer exists..."
-	@current_branch=$$(git rev-parse --abbrev-ref HEAD); \
-	stale_branches=$$(git branch -vv | awk '/: gone\]/{print $$1}' | sed 's/^\*//' | grep -vE "^(main|master|dev|$$current_branch)$$" || true); \
-	if [[ -z "$$stale_branches" ]]; then \
-		echo "No stale local branches found."; \
-	else \
-		echo "Deleting stale branches:"; \
-		echo "$$stale_branches"; \
-		echo "$$stale_branches" | xargs -r git branch -D; \
-	fi
-	@echo "git-cleanup complete."
+##@ Database
+migrate:  ## Apply migrations
+	$(ALEMBIC) upgrade head
+
+revision:  ## Autogenerate a migration: make revision NAME="add thing"
+	$(ALEMBIC) revision --autogenerate -m "$(NAME)"
+
+alembic-current:  ## Show the current revision
+	$(ALEMBIC) current
+
+alembic-history:  ## Show migration history
+	$(ALEMBIC) history
+
+##@ Benchmarks
+bench:  ## wrk2 against a running server: make bench LABEL=robyn RESULT=/check/<id>
+	WRK=$(WRK) benchmarks/run.sh $(LABEL) $(BENCH_URL) /check $(RESULT) /api/health/status
+
+##@ Docker
+docker-build:  ## Build the image
+	docker build -t dsg:$(APP_VERSION) .
+
+docker-run:  ## Run the image locally on port 5000
+	docker run --rm -p 5000:5000 dsg:$(APP_VERSION)
+
+docker-push:  ## Push the image to Docker Hub
+	docker tag dsg:$(APP_VERSION) mikeryan56/dsg:$(APP_VERSION)
+	docker push mikeryan56/dsg:$(APP_VERSION)
+
+docker-all: docker-build docker-push  ## Build and push
+
+##@ Release
+bump:  ## Bump the CalVer version with bumpcalver and tag
+	bumpcalver --build --git-tag
+
+bump-beta:  ## Bump a beta version
+	bumpcalver --build --beta
+
+clean:  ## Remove caches and test artifacts
+	find . -type d -name "__pycache__" -prune -exec rm -rf {} + 2>/dev/null || true
+	rm -rf .pytest_cache .ruff_cache .coverage coverage.xml report.xml

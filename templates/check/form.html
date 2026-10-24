@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block page_title %}| Check Requirements{% endblock %}
+{% block page_breadcrumb %}Check Requirements{% endblock %}
+{% block page_head_title %}Check Requirements{% endblock %}
+{% block body %}
+<div class="row g-4">
+  <div class="col-xl-8">
+    <div class="card">
+      <div class="card-header d-flex align-items-center">
+        <i class="fa-solid fa-file-lines me-2"></i><strong>Paste a requirements.txt</strong>
+        <span id="check-spinner" class="htmx-indicator ms-auto small text-muted">
+          <span class="spinner-border spinner-border-sm me-1" role="status"></span>Queuing&hellip;
+        </span>
+      </div>
+      <div class="card-body">
+        <div id="check-form">{{ form_html | safe }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header"><i class="fa-solid fa-gears me-2"></i><strong>How it works</strong></div>
+      <div class="card-body small">
+        <p>The file is resolved the way <code>pip</code> resolves it: the same backtracking
+          engine (<a href="https://github.com/sarugaku/resolvelib">resolvelib</a>), the same
+          PEP&nbsp;440 version rules, and the same metadata from PyPI. The difference is that it
+          answers for the <strong>Python version and platform you pick</strong>, not the one it runs on.</p>
+        <ul class="mb-2">
+          <li><code>Requires-Python</code> rules out releases that the target can't install.</li>
+          <li>Environment markers such as <code>; python_version &lt; "3.11"</code> are evaluated for the target.</li>
+          <li>Only wheels built for the target platform count, with the source distribution as a fallback.</li>
+          <li>Extras like <code>fastapi[all]</code> pull in their own dependencies.</li>
+          <li>Yanked releases are skipped unless you pin one exactly.</li>
+        </ul>
+        <p class="mb-0">When a package can't reach its newest release, the result says which package's requirement is holding it back.</p>
+      </div>
+    </div>
+    {% if stats and stats.total_checks %}
+    <div class="card">
+      <div class="card-body d-flex justify-content-around text-center">
+        <div><div class="h4 mb-0">{{ stats.total_checks }}</div><small class="text-muted">checks</small></div>
+        <div><div class="h4 mb-0">{{ stats.distinct_packages }}</div><small class="text-muted">packages</small></div>
+        <div><div class="h4 mb-0">{{ (stats.avg_duration_ms / 1000) | round(1) }}s</div><small class="text-muted">avg time</small></div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

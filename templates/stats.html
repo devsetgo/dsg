@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block page_title %}| Stats{% endblock %}
+{% block page_breadcrumb %}Stats{% endblock %}
+{% block page_head_title %}Stats{% endblock %}
+
+{% macro ranked(title, icon, rows, empty, columns=2) %}
+<div class="card h-100">
+  <div class="card-header"><i class="{{ icon }} me-2"></i><strong>{{ title }}</strong></div>
+  <ul class="list-group list-group-flush">
+    {% for row in rows %}
+    <li class="list-group-item d-flex justify-content-between">
+      <span><a href="https://pypi.org/project/{{ row[0] }}/" target="_blank" rel="noopener">{{ row[0] }}</a>{% if columns == 3 %} <span class="text-muted small">{{ row[1] }}</span>{% endif %}</span>
+      <span class="badge badge-primary rounded-pill">{{ row[-1] }}</span>
+    </li>
+    {% else %}
+    <li class="list-group-item text-muted">{{ empty }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endmacro %}
+
+{% block body %}
+<div class="row g-3 mb-4">
+  {% for label, value, icon in [
+    ('Checks', stats.total_checks, 'fa-solid fa-list-check'),
+    ('Resolved', stats.done_checks, 'fa-solid fa-circle-check'),
+    ('With conflicts', stats.conflict_checks, 'fa-solid fa-code-merge'),
+    ('Distinct packages', stats.distinct_packages, 'fa-solid fa-cubes'),
+    ('Avg. resolve time', ((stats.avg_duration_ms / 1000) | round(1)) ~ 's', 'fa-solid fa-stopwatch'),
+  ] %}
+  <div class="col-6 col-md">
+    <div class="card stat-tile h-100"><div class="card-body py-3">
+      <div class="small text-muted"><i class="{{ icon }} me-1"></i>{{ label }}</div>
+      <div class="display-6">{{ value }}</div>
+    </div></div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="fa-brands fa-python me-2"></i><strong>Target Python</strong></div>
+      <div class="card-body">
+        {% if stats.by_python %}<canvas id="pythonChart" height="160"></canvas>{% else %}<p class="text-muted mb-0">No checks yet.</p>{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">{{ ranked('Most checked packages', 'fa-solid fa-ranking-star', stats.top_packages, 'No packages yet.') }}</div>
+</div>
+<div class="row g-4">
+  <div class="col-lg-6">{{ ranked('Most often held back', 'fa-solid fa-lock', stats.top_held_back, 'Nothing held back yet.') }}</div>
+  <div class="col-lg-6">{{ ranked('Resolved with known vulnerabilities', 'fa-solid fa-shield-virus', stats.top_vulnerable, 'None found.', 3) }}</div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+{% if stats.by_python %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"
+        integrity="sha384-Sse/HDqcypGpyTDpvZOJNnG0TT3feGQUkF9H+mnRvic+LjR+K1NhTt8f51KIQ3v3" crossorigin="anonymous"></script>
+<script>
+  (function () {
+    var styles = getComputedStyle(document.documentElement);
+    new Chart(document.getElementById("pythonChart"), {
+      type: "bar",
+      data: {
+        labels: {{ stats.by_python | map(attribute=0) | list | tojson }},
+        datasets: [{ label: "Checks", data: {{ stats.by_python | map(attribute=1) | list | tojson }},
+                     backgroundColor: styles.getPropertyValue("--mdb-primary").trim() || "#3b71ca" }]
+      },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+  })();
+</script>
+{% endif %}
+{% endblock %}

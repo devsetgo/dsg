@@ -1,496 +1,61 @@
 # -*- coding: utf-8 -*-
-import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+import os
+import tempfile
 
-import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.orm import declarative_base
+# Settings are read once at import, so these must be set before anything
+# imports src.
+os.environ["DB_DRIVER"] = "memory"
+os.environ["LOGGING_LEVEL"] = "WARNING"
+# Keep test runs (and their expected warnings) out of the app's real log.
+os.environ["LOGGING_DIRECTORY"] = tempfile.mkdtemp(prefix="dsg-test-logs-")
 
-# Import individual tables instead of Base
-from src.main import app
-from src.resources import db_ops
+import pytest  # noqa: E402
 
-# Create Base for testing with the correct import
-Base = declarative_base()
+from src.resolver.environment import TargetEnvironment  # noqa: E402
+from src.resolver.index import MemoryCacheStore, PyPIIndex  # noqa: E402
+from src.resolver.service import resolve_requirements  # noqa: E402
+from src.settings import settings  # noqa: E402
+from tests.fakepypi import JSON, SIMPLE, FakePyPI  # noqa: E402
 
-
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for the test session."""
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+assert settings.is_memory_db, "tests must never touch a real database file"
 
 
-@pytest.fixture
-async def test_db():
-    """Create a test database with dummy data."""
-    # Use in-memory SQLite for testing
-    engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
-
-    # Create all tables
-    async with engine.begin() as conn:
-        await conn.run_sync(Users.metadata.create_all)
-        await conn.run_sync(Notes.metadata.create_all)
-        await conn.run_sync(Posts.metadata.create_all)
-        await conn.run_sync(WebLinks.metadata.create_all)
-        await conn.run_sync(Categories.metadata.create_all)
-
-    # Mock the db_ops to use test database
-    original_engine = getattr(db_ops, "engine", None)
-    if hasattr(db_ops, "engine"):
-        db_ops.engine = engine
-
-    # Add dummy data
-    await _create_dummy_data(engine)
-
-    yield engine
-
-    # Restore original engine
-    if original_engine and hasattr(db_ops, "engine"):
-        db_ops.engine = original_engine
-    await engine.dispose()
+def make_index(fake: FakePyPI) -> PyPIIndex:
+    return PyPIIndex(
+        fake.client(), MemoryCacheStore(), simple_url=SIMPLE, json_url=JSON
+    )
 
 
 @pytest.fixture
-def client():
-    """Create test client."""
-    return TestClient(app)
+def resolve():
+    """resolve(spec, text, python="3.12", mode="upgrade", platform="linux-x86_64") -> (report, fake)"""
 
-
-@pytest.fixture
-def mock_user():
-    """Create a mock user for testing."""
-    return {
-        "pkid": "test-user-123",
-        "user_name": "testuser",
-        "email": "test@example.com",
-        "first_name": "Test",
-        "last_name": "User",
-        "is_active": True,
-        "is_admin": False,
-        "my_timezone": "America/New_York",
-        "roles": {"user_access": True, "notes": True, "posts": True},
-        "date_created": "2024-01-01T00:00:00",
-        "date_updated": "2024-01-01T00:00:00",
-        "date_last_login": "2024-01-01T00:00:00",
-        "failed_login_attempts": 0,
-    }
-
-
-@pytest.fixture
-def mock_admin_user():
-    """Create a mock admin user for testing."""
-    return {
-        "pkid": "admin-user-123",
-        "user_name": "adminuser",
-        "email": "admin@example.com",
-        "first_name": "Admin",
-        "last_name": "User",
-        "is_active": True,
-        "is_admin": True,
-        "my_timezone": "America/New_York",
-        "roles": {"user_access": True, "notes": True, "posts": True, "developer": True},
-        "date_created": "2024-01-01T00:00:00",
-        "date_updated": "2024-01-01T00:00:00",
-        "date_last_login": "2024-01-01T00:00:00",
-        "failed_login_attempts": 0,
-    }
-
-
-@pytest.fixture
-def mock_note():
-    """Create a mock note for testing."""
-    return {
-        "pkid": "note-123",
-        "mood": "positive",
-        "note": "This is a test note content.",
-        "summary": "Test note",
-        "tags": ["test", "note"],
-        "mood_analysis": "happy",
-        "user_id": "test-user-123",
-        "ai_fix": False,
-        "word_count": 6,
-        "character_count": 30,
-        "date_created": "2024-01-01T00:00:00",
-        "date_updated": "2024-01-01T00:00:00",
-    }
-
-
-@pytest.fixture
-def mock_post():
-    """Create a mock post for testing."""
-    return {
-        "pkid": "post-123",
-        "title": "Test Post",
-        "summary": "This is a test post summary.",
-        "content": "<p>This is test post content.</p>",
-        "category": "technology",
-        "tags": ["test", "post"],
-        "user_id": "test-user-123",
-        "date_created": "2024-01-01T00:00:00",
-        "date_updated": "2024-01-01T00:00:00",
-    }
-
-
-@pytest.fixture
-def mock_weblink():
-    """Create a mock weblink for testing."""
-    return {
-        "pkid": "weblink-123",
-        "title": "Test Website",
-        "summary": "This is a test website summary.",
-        "url": "https://example.com",
-        "category": "technology",
-        "public": True,
-        "user_id": "test-user-123",
-        "ai_fix": False,
-        "image_preview_data": None,
-        "comment": None,
-        "date_created": "2024-01-01T00:00:00",
-        "date_updated": "2024-01-01T00:00:00",
-    }
-
-
-@pytest.fixture
-def mock_category():
-    """Create a mock category for testing."""
-    return {
-        "pkid": "category-123",
-        "name": "technology",
-        "description": "Technology related content",
-        "is_post": True,
-        "is_weblink": True,
-        "is_system": False,
-        "date_created": "2024-01-01T00:00:00",
-        "date_updated": "2024-01-01T00:00:00",
-    }
-
-
-@pytest.fixture
-def mock_db_ops():
-    """Mock database operations."""
-    with patch("src.resources.db_ops") as mock_ops:
-        # Configure common return values
-        mock_ops.create_one = AsyncMock()
-        mock_ops.read_one_record = AsyncMock()
-        mock_ops.read_query = AsyncMock()
-        mock_ops.update_one = AsyncMock()
-        mock_ops.delete_one = AsyncMock()
-        mock_ops.count_query = AsyncMock(return_value=0)
-        yield mock_ops
-
-
-@pytest.fixture
-def mock_ai():
-    """Mock AI functions."""
-    with patch("src.functions.ai") as mock_ai_module:
-        mock_ai_module.get_analysis = AsyncMock(
-            return_value={
-                "tags": {"tags": ["test", "sample"]},
-                "summary": "Test summary",
-                "mood_analysis": "happy",
-                "mood": None,
-            }
-        )
-        mock_ai_module.get_tags = AsyncMock(return_value={"tags": ["test", "sample"]})
-        mock_ai_module.get_summary = AsyncMock(return_value="Test summary")
-        mock_ai_module.get_mood = AsyncMock(return_value={"mood": "positive"})
-        mock_ai_module.get_mood_analysis = AsyncMock(
-            return_value={"mood_analysis": "happy"}
-        )
-        mock_ai_module.get_url_summary = AsyncMock(
-            return_value={"summary": "Test URL summary"}
-        )
-        mock_ai_module.get_url_title = AsyncMock(return_value="Test URL Title")
-        yield mock_ai_module
-
-
-@pytest.fixture
-def mock_background_tasks():
-    """Mock background tasks."""
-    with patch("fastapi.BackgroundTasks") as mock_tasks:
-        mock_instance = MagicMock()
-        mock_tasks.return_value = mock_instance
-        yield mock_instance
-
-
-# Helper function to mock database responses
-def create_mock_db_record(data_dict):
-    """Create a mock database record with to_dict method."""
-    mock_record = MagicMock()
-    mock_record.to_dict.return_value = data_dict
-    # Add attributes for direct access
-    for key, value in data_dict.items():
-        setattr(mock_record, key, value)
-    return mock_record
-
-
-# Helper function to create dummy data
-async def _create_dummy_data(engine):
-    """Create dummy test data in the database."""
-    from sqlalchemy.ext.asyncio import AsyncSession
-    from datetime import datetime
-
-    async with AsyncSession(engine) as session:
-        # Create test users
-        test_users = [
-            Users(
-                pkid="test-user-123",
-                user_name="testuser",
-                email="test@example.com",
-                first_name="Test",
-                last_name="User",
-                is_active=True,
-                is_admin=False,
-                my_timezone="America/New_York",
-                date_created=datetime.now(),
-                date_updated=datetime.now(),
-            ),
-            Users(
-                pkid="admin-user-123",
-                user_name="adminuser",
-                email="admin@example.com",
-                first_name="Admin",
-                last_name="User",
-                is_active=True,
-                is_admin=True,
-                my_timezone="America/New_York",
-                date_created=datetime.now(),
-                date_updated=datetime.now(),
-            ),
-        ]
-
-        # Create test categories
-        test_categories = [
-            Categories(
-                pkid="cat-tech",
-                name="technology",
-                description="Technology related content",
-                is_post=True,
-                is_weblink=True,
-                is_system=False,
-                date_created=datetime.now(),
-                date_updated=datetime.now(),
-            ),
-            Categories(
-                pkid="cat-science",
-                name="science",
-                description="Science related content",
-                is_post=True,
-                is_weblink=True,
-                is_system=False,
-                date_created=datetime.now(),
-                date_updated=datetime.now(),
-            ),
-        ]
-
-        # Create test notes
-        test_notes = [
-            Notes(
-                pkid="note-123",
-                mood="positive",
-                note="This is a test note content.",
-                summary="Test note",
-                tags=["test", "note"],
-                mood_analysis="happy",
-                user_id="test-user-123",
-                ai_fix=False,
-                word_count=6,
-                character_count=30,
-                date_created=datetime.now(),
-                date_updated=datetime.now(),
-            ),
-        ]
-
-        # Create test posts
-        test_posts = [
-            Posts(
-                pkid="post-123",
-                title="Test Post",
-                summary="This is a test post summary.",
-                content="<p>This is test post content.</p>",
-                category="technology",
-                tags=["test", "post"],
-                user_id="test-user-123",
-                date_created=datetime.now(),
-                date_updated=datetime.now(),
-            ),
-        ]
-
-        # Create test weblinks
-        test_weblinks = [
-            WebLinks(
-                pkid="weblink-123",
-                title="Test Website",
-                summary="This is a test website summary.",
-                url="https://example.com",
-                category="technology",
-                public=True,
-                user_id="test-user-123",
-                ai_fix=False,
-                image_preview_data=None,
-                comment=None,
-                date_created=datetime.now(),
-                date_updated=datetime.now(),
-            ),
-        ]
-
-        # Add all data to session
-        session.add_all(
-            test_users + test_categories + test_notes + test_posts + test_weblinks
-        )
-        await session.commit()
-
-
-# Auth bypass fixture
-@pytest.fixture
-def bypass_auth():
-    """Bypass authentication for testing."""
-
-    # Mock the entire authentication dependency chain
-    async def mock_check_login(request):
-        # Set up request.state.user_info as the real function does
-        request.state.user_info = {
-            "user_identifier": "test-user-123",
-            "timezone": "America/New_York",
-            "is_admin": False,
-            "exp": 9999999999,
-        }
-        return request.state.user_info
-
-    # Mock check_user_identifier and check_session_expiry to prevent any auth issues
-    async def mock_check_user_identifier(request):
-        pass
-
-    async def mock_check_session_expiry(request):
-        pass
-
-    # Create mock user data with all required fields
-    mock_user_data = {
-        "pkid": "test-user-123",
-        "user_name": "testuser",
-        "email": "test@example.com",
-        "first_name": "Test",
-        "last_name": "User",
-        "is_active": True,
-        "is_admin": False,
-        "my_timezone": "America/New_York",
-        "roles": {"user_access": True, "notes": True, "posts": True},
-        "date_created": "2024-01-01T00:00:00",
-        "date_updated": "2024-01-01T00:00:00",
-        "date_last_login": "2024-01-01T00:00:00",
-        "failed_login_attempts": 0,
-    }
-
-    # Create mock user record
-    mock_user_record = create_mock_db_record(mock_user_data)
-
-    # Mock get_user_name function to return a properly formatted name
-    async def mock_get_user_name(user_id):
-        return "Test User"
-
-    # Patch all the authentication functions
-    with patch(
-        "src.functions.login_required.check_login", side_effect=mock_check_login
+    async def _resolve(
+        spec, text, python="3.12", mode="upgrade", platform="linux-x86_64", **kwargs
     ):
-        with patch(
-            "src.functions.login_required.check_user_identifier",
-            side_effect=mock_check_user_identifier,
-        ):
-            with patch(
-                "src.functions.login_required.check_session_expiry",
-                side_effect=mock_check_session_expiry,
-            ):
-                # Mock db_ops.read_one_record for user lookups
-                with patch(
-                    "src.endpoints.blog_posts.db_ops.read_one_record",
-                    AsyncMock(return_value=mock_user_record),
-                ):
-                    # Mock the get_user_name function to avoid the KeyError
-                    with patch(
-                        "src.endpoints.blog_posts.get_user_name",
-                        side_effect=mock_get_user_name,
-                    ):
-                        # Also mock the dependency directly to ensure it returns the expected data
-                        def mock_dependency():
-                            return {
-                                "user_identifier": "test-user-123",
-                                "timezone": "America/New_York",
-                                "is_admin": False,
-                                "exp": 9999999999,
-                            }
+        fake = FakePyPI(spec)
+        index = make_index(fake)
+        try:
+            report = await resolve_requirements(
+                text,
+                index=index,
+                target=TargetEnvironment(python, platform),
+                mode=mode,
+                **kwargs,
+            )
+        finally:
+            await index.client.aclose()
+        return report, fake
 
-                        # Patch the dependency in the modules where it's used
-                        with patch(
-                            "src.endpoints.notes.check_login",
-                            return_value=mock_dependency(),
-                        ):
-                            with patch(
-                                "src.endpoints.blog_posts.check_login",
-                                return_value=mock_dependency(),
-                            ):
-                                with patch(
-                                    "src.endpoints.admin.check_login",
-                                    return_value=mock_dependency(),
-                                ):
-                                    yield
+    return _resolve
 
 
 @pytest.fixture
-def bypass_admin_auth():
-    """Bypass authentication for admin testing."""
+def logged():
+    """Messages loguru emits at WARNING and above during the test."""
+    from loguru import logger
 
-    # Mock the entire authentication dependency chain for admin
-    async def mock_check_login(request):
-        # Set up request.state.user_info as the real function does
-        request.state.user_info = {
-            "user_identifier": "admin-user-123",
-            "timezone": "America/New_York",
-            "is_admin": True,
-            "exp": 9999999999,
-        }
-        return request.state.user_info
-
-    # Mock check_user_identifier and check_session_expiry to prevent any auth issues
-    async def mock_check_user_identifier(request):
-        pass
-
-    async def mock_check_session_expiry(request):
-        pass
-
-    # Patch all the authentication functions
-    with patch(
-        "src.functions.login_required.check_login", side_effect=mock_check_login
-    ):
-        with patch(
-            "src.functions.login_required.check_user_identifier",
-            side_effect=mock_check_user_identifier,
-        ):
-            with patch(
-                "src.functions.login_required.check_session_expiry",
-                side_effect=mock_check_session_expiry,
-            ):
-                # Also mock the dependency directly to ensure it returns the expected data
-                def mock_dependency():
-                    return {
-                        "user_identifier": "admin-user-123",
-                        "timezone": "America/New_York",
-                        "is_admin": True,
-                        "exp": 9999999999,
-                    }
-
-                # Patch the dependency in the modules where it's used
-                with patch(
-                    "src.endpoints.notes.check_login", return_value=mock_dependency()
-                ):
-                    with patch(
-                        "src.endpoints.blog_posts.check_login",
-                        return_value=mock_dependency(),
-                    ):
-                        with patch(
-                            "src.endpoints.admin.check_login",
-                            return_value=mock_dependency(),
-                        ):
-                            yield
+    messages: list[str] = []
+    sink = logger.add(lambda m: messages.append(m.record["message"]), level="WARNING")
+    yield messages
+    logger.remove(sink)

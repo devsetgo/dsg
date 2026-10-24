@@ -2,13 +2,12 @@
 set -e
 
 # Docker named volumes mount as root:root, overriding any chown applied
-# during the image build. Fix ownership here at container start, before
-# the app process runs, then drop privileges permanently via gosu.
-chown -R dsgUser:dsgUser /app/log
+# during the image build. Fix ownership at container start, before the app
+# runs, then drop privileges permanently via gosu.
+chown -R dsgUser:dsgUser /app/log /app/sqlite_db
 
-# Run migrations once, synchronously, before any uvicorn worker starts.
-# This avoids the async/sync deadlock that occurs when multiple workers
-# race to call alembic inside an already-running asyncpg event loop.
+# Migrate once, before any Robyn process starts, so worker processes never
+# race each other on the schema.
 gosu dsgUser alembic upgrade head
 
 exec gosu dsgUser "$@"

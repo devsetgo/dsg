@@ -64,7 +64,8 @@ htmlcov/
 .coverage.*
 .cache
 nosetests.xml
-# coverage.xml
+coverage.xml
+report.xml
 *.cover
 .hypothesis/
 .pytest_cache/
@@ -124,3 +125,11 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# leftover OCR data from the pre-Robyn app
+pdf/
+*.db-wal
+*.db-shm
+
+# local working list (dsg-* skills)
+TODO_TASKS.md

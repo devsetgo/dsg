@@ -58,7 +58,7 @@ jobs:
 
           # ---- Labels ----
           enable_labels: true                   # ask the model to choose and apply labels, creating any that don't exist yet
-          label_taxonomy: 'bug,feature,enhancement,documentation,dependencies,refactor,test,chore'  # shown explicitly since enable_labels is active (this is also the default)
+          label_taxonomy: 'type: feature,type: bug,type: maintenance,type: docs,type: dependencies,type: security'  # the labels .github/release-drafter.yaml sorts release notes by
 
           # ---- Breaking-change detection ----
           detect_breaking_changes: true         # flag likely breaking changes with a note in the description + a breaking-change label

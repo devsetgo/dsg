@@ -1,118 +1,43 @@
 {% extends "base.html" %}
 {% block page_title %}| About{% endblock %}
-{% block page_stylesheet %}{% endblock %}
-{% block page_breadcrumb %} About{% endblock %}
-{% block page_head_title %}About Page{% endblock %}
+{% block page_breadcrumb %}About{% endblock %}
+{% block page_head_title %}About{% endblock %}
 {% block body %}
-<!-- Main content -->
-<section class="content">
-  {% if 'message' in data.data_repo %}
-  {{data.data_repo.message}}
-  {% else %}
-
-  <div class="row">
-    <div class="col-md-12">
-      <!-- Widget: user widget style 1 -->
-      <div class="card card-widget widget-user">
-        <!-- Add the bg color to the header using any of the bg-* classes -->
-        <div class="widget-user-header bg-success">
-          <h3 class="widget-user-username">I am {{data.data_user.name|title}}</h3>
-          <h5 class="widget-user-desc">{{data.data_user.bio}}</h5>
-          <h5 class="widget-user-desc">Below are recently updated projects on my <a
-              href="{{data.data_user.html_url}}">Gitub Account</a>.</h5>
-        </div>
-        <!-- <div class="widget-user-image">
-          <img class="img-circle elevation-2"
-           src="http://stardash.devsetgo.com/static/dist/img/user1-128x128.jpg" alt="User Avatar">
-        </div> -->
-        <div class="card-footer">
-          <div class="row">
-            <div class="col-sm-3 border-right">
-              <div class="description-block">
-                <h5 class="description-header"><a href="https://github.com/{{repo_name}}" target="_blank"> {{data.data_user.public_repos}}</a></h5>
-                <span class="description-text">Repos</span>
-              </div>
-              <!-- /.description-block -->
-            </div>
-            <!-- /.col -->
-            <div class="col-sm-3 border-right">
-              <div class="description-block">
-                <h5 class="description-header"><a href="https://gist.github.com/{{repo_name}}" target="_blank">{{data.data_user.public_gists}}</a></h5>
-                <span class="description-text">Gists</span>
-              </div>
-              <!-- /.description-block -->
-            </div>
-            <!-- /.col -->
-            <div class="col-sm-3">
-              <div class="description-block">
-                <h5 class="description-header">{{data.data_user.following}}</h5>
-                <span class="description-text">Following</span>
-              </div>
-              <!-- /.description-block -->
-            </div>
-            <!-- /.col -->
-            <!-- /.col -->
-            <div class="col-sm-3">
-              <div class="description-block">
-                <h5 class="description-header">{{data.data_user.followers}}</h5>
-                <span class="description-text">Followers</span>
-              </div>
-              <!-- /.description-block -->
-            </div>
-            <!-- /.col -->
-          </div>
-          <!-- /.row -->
-        </div>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="h5">What this is</h2>
+        <p>Paste a <code>requirements.txt</code>, pick the Python version and platform you deploy on, and get back
+          the newest set of versions that install together there. If no such set exists, you get an explanation of why.</p>
+        <p>Typical uses:</p>
+        <ul>
+          <li><strong>Upgrading pins.</strong> See which packages can move forward, and which are capped by another package.</li>
+          <li><strong>Before bumping Python.</strong> Check whether today's pins install on 3.14 before changing the base image.</li>
+          <li><strong>Supporting older Pythons.</strong> Find the last releases that still support 3.10.</li>
+        </ul>
+        <h2 class="h5 mt-4">How it resolves</h2>
+        <p>The resolver uses <a href="https://github.com/sarugaku/resolvelib">resolvelib</a>, the backtracking resolver inside pip,
+          and <a href="https://packaging.pypa.io">packaging</a> for versions, specifiers, markers and wheel tags. Release data
+          comes from PyPI's JSON Simple API (PEP&nbsp;691). Dependencies are read from each wheel's published metadata
+          (PEP&nbsp;658) without downloading the wheel. Known vulnerabilities come from PyPI's advisory feed.</p>
+        <p class="mb-0">Like pip, it doesn't build source distributions. A release that ships only an sdist without
+          dependency metadata is resolved without its dependencies, and the result says so.</p>
       </div>
-      <!-- /.widget-user -->
     </div>
-    <!-- /.col -->
   </div>
-  <!-- /.row -->
-  <!-- Default box -->
-  <div class="card card-solid">
-    <div class="card-body pb-0">
-      <div class="row d-flex align-items-stretch">
-
-        {% for d in data.data_repo %}
-        <div class="col-12 col-sm-6 col-md-4 align-items-stretch">
-          <div class="card bg-light">
-            <div class="card-header text-muted border-bottom-0">
-              Project: {{d.name|upper}}
-              <p>Description: {{d.description}}.</p>
-            </div>
-            <div class="card-body pt-0">
-              <div class="row">
-                <div class="col-12">
-                  <ul>
-                    <li>GitHub: <a href="{{d.html_url}}">{{d.name}}</a></li>
-                    <li>Pull Requests: {{d.open_issues_count}}</li>
-                    <li>Watcher:{{d.watchers}}</li>
-                    <li>Default Branch: {{d.default_branch}}</li>
-                    <li>Git Url: {{d.git_url}}</li>
-                    <li>Created: {{d.created_at}}</li>
-                    <li>Last Update: {{d.updated_at}}</li>
-                    <li>Last Push: {{d.pushed_at}}</li>
-                    <li>Language: {{d.language}}</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- /.card-body -->
-        {% endfor %}
-      </div>
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header"><strong>Built with</strong></div>
+      <ul class="list-group list-group-flush small">
+        <li class="list-group-item"><a href="https://robyn.tech">Robyn</a> web framework, with SQLite storage</li>
+        <li class="list-group-item"><a href="https://github.com/devsetgo/pydantic-schemaforms">pydantic-schemaforms</a> for forms</li>
+        <li class="list-group-item"><a href="https://github.com/devsetgo/devsetgo_lib">devsetgo_lib</a> for database and logging</li>
+        <li class="list-group-item"><a href="https://github.com/devsetgo/bumpcalver">bumpcalver</a> for versioning (v{{ app_version }})</li>
+        <li class="list-group-item"><a href="https://github.com/devsetgo/ai-pr-assistant">ai-pr-assistant</a> for pull requests</li>
+        <li class="list-group-item"><a href="https://mdbootstrap.com">MDB UI Kit</a> layout</li>
+      </ul>
     </div>
-    <!-- /.card -->
-    {% endif %}
-</section>
-<!-- /.content-wrapper -->
+  </div>
 </div>
-<!-- /.content-wrapper -->
-{% endblock %}
-
-
-{% block page_scripts %}
-<!-- page scripts-->
 {% endblock %}

@@ -1,53 +1,13 @@
 {% extends "base.html" %}
-{% block page_title %}| {{error_code}} - {{description}}{% endblock %}
-{% block page_stylesheet %}{% endblock %}
-{% block page_breadcrumb %} {{error_code}}{% endblock %}
-{% block page_head_title %}{{error_code}} - {{description}}{% endblock %}
+{% block page_title %}| {{ code }}{% endblock %}
+{% block page_breadcrumb %}Error{% endblock %}
+{% block page_head_title %}{{ code }} {{ title }}{% endblock %}
 {% block body %}
-<!-- Main content -->
-<section class="content">
-  <div class="error-page">
-    <h2 class="headline text-warning"> {{error_code}}</h2>
-
-    <div class="error-content">
-      <h3><i class="fas fa-exclamation-triangle text-warning"></i> {{description}}</h3>
-
-      <p>
-        {{extended_description}}
-        Meanwhile, you may <a href="/">return to the main page</a>.
-      </p>
-      <p>For more information <a href="{{ link }}" target="_blank">click here</a></p>
-
-      <form class="search-form">
-        <div class="input-group">
-          <input type="text" name="search" class="form-control" placeholder="Search">
-
-          <div class="input-group-append">
-            <button type="submit" name="submit" class="btn btn-warning"><i class="fas fa-search"></i>
-            </button>
-          </div>
-        </div>
-        <!-- /.input-group -->
-      </form>
-    </div>
-    <!-- /.error-content -->
+<div class="card">
+  <div class="card-body text-center py-5">
+    <i class="fa-solid {{ 'fa-magnifying-glass' if code == 404 else 'fa-triangle-exclamation' }} fa-3x text-muted mb-3"></i>
+    <p class="lead">{{ description }}</p>
+    <a class="btn btn-primary" href="/check">Check a requirements file</a>
   </div>
-  <!-- /.error-page -->
-</section>
-<!-- /.content -->
 </div>
-<!-- /.content-wrapper -->
-
-{% endblock %}
-
-
-{% block page_scripts %}
-<!-- page scripts-->
-
-<!-- Bootstrap 4 -->
-
-<!-- AdminLTE App -->
-<script src="{{ url_for('static' , path='dist/js/adminlte.min.js') }}"></script>
-<!-- AdminLTE for demo purposes -->
-
 {% endblock %}

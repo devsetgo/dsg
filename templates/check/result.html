@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block page_title %}| Check Result{% endblock %}
+{% block page_breadcrumb %}{% if public_history %}<a href="/history">Recent Checks</a> / {% endif %}Result{% endblock %}
+{% block page_head_title %}Resolution for Python {{ check.target_python }}{% endblock %}
+
+{% macro change_badge(p) -%}
+  {%- set change = p.change -%}
+  {%- if change == 'upgrade' -%}<span class="badge badge-success"><i class="fa-solid fa-arrow-up"></i> upgrade</span>
+  {%- elif change == 'downgrade' -%}<span class="badge badge-warning"><i class="fa-solid fa-arrow-down"></i> downgrade</span>
+  {%- elif change == 'unchanged' -%}<span class="badge badge-secondary">unchanged</span>
+  {%- elif change == 'new' -%}<span class="badge badge-info">pinned</span>
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro package_row(p) %}
+<tr>
+  <td>
+    <a href="https://pypi.org/project/{{ p.name }}/" target="_blank" rel="noopener" class="fw-bold">{{ p.name }}</a>{% if p.extras %}<span class="text-muted">[{{ p.extras | join(',') }}]</span>{% endif %}
+    {% if p.input_spec and report.mode == 'validate' %}<div class="small text-muted font-monospace-sm">{{ p.input_spec }}</div>{% endif %}
+  </td>
+  <td class="font-monospace-sm">
+    {{ p.current_version or '—' }}
+    {% if p.current_vulnerabilities %}
+      <details class="small">
+        <summary class="text-danger" title="Advisories against the version in your file">
+          <i class="fa-solid fa-shield-virus me-1"></i>{{ p.current_vulnerabilities | length }}{% if not p.vulnerabilities %} fixed by upgrading{% endif %}
+        </summary>
+        <ul class="mb-0 ps-3">
+          {% for v in p.current_vulnerabilities %}
+          <li>{% if v.link %}<a href="{{ v.link }}" target="_blank" rel="noopener">{{ v.id }}</a>{% else %}{{ v.id }}{% endif %}</li>
+          {% endfor %}
+        </ul>
+      </details>
+    {% endif %}
+  </td>
+  <td class="font-monospace-sm fw-bold">{{ p.resolved_version or '—' }} {{ change_badge(p) }}</td>
+  <td class="font-monospace-sm">
+    {{ p.latest_compatible or '—' }}
+    {% if p.latest_version and p.latest_compatible and p.latest_version != p.latest_compatible %}
+      <div class="small text-muted" title="Newest release overall; it does not support Python {{ report.python_version }} on this platform">latest {{ p.latest_version }}</div>
+    {% endif %}
+  </td>
+  <td class="reason small">
+    {% if p.downgrade_reason %}<div class="text-warning"><i class="fa-solid fa-arrow-down me-1"></i>Downgraded from {{ p.current_version }}: {{ p.downgrade_reason }}</div>{% endif %}
+    {% if p.builds_from_source %}<div class="text-warning" title="pip would build the sdist; native code needs a compiler toolchain"><i class="fa-solid fa-hammer me-1"></i>No matching wheel: builds from source</div>{% endif %}
+    {% for reason in p.held_back_by %}<div><i class="fa-solid fa-lock text-warning me-1"></i>{{ reason }}</div>{% endfor %}
+    {% if p.vulnerabilities %}
+      <details>
+        <summary class="text-danger"><i class="fa-solid fa-shield-virus me-1"></i>{{ p.vulnerabilities | length }} known vulnerabilit{{ 'y' if p.vulnerabilities | length == 1 else 'ies' }}</summary>
+        <ul class="mb-0 ps-3">
+          {% for v in p.vulnerabilities %}
+          <li>{% if v.link %}<a href="{{ v.link }}" target="_blank" rel="noopener">{{ v.id }}</a>{% else %}{{ v.id }}{% endif %}
+            {% if v.fixed_in %}<span class="text-muted">fixed in {{ v.fixed_in | join(', ') }}</span>{% endif %}
+            {% if v.summary %}<div class="text-muted">{{ v.summary | truncate(160) }}</div>{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </details>
+    {% endif %}
+    {% if p.metadata_unknown %}<div class="text-muted"><i class="fa-solid fa-circle-question me-1"></i>no dependency metadata published</div>{% endif %}
+    {% if not p.is_direct and p.required_by %}<div class="text-muted">via {{ p.required_by | join(', ') }}</div>{% endif %}
+  </td>
+</tr>
+{% endmacro %}
+
+{% macro package_table(rows) %}
+<div class="table-responsive">
+  <table class="table table-sm table-hover table-packages mb-0">
+    <thead>
+      <tr>
+        <th>Package</th>
+        <th>Current</th>
+        <th>Resolved</th>
+        <th title="Newest release installable on the target">Newest compatible</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in rows %}{{ package_row(p) }}{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endmacro %}
+
+{% block body %}
+{% if not finished %}
+  {% include "check/_status.html" %}
+{% else %}
+  {% set counts = report.counts() if report else {} %}
+  <div class="row g-3 mb-4">
+    {% for label, value, icon, tone in [
+      ('Target', 'Python ' ~ check.target_python ~ ' · ' ~ platform_label, 'fa-brands fa-python', 'primary'),
+      ('Mode', check.mode | capitalize, 'fa-solid fa-sliders', 'secondary'),
+      ('Packages', (counts.direct ~ ' + ' ~ counts.transitive ~ ' deps') if report else '—', 'fa-solid fa-cubes', 'info'),
+      ('Upgrades', ((counts.upgrades ~ ' · ' ~ counts.downgrades ~ ' down') if counts.downgrades else counts.upgrades) if report else '—', 'fa-solid fa-arrow-up', 'success'),
+      ('Held back', counts.held_back if report else '—', 'fa-solid fa-lock', 'warning'),
+      ('Vulnerable', ((counts.vulnerable ~ ' · ' ~ counts.fixed ~ ' fixed') if counts.fixed else counts.vulnerable) if report else '—', 'fa-solid fa-shield-virus', 'danger'),
+    ] %}
+    <div class="col-6 col-md-4 col-xxl-2">
+      <div class="card stat-tile h-100">
+        <div class="card-body py-3">
+          <div class="small text-muted"><i class="{{ icon }} text-{{ tone }} me-1"></i>{{ label }}</div>
+          <div class="fs-5 fw-bold text-truncate">{{ value }}</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if check.error %}
+  <div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation me-2"></i>{{ check.error }}</div>
+  {% endif %}
+
+  {% if report and report.conflicts %}
+  <div class="card border border-danger mb-4">
+    <div class="card-header text-danger"><i class="fa-solid fa-code-merge me-2"></i><strong>This set can't be installed on Python {{ check.target_python }}</strong></div>
+    <div class="card-body">
+      {% for conflict in report.conflicts %}
+      <div class="{{ '' if loop.last else 'mb-3' }}">
+        <div class="fw-bold">{{ conflict.message }}</div>
+        <ul class="small mb-0">
+          {% for detail in conflict.details %}<li>{{ detail }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+      {% if report.mode == 'validate' %}
+      <hr><p class="small mb-0">Tip: run the same file in <strong>Upgrade</strong> mode to find the newest set that does install.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if report and report.issues %}
+  <div class="alert alert-warning small">
+    <div class="fw-bold mb-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Lines that weren't resolved</div>
+    <ul class="mb-0">
+      {% for issue in report.issues %}
+      <li>{% if issue.line_no %}line {{ issue.line_no }}: {% endif %}<code>{{ issue.line }}</code>: {{ issue.reason }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if report and report.ok %}
+  <div class="card mb-4">
+    <div class="card-header d-flex align-items-center flex-wrap gap-2">
+      <ul class="nav nav-tabs card-header-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#out-direct" type="button" role="tab">requirements.txt</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#out-lock" type="button" role="tab">Full lock ({{ report.packages | length }})</button>
+        </li>
+      </ul>
+      <div class="ms-auto">
+        <button class="btn btn-sm btn-primary" type="button" data-copy-target=".tab-pane.active pre"><i class="fa-solid fa-copy me-1"></i>Copy</button>
+      </div>
+    </div>
+    <div class="card-body tab-content">
+      <div class="tab-pane fade show active" id="out-direct" role="tabpanel"><pre class="requirements-output font-monospace-sm">{{ report.requirements_txt }}</pre></div>
+      <div class="tab-pane fade" id="out-lock" role="tabpanel"><pre class="requirements-output font-monospace-sm">{{ report.lock_txt }}</pre></div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if report and report.packages %}
+  <div class="card mb-4">
+    <div class="card-header"><i class="fa-solid fa-box-open me-2"></i><strong>Your requirements</strong></div>
+    <div class="card-body p-0">{{ package_table(report.direct) }}</div>
+  </div>
+  {% if report.transitive %}
+  <div class="card mb-4">
+    <div class="card-header">
+      <a class="text-reset" data-bs-toggle="collapse" href="#transitive" role="button" aria-expanded="false">
+        <i class="fa-solid fa-diagram-project me-2"></i><strong>Dependencies pulled in ({{ report.transitive | length }})</strong>
+        <i class="fa-solid fa-chevron-down ms-1 small"></i>
+      </a>
+    </div>
+    <div class="collapse" id="transitive"><div class="card-body p-0">{{ package_table(report.transitive) }}</div></div>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <a class="btn btn-outline-primary" href="/check"><i class="fa-solid fa-plus me-1"></i>New check</a>
+    <span class="small text-muted ms-auto">
+      {% if check.duration_ms is not none %}Resolved in {{ (check.duration_ms / 1000) | round(1) }}s &middot; {% endif %}
+      {{ check.date_created.strftime('%Y-%m-%d %H:%M') }} UTC
+    </span>
+  </div>
+
+  <details class="mt-4">
+    <summary class="text-muted small">Submitted file</summary>
+    <pre class="requirements-output font-monospace-sm mt-2">{{ check.text_in }}</pre>
+  </details>
+{% endif %}
+{% endblock %}
