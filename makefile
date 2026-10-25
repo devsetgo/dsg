@@ -2,7 +2,7 @@
 # Project Variables
 # =============================================================================
 REPONAME = dsg
-APP_VERSION = 2026-07-24-001
+APP_VERSION = 2026-10-24-001
 
 # Python Configuration
 PYTHON ?= $(shell if command -v python3.14 >/dev/null 2>&1; then echo python3.14; else echo python3; fi)
