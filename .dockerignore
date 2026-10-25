@@ -7,7 +7,9 @@ __archive
 .devcontainer
 .sonarlint
 htmlcov
-log/*.log
+# The image creates its own empty log/ (a volume in compose); rotated archives
+# from a dev machine must not ride along.
+log/
 logs/
 scripts/
 # The whole folder: -wal/-shm files hold recent writes (submitted files). The
@@ -35,3 +37,6 @@ data/
 report.xml
 **/__pycache__
 TODO_TASKS.md
+.bumpcalver/
+bumpcalver-history.json
+PROJECT_STATUS.md
