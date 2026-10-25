@@ -1,19 +1,20 @@
 # Project status: Robyn rewrite
 
-_Last updated 2026-10-23. Branch `robyn-rewrite` (from `dev`)._
+_Last updated 2026-10-25. Branch `robyn-rewrite` (from `dev`), pushed to origin._
 
 ## Where things stand
 
-The rewrite is **done and staged, but not committed**. `dsg` is now a single-purpose public tool. You paste a
+The rewrite is **done and pushed**. `dsg` is now a single-purpose public tool. You paste a
 `requirements.txt`, pick a target Python (3.8–3.15) and platform, and it resolves the file the way pip does. The result
 shows upgrades, downgrades, conflicts, held-back packages, source builds, and known vulnerabilities for both the pinned
 and the new version.
 
-- **Stack:** Robyn 0.88, SQLite via devsetgo_lib and Alembic (one baseline migration), pydantic-schemaforms 26.4.1, an
+- **Stack:** Robyn 0.88 or Granian 2.8 (RSGI) behind the same handlers (`src/routes/`, adapters in `src/main.py` and
+  `src/rsgi.py`; `make run-dev` uses Granian), SQLite via devsetgo_lib and Alembic (one baseline migration), pydantic-schemaforms 26.4.1, an
   MDB UI Kit layout ported from mrie, and htmx.
 - **Resolver:** `src/resolver/` uses resolvelib, packaging, PEP 691 JSON and PEP 658 metadata. Its results match
   `uv pip compile` package-for-package on the 96-line sample, for 3.10 and 3.12.
-- **Tests:** 161 pass, 3 network tests are deselected by default, coverage is 99% with branch coverage on. The
+- **Tests:** 227 pass (every app test runs against both servers), 3 network tests are deselected by default, coverage is 99% with branch coverage on. The
   remaining gaps (`db_init.py` file-database PRAGMAs, the opt-in access log in `main.py`) are exercised by subprocess
   tests that coverage can't see. `make test` (pre-commit and
   pytest) is clean inside the rebuilt devcontainer.
@@ -71,19 +72,15 @@ and the new version.
   - `hx_post=` is emitted literally instead of as `hx-post`.
   - A checkbox with a True default can't be switched off.
   - The Bootstrap markup is slightly off under MDB: the radio fieldset and the textarea label.
-- **devsetgo_lib** (2026.9.26.1 unless noted)
-  - `get_table_names()` lists the metadata's models, not the tables in the database.
-  - `execute_one(text("SELECT …"))` returns `"complete"` instead of rows.
-  - Read errors come back as `DatabaseErrorResult` values that are easy to mistake for "not found".
-  - The `:memory:` StaticPool shares one connection, so concurrent sessions can silently lose writes.
-  - Fixed in 2026.10.18.1, which this app now uses: there's a Robyn health router now
-    (`dsg_lib.robyn_functions.system_health_endpoints`).
-  - New in 2026.10.18.1: `create_health_router` calls `tracemalloc.start()` even when heapdump is disabled. That
-    made resolver-style work ~3.5x slower in a quick benchmark. `src/routes/health.py` calls `tracemalloc.stop()`
-    right after; drop that once the library starts tracing only for heapdump.
-  - New in 2026.10.18.1: `/status` logs an INFO line on every call (and `/uptime` too, via `calculate_uptime`).
-    Health checks and benchmarks flood the log. Measured: it costs Robyn's health route about 35% (13.0k vs
-    19.9k req/s) at `LOGGING_LEVEL=INFO`.
+- **devsetgo_lib** (rechecked on 2026.10.24.1)
+  - Still open: `get_table_names()` lists the metadata's models, not the tables in the database.
+  - Still open: `execute_one(text("SELECT …"))` returns `"complete"` instead of rows.
+  - Still open: read errors come back as `DatabaseErrorResult` values that are easy to mistake for "not found".
+  - Not rechecked: the `:memory:` StaticPool shares one connection, so concurrent sessions can silently lose writes.
+  - Fixed in 2026.10.18.1: there's a Robyn health router (`dsg_lib.robyn_functions.system_health_endpoints`).
+  - Fixed in 2026.10.24.1: `create_health_router` no longer starts `tracemalloc` unless heapdump is enabled
+    (this app's `tracemalloc.stop()` workaround is gone), and the health routes log at DEBUG, so
+    `/api/health/status` holds ~19.5k req/s at the default INFO level instead of ~13k.
 - **resolvelib 1.2.1** (also unfixed on `main`; pip vendors the same code)
   - `_has_route_to_root` in `_build_result` recurses with no visited set. A dependency cycle among candidates that
     backtracking left disconnected raises `RecursionError` after a successful resolution: 24 of 6,000 random
@@ -107,8 +104,11 @@ and the new version.
 
 ## Gotchas
 
-- **Dev reload:** `make run-dev` uses watchfiles on `src/`, `templates/`, `static/` and `alembic/` on purpose. Robyn's
-  `--dev` would restart on every check's SQLite write and kill the check.
+- **Dev reload:** `make run-dev` runs Granian with `--reload-paths` on `src/`, `templates/`, `static/` and `alembic/` on
+  purpose. A reloader watching the whole folder would restart on every check's SQLite write and kill the check (Robyn's
+  `--dev` does exactly that, so `make run-dev-robyn` uses watchfiles instead).
+- **RSGI differences:** multipart/form-data bodies aren't parsed, bodies are capped at 1 MiB, and there's no app-level
+  access log (use `granian --access-log`). Tests drive the RSGI app in-process with `tests/rsgi_client.py`.
 - **Stray servers:** a stale Robyn process can keep answering on the same port, so stop old servers (`make kill`).
 - **Test logs:** tests log to a temp directory, not `log/`.
 - **Root-owned file:** `htmlcov/` has one left over from an old container run, which is why the HTML coverage report

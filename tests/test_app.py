@@ -19,8 +19,10 @@ from src import checks, limits, resources
 from src.settings import settings
 from src.db_init import async_db
 from src.main import app
+from src.rsgi import app as rsgi_app
 from src.resolver.index import MemoryCacheStore, PyPIIndex
 from tests.fakepypi import JSON, SIMPLE, FakePyPI
+from tests.rsgi_client import RsgiTestClient
 
 SPEC = {
     "requests": {
@@ -32,12 +34,17 @@ SPEC = {
 }
 
 
-@pytest.fixture
-def client(monkeypatch):
+@pytest.fixture(params=["robyn", "rsgi"])
+def client(request, monkeypatch):
+    """The same tests run against both servers' adapters of src/routes/."""
     # Every test client submits from 127.0.0.1; start each test with a clean slate.
     limits.reset()
     monkeypatch.setattr(settings, "public_history", True)
-    test_client = RobynTestClient(app)
+    if request.param == "robyn":
+        test_client = RobynTestClient(app)
+        test_client.kind = "robyn"
+    else:
+        test_client = RsgiTestClient(rsgi_app)
     loop = test_client._loop
     loop.run_until_complete(resources.startup())  # memory DB: creates the schema
     loop.run_until_complete(resources.pypi_client.aclose())
@@ -48,8 +55,11 @@ def client(monkeypatch):
     yield test_client
     loop.run_until_complete(checks.wait_for_checks())
     loop.run_until_complete(resources.pypi_index.client.aclose())
-    # Fresh schema per test.
+    # Fresh schema per test, on a fresh connection: the in-memory database
+    # keeps one connection (and its execute lock) for the engine's life, and a
+    # task left mid-write in one test's loop would poison the next test's.
     loop.run_until_complete(_drop_all())
+    loop.run_until_complete(async_db.db_config.engine.dispose())
     test_client.close()
 
 
@@ -416,7 +426,7 @@ def test_client_ip_trusts_only_proxy_appended_entries(
 
     monkeypatch.setattr(settings, "forwarded_proxy_hops", hops)
     headers = {"x-forwarded-for": forwarded} if forwarded else {}
-    request = SimpleNamespace(headers=headers, ip_addr="10.0.0.1")
+    request = SimpleNamespace(headers=headers, client_ip="10.0.0.1")
     assert client_ip(request) == expected
 
 
@@ -671,10 +681,14 @@ def test_form_store_failure_frees_the_queue_place(client, monkeypatch):
         raise RuntimeError("database error: locked")
 
     monkeypatch.setattr(checks, "create_check", db_down)
-    # The test client re-raises instead of calling @app.exception (the 500
-    # page itself is covered by test_unhandled_exception_page).
-    with pytest.raises(RuntimeError):
-        post_form(client, {"requirements": "idna"}, htmx=False)
+    if client.kind == "robyn":
+        # Robyn's test client re-raises instead of calling @app.exception (the
+        # 500 page itself is covered by test_unhandled_exception_page).
+        with pytest.raises(RuntimeError):
+            post_form(client, {"requirements": "idna"}, htmx=False)
+    else:
+        response = post_form(client, {"requirements": "idna"}, htmx=False)
+        assert response.status_code == 500 and "went wrong" in response.text
     assert checks._in_flight == 0
 
 
@@ -978,3 +992,174 @@ def test_db_driver_setting_accepts_short_names_and_rejects_typos():
     assert Settings(db_driver=DatabaseDriverEnum.memory).is_memory_db
     with pytest.raises(ValidationError):
         Settings(db_driver="postgres")
+
+
+# --- the shared route table and the RSGI adapter ------------------------------
+
+rsgi_only = pytest.mark.parametrize("client", ["rsgi"], indirect=True)
+
+
+def test_matcher_finds_static_and_parameterized_routes():
+    from src.web import Matcher, Route
+
+    async def handler(request):  # never called
+        ...
+
+    matcher = Matcher(
+        [
+            Route("GET", "/check", handler),
+            Route("POST", "/check", handler),
+            Route("GET", "/check/:id", handler),
+            Route("GET", "/check/:id/status", handler),
+        ]
+    )
+    assert matcher.match("GET", "/check")[1] == {}
+    assert matcher.match("GET", "/check/abc")[1] == {"id": "abc"}
+    assert matcher.match("GET", "/check/abc/status")[1] == {"id": "abc"}
+    assert matcher.match("GET", "/check/") is None  # an empty parameter is no match
+    assert matcher.match("GET", "/check/abc/other") is None
+    assert matcher.match("DELETE", "/check") is None
+    assert matcher.allowed_methods("/check") == {"GET", "POST"}
+    assert matcher.allowed_methods("/check/abc") == {"GET"}
+    assert matcher.allowed_methods("/nope") == set()
+
+
+@rsgi_only
+def test_rsgi_unknown_paths_and_wrong_methods_get_error_pages(client):
+    missing = client.get("/no/such/page")
+    assert missing.status_code == 404 and "<html" in missing.text
+    wrong_method = client.post("/about", body="")
+    assert wrong_method.status_code == 405 and "<html" in wrong_method.text
+
+
+@rsgi_only
+def test_rsgi_serves_static_files_and_refuses_anything_outside_the_folder(client):
+    css = client.get("/static/css/admin.css")
+    assert css.status_code == 200
+    assert css.headers["content-type"].startswith("text/css")
+    assert "max-age" in css.headers["cache-control"]
+    assert css.content == (Path("static") / "css" / "admin.css").read_bytes()
+    for outside in (
+        "/static/../src/settings.py",
+        "/static/css/../../src/settings.py",
+        "/static/nope.css",
+        "/static/css",  # a folder, not a file
+    ):
+        assert client.get(outside).status_code == 404, outside
+
+
+@rsgi_only
+def test_rsgi_refuses_an_oversized_body(client):
+    from src import rsgi
+
+    response = client.post(
+        "/check",
+        body="requirements=" + "x" * (rsgi.MAX_BODY_BYTES + 1),
+        headers={"content-type": "application/x-www-form-urlencoded"},
+    )
+    assert response.status_code == 400 and "too large" in response.text
+
+
+@rsgi_only
+def test_rsgi_unhandled_errors_become_the_500_page(client, monkeypatch, logged):
+    from src import rsgi
+    from src.web import Matcher, Route
+
+    async def broken(request):
+        raise RuntimeError("secret internal detail")
+
+    monkeypatch.setattr(rsgi, "MATCHER", Matcher([Route("GET", "/boom", broken)]))
+    response = client.get("/boom")
+    assert response.status_code == 500
+    assert "went wrong" in response.text
+    assert "secret internal detail" not in response.text  # kept to the log
+    assert any("unhandled error" in m for m in logged)
+
+
+@rsgi_only
+def test_rsgi_health_endpoints(client):
+    assert client.get("/api/health/status").json() == {"status": "UP"}
+    uptime = client.get("/api/health/uptime").json()["uptime"]
+    assert set(uptime) == {"Days", "Hours", "Minutes", "Seconds"}
+    assert client.get("/api/health/heapdump").status_code == 404
+
+
+@rsgi_only
+def test_rsgi_ignores_non_http_scopes(client):
+    from types import SimpleNamespace
+
+    scope = SimpleNamespace(proto="ws", method="GET", path="/check")
+    # Returns without touching the (absent) protocol object.
+    assert client._loop.run_until_complete(client.app.__rsgi__(scope, None)) is None
+
+
+@rsgi_only
+def test_rsgi_lifecycle_hooks_start_and_stop_the_services(client, monkeypatch):
+    calls = []
+
+    async def startup():
+        calls.append("startup")
+
+    async def shutdown():
+        calls.append("shutdown")
+
+    monkeypatch.setattr(resources, "startup", startup)
+    monkeypatch.setattr(resources, "shutdown", shutdown)
+    client.app.__rsgi_init__(client._loop)
+    client.app.__rsgi_del__(client._loop)
+    assert calls == ["startup", "shutdown"]
+
+
+@pytest.mark.parametrize(
+    "client_address, expected",
+    [
+        ("203.0.113.7:51234", "203.0.113.7"),
+        ("[2001:db8::1]:51234", "2001:db8::1"),
+        ("", None),
+    ],
+)
+def test_rsgi_peer_address(client_address, expected):
+    from src.rsgi import _peer
+
+    assert _peer(client_address) == expected
+
+
+@rsgi_only
+def test_cancelled_api_request_frees_its_queue_place(client, monkeypatch):
+    started = asyncio.Event()
+
+    async def hangs(**kwargs):
+        started.set()
+        await asyncio.sleep(3600)
+
+    monkeypatch.setattr(checks, "create_check", hangs)
+    body = json.dumps({"requirements": "idna"})
+
+    async def post_then_cancel():
+        from src.routes import api
+        from src.web import Request
+
+        request = Request(
+            "POST", "/api/check", {}, {}, body=body, client_ip="127.0.0.1"
+        )
+        task = asyncio.ensure_future(api.api_check(request))
+        await started.wait()
+        assert checks._in_flight == 1  # the reserved place is held...
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+
+    client._loop.run_until_complete(post_then_cancel())
+    assert checks._in_flight == 0  # ...and given back on cancellation
+
+
+def test_rsgi_health_routes_follow_their_settings(monkeypatch):
+    from src import rsgi
+
+    def paths():
+        return {route.path for route in rsgi._routes()}
+
+    assert {"/api/health/status", "/api/health/uptime"} <= paths()
+    monkeypatch.setattr(settings, "health_status_endpoint", False)
+    assert "/api/health/status" not in paths() and "/api/health/uptime" in paths()
+    monkeypatch.setattr(settings, "health_uptime_endpoint", False)
+    assert not {p for p in paths() if p.startswith("/api/health")}

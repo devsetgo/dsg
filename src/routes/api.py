@@ -1,29 +1,20 @@
 # -*- coding: utf-8 -*-
-"""JSON endpoints: a scripting API for resolution. Health checks come from
-dsg_lib (see health.py)."""
-
-import json
+"""JSON endpoints: a scripting API for resolution. Framework-neutral: see
+src/web.py. Health checks are per server (src/routes/health.py for Robyn,
+src/rsgi.py for RSGI)."""
 
 from loguru import logger
-from robyn import Headers, Request, Response, SubRouter
 
 from .. import checks
-from .pages import client_ip, submission_refusal
 from ..forms import PackageCheckForm
+from ..web import Request, Reply, RouteTable, json_reply
+from .pages import client_ip, submission_refusal
 
-router = SubRouter(prefix="/api")
-
-
-def json_response(payload, status_code: int = 200) -> Response:
-    return Response(
-        status_code=status_code,
-        headers=Headers({"Content-Type": "application/json"}),
-        description=json.dumps(payload, default=str),
-    )
+ROUTES = RouteTable()
 
 
-@router.post("/check")
-async def api_check(request: Request):
+@ROUTES.post("/api/check")
+async def api_check(request: Request) -> Reply:
     """POST {"requirements": "...", "python_version": "3.12", "platform": "linux-x86_64", "mode": "upgrade"}.
 
     Resolves synchronously and returns the report; the check is also stored so
@@ -32,19 +23,19 @@ async def api_check(request: Request):
     try:
         body = request.json()
     except ValueError, TypeError:
-        return json_response({"error": "Body must be a JSON object."}, 400)
+        return json_reply({"error": "Body must be a JSON object."}, 400)
     if not isinstance(body, dict):
-        return json_response({"error": "Body must be a JSON object."}, 400)
+        return json_reply({"error": "Body must be a JSON object."}, 400)
     result = PackageCheckForm.validate(body, submit_url="/api/check")
     if not result.is_valid:
-        return json_response(
+        return json_reply(
             {"error": "Invalid request.", "errors": result.error_list()}, 422
         )
     form = result.instance
 
     refusal = submission_refusal(request)
     if refusal is not None:
-        return json_response({"error": refusal}, 429)
+        return json_reply({"error": refusal}, 429)
 
     try:
         request_group_id = await checks.create_check(
@@ -55,12 +46,16 @@ async def api_check(request: Request):
             host_ip=client_ip(request),
             user_agent=request.headers.get("user-agent"),
         )
-    except Exception:
+    except BaseException as exc:
+        # Every way out of here gives the reserved queue place back, a
+        # cancelled request (CancelledError is not an Exception) included.
         checks.release_reservation()
+        if not isinstance(exc, Exception):
+            raise
         # A JSON caller gets JSON, not the HTML error page; the detail
         # (SQL, paths) stays in the log.
         logger.exception("could not store an API check")
-        return json_response(
+        return json_reply(
             {"error": "An internal error stopped this check. It has been logged."},
             500,
         )
@@ -71,10 +66,10 @@ async def api_check(request: Request):
     url = f"/check/{request_group_id}"
     if check is None or not check.report:
         error = (check.error if check else None) or "The check did not complete."
-        return json_response(
+        return json_reply(
             {"error": error, "request_group_id": request_group_id, "url": url}, 502
         )
     payload = dict(check.report)
     payload["request_group_id"] = request_group_id
     payload["url"] = url
-    return json_response(payload, 200 if payload.get("ok") else 409)
+    return json_reply(payload, 200 if payload.get("ok") else 409)

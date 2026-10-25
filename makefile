@@ -15,6 +15,7 @@ SERVICE_PATH = src
 TESTS_PATH = tests
 
 # Server Configuration
+HOST ?= 0.0.0.0
 PORT ?= 5000
 PROCESSES ?= 8
 WORKERS ?= 1
@@ -38,7 +39,7 @@ MAKEFLAGS += --warn-undefined-variables
 .SUFFIXES:
 
 .PHONY: help install install-dev format ruff black validate test test-network test-file \
-	run run-dev migrate revision alembic-current alembic-history bench kill \
+	run run-dev run-dev-robyn run-granian migrate revision alembic-current alembic-history bench kill \
 	docker-build docker-run docker-push docker-all bump bump-beta clean
 
 # =============================================================================
@@ -82,19 +83,33 @@ test-file:  ## Run one test file: make test-file FILE=test_resolver.py
 	$(PYTEST) $(TESTS_PATH)/$(FILE) -v
 
 ##@ Run
-# Not Robyn's --dev: its reloader restarts on a write to *any* file under the
-# app's folder, and every check writes sqlite_db/ and log/ - each check would
-# restart the server and kill itself. watchfiles watches only the code.
-run-dev:  ## Run with hot reload against sqlite_db/dsg_dev.db
+# Granian serving src/rsgi.py (RSGI). It watches only the listed paths: a reloader
+# that watched the whole folder would restart on every check's write to sqlite_db/
+# and log/, killing the check that caused it.
+GRANIAN = $(PYTHON) -m granian --interface rsgi --loop uvloop --no-ws --host $(HOST) --port $(PORT)
+
+run-dev:  ## Run with hot reload on Granian (RSGI) against sqlite_db/dsg_dev.db
+	DB_DRIVER=sqlite DB_NAME=dsg_dev $(ALEMBIC) upgrade head
+	DB_DRIVER=sqlite DB_NAME=dsg_dev $(GRANIAN) --log-level info --reload \
+		--reload-paths $(SERVICE_PATH) --reload-paths templates --reload-paths static \
+		--reload-paths alembic $(SERVICE_PATH).rsgi:app
+
+run-granian:  ## Run like production on Granian (RSGI): make run-granian PROCESSES=8
+	$(ALEMBIC) upgrade head
+	$(GRANIAN) --workers $(PROCESSES) --log-level warning --no-access-log $(SERVICE_PATH).rsgi:app
+
+# The same app on Robyn. Not Robyn's --dev: its reloader restarts on a write to *any*
+# file under the app's folder, so watchfiles watches only the code.
+run-dev-robyn:  ## Run with hot reload on Robyn against sqlite_db/dsg_dev.db
 	DB_DRIVER=sqlite DB_NAME=dsg_dev $(ALEMBIC) upgrade head
 	DB_DRIVER=sqlite DB_NAME=dsg_dev PORT=$(PORT) $(PYTHON) -m watchfiles --target-type command \
 		"$(PYTHON) -m $(SERVICE_PATH).main --log-level WARN" $(SERVICE_PATH) templates static alembic
 
-run:  ## Run like production: make run PROCESSES=8 WORKERS=1
+run:  ## Run like production on Robyn: make run PROCESSES=8 WORKERS=1
 	$(ALEMBIC) upgrade head
 	PORT=$(PORT) $(PYTHON) -m $(SERVICE_PATH).main --processes $(PROCESSES) --workers $(WORKERS) --log-level WARN
 
-kill:  ## Kill whatever is listening on PORT (Robyn shares the port with a stale instance)
+kill:  ## Kill whatever is listening on PORT (a stale instance can share the port)
 	@lsof -ti:$(PORT) | xargs -r kill -9 || true
 
 ##@ Database

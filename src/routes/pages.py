@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-"""HTML pages: the check form, results, history, stats and about."""
+"""HTML pages: the check form, results, history, stats and about.
+
+Framework-neutral: see src/web.py."""
 
 import math
 from urllib.parse import parse_qs
 
 from loguru import logger
 from pydantic_schemaforms import html
-from robyn import Headers, Request, Response, SubRouter
 
 from .. import checks, limits
 from ..db_tables import CheckStatus
@@ -15,9 +16,10 @@ from ..resolver.environment import PLATFORMS
 from ..resolver.models import ResolutionReport
 from ..settings import settings
 from ..templating import render, render_string
+from ..web import Reply, Request, RouteTable, html_reply, redirect
 from .errors import error_page
 
-router = SubRouter(prefix="")
+ROUTES = RouteTable()
 
 HISTORY_PAGE_SIZE = 25
 PLATFORM_LABELS = {key: spec["label"] for key, spec in PLATFORMS.items()}
@@ -36,12 +38,13 @@ def client_ip(request: Request) -> str | None:
         entries = [entry.strip() for entry in forwarded.split(",") if entry.strip()]
         if len(entries) >= hops:
             return entries[-hops]
-    return request.ip_addr
+    return request.client_ip
 
 
 def form_fields(request: Request) -> dict[str, str]:
     """POSTed form fields. Robyn 0.88 fills request.form_data only for
-    multipart/form-data; an urlencoded body (htmx's default) leaves it empty."""
+    multipart/form-data; an urlencoded body (htmx's default) leaves it empty,
+    and the RSGI adapter doesn't parse multipart at all."""
     if request.form_data:
         return dict(request.form_data)
     body = request.body
@@ -73,7 +76,7 @@ def is_htmx(request: Request) -> bool:
     return (request.headers.get("hx-request") or "").lower() == "true"
 
 
-async def _form_page(form_html: str, status_code: int = 200) -> Response:
+async def _form_page(form_html: str, status_code: int = 200) -> Reply:
     try:
         stats = await checks.cached_stats()
     except Exception as exc:
@@ -88,17 +91,17 @@ async def _form_page(form_html: str, status_code: int = 200) -> Response:
     )
 
 
-@router.get("/")
-async def index():
+@ROUTES.get("/")
+async def index(request: Request):
     return await _form_page(await render_check_form())
 
 
-@router.get("/check")
-async def check_form():
+@ROUTES.get("/check")
+async def check_form(request: Request):
     return await _form_page(await render_check_form())
 
 
-@router.post("/check")
+@ROUTES.post("/check")
 async def check_submit(request: Request):
     data = form_fields(request)
     result = validate_check_form(data)
@@ -106,11 +109,7 @@ async def check_submit(request: Request):
         form_html = await result.render_with_errors_async()
         if is_htmx(request):
             # Swapped into #check-form in place of the old form.
-            return Response(
-                status_code=200,
-                headers=Headers({"Content-Type": "text/html; charset=utf-8"}),
-                description=form_html,
-            )
+            return html_reply(form_html)
         return await _form_page(form_html, status_code=422)
 
     busy = submission_refusal(request)
@@ -118,11 +117,7 @@ async def check_submit(request: Request):
         form_html = busy_alert(busy) + await render_check_form(data)
         if is_htmx(request):
             # htmx doesn't swap 4xx responses by default, so answer 200.
-            return Response(
-                status_code=200,
-                headers=Headers({"Content-Type": "text/html; charset=utf-8"}),
-                description=form_html,
-            )
+            return html_reply(form_html)
         return await _form_page(form_html, status_code=429)
 
     form = result.instance
@@ -141,12 +136,8 @@ async def check_submit(request: Request):
     checks.schedule_check(request_group_id, reserved=True)
     location = f"/check/{request_group_id}"
     if is_htmx(request):
-        return Response(
-            status_code=200, headers=Headers({"HX-Redirect": location}), description=""
-        )
-    return Response(
-        status_code=303, headers=Headers({"Location": location}), description=""
-    )
+        return Reply(200, {"HX-Redirect": location})
+    return redirect(location)
 
 
 async def _load(request_group_id: str):
@@ -160,7 +151,7 @@ async def _load(request_group_id: str):
     return check
 
 
-@router.get("/check/:request_group_id")
+@ROUTES.get("/check/:request_group_id")
 async def check_result(request: Request):
     check = await _load(request.path_params["request_group_id"])
     if check is None:
@@ -179,30 +170,22 @@ async def check_result(request: Request):
     )
 
 
-@router.get("/check/:request_group_id/status")
+@ROUTES.get("/check/:request_group_id/status")
 async def check_status(request: Request):
     check = await _load(request.path_params["request_group_id"])
     if check is None:
-        return Response(
-            status_code=200, headers=Headers({"HX-Redirect": "/check"}), description=""
-        )
+        return Reply(200, {"HX-Redirect": "/check"})
     if check.status in CheckStatus.finished:
-        return Response(
-            status_code=200, headers=Headers({"HX-Refresh": "true"}), description=""
-        )
-    return Response(
-        status_code=200,
-        headers=Headers({"Content-Type": "text/html; charset=utf-8"}),
-        description=render_string("check/_status.html", check=check),
-    )
+        return Reply(200, {"HX-Refresh": "true"})
+    return html_reply(render_string("check/_status.html", check=check))
 
 
-@router.get("/history")
+@ROUTES.get("/history")
 async def history(request: Request):
     if not settings.public_history:
         return render("history.html", path="/history", private=True)
     try:
-        page = max(1, int(request.query_params.get("page", "1") or 1))
+        page = max(1, int(request.query.get("page", "1") or 1))
     except ValueError:
         page = 1
     rows, total = await checks.recent_checks(
@@ -219,13 +202,13 @@ async def history(request: Request):
     )
 
 
-@router.get("/stats")
-async def stats_page():
+@ROUTES.get("/stats")
+async def stats_page(request: Request):
     return render("stats.html", path="/stats", stats=await checks.stats())
 
 
-@router.get("/about")
-async def about():
+@ROUTES.get("/about")
+async def about(request: Request):
     return render("about.html", path="/about")
 
 
@@ -240,16 +223,15 @@ _MOVED = {
 }
 
 
-def _redirect_to(source: str, target: str):
-    async def redirect():
-        return Response(
-            status_code=301, headers=Headers({"Location": target}), description=""
-        )
+def _permanent_redirect(target: str):
+    async def moved(request: Request):
+        return redirect(target, status=301)
 
-    # Robyn names OpenAPI operations after the handler; keep them distinct.
-    redirect.__name__ = "moved" + source.replace("/", "_")
-    return redirect
+    return moved
 
 
 for _old, _new in _MOVED.items():
-    router.get(_old)(_redirect_to(_old, _new))
+    ROUTES.get(_old)(_permanent_redirect(_new))
+
+# Browsers ask for this on their own; the file lives under /static.
+ROUTES.get("/favicon.ico")(_permanent_redirect("/static/favicon.ico"))

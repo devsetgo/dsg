@@ -73,9 +73,20 @@ matches the earlier comparison above.
 5,294 with 4 and 9,830 with 8 (noisy; the load generator competes for CPU above that). Set `PROCESSES` to the CPUs
 the container actually has; the image default of 2 is conservative. One worker per process beats two.
 
-**dsg_lib's health route logs an INFO line per call.** With `LOGGING_LEVEL=INFO` Robyn served 13,000 req/s on health;
-with `WARNING`, 19,900 (the cap). Two rounds each. Real traffic is a Docker healthcheck every 90 s, so this only
-matters for benchmarks and aggressive uptime monitors.
+**dsg_lib's health route logged an INFO line per call (fixed in 2026.10.24.1).** With `LOGGING_LEVEL=INFO` Robyn
+served 13,000 req/s on health; with `WARNING`, 19,900 (the cap). The same release also stops starting `tracemalloc`
+unless heapdump is enabled, so this app's `tracemalloc.stop()` workaround was removed. Rerun on 2026.10.24.1 at the
+default INFO level, same session, 4 processes:
+
+| endpoint | Robyn, devsetgo-lib 2026.10.18.1 | Robyn, 2026.10.24.1 | uvicorn, 2026.10.24.1 |
+|---|---|---|---|
+| form `/check` | 4,422 | 4,177 | 5,523 |
+| result `/check/<id>` | 5,944 | 5,661 | 8,520 |
+| health `/api/health/status` | 11,198 | **19,962** (the cap) | 19,962 (the cap) |
+
+Health is now as fast as uvicorn's. The page endpoints did not change beyond run-to-run noise (uvicorn's moved by a
+similar amount between runs), which is expected: the release's changes target logging and `tracemalloc`, not template
+rendering or database reads. `store_report` stayed at ~7 ms.
 
 ### Resolver CPU (the part users wait for)
 
@@ -116,3 +127,42 @@ scaled well with processes (the result page: 5,294 req/s at 4, 9,830 at 8).
 even with a 5 s busy timeout: `store_report` inserted the packages one statement at a time and held the single
 write lock for ~120 ms, and SQLite's retry loop is not fair. It is now one `executemany` (8 ms). After the change,
 bursts of 24 concurrent checks across 4 and 8 processes ran with no locked errors.
+
+## 2026-10-24: Granian in RSGI mode (solo run)
+
+A bare RSGI app (the standalone `benchmarks/rsgi_app.py`, since replaced by the real `src/rsgi.py`) served the same three endpoints on Granian 2.8.4 (uvloop, 4 workers),
+through the same templates, forms, database layer and caches. The responses are byte-identical to the FastAPI
+shim's (checked by checksum). The method is the same as above (`-R20000` offered).
+
+| endpoint | Granian RSGI | uvicorn + FastAPI, same moment | difference |
+|---|---|---|---|
+| form `/check` | **6,991** · p99 3.6 ms | 6,283 · p99 3.5 ms | +11% |
+| result `/check/<id>` | **13,205** · p99 3.2 ms | 10,142 · p99 3.2 ms | +30% |
+| health `/api/health/status` | 19,962 (the cap) | 19,961 (the cap) | tie |
+
+**Compare against the control, not the earlier run.** uvicorn measured 5,523 / 8,520 an hour before the RSGI run
+and 6,283 / 10,142 right after it: the machine drifted by 14-19% in that hour. Against the earlier numbers RSGI
+would have looked 27% and 55% ahead. Robyn was not rerun at the same moment. Scaling its earlier numbers by that
+uvicorn ratio puts RSGI at roughly 1.5x Robyn on the form and 2x on the result page (an estimate, not a
+measurement).
+
+**What this does and doesn't show.** The RSGI app has no framework at all, so the gain mixes two things: Granian's
+native interface (no ASGI scope or message passing) and skipping FastAPI/Starlette's routing and response objects.
+Granian in ASGI mode was slower than uvicorn (above), so Granian itself is not the source of the lead. A raw ASGI
+app on uvicorn would separate the two; it has not been run.
+
+### The real apps, after the server split (same day)
+
+`make run-dev` now serves the whole app through Granian/RSGI (`src/rsgi.py`), and Robyn (`src/main.py`) serves the
+same handlers through a thin adapter. Both were rerun on the real apps, 4 processes, `-R20000`:
+
+| endpoint | Robyn (adapter) | Robyn before the split | Granian RSGI (real app) | bare RSGI skeleton |
+|---|---|---|---|---|
+| form `/check` | 4,651 | 4,177 | 7,036 | 6,991 |
+| result `/check/<id>` | 5,743 | 5,661 | 11,014 | 13,205 |
+| health | 19,961 (cap) | 19,962 (cap) | 19,962 (cap) | 19,962 (cap) |
+
+The adapter layer costs Robyn nothing measurable. The real RSGI app matches the skeleton on the form and sits 17%
+below it on the result page; the skeleton was measured an hour earlier and this machine drifted 15-20% in an hour, so
+treat that gap as unresolved, not as the cost of routing. A same-moment rerun would settle it. (Robyn's form p99 spiked
+to 325 ms in this run against 7 ms in the last; one stall, not a trend.)

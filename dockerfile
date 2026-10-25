@@ -26,7 +26,8 @@ RUN mkdir -p /app/log /app/sqlite_db && chown dsgUser:dsgUser /app/log /app/sqli
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-ENV DB_DRIVER=sqlite \
+ENV SERVER=robyn \
+    DB_DRIVER=sqlite \
     DB_DIRECTORY=sqlite_db \
     DB_NAME=dsg \
     LOGGING_DIRECTORY=log \
@@ -46,4 +47,5 @@ HEALTHCHECK --interval=1m30s --timeout=10s --start-period=20s --retries=3 \
 
 # entrypoint.sh runs as root: fixes volume ownership, migrates, then execs as dsgUser.
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["sh", "-c", "exec python -m src.main --processes ${PROCESSES} --workers ${WORKERS} --log-level WARN"]
+# SERVER=robyn (default) or SERVER=granian (the RSGI app, src/rsgi.py).
+CMD ["sh", "-c", "if [ \"$SERVER\" = granian ]; then exec granian --interface rsgi --loop uvloop --no-ws --host ${HOST} --port ${PORT} --workers ${PROCESSES} --log-level warning --no-access-log src.rsgi:app; else exec python -m src.main --processes ${PROCESSES} --workers ${WORKERS} --log-level WARN; fi"]

@@ -1,25 +1,31 @@
 # -*- coding: utf-8 -*-
 """
-Jinja2 rendering for Robyn.
+Jinja2 rendering.
 
-Robyn's JinjaTemplate has no request context and no `url_for`, so the
-globals templates rely on (static URLs with a cache-busting version, the app
-version, the active path for the sidebar) are provided here.
+There is no request context and no `url_for`, so the globals templates rely on
+(static URLs with a cache-busting version, the app version, the active path for
+the sidebar) are provided here.
 """
 
 import os
 from functools import lru_cache
 
-from robyn import Headers, Response
-from robyn.templating import JinjaTemplate
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .settings import settings
+from .web import Reply, html_reply
 
 TEMPLATE_DIR = "templates"
 STATIC_DIR = "static"
 STATIC_ROUTE = "/static"
 
-_engine = JinjaTemplate(TEMPLATE_DIR)
+# Autoescape on for every template type that can carry HTML.
+_env = Environment(
+    loader=FileSystemLoader(TEMPLATE_DIR),
+    autoescape=select_autoescape(
+        enabled_extensions=("html", "htm", "xml"), default=True
+    ),
+)
 
 
 @lru_cache(maxsize=256)
@@ -35,7 +41,7 @@ def static_url(path: str) -> str:
     return f"{STATIC_ROUTE}/{path}?v={_static_version(path)}"
 
 
-_engine.env.globals.update(
+_env.globals.update(
     static_url=static_url,
     app_version=settings.version,
 )
@@ -44,7 +50,7 @@ _engine.env.globals.update(
 def render_string(template_name: str, **context) -> str:
     # Read per render rather than as a global, so it follows the live setting.
     context.setdefault("public_history", settings.public_history)
-    return _engine.env.get_template(template_name).render(**context)
+    return _env.get_template(template_name).render(**context)
 
 
 def render(
@@ -54,9 +60,7 @@ def render(
     status_code: int = 200,
     headers: dict | None = None,
     **context,
-) -> Response:
-    body = render_string(template_name, path=path, **context)
-    response_headers = {"Content-Type": "text/html; charset=utf-8", **(headers or {})}
-    return Response(
-        status_code=status_code, headers=Headers(response_headers), description=body
-    )
+) -> Reply:
+    reply = html_reply(render_string(template_name, path=path, **context), status_code)
+    reply.headers.update(headers or {})
+    return reply

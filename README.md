@@ -34,7 +34,7 @@ On the 96-line sample in `tests/fixtures/`, the result matches `uv pip compile -
 
 | Layer | Technology |
 |---|---|
-| Web | [Robyn](https://robyn.tech) (Rust runtime, multi-process) |
+| Web | [Robyn](https://robyn.tech) (Rust runtime, multi-process) or [Granian](https://github.com/emmett-framework/granian) through RSGI, behind the same handlers |
 | Forms | [pydantic-schemaforms](https://github.com/devsetgo/pydantic-schemaforms) |
 | Database | SQLite (WAL) via [devsetgo_lib](https://github.com/devsetgo/devsetgo_lib) + SQLAlchemy async, Alembic migrations |
 | UI | MDB UI Kit (Bootstrap 5), layout after [mdbootstrap/bootstrap-5-admin-template](https://github.com/mdbootstrap/bootstrap-5-admin-template), htmx |
@@ -45,8 +45,12 @@ On the 96-line sample in `tests/fixtures/`, the result matches `uv pip compile -
 
 ```
 src/
-  main.py            Robyn app: routes, static files, startup/shutdown, error handler
-  routes/            pages.py (HTML), api.py (JSON), health.py (dsg_lib health router), errors.py
+  web.py             framework-neutral Request/Reply, route table and matcher
+  routes/            the handlers, written against web.py: pages.py (HTML), api.py (JSON), errors.py;
+                     health.py is dsg_lib's Robyn health router
+  main.py            Robyn adapter: routes, static files, startup/shutdown, error handler
+  rsgi.py            Granian adapter (RSGI): the same routes, static files, health, lifecycle hooks
+  logs.py            logging setup shared by both
   forms.py           pydantic-schemaforms form for a check
   checks.py          check lifecycle: create row -> resolve in background -> store report
   resolver/          pure resolver, no web or DB imports:
@@ -58,7 +62,7 @@ src/
     service.py         resolve_requirements() -> ResolutionReport
   pypi_cache.py      SQLite-backed cache store for PyPI responses
 templates/, static/  MDB layout (base.html), pages, htmx fragments
-benchmarks/          wrk2 scripts and results (FastAPI baseline vs Robyn)
+benchmarks/          wrk2 scripts and results (Robyn, FastAPI, Granian)
 ```
 
 ## Running
@@ -66,9 +70,20 @@ benchmarks/          wrk2 scripts and results (FastAPI baseline vs Robyn)
 ```bash
 uv venv .venv -p 3.14 && uv pip install -p .venv/bin/python -r requirements/dev.txt
 cp env-files/.env.sample .env
-make run-dev            # migrates sqlite_db/dsg_dev.db, starts on :5000 with hot reload
-make run PROCESSES=8 WORKERS=1
+make run-dev            # Granian (RSGI) with hot reload on :5000; migrates sqlite_db/dsg_dev.db first
+make run-granian PROCESSES=8      # Granian, like production
+make run-dev-robyn      # the same app on Robyn, with hot reload
+make run PROCESSES=8 WORKERS=1    # Robyn, like production
 ```
+
+The handlers in `src/routes/` know nothing about the server. `src/main.py` connects them to Robyn and `src/rsgi.py` to
+Granian's native RSGI interface. Differences on RSGI: multipart/form-data bodies are not parsed (the form posts
+urlencoded), request bodies are capped at 1 MiB, and there is no app-level access log (use Granian's `--access-log`).
+Granian reloads on changes under `src/`, `templates/`, `static/` and `alembic/` only, so a check's writes to the
+database never restart it.
+
+Health checks: `GET /api/health/status` returns `{"status": "UP"}` and `GET /api/health/uptime` returns
+`{"uptime": {"Days", "Hours", "Minutes", "Seconds"}}`. `HEALTH_STATUS_ENDPOINT` and `HEALTH_UPTIME_ENDPOINT` switch them off.
 
 Every setting is in `env-files/.env.sample`, with its default. `DB_DRIVER=memory` is for the test suite only
 (the reason is in `src/settings.py`).
@@ -96,7 +111,8 @@ unreachable, internal error), with the reason in `error`. A 500 means the check 
   totals plus the most-checked packages, but only names that exist on PyPI, so a private package never appears there.
 - **Abuse limits.** Each worker process runs at most `MAX_CONCURRENT_CHECKS` resolutions at once. It queues up to
   `MAX_QUEUED_CHECKS` more and answers HTTP 429 beyond that. Each client IP is limited to `CHECKS_PER_MINUTE_PER_IP`
-  checks per minute. These counters are kept per process, so a hard global limit belongs in the proxy. The client IP is
+  checks per minute. These counters are kept per process, so the effective per-IP limit can reach `PROCESSES` times that
+  (8 by default), and a hard global limit belongs in the proxy. The client IP is
   read from `X-Forwarded-For`, counting `FORWARDED_PROXY_HOPS` entries from the right (default 1, for Traefik), so a
   header the client makes up can't dodge the limit.
 - **Dead checks.** A check that stops sending its heartbeat for 30 seconds (process restart, crash) is shown as failed
@@ -115,8 +131,11 @@ make test-network    # a few checks against the real PyPI
 make docker-build && make docker-run
 ```
 
-The entrypoint runs `alembic upgrade head` before starting Robyn. Logs and the SQLite file are volumes; see `docker-compose.yml`.
+The entrypoint runs `alembic upgrade head` before starting the server. Logs and the SQLite file are volumes; see `docker-compose.yml`.
 Run one container only, because SQLite can't be shared by writers on different hosts.
+
+The image starts 8 processes (`PROCESSES=8`, one worker each; one worker beat two in the benchmarks), sized for an 8 vCPU
+host. `SERVER=robyn` is the default; set `SERVER=granian` to serve the RSGI app instead.
 
 ## Benchmarks
 

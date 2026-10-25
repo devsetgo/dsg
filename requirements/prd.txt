@@ -1,6 +1,8 @@
 alembic==1.20.1 # From 1.20.0 | Vulnerabilities: None
-devsetgo-lib[sqlite]==2026.10.18.1 # Vulnerabilities: None
+devsetgo-lib[sqlite]==2026.10.24.1 # From 2026.10.18.1 | Vulnerabilities: None
+granian[uvloop]==2.8.4 # Vulnerabilities: None
 httpx==0.28.1 # Vulnerabilities: None
+jinja2==3.1.6 # Vulnerabilities: None
 packaging==26.3 # Vulnerabilities: None
 pydantic==2.14.1 # Vulnerabilities: None
 pydantic-schemaforms==26.4.1 # Vulnerabilities: None
